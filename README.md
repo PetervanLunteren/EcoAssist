@@ -46,6 +46,7 @@ The file `ImSep_files/ImSep/open_ImSep.command` will open the application when d
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_3.jpg" width=49.7% height="auto" /> 
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_4.jpg" width=49.7% height="auto" /> 
 </p>
+Camera trap images taken [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) from [these steps](https://lila.science/datasets/missouricameratraps) [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of dogs on street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## GPU Support
 It is possible to run ImSep on your GPU for faster processing. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Just place this repo in a directory with the `cameratraps` repo and the `md_v4.1.0.pb` file. It should work, I just never tested it...
