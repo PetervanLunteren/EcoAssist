@@ -40,9 +40,10 @@ You do not need to enter these commands if you executed `install_EcoAssist.comma
 ```batch
 cd EcoAssist_files
 git clone https://github.com/Microsoft/cameratraps
+git clone https://github.com/Microsoft/ai4eutils
 curl --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
-conda create --name imsepcondaenv python=3.7 -y
-conda activate imsepcondaenv
+conda create --name ecoassistcondaenv python=3.7 -y
+conda activate ecoassistcondaenv
 pip install -r EcoAssist/requirements.txt
 ```
 
@@ -55,4 +56,4 @@ It is possible to run EcoAssist on your GPU for faster processing. See [this pag
 ## How to uninstall EcoAssist?
 You only have to do two things if you are fed up with EcoAssist and want to get rid of it.
 1. Delete the `EcoAssist_files` folder;
-2. Either i) [uninstall Anaconda](https://docs.anaconda.com/anaconda/install/uninstall/) as a whole with the command `rm -rf ~/anaconda3` or ii) keep the Anaconda instalation and only delete the virtual environment with the command `conda env remove -n imsepcondaenv`.
+2. Either i) [uninstall Anaconda](https://docs.anaconda.com/anaconda/install/uninstall/) as a whole with the command `rm -rf ~/anaconda3` or ii) keep the Anaconda instalation and only delete the virtual environment with the command `conda env remove -n ecoassistcondaenv`.
