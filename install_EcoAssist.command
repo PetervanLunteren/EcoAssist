@@ -36,13 +36,16 @@ else
 fi
 
 PATH2PIP="`which pip`"
-PATH2CONDA_SH="${PATH2PIP%/*/*}/etc/profile.d/conda.sh"
+echo "Path to pip: $PATH2PIP"
+PATH2CONDA_SH=`echo $PATH2PIP | sed 's/\(anaconda.\).*/\1/g'`
+PATH2CONDA_SH+="/etc/profile.d/conda.sh"
+
 echo "Path to conda.sh: $PATH2CONDA_SH"
 # shellcheck source=src/conda.sh
 source "$PATH2CONDA_SH"
 
-conda env remove -n EcoAssistcondaenv
-conda create --name EcoAssistcondaenv python=3.7 -y
-conda activate EcoAssistcondaenv
+conda env remove -n ecoassistcondaenv
+conda create --name ecoassistcondaenv python=3.7 -y
+conda activate ecoassistcondaenv
 pip install -r EcoAssist/requirements.txt
 conda deactivate
