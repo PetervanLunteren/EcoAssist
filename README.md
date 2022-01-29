@@ -7,7 +7,7 @@ ImSep is an application designed to make life easier for wildlife ecologists who
 Help me to keep improving ImSep and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would very much like to know who uses the tool and for what reason. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com).
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Parameters.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/parameters.png" width=60% height="auto" />
 </p>
 
 ## How to download?
