@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/banner.png" width=100% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
 ImSep is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a pre-trained model which can recognise animals in camera trap images in a variety of terrestrial ecosystems. The only problem is that you need to know a bit of coding before you can use it. ImSep is a small program which makes it easy for everybody. With a simple user interface you can filter out the empties, visualise the detections and crop out the animals.<br/>
 <br/>
@@ -7,7 +7,7 @@ ImSep is an application designed to make life easier for wildlife ecologists who
 Help me to keep improving ImSep and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would very much like to know who uses the tool and for what reason. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com).
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/Parameters.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Parameters.png" width=60% height="auto" />
 </p>
 
 ## How to download?
@@ -41,10 +41,10 @@ The file `ImSep_files/ImSep/open_ImSep.command` will open the application when d
 
 ## Example detections
 <p float="center">
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/example_1.jpg" width=49.7% height="auto" />
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/example_2.jpg" width=49.7% height="auto" />
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/example_3.jpg" width=49.7% height="auto" /> 
-  <img src="https://github.com/PetervanLunteren/ImSep/blob/main/imgs/example_4.jpg" width=49.7% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=49.7% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=49.7% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_3.jpg" width=49.7% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_4.jpg" width=49.7% height="auto" /> 
 </p>
 
 ## GPU Support
