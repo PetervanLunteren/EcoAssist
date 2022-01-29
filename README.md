@@ -10,8 +10,18 @@ Help me to keep improving EcoAssist and let me know about any improvements, bugs
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/parameters.png" width=60% height="auto" />
 </p>
 
+## Example detections
+<p float="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=49.7% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=49.7% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_3.jpg" width=49.7% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_4.jpg" width=49.7% height="auto" /> 
+</p>
+
+Camera trap images taken [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of dogs on street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
+
 ## How to download?
-For now it is only available for OSX users. If you would like EcoAssist on your Windows of Linux computer, let me know! I'll see what I can do.
+For now it is only available for OSX users. If you would like to run EcoAssist on your Windows of Linux computer, let me know! I'll see what I can do.
 
 ### Prerequisites
 1. First of all you'll need to install [Anaconda](https://www.anaconda.com/products/individual). Need help? Follow [these steps](https://docs.anaconda.com/anaconda/install/mac-os/).
@@ -38,16 +48,6 @@ pip install -r EcoAssist/requirements.txt
 
 ## How to start the application?
 The file `EcoAssist_files/EcoAssist/open_EcoAssist.command` will open the application when double-clicked. You are free to move this file to a more convenient location. Just keep in mind that the folderstructure and location of `EcoAssist_files` should not change.
-
-## Example detections
-<p float="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=49.7% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=49.7% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_3.jpg" width=49.7% height="auto" /> 
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_4.jpg" width=49.7% height="auto" /> 
-</p>
-
-Camera trap images taken [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of dogs on street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## GPU Support
 It is possible to run EcoAssist on your GPU for faster processing. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Just place this repo in a directory with the `cameratraps` repo and the `md_v4.1.0.pb` file. It should work, I just never tested it...
