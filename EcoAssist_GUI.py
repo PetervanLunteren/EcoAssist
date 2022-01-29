@@ -695,16 +695,18 @@ def open_labelImg():
     if previous_sep_setting:
         previous_dir_processed = os.path.join(previous_dir_processed, "images", "animals")
     path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg")
+    path_to_labelImg_install = os.path.join(os.path.dirname(os.path.realpath(__file__)), "open_labelImg.command")
     print(path_to_labelImg)
+    print(os.getcwd())
     path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
     if not os.path.isdir(path_to_labelImg):
         if mb.askyesno("labelImg not found",
                        "labelImg is not found. Do you want to download it?\n\n"
                        "It will open as soon as it is downloaded. This usually takes about a minute "
                        "depending on your internet connection."):
-            os.system(f"sh open_labelImg.command '{previous_dir_processed}' '{path_to_classes_txt}'")
+            os.system(f"sh '{path_to_labelImg_install}' '{previous_dir_processed}' '{path_to_classes_txt}'")
     else:
-        os.system(f"sh open_labelImg.command '{previous_dir_processed}' '{path_to_classes_txt}'")
+        os.system(f"sh '{path_to_labelImg_install}' '{previous_dir_processed}' '{path_to_classes_txt}'")
 
 
 # tkinter window to show progress and perform the commands
