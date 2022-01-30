@@ -30,7 +30,7 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
     batch_command = f"python '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
-    print(batch_command)
+    print(f"batch_command: {batch_command}")
     with Popen([batch_command],
                stderr=PIPE, bufsize=1, shell=True,
                universal_newlines=True) as p:
@@ -57,7 +57,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
     Path(os.path.join(path_to_video_folder, "json_files")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_video_folder, "json_files", "output.json")
     video_command = f"python '{loc_process_video_py}' {additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
-    print(video_command)
+    print(f"video_command: {video_command}")
     with Popen([video_command],
                stderr=PIPE, bufsize=1, shell=True,
                universal_newlines=True) as p:
@@ -161,9 +161,7 @@ def visualise_bbox(path_to_image_folder, del_originals, separated_files):
     with open(path_to_json) as json_file:
         data = json.load(json_file)
     n_images = len(data['images'])
-    print(n_images)
     for image in data['images']:
-        print(image)
         n_detections = len(image['detections'])
         detections_list = image['detections']
         bbox_progbar['value'] += 100 / n_images
@@ -193,8 +191,6 @@ def visualise_bbox(path_to_image_folder, del_originals, separated_files):
                                         os.path.split(image['file'])[1])
             else:
                 file = image['file']
-            print(separated_files)
-            print(file)
             im = cv2.imread(file)
             if del_originals == True and os.path.exists(file):
                 os.remove(file)
@@ -334,7 +330,6 @@ def separate_videos(path_to_video_folder):
         else:
             detections_dict[video] = [animal_detecs, person_detecs, vehicle_detecs]
     n_videos = len(detections_dict.keys())
-    print(detections_dict)
     for video in detections_dict:
         print(f"{video} has {detections_dict[video][0]} animals, {detections_dict[video][1]} persons, {detections_dict[video][2]} vehicles")
         if detections_dict[video][0] != 0 and detections_dict[video][1] == 0 and detections_dict[video][2] == 0:
@@ -696,9 +691,10 @@ def open_labelImg():
         previous_dir_processed = os.path.join(previous_dir_processed, "images", "animals")
     path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg")
     path_to_labelImg_install = os.path.join(os.path.dirname(os.path.realpath(__file__)), "open_labelImg.command")
-    print(path_to_labelImg)
-    print(os.getcwd())
     path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
+    print(f"path_to_labelImg: {path_to_labelImg}")
+    print(f"path_to_labelImg_install: {path_to_labelImg_install}")
+    print(f"path_to_classes_txt: {path_to_classes_txt}")
     if not os.path.isdir(path_to_labelImg):
         if mb.askyesno("labelImg not found",
                        "labelImg is not found. Do you want to download it?\n\n"
