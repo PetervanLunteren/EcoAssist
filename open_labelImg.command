@@ -8,6 +8,9 @@ if [ -d "$LBL" ]; then
 else
   echo "Dir ${LBL} does not exist! Clone repo..."
   git clone https://github.com/tzutalin/labelImg.git
+  cd labelImg || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+  git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
+  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
 fi
 
 PATH2PIP="`which pip`"
