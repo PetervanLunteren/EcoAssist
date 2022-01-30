@@ -2,7 +2,6 @@
 
 pmset noidle &
 PMSETPID=$!
-echo $PMSETPID
 
 mkdir -p ~/EcoAssist_files
 cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
