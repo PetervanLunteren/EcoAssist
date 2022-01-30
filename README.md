@@ -50,9 +50,7 @@ cd ~/EcoAssist_files
 git clone https://github.com/Microsoft/cameratraps
 git clone https://github.com/Microsoft/ai4eutils
 curl --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
-conda create --name ecoassistcondaenv python=3.7 -y
-conda activate ecoassistcondaenv
-pip install -r EcoAssist/requirements.txt
+conda env create -f EcoAssist/ecoassistcondaenv.yml
 ```
 
 ## How to start the application?
