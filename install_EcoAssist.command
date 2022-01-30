@@ -17,6 +17,9 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..."
   git clone https://github.com/Microsoft/cameratraps
+  cd cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+  git checkout e40755ec6f3b34e6eefa1306d5cd6ce605e0f5ab
+  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
 fi
 
 AI4="ai4eutils"
@@ -25,6 +28,9 @@ if [ -d "$AI4" ]; then
 else
   echo "Dir ${AI4} does not exist! Clone repo..."
   git clone https://github.com/Microsoft/ai4eutils
+  cd ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+  git checkout c8692a2ed426a189ef3c1b3a5a21ae287c032a1d
+  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
 fi
 
 MD="md_v4.1.0.pb"
