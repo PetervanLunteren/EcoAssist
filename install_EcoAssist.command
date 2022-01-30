@@ -38,7 +38,7 @@ if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step."
 else
   echo "File ${MD} does not exist! Downloading file..."
-  curl --tlsv1.2 --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
+  curl --tlsv1.2 --max-time 180000 --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
 fi
 
 cd EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
