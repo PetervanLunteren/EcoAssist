@@ -29,7 +29,7 @@ Help me to keep improving EcoAssist and let me know about any improvements, bugs
 Camera trap images taken [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## How to download?
-For now it is only available for OSX users. If you would like to run EcoAssist on your Windows of Linux computer, let me know! I'll see what I can do.
+For now it is only available for OSX users. If you would like to run EcoAssist on your Windows or Linux computer, let me know! I'll see what I can do.
 
 ### Prerequisites
 1. First of all you'll need to install [Anaconda](https://www.anaconda.com/products/individual). Need help? Follow [these steps](https://docs.anaconda.com/anaconda/install/mac-os/).
