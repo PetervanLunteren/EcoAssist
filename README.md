@@ -8,7 +8,7 @@ EcoAssist is an application designed to make life easier for wildlife ecologists
 * Separate files into subdirectories based on their detections
 * Draw boxes around the detections or crop them
 * Create .xml label files in Pascal VOC format for further processing
-* Open labelImg to review and adjust these labels
+* Shortcut to labelImg to adjust annotations
 * Easily set parameters like threshold and checkpoint frequency
 <br/>
 
