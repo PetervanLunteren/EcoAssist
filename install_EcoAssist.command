@@ -44,8 +44,19 @@ else
   curl --tlsv1.2 --keepalive --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
 fi
 
-cd EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+PATH2CONDA_SH=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1`
+PATH2CONDA_SH+="/etc/profile.d/conda.sh"
+echo "Path to conda.sh: $PATH2CONDA_SH"
+# shellcheck source=src/conda.sh
+source "$PATH2CONDA_SH"
+
 conda env remove -n ecoassistcondaenv
-conda env create -f ecoassistcondaenv.yml
+conda create -n ecoassistcondaenv python==3.7 -y
+conda activate ecoassistcondaenv
+pip install --upgrade pip setuptools wheel
+pip install --upgrade pip
+pip install 
+pip install -r EcoAssist/requirements.txt
+conda deactivate
 
 kill $PMSETPID
