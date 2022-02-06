@@ -13,7 +13,7 @@ EcoAssist is an application designed to make life easier for wildlife ecologists
 Help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would very much like to know who uses the tool and for what reason. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com).
 
 ## Example detections
-![parameters!](https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg)
+![pic](https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg)
 <p float="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=49.7% height="auto" />
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=49.7% height="auto" />
