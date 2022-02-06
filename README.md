@@ -1,3 +1,4 @@
+<meta name="google-site-verification" content="e3pjuBzSKEpVE4ec45Um-xPLb2t-p2hWdyXdNoI5VNo" />
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
