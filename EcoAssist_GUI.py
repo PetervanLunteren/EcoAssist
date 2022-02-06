@@ -1,26 +1,25 @@
-import datetime
 import json
-import os
-import platform
-import re
-import subprocess
-import time
-import tkinter as tk
-import traceback
-import webbrowser
-import xml.etree.cElementTree as ET
-from functools import partial
 from pathlib import Path
-from subprocess import Popen, PIPE
-from tkinter import filedialog
-from tkinter import messagebox as mb
-from tkinter import ttk
-
 import cv2
-import numpy as np
-from PIL import ImageTk, Image, ImageFilter
 from bounding_box import bounding_box as bb
+import webbrowser
 from tkHyperlinkManager import *
+from tkinter import filedialog
+from tkinter import ttk
+import tkinter as tk
+import os
+import re
+from subprocess import Popen, PIPE
+import time
+import datetime
+from tkinter import messagebox as mb
+import platform
+import subprocess
+import traceback
+from PIL import ImageTk, Image, ImageFilter
+from functools import partial
+import numpy as np
+import xml.etree.cElementTree as ET
 
 
 # function to start the MegaDetector process for images
