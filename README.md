@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
-TEST EcoAssist is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a pre-trained model which can recognise animals in camera trap images in a variety of terrestrial ecosystems. The only problem with this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It is a small program which makes it easy for everybody. 
+TEST2 EcoAssist is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a pre-trained model which can recognise animals in camera trap images in a variety of terrestrial ecosystems. The only problem with this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It is a small program which makes it easy for everybody. 
 
 ## Features
 * Detect animals, persons and vehicles in images or video's
