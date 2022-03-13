@@ -59,3 +59,5 @@ pip install -r EcoAssist/requirements.txt
 conda deactivate
 
 kill $PMSETPID
+
+echo "The installation is done! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist_files/EcoAssist/open_EcoAssist.command file."
