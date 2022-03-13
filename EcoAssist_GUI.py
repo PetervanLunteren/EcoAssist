@@ -1220,7 +1220,7 @@ vis_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
 vis_frame.columnconfigure(0, weight=3, minsize=430)
 vis_frame.columnconfigure(1, weight=1, minsize=115)
 
-lbl9 = Label(vis_frame, text="Draw boxes around the detections", state=NORMAL, pady=5)
+lbl9 = Label(vis_frame, text="Draw boxes around the detections and show confidences", state=NORMAL, pady=5)
 lbl9.grid(row=0, sticky='w')
 check_vis_detec = BooleanVar()
 chb5 = Checkbutton(vis_frame, variable=check_vis_detec, state=NORMAL)
@@ -1387,7 +1387,7 @@ t.tag_add('info', '16.0', '16.end')
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
-         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 80% generally works well, but this might be different with specific ecosystems.\n\n")
+         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 80% generally works well, but this might be different with specific ecosystems. My advice is to first run the model on a directory with 100 representative images with the option 'Draw boxes around the detections and show confidences' and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives.\n\n")
 t.tag_add('title', '18.0', '18.end')
 t.tag_add('info', '19.0', '19.end')
 
@@ -1414,9 +1414,9 @@ t.insert(END,
 t.tag_add('title', '30.0', '30.end')
 t.tag_add('info', '31.0', '31.end')
 
-t.insert(END, "Draw boxes around detections\n")
+t.insert(END, "Draw boxes around the detections and show confidences\n")
 t.insert(END,
-         "This functionality draws boxes around the detections and saves them in the subdirectory '_visualised_images'. Animals, persons and vehicles are visualised using different colours.\n\n")
+         "This functionality draws boxes around the detections and saves them in the subdirectory '_visualised_images'. Animals, persons and vehicles are visualised using different colours. The confidence with which the model has appointed this detection is also shown.\n\n")
 t.tag_add('title', '33.0', '33.end')
 t.tag_add('info', '34.0', '34.end')
 
