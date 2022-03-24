@@ -4,14 +4,15 @@ PATH2CONDA=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut
 echo "Path to conda: $PATH2CONDA"
 PATH2CONDA_SH="$PATH2CONDA/etc/profile.d/conda.sh"
 echo "Path to conda.sh: $PATH2CONDA_SH"
-PATH2PYTHON3="$PATH2CONDA/envs/ecoassistcondaenv/bin/python3"
-echo "Path to python3: $PATH2PYTHON3"
+PATH2PYTHON="$PATH2CONDA/envs/ecoassistcondaenv/bin/"
+echo "Path to python: $PATH2PYTHON"
 # shellcheck source=src/conda.sh
 source $PATH2CONDA_SH
 conda activate ecoassistcondaenv
-export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON3:$PWD/cameratraps:$PWD/ai4eutils"
+export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON:$PWD/cameratraps:$PWD/ai4eutils"
 echo $PYTHONPATH
-export PATH="$PATH:$PATH2PYTHON3:/usr/bin/"
+echo ""
+export PATH="$PATH2PYTHON:/usr/bin/:$PATH"
 echo $PATH
 PYVERSION=`python -V`
 echo "python version: $PYVERSION"
