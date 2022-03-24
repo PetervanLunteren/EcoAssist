@@ -20,6 +20,7 @@ from PIL import ImageTk, Image, ImageFilter
 from functools import partial
 import numpy as np
 import xml.etree.cElementTree as ET
+import sys
 
 
 # function to start the MegaDetector process for images
@@ -31,7 +32,8 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"python3 '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
+    batch_command = f"{sys.executable} '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
+    print("sys.executable: ", sys.executable)
     print(f"batch_command: {batch_command}")
     with Popen([batch_command],
                stderr=PIPE, bufsize=1, shell=True,
