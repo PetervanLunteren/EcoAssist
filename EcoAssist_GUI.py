@@ -31,7 +31,7 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"python '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
+    batch_command = f"python3 '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
     print(f"batch_command: {batch_command}")
     with Popen([batch_command],
                stderr=PIPE, bufsize=1, shell=True,
@@ -60,7 +60,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_video_folder, "json_files")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_video_folder, "json_files", "output.json")
-    video_command = f"python '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
+    video_command = f"python3 '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
     print(f"video_command: {video_command}")
     with Popen([video_command],
                stderr=PIPE, bufsize=1, shell=True,
@@ -957,6 +957,7 @@ def openProgressWindow():
                     crop(path_to_image_folder=loc_input_image_folder.get(),
                          del_originals=check_del.get(),
                          separated_files=check_sep.get())
+                print('Succesfully finished - all processes done!')
                 mb.showinfo('Succesfully finished', "All processes done!")
                 newWindow.destroy()
                 open_file(loc_input_image_folder.get())
@@ -1041,6 +1042,7 @@ def openProgressWindow():
                 produce_json_video(loc_input_image_folder.get(), additional_videos_cmds)
             if v_check_sep.get():
                 separate_videos(loc_input_image_folder.get())
+            print('Succesfully finished - all processes done!')
             mb.showinfo('Succesfully finished', "All processes done!")
             newWindow.destroy()
             open_file(loc_input_image_folder.get())
