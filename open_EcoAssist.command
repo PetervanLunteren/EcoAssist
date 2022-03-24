@@ -9,13 +9,12 @@ echo "Path to python3: $PATH2PYTHON3"
 # shellcheck source=src/conda.sh
 source $PATH2CONDA_SH
 conda activate ecoassistcondaenv
-export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON3"
-export PYTHONPATH="$PYTHONPATH:$PWD/cameratraps:$PWD/ai4eutils"
+export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON3:$PWD/cameratraps:$PWD/ai4eutils"
 echo $PYTHONPATH
+export PATH="$PATH:$PATH2PYTHON3:/usr/bin/"
+echo $PATH
 PYVERSION=`python -V`
 echo "python version: $PYVERSION"
 PY3VERSION=`python3 -V`
 echo "python3 version: $PY3VERSION"
-export PATH="$PATH:/usr/bin/:$PATH2PYTHON3"
-echo $PATH
 python EcoAssist/EcoAssist_GUI.py
