@@ -45,7 +45,7 @@ echo "python location: $PYLOCATION"
 echo ""
 
 # check tensorflow version and GPU availability
-echo -e "import warnings;warnings.filterwarnings('ignore', category=FutureWarning);import tensorflow.compat.v1 as tf;print('TensorFlow version:', tf.__version__);print('tf.test.is_gpu_available:', tf.test.is_gpu_available())" | python
+python EcoAssist/tf_check.py
 
 # run script
 python EcoAssist/EcoAssist_GUI.py
