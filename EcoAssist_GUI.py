@@ -32,14 +32,17 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"{sys.executable} '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
+    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}' > 'EcoAssist/output_files/stdout_imgs.txt'"
     print("sys.executable: ", sys.executable)
     print(f"batch_command: {batch_command}")
+    stderr_txt = open("EcoAssist/output_files/stderr_imgs.txt", "w")
     with Popen([batch_command],
                stderr=PIPE, bufsize=1, shell=True,
                universal_newlines=True) as p:
         for line in p.stderr:
-            print(line, end='')
+            if not line.startswith('#') and not line.startswith('import'):
+                print(line, end='')
+            stderr_txt.write(line)
             if '%' in line[0:4]:
                 times = re.search("(\[.*?\])", line)[1]
                 progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
