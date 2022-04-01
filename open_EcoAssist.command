@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# log all output to logfile
+exec &> >(tee  ~/EcoAssist_files/EcoAssist/output_files/open_EA_log.txt)
+
 # change directory
 cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
