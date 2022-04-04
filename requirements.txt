@@ -30,7 +30,6 @@ PyQt5==5.15.6
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.9.0
 python-dateutil==2.8.2
-requests==2.26.0    --no-binary requests
 sip==6.5.0
 six==1.16.0
 statistics==1.0.3.5
