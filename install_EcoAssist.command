@@ -55,6 +55,7 @@ conda create -n ecoassistcondaenv python==3.7 -y
 conda activate ecoassistcondaenv
 pip install --upgrade pip setuptools wheel
 pip install --upgrade pip
+conda install -c conda-forge requests=2.26.0 -y
 pip install -r EcoAssist/requirements.txt
 conda deactivate
 
