@@ -27,6 +27,12 @@ Help me to keep improving EcoAssist and let me know about any improvements, bugs
 
 Camera trap images taken [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
+## Users
+Here is a map of the users which have let me know that there using EcoAssist. Are you also a user and not on this map? Let me know!
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/parameters.png" width=60% height="auto" />
+</p>
+
 ## How to download?
 For now it is only available for OSX users. If you would like to run EcoAssist on your Windows or Linux computer, let me know! I'll see what I can do.
 
@@ -49,5 +55,3 @@ It is possible to run EcoAssist on your GPU for faster processing (I just never 
 You only have to do two things if you are fed up with EcoAssist and want to get rid of it.
 1. Delete the `EcoAssist_files` folder;
 2. Either i) [uninstall Anaconda](https://docs.anaconda.com/anaconda/install/uninstall/) as a whole with the command `rm -rf ~/anaconda3` or ii) keep the Anaconda instalation and only delete the virtual environment with the command `conda env remove -n ecoassistcondaenv`.
-
-<iframe src="https://www.google.com/maps/d/embed?mid=1oC6eOWMYYs8hKukGdnmNosAPfo03DiuM&hl=en&ehbc=2E312F" width="640" height="480"></iframe>
