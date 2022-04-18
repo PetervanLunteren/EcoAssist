@@ -30,7 +30,6 @@ Camera trap images taken [Missouri camera trap database](https://lila.science/da
 ## How to download?
 For now it is only available for OSX users. If you would like to run EcoAssist on your Windows or Linux computer, let me know! I'll see what I can do.
 
-### Prerequisites
 1. First of all you'll need to install [Anaconda](https://www.anaconda.com/products/individual). Need help? Follow [these steps](https://docs.anaconda.com/anaconda/install/mac-os/).
 2. If Anaconda is installed you need to create a directory in your root folder and download this repository. You can do that by opening a new window in the Terminal application and executing the following commands.
 ```batch
@@ -38,42 +37,15 @@ mkdir ~/EcoAssist_files
 cd ~/EcoAssist_files
 git clone https://github.com/PetervanLunteren/EcoAssist.git
 ```
-
-### Easy download
-You can now continue to download the rest of the files. I've tried to make it easy for you by creating a bash script which will do this for you. You can simply double-click on the file `EcoAssist_files/EcoAssist/install_EcoAssist.command`. It downloads the MegaDetector repo and it's model file, then creates an anaconda environment in which the correct python version and all the neccesary packages are installed. If you prefer to do it yourself, see the manual download below. It might take a few minutes before the installation is completed. When you see the a print statement saying it is OK to close the window, the process is completed. 
+3. You can now continue to download the rest of the files. I've made it easy for you by creating a bash script which will do this for you. You can simply double-click the file `EcoAssist_files/EcoAssist/install_EcoAssist.command`. It downloads the MegaDetector repo and it's model file, then creates an anaconda environment in which the correct python version and all the neccesary packages are installed. When you see the a print statement saying it is OK to close the window, the process is completed. 
 
 ## How to start the application?
 The file `EcoAssist_files/EcoAssist/open_EcoAssist.command` will open the application when double-clicked. You are free to move this file to a more convenient location. Just keep in mind that the folderstructure and location of `EcoAssist_files` should not change.
 
 ## GPU Support
-It is possible to run EcoAssist on your GPU for faster processing. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information.
+It is possible to run EcoAssist on your GPU for faster processing (I just never tried it before). See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. You would probabaly be best off by installing EcoAssist normally and adjusting the `ecoassistcondaenv` environment. Also do not change the folderstructure and location of `EcoAssist_files`.
 
 ## How to uninstall EcoAssist?
 You only have to do two things if you are fed up with EcoAssist and want to get rid of it.
 1. Delete the `EcoAssist_files` folder;
 2. Either i) [uninstall Anaconda](https://docs.anaconda.com/anaconda/install/uninstall/) as a whole with the command `rm -rf ~/anaconda3` or ii) keep the Anaconda instalation and only delete the virtual environment with the command `conda env remove -n ecoassistcondaenv`.
-
-### Manual download
-If you prefer to download the files manually instead of via the bash script, execute the following commands. You do not need to enter these commands if you executed `install_EcoAssist.command`.
-```batch
-cd ~/EcoAssist_files
-
-git clone https://github.com/Microsoft/cameratraps
-cd cameratraps
-git checkout e40755ec6f3b34e6eefa1306d5cd6ce605e0f5ab
-cd ..
-
-git clone https://github.com/Microsoft/ai4eutils
-cd ai4eutils
-git checkout c8692a2ed426a189ef3c1b3a5a21ae287c032a1d
-cd ..
-
-curl --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb
-
-conda env remove -n ecoassistcondaenv
-conda create -n ecoassistcondaenv python==3.7 -y
-conda activate ecoassistcondaenv
-pip install --upgrade pip setuptools wheel
-pip install --upgrade pip
-pip install -r EcoAssist/requirements.txt
-```
