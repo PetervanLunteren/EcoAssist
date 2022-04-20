@@ -28,9 +28,9 @@ Help me to keep improving EcoAssist and let me know about any improvements, bugs
 Camera trap images taken [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## Users
-Here is a map of the users which have let me know that there using EcoAssist. Are you also a user and not on this map? Let me know!
+Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? Let me know!
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/parameters.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
 ## How to download?
