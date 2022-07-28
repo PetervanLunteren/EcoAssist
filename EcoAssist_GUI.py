@@ -26,46 +26,45 @@ import sys
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
     print(f"Processing images with MegaDetector model...\n")
-    mega_stats['text'] = update_progress_label_short(command="load")
+    mega_stats['text'] = update_progress_label_megadetector(command="load")
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_tf_detector_batch.py")
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}' > 'EcoAssist/output_files/stdout_imgs.txt'"
+    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
     print("sys.executable: ", sys.executable)
     print(f"batch_command: {batch_command}")
-    stderr_txt = open("EcoAssist/output_files/stderr_imgs.txt", "w")
     with Popen([batch_command],
                stderr=PIPE, bufsize=1, shell=True,
                universal_newlines=True) as p:
         for line in p.stderr:
-            if not line.startswith('#') and not line.startswith('import'):
-                print(line, end='')
-            stderr_txt.write(line)
+            print(line, end='')
             if '%' in line[0:4]:
                 times = re.search("(\[.*?\])", line)[1]
                 progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
                 percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                 elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                 time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                time_per_image = re.search("(?<=, )(.*)(?=.s\/it)", times)[1] if re.search("(?<=, )(.*)(?=.s\/it)", times) != None else "?"
                 mega_progbar['value'] = percentage
-                mega_stats['text'] = update_progress_label_short(elapsed_time, time_left, command="running")
+                mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, command="running")
             window.update()
-        mega_stats['text'] = update_progress_label_short(elapsed_time, time_left, command="done")
+        mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, command="done")
         window.update()
 
 
 # function to start the MegaDetector process for video's
 def produce_json_video(path_to_video_folder, additional_json_cmds):
     print(f"Processing videos with MegaDetector model...\n")
-    v_mega_stats['text'] = update_progress_label_short(command="load")
+    v_mega_stats['text'] = update_progress_label_megadetector_v(command="load")
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_process_video_py = os.path.join(path_to_git, "cameratraps", "detection", "process_video.py")
     loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
     Path(os.path.join(path_to_video_folder, "json_files")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_video_folder, "json_files", "output.json")
-    video_command = f"python3 '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
+    video_command = f"{sys.executable} -v '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
+    print("sys.executable: ", sys.executable)
     print(f"video_command: {video_command}")
     with Popen([video_command],
                stderr=PIPE, bufsize=1, shell=True,
@@ -78,10 +77,11 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                 percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                 elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                 time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                time_per_image = re.search("(?<=, )(.*)(?=.s\/it)", times)[1] if re.search("(?<=, )(.*)(?=.s\/it)", times) != None else "?"
                 v_mega_progbar['value'] = percentage
-                v_mega_stats['text'] = update_progress_label_short(elapsed_time, time_left, command="running")
+                v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, command="running")
             window.update()
-        v_mega_stats['text'] = update_progress_label_short(elapsed_time, time_left, command="done")
+        v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, command="done")
         window.update()
 
 
@@ -261,7 +261,7 @@ def separate_images(path_to_image_folder):
             Path(os.path.join(file_path, "images", "empties")).mkdir(parents=True, exist_ok=True)
             os.replace(os.path.join(file[0] + file[1]),
                        os.path.join(file_path, "images", "empties", file_name[0] + file_name[1]))
-        else:
+        else:   
             animal_detecs = 0
             person_detecs = 0
             vehicle_detecs = 0
@@ -573,20 +573,44 @@ def check_if_checkpointfile_is_present(directory):
         return False
 
 
-# function to print the progress when loading
+# function to print the progress of megadetector when processing images
+def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", command=""):
+    if command == "load":
+        return f"Algorithm is starting up..."
+    if command == "running":
+        return f"Processing image:\t\t{value3} of {value4}\n" \
+               f"Elapsed time:\t\t{value1}\n" \
+               f"Remaining time:\t\t{value2}\n" \
+               f"Time per image:\t\t{value5}s\n"
+    if command == "done":
+        return f"                            Done!                            \n" \
+               f"Elapsed time:\t\t{value1}\n" \
+               f"Time per image:\t\t{value5}s"
+
+# function to print the progress of megadetector when processing movies
+def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", command=""):
+    if command == "load":
+        return f"Algorithm is starting up..."
+    if command == "running":
+        return f"Processing frame:\t\t{value3} of {value4}\n" \
+               f"Elapsed time:\t\t{value1}\n" \
+               f"Remaining time:\t\t{value2}\n" \
+               f"Time per frame:\t\t{value5}s\n"
+    if command == "done":
+        return f"                            Done!                            \n"
+
+# function to print the progress of the rest when loading
 def update_progress_label_short(value1="", value2="", command=""):
     if command == "":
         return f"In queue"
-    if command == "load":
-        return f"Algorithm is starting up..."
     if command == "running":
         return f"Elapsed time:\t\t{value1}\n" \
                f"Time left:\t\t\t{value2}\n"
     if command == "done":
-        return f"Elapsed time:\t\t{value1}\n" \
-               f"Time left:\t\t\t{value2}\n" \
-               f"                                Done!"
-
+        return f"                            Done!                            \n" \
+               f"Elapsed time:\t\t{value1}\n" \
+               f"Time left:\t\t\t{value2}"
+               
 
 # function to open the folder after finishing
 def open_file(path):
@@ -806,7 +830,7 @@ def openProgressWindow():
     global v_conf_thresh
     global v_check_dont_process_every_frame
     global v_int_analyse_every_nth
-    global v_check_sep
+    global v_check_sep    
 
     if data_type.get() == "Images":
         if check_use_checkpoints.get() and not int_checkpoint_n.get().isdecimal():
@@ -814,6 +838,7 @@ def openProgressWindow():
                            "You either entered an invalid value for the checkpoint frequency, or none at all. You can only enter numberic characters.\n\nDo you want to proceed with the default value 100?"):
                 int_checkpoint_n.set("100")
                 ent1.config(fg='black')
+            else: check_use_checkpoints.set(False)
         if loc_input_image_folder.get() == "":
             mb.showerror("Error", message="Please specify a directory with images to be processed.")
         check_recurse_ui = check_recurse.get()
@@ -969,6 +994,9 @@ def openProgressWindow():
                 previous_dir_processed = loc_input_image_folder.get()
                 previous_sep_setting = check_sep.get()
             except Exception as error:
+                print("ERROR:--------------\n" + str(error) + "\n\nDETAILS:--------------\n" + str(traceback.format_exc()) + "\n")
+                with open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "EcoAssist", "logfiles", "error_message.txt"), 'w') as error_file:
+                    error_file.write("ERROR:--------------\n" + str(error) + "\n\nDETAILS:--------------\n" + str(traceback.format_exc()) + "\n")
                 mb.showerror(title="Error",
                              message="An error has occurred: '" + str(error) + "'.",
                              detail=traceback.format_exc())
