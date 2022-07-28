@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
-# log all output to logfile
-exec &> >(tee  ~/EcoAssist_files/EcoAssist/output_files/open_EA_log.txt)
+# log output to logfiles
+exec 1> ~/EcoAssist_files/EcoAssist/logfiles/stdout.txt
+exec 2> ~/EcoAssist_files/EcoAssist/logfiles/stderr.txt
+
+# log system information
+UNAME_A=`uname -a`
+MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+echo "System information (uname -a):"
+echo ""
+echo "$UNAME_A"
+echo ""
+echo "$MACHINE_INFO"
+echo ""
 
 # change directory
 cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
