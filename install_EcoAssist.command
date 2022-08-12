@@ -51,7 +51,7 @@ else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
   cd cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout --progress e40755ec6f3b34e6eefa1306d5cd6ce605e0f5ab 2>&1 | tee -a "$LOG_FILE"
+  git checkout e40755ec6f3b34e6eefa1306d5cd6ce605e0f5ab 2>&1 | tee -a "$LOG_FILE"
   cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
