@@ -10,7 +10,7 @@ if [ -d "$LBL" ]; then
   echo "Dir ${LBL} already exists! Skipping this step."
 else
   echo "Dir ${LBL} does not exist! Clone repo..."
-  git clone https://github.com/tzutalin/labelImg.git
+  git clone --progress https://github.com/tzutalin/labelImg.git
   cd labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg"; exit 1; }
   git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
   cd .. || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg"; exit 1; }
