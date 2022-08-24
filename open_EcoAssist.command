@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+### OSX commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
+### Peter van Lunteren, 25 August 2022
+
 # set var for ecoassist root
 LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
 
@@ -15,7 +18,9 @@ echo ""
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-FILE_SIZES=`ls -LRlh $LOCATION_ECOASSIST_FILES`
+FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
+FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
+FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ECOASSIST_FILES/*/*`
 echo "uname -a:"
 echo ""
 echo "$UNAME_A"
@@ -24,9 +29,17 @@ echo "System information:"
 echo ""
 echo "$MACHINE_INFO"
 echo ""
-echo "File sizes:"
+echo "File sizes with depth 0:"
 echo ""
-echo "$FILE_SIZES"
+echo "$FILE_SIZES_DEPTH_0"
+echo ""
+echo "File sizes with depth 1:"
+echo ""
+echo "$FILE_SIZES_DEPTH_1"
+echo ""
+echo "File sizes with depth 2:"
+echo ""
+echo "$FILE_SIZES_DEPTH_2"
 echo ""
 
 # change directory
