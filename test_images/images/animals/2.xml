@@ -1,0 +1,26 @@
+<annotation>
+  <folder>test_images</folder>
+  <filename>2.jpg</filename>
+  <path>/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/2.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>1920</width>
+    <height>1080</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>animal</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <bndbox>
+      <xmin>297</xmin>
+      <ymin>825</ymin>
+      <xmax>637</xmax>
+      <ymax>694</ymax>
+    </bndbox>
+  </object>
+</annotation>
