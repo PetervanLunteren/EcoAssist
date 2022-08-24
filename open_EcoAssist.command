@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+# set var for ecoassist root
+LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
+
 # log output to logfiles
-exec 1> ~/EcoAssist_files/EcoAssist/logfiles/stdout.txt
-exec 2> ~/EcoAssist_files/EcoAssist/logfiles/stderr.txt
+exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
+exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
 
 # timestamp and log the start
 START_DATE=`date`
@@ -12,7 +15,7 @@ echo ""
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-FILE_SIZES=`ls -LRlh ~/EcoAssist_files`
+FILE_SIZES=`ls -LRlh $LOCATION_ECOASSIST_FILES`
 echo "uname -a:"
 echo ""
 echo "$UNAME_A"
@@ -27,7 +30,7 @@ echo "$FILE_SIZES"
 echo ""
 
 # change directory
-cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
 # path to conda installation
 PATH2CONDA=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1`
@@ -79,4 +82,4 @@ python EcoAssist/EcoAssist_GUI.py
 # timestamp and log the end
 END_DATE=`date`
 echo ""
-echo "This installation started at: $END_DATE"
+echo "This installation ended at: $END_DATE"

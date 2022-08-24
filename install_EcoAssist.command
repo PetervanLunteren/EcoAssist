@@ -7,18 +7,21 @@ START_DATE=`date`
 pmset noidle &
 PMSETPID=$!
 
+# set var for ecoassist root
+LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
+
 # make dir and change into
-mkdir -p ~/EcoAssist_files
-cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+mkdir -p $LOCATION_ECOASSIST_FILES
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
 
 # check if log file already exists, otherwise create empty log file
-LOG_FILE=~/EcoAssist_files/EcoAssist/logfiles/installation_log.txt
+LOG_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/installation_log.txt
 if [ -f "$LOG_FILE" ]; then
-    echo "LOG_FILE exists. Logging to ~/EcoAssist_files/EcoAssist/logfiles/installation_log.txt" 2>&1 | tee -a "$LOG_FILE"
+    echo "LOG_FILE exists. Logging to $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/installation_log.txt" 2>&1 | tee -a "$LOG_FILE"
 else
-    LOG_FILE=~/EcoAssist_files/installation_log.txt
+    LOG_FILE=$LOCATION_ECOASSIST_FILES/installation_log.txt
     touch "$LOG_FILE"
-    echo "LOG_FILE does not exist. Logging to ~/EcoAssist_files/installation_log.txt" 2>&1 | tee -a "$LOG_FILE"
+    echo "LOG_FILE does not exist. Logging to $LOCATION_ECOASSIST_FILES/installation_log.txt" 2>&1 | tee -a "$LOG_FILE"
 fi
 
 # log the start
@@ -27,7 +30,7 @@ echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-FILE_SIZES=`ls -LRlh ~/EcoAssist_files`
+FILE_SIZES=`ls -LRlh $LOCATION_ECOASSIST_FILES`
 echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
@@ -99,8 +102,8 @@ else
 fi
 
 # download model if not present
-mkdir -p ~/EcoAssist_files/megadetector
-cd ~/EcoAssist_files/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+mkdir -p $LOCATION_ECOASSIST_FILES/megadetector
+cd $LOCATION_ECOASSIST_FILES/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 MD="md_v5a.0.0.pt"
 if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -215,9 +218,9 @@ echo "" 2>&1 | tee -a "$LOG_FILE"
 echo "" 2>&1 | tee -a "$LOG_FILE"
 
 # move LOG_FILE is needed
-WRONG_LOG_FILE_LOCATION=~/EcoAssist_files/installation_log.txt
+WRONG_LOG_FILE_LOCATION=$LOCATION_ECOASSIST_FILES/installation_log.txt
 if [ "$LOG_FILE" == "$WRONG_LOG_FILE_LOCATION" ]; then
-  mv $LOG_FILE ~/EcoAssist_files/EcoAssist/logfiles
+  mv $LOG_FILE $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles
 fi
 
 # message for the user
