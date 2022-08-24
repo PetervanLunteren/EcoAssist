@@ -4,6 +4,11 @@
 exec 1> ~/EcoAssist_files/EcoAssist/logfiles/stdout.txt
 exec 2> ~/EcoAssist_files/EcoAssist/logfiles/stderr.txt
 
+# timestamp and log the start
+START_DATE=`date`
+echo "This installation started at: $START_DATE"
+echo ""
+
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
@@ -70,3 +75,8 @@ python EcoAssist/tf_check.py
 
 # run script
 python EcoAssist/EcoAssist_GUI.py
+
+# timestamp and log the end
+END_DATE=`date`
+echo ""
+echo "This installation started at: $END_DATE"
