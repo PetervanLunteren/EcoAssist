@@ -1,22 +1,6 @@
 #!/usr/bin/env bash
 
-pmset noidle &
-PMSETPID=$!
-
 cd ~/EcoAssist_files || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
-
-LBL="labelImg"
-if [ -d "$LBL" ]; then
-  echo "Dir ${LBL} already exists! Skipping this step."
-else
-  echo "Dir ${LBL} does not exist! Clone repo..."
-  git clone --progress https://github.com/tzutalin/labelImg.git
-  cd labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg"; exit 1; }
-  git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
-  cd .. || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg"; exit 1; }
-fi
-
-kill $PMSETPID
 
 PATH2CONDA_SH=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1`
 PATH2CONDA_SH+="/etc/profile.d/conda.sh"

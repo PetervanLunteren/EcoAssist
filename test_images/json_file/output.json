@@ -1,0 +1,98 @@
+{
+ "images": [
+  {
+   "file": "/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/4.jpg",
+   "max_detection_conf": 0.0,
+   "detections": []
+  },
+  {
+   "file": "/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/5.jpg",
+   "max_detection_conf": 0.877,
+   "detections": [
+    {
+     "category": "2",
+     "conf": 0.841,
+     "bbox": [
+      0.5062,
+      0.8301,
+      0.01562,
+      0.08493
+     ]
+    },
+    {
+     "category": "2",
+     "conf": 0.877,
+     "bbox": [
+      0.4843,
+      0.8301,
+      0.02031,
+      0.08219
+     ]
+    }
+   ]
+  },
+  {
+   "file": "/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/2.jpg",
+   "max_detection_conf": 0.844,
+   "detections": [
+    {
+     "category": "1",
+     "conf": 0.844,
+     "bbox": [
+      0.1546,
+      0.6425,
+      0.177,
+      0.1212
+     ]
+    }
+   ]
+  },
+  {
+   "file": "/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/3.jpg",
+   "max_detection_conf": 0.944,
+   "detections": [
+    {
+     "category": "3",
+     "conf": 0.944,
+     "bbox": [
+      0.214,
+      0.4238,
+      0.3015,
+      0.3208
+     ]
+    }
+   ]
+  },
+  {
+   "file": "/Users/petervanlunteren/EcoAssist_files/EcoAssist/test_images/1.jpg",
+   "max_detection_conf": 0.964,
+   "detections": [
+    {
+     "category": "1",
+     "conf": 0.964,
+     "bbox": [
+      0.2124,
+      0.1041,
+      0.2593,
+      0.425
+     ]
+    }
+   ]
+  }
+ ],
+ "detection_categories": {
+  "1": "animal",
+  "2": "person",
+  "3": "vehicle"
+ },
+ "info": {
+  "detection_completion_time": "2022-08-21 00:05:56",
+  "format_version": "1.2",
+  "detector": "md_v5a.0.0.pt",
+  "detector_metadata": {
+   "megadetector_version": "v5a.0.0",
+   "typical_detection_threshold": 0.2,
+   "conservative_detection_threshold": 0.05
+  }
+ }
+}
