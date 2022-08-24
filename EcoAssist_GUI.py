@@ -1,3 +1,7 @@
+# GUI wrapper around MegaDetector with some additional features.
+# Written by Peter van Lunteren, 16 aug 2022.
+
+# import packages
 import json
 from pathlib import Path
 import cv2
@@ -28,11 +32,11 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     print(f"Processing images with MegaDetector model...\n")
     mega_stats['text'] = update_progress_label_megadetector(command="load")
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_tf_detector_batch.py")
-    loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
+    loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_detector_batch.py")
+    model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{loc_pb}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
+    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{model_file}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
     print("sys.executable: ", sys.executable)
     print(f"batch_command: {batch_command}")
     with Popen([batch_command],
@@ -46,11 +50,11 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                 percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                 elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                 time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                time_per_image = re.search("(?<=, )(.*)(?=.s\/it)", times)[1] if re.search("(?<=, )(.*)(?=.s\/it)", times) != None else "?"
+                time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
                 mega_progbar['value'] = percentage
-                mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, command="running")
+                mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
             window.update()
-        mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, command="done")
+        mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
         window.update()
 
 
@@ -60,10 +64,10 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
     v_mega_stats['text'] = update_progress_label_megadetector_v(command="load")
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_process_video_py = os.path.join(path_to_git, "cameratraps", "detection", "process_video.py")
-    loc_pb = os.path.join(path_to_git, "md_v4.1.0.pb")
-    Path(os.path.join(path_to_video_folder, "json_files")).mkdir(parents=True, exist_ok=True)
-    loc_json_file = os.path.join(path_to_video_folder, "json_files", "output.json")
-    video_command = f"{sys.executable} -v '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{loc_pb}' '{path_to_video_folder}'"
+    model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
+    Path(os.path.join(path_to_video_folder, "json_file")).mkdir(parents=True, exist_ok=True)
+    loc_json_file = os.path.join(path_to_video_folder, "json_file", "output.json")
+    video_command = f"{sys.executable} -v '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{model_file}' '{path_to_video_folder}'"
     print("sys.executable: ", sys.executable)
     print(f"video_command: {video_command}")
     with Popen([video_command],
@@ -77,11 +81,11 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                 percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                 elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                 time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                time_per_image = re.search("(?<=, )(.*)(?=.s\/it)", times)[1] if re.search("(?<=, )(.*)(?=.s\/it)", times) != None else "?"
+                time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
                 v_mega_progbar['value'] = percentage
-                v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, command="running")
+                v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
             window.update()
-        v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, command="done")
+        v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
         window.update()
 
 
@@ -316,7 +320,7 @@ def separate_videos(path_to_video_folder):
     print(f"Separating video's...\n")
     global elapsed_time_sep
     global time_left_sep
-    path_to_json = os.path.join(path_to_video_folder, "json_files", "output.frames.json")
+    path_to_json = os.path.join(path_to_video_folder, "json_file", "output.frames.json")
     start_time = time.time()
     nloop = 1
     with open(path_to_json) as json_file:
@@ -574,28 +578,30 @@ def check_if_checkpointfile_is_present(directory):
 
 
 # function to print the progress of megadetector when processing images
-def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", command=""):
+def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running":
-        return f"Processing image:\t\t{value3} of {value4}\n" \
+        return f"Percentage done:\t\t{value6}%\n" \
+               f"Processing image:\t\t{value3} of {value4}\n" \
                f"Elapsed time:\t\t{value1}\n" \
                f"Remaining time:\t\t{value2}\n" \
-               f"Time per image:\t\t{value5}s\n"
+               f"Time per image:\t\t{value5}s"
     if command == "done":
         return f"                            Done!                            \n" \
                f"Elapsed time:\t\t{value1}\n" \
                f"Time per image:\t\t{value5}s"
 
 # function to print the progress of megadetector when processing movies
-def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", command=""):
+def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running":
-        return f"Processing frame:\t\t{value3} of {value4}\n" \
+        return f"Percentage done:\t\t{value6}%\n" \
+               f"Processing frame:\t\t{value3} of {value4}\n" \
                f"Elapsed time:\t\t{value1}\n" \
                f"Remaining time:\t\t{value2}\n" \
-               f"Time per frame:\t\t{value5}s\n"
+               f"Time per frame:\t\t{value5}s"
     if command == "done":
         return f"                            Done!                            \n"
 
@@ -605,11 +611,10 @@ def update_progress_label_short(value1="", value2="", command=""):
         return f"In queue"
     if command == "running":
         return f"Elapsed time:\t\t{value1}\n" \
-               f"Time left:\t\t\t{value2}\n"
+               f"Remaining time:\t\t{value2}"
     if command == "done":
         return f"                            Done!                            \n" \
-               f"Elapsed time:\t\t{value1}\n" \
-               f"Time left:\t\t\t{value2}"
+               f"Elapsed time:\t\t{value1}"
                
 
 # function to open the folder after finishing
@@ -624,12 +629,88 @@ def open_file(path):
 
 # function to browse dirs
 def browse_dir_button():
+    # print dir on GUI
     filename = filedialog.askdirectory()
     loc_input_image_folder.set(filename)
     loc_input_image_folder_short.set((os.path.basename(os.path.normpath(filename))[:16] + '...') if len(
         os.path.basename(os.path.normpath(filename))) > 19 else os.path.basename(os.path.normpath(filename)))
     if loc_input_image_folder.get() != '':
         dir1.grid(column=0, row=0, sticky='e')
+
+    # check if the dir has already been processed and message user
+    chosen_dir = loc_input_image_folder.get()
+    json_dir = os.path.join(chosen_dir, "json_file")
+    finished_output_file = os.path.join(json_dir, "output.json")
+    checkpoint_pattern = 'checkpoint_\d+\.json'
+    checkpoint_file_exists = False
+    if not os.path.isdir(json_dir):
+        print("\nNo output json file found. Dir is not yet processed.\n")
+        update_window_process_again()
+    else:
+        for filepath in os.listdir(json_dir):
+            if re.search(checkpoint_pattern, filepath):
+                checkpoint_file_exists = True
+        if checkpoint_file_exists:
+            print("\nCheckpoint file found in chosen dir!\n")
+            result_yn = mb.askyesno("Checkpoint file found", "It seems like you already started to processs the contents of this folder since there is a checkpoint file found.\n\nThe folderstructure and the data needs to be unchanged if you wish to resume this process.\n\nDo you want to resume the process?")
+            print("result_yn :", result_yn)
+            if result_yn:
+                mb.showinfo("Settings", "The algorithm settings can't be altered since you choose to continue from the last checkpoint onwards. The process will continue with the same settings.")
+                update_window_continue_chckpnt()
+            elif result_yn == False:
+                update_window_process_again()
+        elif os.path.exists(finished_output_file):
+            print("\nOutput json file is found in chosen dir!\n")
+            result_ync = mb.askyesnocancel("Directory already processed", "It seems that the specified directory has already been processed.\n\nIf you did not alter the contents in this directory, you can use the output file from this analysis to use the other features of EcoAssist without having to process the directory again.\n\nOf course it is also possible to process this directory again for whatever reason (for example if there has been alterations in the folder structure or data has been added/removed).\n\nDo you want to process this directory again?")
+            print("result_ync :", result_ync)
+            if result_ync:
+                update_window_process_again()
+            elif result_ync == False:
+                update_window_dont_process()
+
+
+# hide the input widgets except check_cont_from_checkpoint
+def update_window_continue_chckpnt():
+    scl1.grid_remove()
+    leftLabel.grid_remove()
+    chb1.grid_remove()
+    chb2.grid_remove()
+    ent1.grid_remove()
+    chb3.select()
+    check_cont_from_checkpoint.set(True)
+    produce_JSON.set(True)
+    disable_meg()
+    window.update()
+
+
+# hide the input widgets for the algorithm
+def update_window_dont_process():
+    scl1.grid_remove()
+    leftLabel.grid_remove()
+    chb1.grid_remove()
+    chb2.grid_remove()
+    ent1.grid_remove()
+    chb3.grid_remove()
+    produce_JSON.set(False)
+    v_produce_JSON.set(False)
+    disable_meg()
+    window.update()
+
+
+# show the input widgets for the algorithm
+def update_window_process_again():
+    scl1.grid(column=1, row=1, sticky='e', padx=5)
+    leftLabel.grid(column=0, row=1, sticky='e', padx=5)
+    chb1.grid(row=2, column=1, sticky='e', padx=5)
+    chb2.grid(row=3, column=1, sticky='e', padx=5)
+    ent1.grid(row=4, column=1, sticky='e', padx=5)
+    chb3.grid(row=5, column=1, sticky='e', padx=5)
+    chb3.deselect()
+    check_cont_from_checkpoint.set(False)
+    produce_JSON.set(True)
+    v_produce_JSON.set(True)
+    enable_meg()
+    window.update()
 
 
 # functions for the tkinter GUI
@@ -652,8 +733,6 @@ def v_togglecf():
 
 
 del_already_shown = 0
-
-
 def toggle_del():
     global del_already_shown
     if not del_already_shown:
@@ -686,9 +765,6 @@ def toggle_data_type(self):
         v_sep_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
 
 
-already_shown = 0
-
-
 def disable_meg():
     lbl1.config(state=DISABLED)
     scl1.config(state=DISABLED)
@@ -704,17 +780,12 @@ def disable_meg():
     v_lbl1.config(state=DISABLED)
     v_scl1.config(state=DISABLED)
     v_leftLabel.config(state=DISABLED)
-    v_lbl2.config(state=DISABLED)
-    v_chb1.config(state=DISABLED)
+    # v_lbl2.config(state=DISABLED)
+    # v_chb1.config(state=DISABLED)
     v_lbl5.config(state=DISABLED)
     v_chb3.config(state=DISABLED)
     v_lbl4.config(state=DISABLED)
     v_ent1.config(state=DISABLED)
-    global already_shown
-    if not already_shown:
-        mb.showwarning('Warning',
-                       'If you have already run MegaDetector on the this folder, make sure that you still have those same images or video\'s in the directory.\n\nImages/video\'s added afterwards will not be processed.\n\nAny image/video removed from the folder will cause an error.')
-        already_shown = 1
 
 
 def enable_meg():
@@ -732,8 +803,8 @@ def enable_meg():
     v_lbl1.config(state=NORMAL)
     v_scl1.config(state=NORMAL)
     v_leftLabel.config(state=NORMAL)
-    v_lbl2.config(state=NORMAL)
-    v_chb1.config(state=NORMAL)
+    # v_lbl2.config(state=NORMAL)
+    # v_chb1.config(state=NORMAL)
     v_lbl5.config(state=NORMAL)
     v_chb3.config(state=NORMAL)
     v_lbl4.config(state=NORMAL)
@@ -771,67 +842,21 @@ def v_handle_enter(txt):
 
 
 def open_labelImg():
-    global previous_dir_processed
-    global previous_sep_setting
-    try:
-        previous_dir_processed
-    except NameError:
-        previous_dir_processed = loc_input_image_folder.get()
-    try:
-        previous_sep_setting
-    except NameError:
-        previous_sep_setting = False
-    if previous_sep_setting:
-        previous_dir_processed = os.path.join(previous_dir_processed, "images", "animals")
-    path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg")
-    path_to_labelImg_install = os.path.join(os.path.dirname(os.path.realpath(__file__)), "open_labelImg.command")
+    chosen_dir = loc_input_image_folder.get() # get folder to open in labelimg
+    separated_chosen_dir = os.path.join(chosen_dir, "images", "animals")
+    if os.path.isdir(separated_chosen_dir): # check if the images are seperated, if yes adjust chosen dir
+        chosen_dir = separated_chosen_dir
+    path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg") # get path names
+    path_to_labelImg_command = os.path.join(os.path.dirname(os.path.realpath(__file__)), "open_labelImg.command")
     path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
-    print(f"path_to_labelImg: {path_to_labelImg}")
-    print(f"path_to_labelImg_install: {path_to_labelImg_install}")
+    print(f"path_to_labelImg: {path_to_labelImg}") # log path names
+    print(f"path_to_labelImg_command: {path_to_labelImg_command}")
     print(f"path_to_classes_txt: {path_to_classes_txt}")
-    if not os.path.isdir(path_to_labelImg):
-        if mb.askyesno("labelImg not found",
-                       "labelImg is not found. Do you want to download it?\n\n"
-                       "It will open as soon as it is downloaded. This usually takes about a minute "
-                       "depending on your internet connection."):
-            os.system(f"sh '{path_to_labelImg_install}' '{previous_dir_processed}' '{path_to_classes_txt}'")
-    else:
-        os.system(f"sh '{path_to_labelImg_install}' '{previous_dir_processed}' '{path_to_classes_txt}'")
+    os.system(f"sh '{path_to_labelImg_command}' '{chosen_dir}' '{path_to_classes_txt}'") # open labelimg by bash command
 
 
 # tkinter window to show progress and perform the commands
 def openProgressWindow():
-    global loc_input_image_folder
-    global check_prod_JSON
-    if selected_rbtn.get() == 'N':
-        check_prod_JSON = True
-    else:
-        check_prod_JSON = False
-    global conf_thresh
-    global check_recurse
-    global check_use_checkpoints
-    global int_checkpoint_n
-    global check_cont_from_checkpoint
-    global loc_chkpnt_file
-    global check_sep
-    global check_vis_detec
-    global check_crop
-    global check_del
-    global check_xml
-    global previous_dir_processed
-    global previous_sep_setting
-    global data_type
-    global v_check_prod_JSON
-    if v_selected_rbtn.get() == 'N':
-        v_check_prod_JSON = True
-    else:
-        v_check_prod_JSON = False
-    global v_check_recurse
-    global v_conf_thresh
-    global v_check_dont_process_every_frame
-    global v_int_analyse_every_nth
-    global v_check_sep    
-
     if data_type.get() == "Images":
         if check_use_checkpoints.get() and not int_checkpoint_n.get().isdecimal():
             if mb.askyesno("Invalid value",
@@ -860,7 +885,7 @@ def openProgressWindow():
             panel.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
 
             # Megadetector status
-            if check_prod_JSON:
+            if produce_JSON.get():
                 mega_frame = LabelFrame(newWindow, text="Algorithm", pady=2, padx=5, relief='solid',
                                         highlightthickness=5,
                                         font=100, fg='darkblue')
@@ -868,13 +893,13 @@ def openProgressWindow():
                 mega_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
                 mega_frame.columnconfigure(0, weight=3, minsize=115)
                 mega_frame.columnconfigure(1, weight=1, minsize=115)
-                mega_frame.rowconfigure(1, weight=0, minsize=60)
+                mega_frame.rowconfigure(1, weight=0, minsize=0)
                 global mega_progbar
                 mega_progbar = ttk.Progressbar(master=mega_frame, orient='horizontal', mode='determinate', length=280)
-                mega_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+                mega_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
                 global mega_stats
                 mega_stats = ttk.Label(master=mega_frame, text=update_progress_label_short())
-                mega_stats.grid(column=0, row=1, columnspan=2)
+                mega_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
 
             # xml label status
             if check_xml.get():
@@ -884,13 +909,13 @@ def openProgressWindow():
                 xml_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
                 xml_frame.columnconfigure(0, weight=3, minsize=115)
                 xml_frame.columnconfigure(1, weight=1, minsize=115)
-                xml_frame.rowconfigure(1, weight=0, minsize=60)
+                xml_frame.rowconfigure(1, weight=0, minsize=0)
                 global xml_progbar
                 xml_progbar = ttk.Progressbar(master=xml_frame, orient='horizontal', mode='determinate', length=280)
-                xml_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+                xml_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=(3,0))
                 global xml_stats
                 xml_stats = ttk.Label(master=xml_frame, text=update_progress_label_short())
-                xml_stats.grid(column=0, row=1, columnspan=2)
+                xml_stats.grid(column=0, row=1, pady=(0,3), columnspan=2)
 
             # separate ims status
             if check_sep.get():
@@ -900,13 +925,13 @@ def openProgressWindow():
                 sep_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
                 sep_frame.columnconfigure(0, weight=3, minsize=115)
                 sep_frame.columnconfigure(1, weight=1, minsize=115)
-                sep_frame.rowconfigure(1, weight=0, minsize=60)
+                sep_frame.rowconfigure(1, weight=0, minsize=0)
                 global sep_progbar
                 sep_progbar = ttk.Progressbar(master=sep_frame, orient='horizontal', mode='determinate', length=280)
-                sep_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+                sep_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=(3,0))
                 global sep_stats
                 sep_stats = ttk.Label(master=sep_frame, text=update_progress_label_short())
-                sep_stats.grid(column=0, row=1, columnspan=2)
+                sep_stats.grid(column=0, row=1, pady=(0,3), columnspan=2)
 
             # draw boxes status
             if check_vis_detec.get():
@@ -916,13 +941,13 @@ def openProgressWindow():
                 bbox_frame.grid(column=0, row=4, columnspan=2, sticky='ew')
                 bbox_frame.columnconfigure(0, weight=3, minsize=115)
                 bbox_frame.columnconfigure(1, weight=1, minsize=115)
-                bbox_frame.rowconfigure(1, weight=0, minsize=60)
+                bbox_frame.rowconfigure(1, weight=0, minsize=0)
                 global bbox_progbar
                 bbox_progbar = ttk.Progressbar(master=bbox_frame, orient='horizontal', mode='determinate', length=280)
-                bbox_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+                bbox_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=(3,0))
                 global bbox_stats
                 bbox_stats = ttk.Label(master=bbox_frame, text=update_progress_label_short())
-                bbox_stats.grid(column=0, row=1, columnspan=2)
+                bbox_stats.grid(column=0, row=1, pady=(0,3), columnspan=2)
 
             # crop status
             if check_crop.get():
@@ -933,13 +958,13 @@ def openProgressWindow():
                 crop_frame.grid(column=0, row=5, columnspan=2, sticky='ew')
                 crop_frame.columnconfigure(0, weight=3, minsize=115)
                 crop_frame.columnconfigure(1, weight=1, minsize=115)
-                crop_frame.rowconfigure(1, weight=0, minsize=60)
+                crop_frame.rowconfigure(1, weight=0, minsize=0)
                 global crop_progbar
                 crop_progbar = ttk.Progressbar(master=crop_frame, orient='horizontal', mode='determinate', length=280)
-                crop_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+                crop_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=(3,0))
                 global crop_stats
                 crop_stats = ttk.Label(master=crop_frame, text=update_progress_label_short())
-                crop_stats.grid(column=0, row=1, columnspan=2)
+                crop_stats.grid(column=0, row=1, pady=(0,3), columnspan=2)
 
             try:
                 cmd_thres = "--threshold " + str(
@@ -958,7 +983,7 @@ def openProgressWindow():
                     cmd_loc_chkpnt_file = ""
                 additional_batch_cmds = " " + cmd_thres + cmd_check_recurse + cmd_check_use_chkpnts + cmd_loc_chkpnt_file
 
-                if check_prod_JSON:  # run cmds
+                if produce_JSON.get():  # run cmds
                     produce_json(loc_input_image_folder.get(), additional_batch_cmds)
                 if check_xml.get():
                     path_to_json = os.path.join(loc_input_image_folder.get(), "json_file", "output.json")
@@ -991,8 +1016,6 @@ def openProgressWindow():
                 mb.showinfo('Succesfully finished', "All processes done!")
                 newWindow.destroy()
                 open_file(loc_input_image_folder.get())
-                previous_dir_processed = loc_input_image_folder.get()
-                previous_sep_setting = check_sep.get()
             except Exception as error:
                 print("ERROR:--------------\n" + str(error) + "\n\nDETAILS:--------------\n" + str(traceback.format_exc()) + "\n")
                 with open(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "EcoAssist", "logfiles", "error_message.txt"), 'w') as error_file:
@@ -1028,7 +1051,7 @@ def openProgressWindow():
         panel.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
 
         # Megadetector status
-        if v_check_prod_JSON:
+        if v_produce_JSON.get():
             v_mega_frame = LabelFrame(newWindow, text="Algorithm", pady=2, padx=5, relief='solid', highlightthickness=5,
                                       font=100, fg='darkblue')
             v_mega_frame.configure(font=("TkDefaultFont", 15, "bold"))
@@ -1071,7 +1094,7 @@ def openProgressWindow():
             else:
                 c_cmd_every_nth_frame = ""
             additional_videos_cmds = " " + v_cmd_check_recurse + v_cmd_thres + c_cmd_every_nth_frame
-            if v_check_prod_JSON:
+            if v_produce_JSON.get():
                 produce_json_video(loc_input_image_folder.get(), additional_videos_cmds)
             if v_check_sep.get():
                 separate_videos(loc_input_image_folder.get())
@@ -1079,8 +1102,6 @@ def openProgressWindow():
             mb.showinfo('Succesfully finished', "All processes done!")
             newWindow.destroy()
             open_file(loc_input_image_folder.get())
-            previous_dir_processed = loc_input_image_folder.get()
-            previous_sep_setting = check_sep.get()
         except Exception as error:
             mb.showerror(title="Error",
                          message="An error has occurred: '" + str(error) + "'.",
@@ -1090,7 +1111,7 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist 1.0")
+window.title("EcoAssist 2.0")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
@@ -1196,19 +1217,12 @@ meg_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
 meg_frame.columnconfigure(0, weight=1, minsize=430)
 meg_frame.columnconfigure(1, weight=1, minsize=115)
 
-Label(meg_frame, text="Has the MegaDetector algorithm already been run over these images?").grid(column=0, row=0,
-                                                                                                 sticky='w', pady=5)
-selected_rbtn = StringVar()
-selected_rbtn.set("N")
-Radiobutton(meg_frame, text='No', value='N', variable=selected_rbtn, command=enable_meg).grid(column=1, row=0,
-                                                                                              sticky='w', padx=5)
-Radiobutton(meg_frame, text='Yes', value='Y', variable=selected_rbtn, command=disable_meg).grid(column=1, row=0,
-                                                                                                sticky='e', padx=5)
+produce_JSON = BooleanVar()
 
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
 lbl1.grid(row=1, sticky='w', pady=5)
 conf_thresh = DoubleVar()
-conf_thresh.set(80)
+conf_thresh.set(20)
 scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=conf_thresh, showvalue=0)
 scl1.grid(column=1, row=1, sticky='e', padx=5)
 leftLabel = Label(meg_frame, textvariable=conf_thresh)
@@ -1304,7 +1318,7 @@ check_xml.set(False)
 chb5 = Checkbutton(xml_frame, variable=check_xml)
 chb5.grid(row=0, column=1, sticky='e', padx=5)
 
-lbl10 = Label(xml_frame, text="Open labelImg to review and adjust these label files", pady=5)
+lbl10 = Label(xml_frame, text="Review and adjust these label files in the directory sepecified above", pady=5)
 lbl10.grid(row=1, sticky='w')
 Button(master=xml_frame, text="Open", command=open_labelImg).grid(row=1, column=1, sticky='e', padx=5)
 
@@ -1315,18 +1329,12 @@ v_meg_frame.configure(font=("TkDefaultFont", 15, "bold"))
 v_meg_frame.columnconfigure(0, weight=1, minsize=430)
 v_meg_frame.columnconfigure(1, weight=1, minsize=115)
 
-Label(v_meg_frame, text="Has the MegaDetector algorithm already been run over these video's?").grid(column=0, row=0,
-                                                                                                    sticky='w', pady=5)
-v_selected_rbtn = StringVar()
-v_selected_rbtn.set("N")
-Radiobutton(v_meg_frame, text='No', value='N', variable=v_selected_rbtn, command=enable_meg).grid(column=1, row=0,
-                                                                                                  sticky='w', padx=5)
-Radiobutton(v_meg_frame, text='Yes', value='Y', variable=v_selected_rbtn, command=disable_meg).grid(column=1, row=0,
-                                                                                                    sticky='e', padx=5)
+v_produce_JSON = BooleanVar()
+
 v_lbl1 = Label(v_meg_frame, text="Confidence threshold (%)")
 v_lbl1.grid(row=1, sticky='w', pady=5)
 v_conf_thresh = DoubleVar()
-v_conf_thresh.set(95)
+v_conf_thresh.set(50)
 v_scl1 = Scale(v_meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=v_conf_thresh, showvalue=0)
 v_scl1.grid(column=1, row=1, sticky='e', padx=5)
 v_leftLabel = Label(v_meg_frame, textvariable=v_conf_thresh)
@@ -1422,7 +1430,7 @@ t.tag_add('info', '16.0', '16.end')
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
-         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 80% generally works well, but this might be different with specific ecosystems. My advice is to first run the model on a directory with 100 representative images with the option 'Draw boxes around the detections and show confidences' and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives.\n\n")
+         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 20% generally works well, but this might be different with specific ecosystems. My advice is to first run the model with a low threshold on a directory with 100 representative images with the option 'Draw boxes around the detections and show confidences' enabled and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives.\n\n")
 t.tag_add('title', '18.0', '18.end')
 t.tag_add('info', '19.0', '19.end')
 
@@ -1462,7 +1470,7 @@ t.tag_add('info', '37.0', '37.end')
 
 t.insert(END, "Delete original images\n")
 t.insert(END,
-         "The crop and draw bounding box functions alter the images. Specify if you want to delete the unaltered orignal images.\n\n")
+         "The crop and draw bounding box functions alter the images. Specify if you want to delete the unaltered orignal images. Please be aware that this action cannot be undone since the images will not be placed in the Trash but will be deleted fully.\n\n")
 t.tag_add('title', '39.0', '39.end')
 t.tag_add('info', '40.0', '40.end')
 
@@ -1474,17 +1482,18 @@ t.tag_add('info', '43.0', '43.end')
 
 t.insert(END, "Create .xml label files for all detections in Pascal VOC format\n")
 t.insert(END,
-         "When training your own model using machine learning the images generally need to be labelled in Pascal VOC format. When this option is enabled it will annotate the images. You only have to assign the appropriate species using the option 'Open labelImg to review and adjust these labels'. The animals are already located.\n\n")
+         "When training your own model using machine learning the images generally need to be labelled in Pascal VOC format. When this option is enabled it will annotate the images. You only have to assign the appropriate species using the option 'Review and adjust these label files in the directory sepecified above'. The animals are already located by MegaDetector.\n\n")
 t.tag_add('title', '45.0', '45.end')
 t.tag_add('info', '46.0', '46.end')
 
-t.insert(END, "Open labelImg to review and adjust these labels\n")
+t.insert(END, "Review and adjust these label files in the directory sepecified above\n")
+t.insert(END, "Here you can view and alter the label files created with the option 'Create .xml label files for all detections in Pascal VOC format' in the open source application ")
 hyperlink1 = HyperlinkManager(t)
 t.insert(INSERT, "LabelImg",
          hyperlink1.add(
              partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
 t.insert(END,
-         " is a open source application which makes it easy to annotate images for object detection machine learning. Here you can easily open the application. The first time it will download the application into the 'EcoAssist_files' folder. It defaults to opening the previously processed folder containing cameratrap imagery. When nothing has been processed it will open with the folder specified at 'folder choice'. When annotating, you can change the defeault labels to your own by changing the predefined_classes.txt file in EcoAssist_files/labelImg/data.\n\n")
+         ". This is application makes it easy to annotate images for object detection machine learning. Thus, with this option one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double check them and mannualy provide the species labels. For your convenience, it's possible to change the defeault labels to your own by changing the predefined_classes.txt file in EcoAssist_files/labelImg/data. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are sparated. You can change the directory in LabelImg yourself too, if required. \n\n")
 t.tag_add('title', '48.0', '48.end')
 t.tag_add('info', '49.0', '49.end')
 
@@ -1502,7 +1511,7 @@ t.tag_add('info', '55.0', '55.end')
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
-         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When analysing video's, the model first splits it into frames and then analyses the frames as images. This means that for one video, many frames are processed, so the chance of getting a false positive is higher than for just one image. With one false positive the video could be placed into the wrong subdirectory. That is why it generally is good practise to set the threshold for video's relatively high. If an animal is present in the video, it will most likely be in many frames and thus will still be detected. In my experience a threshold of 95% generally works well, but this might be different with specific ecosystems.\n\n")
+         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When analysing video's, the model first splits it into frames and then analyses the frames as images. This means that for one video, many frames are processed, so the chance of getting a false positive is higher than for just one image. With one wrongly detected frame the entire video will be placed into the wrong subdirectory. That is why it generally is good practise to set the threshold for video's relatively high compared to what you would do when setting it for individual images. If an animal is present in the video, it will most likely be in many frames and thus will still be detected. In my experience a threshold of 50% generally works well, but also depends on the number of frames analysed and the quality of the video. Additionaly, it might be different with specific ecosystems.\n\n")
 t.tag_add('title', '57.0', '57.end')
 t.tag_add('info', '58.0', '58.end')
 
@@ -1553,7 +1562,7 @@ text.insert(INSERT, "MegaDetector",
             hyperlink.add(
                 partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
 text.insert(END,
-            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on Faster-RCNN with an InceptionResNetv2 base network. The model was trained with the TensorFlow Object Detection API, using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 8 and 20 seconds per image. This works out to being able to process approximately between 4.000 and 10.000 images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
+            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on Faster-RCNN with an InceptionResNetv2 base network. The model was trained with the TensorFlow Object Detection API, using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process approximately between 10.000 and 25.000 images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
 text.insert(INSERT, "cameratraps@microsoft.com",
             hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@microsoft.com")))
 text.insert(END, ".\n\n")

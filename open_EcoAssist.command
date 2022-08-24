@@ -7,11 +7,18 @@ exec 2> ~/EcoAssist_files/EcoAssist/logfiles/stderr.txt
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-echo "System information (uname -a):"
+FILE_SIZES=`ls -LRlh ~/EcoAssist_files`
+echo "uname -a:"
 echo ""
 echo "$UNAME_A"
 echo ""
+echo "System information:"
+echo ""
 echo "$MACHINE_INFO"
+echo ""
+echo "File sizes:"
+echo ""
+echo "$FILE_SIZES"
 echo ""
 
 # change directory
@@ -39,7 +46,7 @@ source $PATH2CONDA_SH
 conda activate ecoassistcondaenv
 
 # add PYTHONPATH
-export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON:$PWD/cameratraps:$PWD/ai4eutils"
+export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5"
 echo "PYHTONPATH=$PYTHONPATH"
 echo ""
 

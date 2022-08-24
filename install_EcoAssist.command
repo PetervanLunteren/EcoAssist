@@ -27,11 +27,18 @@ echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-echo "System information (uname -a):"  2>&1 | tee -a "$LOG_FILE"
+FILE_SIZES=`ls -LRlh ~/EcoAssist_files`
+echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
+echo "System information:"  2>&1 | tee -a "$LOG_FILE"
+echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
+echo ""  2>&1 | tee -a "$LOG_FILE"
+echo "File sizes:"  2>&1 | tee -a "$LOG_FILE"
+echo ""  2>&1 | tee -a "$LOG_FILE"
+echo "$FILE_SIZES"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
 # clone git if not present
@@ -51,7 +58,7 @@ else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
   cd cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout e40755ec6f3b34e6eefa1306d5cd6ce605e0f5ab 2>&1 | tee -a "$LOG_FILE"
+  git checkout f8417740c1624d38988210a2dd5de58b64ae7827 2>&1 | tee -a "$LOG_FILE"
   cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -63,18 +70,45 @@ else
   echo "Dir ${AI4} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/ai4eutils 2>&1 | tee -a "$LOG_FILE"
   cd ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout c8692a2ed426a189ef3c1b3a5a21ae287c032a1d 2>&1 | tee -a "$LOG_FILE"
+  git checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088 2>&1 | tee -a "$LOG_FILE"
   cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
+# clone git if not present
+YOL="yolov5"
+if [ -d "$YOL" ]; then
+  echo "Dir ${YOL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
+  cd yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
+  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+fi
+
+# clone git if not present
+LBL="labelImg"
+if [ -d "$LBL" ]; then
+  echo "Dir ${LBL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  echo "Dir ${LBL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/tzutalin/labelImg.git 2>&1 | tee -a "$LOG_FILE"
+  cd labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11 2>&1 | tee -a "$LOG_FILE"
+  cd .. || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+fi
+
 # download model if not present
-MD="md_v4.1.0.pb"
+mkdir -p ~/EcoAssist_files/megadetector
+cd ~/EcoAssist_files/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+MD="md_v5a.0.0.pt"
 if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  curl --tlsv1.2 --keepalive --output md_v4.1.0.pb https://lilablobssc.blob.core.windows.net/models/camera_traps/megadetector/md_v4.1.0/md_v4.1.0.pb 2>&1 | tee -a "$LOG_FILE"
+  wget https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
+cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # locate conda.sh on local machine and source it
 PATH2CONDA_SH=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1`
@@ -127,6 +161,14 @@ pip install --upgrade pip setuptools wheel
 pip install --upgrade pip
 conda install -c conda-forge requests=2.26.0 -y
 pip install -r EcoAssist/requirements.txt
+
+# additional packages required for MegaDetector v5
+pip install Pillow==9.1.0 
+pip install pandas==1.1.5
+pip install seaborn==0.11.2
+pip install PyYAML==5.3.1
+conda install -c conda-forge pytorch==1.10.1 -y
+conda install -c conda-forge torchvision==0.11.2 -y
 
 # log env info
 conda info --envs >> "$LOG_FILE"
