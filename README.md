@@ -52,14 +52,13 @@ EcoAssist will open when you double-click the file below.
 ```
  📁Applications
  └── 📁EcoAssist_files
-     └── 📁EcoAssist
-         └── 📄open_EcoAssist.command
+     └── 📄EcoAssist.command
 ```
 You are free to move this file to a more convenient location. Just keep in mind that the folder structure and location of `EcoAssist_files` should not change.
 
 ## Updating EcoAssist from v1 to v2?
 There are two points early adopters should take into account:
-- Please make sure that the old EcoAssist files are deleted before installing version 2. So go ahead and delete the `~/EcoAssist_files` directory and the `open_EcoAssist.command` wherever you placed it. Don't worry if you forgot this prior to installing v2, it just means that you have two versions of EcoAssist installed. You can also delete it afterwards.
+- Please make sure that the old EcoAssist files are deleted before installing version 2. So go ahead and delete the `~/EcoAssist_files` directory and the `EcoAssist.command` wherever you placed it. Don't worry if you forgot this prior to installing v2, it just means that you have two versions of EcoAssist installed. You can also delete it afterwards.
 - Version 2 uses a different model to detect animals which is more accurate and 2.5 times faster. This new model uses the full range of confidence values much more than the old one did. So don't apply the thresholds you're accustomed to. Typical confidence thresholds for the new model are in the 0.15-0.25 range, instead of the old 0.7-0.8 range.
 
 ## GPU Support
