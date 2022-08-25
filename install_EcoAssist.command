@@ -65,6 +65,7 @@ else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the command to open ecoassist and give it an icon
+  cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   FILE="EcoAssist.command"
   ICON="imgs/logo_small_bg.icns"
   fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
