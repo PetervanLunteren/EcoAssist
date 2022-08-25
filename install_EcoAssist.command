@@ -35,7 +35,6 @@ UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
 FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
-FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ECOASSIST_FILES/*/*`
 echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
@@ -51,10 +50,6 @@ echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "File sizes with depth 1:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$FILE_SIZES_DEPTH_1"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "File sizes with depth 2:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "$FILE_SIZES_DEPTH_2"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
 # clone git if not present
