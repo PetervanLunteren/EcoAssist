@@ -69,6 +69,7 @@ fi
 # move the command to open ecoassist and give it an icon
 echo "Download fileicon exec" 2>&1 | tee -a "$LOG_FILE"
 cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+pip install wget 2>&1 | tee -a "$LOG_FILE"
 wget https://raw.githubusercontent.com/mklement0/fileicon/stable/bin/fileicon 2>&1 | tee -a "$LOG_FILE" # download the exec to place icon
 chmod +x fileicon
 FILE="EcoAssist.command"
