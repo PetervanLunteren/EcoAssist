@@ -4,7 +4,7 @@
 EcoAssist is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a  model which can recognise animals in camera trap images in a variety of terrestrial ecosystems. The only problem with this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It is a small program which makes it easy for everybody.
 
 ###
-I've written this application in my spare time and would really appreciate it if users would let me know if they use it. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
+I've written this application in my free evenings and would really appreciate it if users would let me know if they use it. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
 ## Features
 * Find animals, persons and vehicles in both images and video's
@@ -44,7 +44,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 If you're updating EcoAssist from v1 to v2, please read [the notes below](#updating-ecoassist-from-v1-to-v2) first.
 
 1. Download [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command).
-2. Unzip it and double click `install_EcoAssist.command`.
+2. Unzip it and open `install_EcoAssist.command`. this command will probably not open when double-clicked because your computer doesn't trust it. Right-click > Open > Open will circumvent that.
 3. Go get youself a beverage because this might take a few minutes to complete.
 
 ## How to start the application?
