@@ -43,7 +43,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 
 If you're updating EcoAssist from v1 to v2, please read [the notes below](#updating-ecoassist-from-v1-to-v2) first.
 
-1. Download [this file](https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command?raw=true).
+1. Download [this file](https://raw.githubusercontent.com/PetervanLunteren/EcoAssist/main/install_EcoAssist.command).
 2. Unzip it and double click `install_EcoAssist.command`.
 3. Go get youself a beverage because this might take a few minutes to complete.
 
