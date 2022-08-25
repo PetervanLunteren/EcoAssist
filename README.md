@@ -15,8 +15,9 @@ I've written this application in my spare time and would really appreciate it if
 * Easily set parameters like threshold and checkpoint frequency
 <br/>
 
+## Demo
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/parameters.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/demo.gif" width=60% height="auto" />
 </p>
 
 ## Example detections
