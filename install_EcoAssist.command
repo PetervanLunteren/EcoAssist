@@ -64,19 +64,13 @@ if [ -d "$ECO" ]; then
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
+  # move the command to open ecoassist and give it an icon
+  FILE="EcoAssist.command"
+  ICON="imgs/logo_small_bg.icns"
+  fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+  mv $FILE $LOCATION_ECOASSIST_FILES # move file
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
-
-# move the command to open ecoassist and give it an icon
-echo "Download fileicon exec" 2>&1 | tee -a "$LOG_FILE"
-cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-pip install wget 2>&1 | tee -a "$LOG_FILE"
-wget https://raw.githubusercontent.com/mklement0/fileicon/stable/bin/fileicon 2>&1 | tee -a "$LOG_FILE" # download the exec to place icon
-chmod +x fileicon
-FILE="EcoAssist.command"
-ICON="imgs/logo_small_bg.icns"
-fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
-mv $FILE $LOCATION_ECOASSIST_FILES # move file
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # clone git if not present
 CAM="cameratraps"
@@ -85,9 +79,9 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
-  cd cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout f8417740c1624d38988210a2dd5de58b64ae7827 2>&1 | tee -a "$LOG_FILE"
-  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone git if not present
@@ -97,9 +91,9 @@ if [ -d "$AI4" ]; then
 else
   echo "Dir ${AI4} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/ai4eutils 2>&1 | tee -a "$LOG_FILE"
-  cd ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088 2>&1 | tee -a "$LOG_FILE"
-  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone git if not present
@@ -109,9 +103,9 @@ if [ -d "$YOL" ]; then
 else
   echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
-  cd yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
-  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone git if not present
@@ -121,9 +115,9 @@ if [ -d "$LBL" ]; then
 else
   echo "Dir ${LBL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/tzutalin/labelImg.git 2>&1 | tee -a "$LOG_FILE"
-  cd labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11 2>&1 | tee -a "$LOG_FILE"
-  cd .. || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # download model if not present
@@ -134,9 +128,9 @@ if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  wget https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
+  curl --tlsv1.2 --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
-cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # check if conda is already installed, if not install
 CONDA_LIST=`conda list`
@@ -145,7 +139,7 @@ if [ "$CONDA_LIST" == "" ]; then
   echo "Anaconda not yet installed. Installing now..." 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   # download install sh
-  wget https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+  curl --tlsv1.2 --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
   # execute it
   echo "The installation is NOT yet done. Please be patient. The following command just loads without much verbose output..."  2>&1 | tee -a "$LOG_FILE"
   echo ""  2>&1 | tee -a "$LOG_FILE"
@@ -159,7 +153,7 @@ if [ "$CONDA_LIST" == "" ]; then
   else
     echo "File ${INSTALL_SH} does not exist! Nothing to delete..." 2>&1 | tee -a "$LOG_FILE"
   fi
-  cd .. || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 else
   echo "Anaconda is already installed, skipping this step." 2>&1 | tee -a "$LOG_FILE"
 fi
