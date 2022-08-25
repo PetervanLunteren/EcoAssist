@@ -54,7 +54,9 @@ EcoAssist will open when you double-click the file below.
  └── 📁EcoAssist_files
      └── 📄EcoAssist.command
 ```
-You are free to move this file to a more convenient location. Just keep in mind that the  structure and location of the folder `EcoAssist_files` should not change.
+You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+
+However, please keep in mind that the structure and location of the folder `EcoAssist_files` should not further be changed.
 
 ## Updating EcoAssist from v1 to v2?
 There are two points early adopters should take into account:
