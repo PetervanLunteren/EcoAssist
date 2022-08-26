@@ -59,7 +59,7 @@ if [ -d "$ECO" ]; then
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
-  # move the command to open ecoassist and give it an icon
+  # move the open.cmd one dir up and give it an icon
   cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   FILE="EcoAssist.command"
   ICON="imgs/logo_small_bg.icns"
@@ -124,7 +124,7 @@ if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  curl --tlsv1.2 --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
+  curl -v --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
@@ -135,7 +135,7 @@ if [ "$CONDA_LIST" == "" ]; then
   echo "Anaconda not yet installed. Installing now..." 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   # download install sh
-  curl --tlsv1.2 --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+  curl -v --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
   # execute it
   echo "The installation is NOT yet done. Please be patient. The following command just loads without much verbose output..."  2>&1 | tee -a "$LOG_FILE"
   echo ""  2>&1 | tee -a "$LOG_FILE"
