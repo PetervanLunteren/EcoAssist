@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 ### OSX commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 25 August 2022
+### Peter van Lunteren, 28 August 2022
 
-# set var for ecoassist root
+# set vars
 LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
+PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
 
 # log output to logfiles
 exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
@@ -45,34 +46,32 @@ echo ""
 # change directory
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
-# path to conda installation
-PATH2CONDA=`conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1`
-echo "Path to conda: $PATH2CONDA"
-echo ""
+# locate conda
+PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
+echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
 
 # path to conda.sh
-PATH2CONDA_SH="$PATH2CONDA/etc/profile.d/conda.sh"
-echo "Path to conda.sh: $PATH2CONDA_SH"
-echo ""
+PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
+echo "Path to conda.sh: $PATH_TO_CONDA_SH"
 
 # path to python exe
-PATH2PYTHON="$PATH2CONDA/envs/ecoassistcondaenv/bin/"
-echo "Path to python: $PATH2PYTHON"
+PATH_TO_PYTHON="$PATH_TO_CONDA/envs/ecoassistcondaenv/bin/"
+echo "Path to python: $PATH_TO_PYTHON"
 echo ""
 
 # shellcheck source=src/conda.sh
-source $PATH2CONDA_SH
+source "$PATH_TO_CONDA_SH"
 
 # activate environment
 conda activate ecoassistcondaenv
 
 # add PYTHONPATH
-export PYTHONPATH="$PYTHONPATH:$PATH2PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5"
+export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5"
 echo "PYHTONPATH=$PYTHONPATH"
 echo ""
 
 # add python exe to PATH
-export PATH="$PATH2PYTHON:/usr/bin/:$PATH"
+export PATH="$PATH_TO_PYTHON:/usr/bin/:$PATH"
 echo "PATH=$PATH"
 echo ""
 
