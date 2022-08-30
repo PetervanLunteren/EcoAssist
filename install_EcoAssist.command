@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 28 August 2022
+### Peter van Lunteren, 30 August 2022, 11:20
 
 # timestamp the start of installation
 START_DATE=`date`
@@ -11,8 +11,11 @@ pmset noidle &
 PMSETPID=$!
 
 # set vars
-LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
+LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
+
+# delete previous installation of EcoAssist if present so that it can update
+rm -rf $LOCATION_ECOASSIST_FILES
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
@@ -63,9 +66,9 @@ else
   # move the open.cmd one dir up and give it an icon
   cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   FILE="EcoAssist.command"
-  ICON="imgs/logo_small_bg.icns"
+  ICON="imgs/logo_small_bg.icns" 
   fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
-  mv $FILE $LOCATION_ECOASSIST_FILES # move file
+  mv -f $FILE /Applications/ # move file and replace
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -131,98 +134,77 @@ cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION
 
 # check if conda is already installed, if not install
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-# check if conda already works on computer
 CONDA_LIST_1=`conda list`
 echo "CONDA_LIST_1 yields: $CONDA_LIST_1" 2>&1 | tee -a "$LOG_FILE"
 if [ "$CONDA_LIST_1" == "" ]; then
-  echo "Conda might be installed, but not properly working. Trying with '~/anaconda3/bin' added to PATH now..." 2>&1 | tee -a "$LOG_FILE"
+  # the conda command is not recognised
+  echo "Conda might be installed, but the conda command is not recognised. Lets try to add some common locations of anaconda to the \$PATH variable and check again..." 2>&1 | tee -a "$LOG_FILE"
   export PATH="~/anaconda3/bin:$PATH"
-  # check if this worked
+  export PATH="~/Anaconda3/bin:$PATH"
+  export PATH="$HOME/anaconda3/bin:$PATH"
+  export PATH="$HOME/Anaconda3/bin:$PATH"
+  export PATH="/opt/anaconda3/bin:$PATH"
+  export PATH="/Opt/anaconda3/bin:$PATH"
+  export PATH="/opt/Anaconda3/bin:$PATH"
+  export PATH="/Opt/Anaconda3/bin:$PATH"
+  echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
+  # check if conda command works
   CONDA_LIST_2=`conda list`
   echo "CONDA_LIST_2 yields: $CONDA_LIST_2" 2>&1 | tee -a "$LOG_FILE"
   if [ "$CONDA_LIST_2" == "" ]; then
-    echo "Conda might be installed, but not properly working. Trying with '/opt/anaconda3/bin' added to to PATH now..." 2>&1 | tee -a "$LOG_FILE"
+    # download and install anaconda
+    echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
+    curl -v --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+    echo "Executing installation file now... The installation is not yet done. Please be patient. "  2>&1 | tee -a "$LOG_FILE"
+    sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2>&1 | tee -a "$LOG_FILE"
+    echo "Lets try to add some common locations of anaconda to the \$PATH variable."  2>&1 | tee -a "$LOG_FILE"
+    export PATH="~/anaconda3/bin:$PATH"
+    export PATH="~/Anaconda3/bin:$PATH"
+    export PATH="$HOME/anaconda3/bin:$PATH"
+    export PATH="$HOME/Anaconda3/bin:$PATH"
     export PATH="/opt/anaconda3/bin:$PATH"
+    export PATH="/Opt/anaconda3/bin:$PATH"
+    export PATH="/opt/Anaconda3/bin:$PATH"
+    export PATH="/Opt/Anaconda3/bin:$PATH"
+    echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
     # check if this worked
     CONDA_LIST_3=`conda list`
     echo "CONDA_LIST_3 yields: $CONDA_LIST_3" 2>&1 | tee -a "$LOG_FILE"
     if [ "$CONDA_LIST_3" == "" ]; then
-      # download and install anaconda
-      echo "Looks like anaconda is not yet installed. Installing now..." 2>&1 | tee -a "$LOG_FILE"
-      curl -v --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
-      echo "The installation is NOT yet done. Please be patient. The following command just loads without much verbose output..."  2>&1 | tee -a "$LOG_FILE"
-      echo ""  2>&1 | tee -a "$LOG_FILE"
-      sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2>&1 | tee -a "$LOG_FILE"
+      echo "Looks like conda is installed but it still can't find the location of the anaconda3 folder. Lets try regex on the error message."  2>&1 | tee -a "$LOG_FILE"
+      REGEX_PATH=`sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2> >(grep -o "'.*'") | tr -d "'"`
+      echo "The prefix extracted from the error message is $REGEX_PATH" 2>&1 | tee -a "$LOG_FILE"
+      export PATH="$REGEX_PATH/bin:$PATH"
+      echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
       # check if this worked
       CONDA_LIST_4=`conda list`
       echo "CONDA_LIST_4 yields: $CONDA_LIST_4" 2>&1 | tee -a "$LOG_FILE"
       if [ "$CONDA_LIST_4" == "" ]; then
-        echo "Anaconda is installed but not yet sourced. Trying to source it now..." 2>&1 | tee -a "$LOG_FILE"
-        # get prefix from error message
-        TRY_PATH=`sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2> >(grep -o "'.*'") | tr -d "'"`
-        echo "The prefix extracted from the error message is $TRY_PATH" 2>&1 | tee -a "$LOG_FILE"
-        export PATH="$TRY_PATH/bin:$PATH"
-        # check if it worked
-        CONDA_LIST_5=`conda list`
-        echo "CONDA_LIST_5 yields: $CONDA_LIST_5" 2>&1 | tee -a "$LOG_FILE"
-        if [ "$CONDA_LIST_5" == "" ]; then
-          # check if adding to PATH works now
-          echo "Trying with '~/anaconda3/bin' added to PATH..." 2>&1 | tee -a "$LOG_FILE"
-          export PATH="~/anaconda3/bin:$PATH"
-          CONDA_LIST_6=`conda list`
-          echo "CONDA_LIST_6 yields: $CONDA_LIST_6" 2>&1 | tee -a "$LOG_FILE"
-          if [ "$CONDA_LIST_6" == "" ]; then
-            # check if adding to PATH works now
-            echo "Trying with '/opt/anaconda3/bin' added to to PATH..." 2>&1 | tee -a "$LOG_FILE"
-            export PATH="/opt/anaconda3/bin:$PATH"
-            CONDA_LIST_7=`conda list`
-            echo "CONDA_LIST_7 yields: $CONDA_LIST_7" 2>&1 | tee -a "$LOG_FILE"
-            if [ "$CONDA_LIST_7" == "" ]; then
-              # could not get it to work
-              echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
-              INSTALL_SH="Anaconda3-2021.11-MacOSX-x86_64.sh"
-              # remove if the installation file is still there
-              if [ -f "$INSTALL_SH" ]; then
-                echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
-                rm $INSTALL_SH
-              else
-                echo "File ${INSTALL_SH} does not exist! Nothing to delete..." 2>&1 | tee -a "$LOG_FILE"
-              fi
-            else
-              echo "This works! Writing path to $PATH_TO_CONDA_INSTALLATION_TXT_FILE" 2>&1 | tee -a "$LOG_FILE"
-              echo "/opt/anaconda3" > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
-            fi
-          else
-            echo "This works! Writing path to $PATH_TO_CONDA_INSTALLATION_TXT_FILE" 2>&1 | tee -a "$LOG_FILE"
-            echo "~/anaconda3" > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
-          fi
-        else
-          echo "This works! Writing path to $PATH_TO_CONDA_INSTALLATION_TXT_FILE" 2>&1 | tee -a "$LOG_FILE"
-          echo $TRY_PATH > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
-        fi
-      else
-        echo "Anaconda is installed and properly working. Removing installation file now... " 2>&1 | tee -a "$LOG_FILE"
-        INSTALL_SH="Anaconda3-2021.11-MacOSX-x86_64.sh"
-        # check if the installation file is still there
-        if [ -f "$INSTALL_SH" ]; then
-          echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
-          rm $INSTALL_SH
-        else
-          echo "File ${INSTALL_SH} does not exist! Nothing to delete..." 2>&1 | tee -a "$LOG_FILE"
-        fi
+        # could not get it to work
+        echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
       fi
     else
-      echo "This works! Writing path to $PATH_TO_CONDA_INSTALLATION_TXT_FILE" 2>&1 | tee -a "$LOG_FILE"
-      echo "/opt/anaconda3" > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
+      echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
     fi
   else
-    echo "This works! Writing path to $PATH_TO_CONDA_INSTALLATION_TXT_FILE" 2>&1 | tee -a "$LOG_FILE"
-    echo "~/anaconda3" > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
+    echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
   fi
 else
-  echo "Anaconda is already installed. No need to download and re-install. Exporting path to anaconda to $PATH_TO_CONDA_INSTALLATION_TXT_FILE." 2>&1 | tee -a "$LOG_FILE"
-  echo `conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1` > $PATH_TO_CONDA_INSTALLATION_TXT_FILE 
+  echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
 fi
+
+# remove if the installation file is still there
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+INSTALL_SH="Anaconda3-2021.11-MacOSX-x86_64.sh"
+if [ -f "$INSTALL_SH" ]; then
+  echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
+  rm $INSTALL_SH
+else
+  echo "File ${INSTALL_SH} does not exist! Nothing to delete..." 2>&1 | tee -a "$LOG_FILE"
+fi
+
+# write path to conda to txt file
+echo `conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1` > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
 
 # locate conda.sh on local machine and source it
 PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 ### OSX commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 28 August 2022
+### Peter van Lunteren, 30 August 2022, 11:20
 
 # set vars
-LOCATION_ECOASSIST_FILES="/Applications/EcoAssist_files"
+LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
 
 # log output to logfiles
