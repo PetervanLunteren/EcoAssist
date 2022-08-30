@@ -1,6 +1,9 @@
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
+
+*UPDATE August 2022: EcoAssist 2.0 has now adopted the newest MegaDetector model which is more accurate and about 2.5 times faster than the old one.*
+
 EcoAssist is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time-consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a  model which can recognise animals in camera trap images in a variety of terrestrial ecosystems so that you don't have to wade through all the empty images. The only problem with this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a small program which makes it easy for everybody.
 
 ###
