@@ -2,7 +2,7 @@
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
 
-*UPDATE August 2022: EcoAssist 2.0 has now adopted the newest MegaDetector model which is more accurate and about 2.5 times faster than the old one.*
+*UPDATE August 2022: EcoAssist 2.0 has now adopted the new MegaDetector MDv5 model which is more accurate and about 2.5 times faster than the old one.*
 
 EcoAssist is an application designed to make life easier for wildlife ecologists who work with cameratrap data. I know how time-consuming it can be to analyse every image. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a  model which can recognise animals in camera trap images in a variety of terrestrial ecosystems so that you don't have to wade through all the empty images. The only problem with this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a small program which makes it easy for everybody.
 
@@ -44,9 +44,9 @@ For now, it is only available for OSX users. If you would like to run EcoAssist 
 
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon. 
 
-If you're updating EcoAssist from v1 to v2, please read [the notes below](#updating-ecoassist-from-v1-to-v2) first.
+If you're updating EcoAssist from v1 to v2, please mannually delete the old `EcoAssist_files` folder and the `open_EcoAssist.command`.
 
-1. Download and execute [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command).
+1. Download, unzip and execute [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. 
 2. Go get yourself a beverage because this might take a few minutes to complete.
 
 ## How to start the application?
@@ -55,11 +55,6 @@ If you're updating EcoAssist from v1 to v2, please read [the notes below](#updat
  └── 📄EcoAssist.command
 ```
 EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
-
-## Updating EcoAssist from v1 to v2?
-There are two points early adopters should take into account:
-- Please make sure that the old EcoAssist files are deleted before installing version 2. So go ahead and manually delete the old `EcoAssist_files` folder and the `open_EcoAssist.command`. Don't worry if you forgot this prior to installing v2, it just means that you have two versions of EcoAssist installed. You can also delete it afterwards.
-- Version 2 uses a different model to detect animals which is more accurate and 2.5 times faster. This new model uses the full range of confidence values much more than the old one did. So don't apply the thresholds you're accustomed to. Typical confidence thresholds for the new model are in the 0.15-0.25 range, instead of the old 0.7-0.8 range.
 
 ## GPU Support
 It is possible to run EcoAssist on your GPU for faster processing (I just never tried it before). See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. You would probably be best off by installing EcoAssist following the steps above and afterwards adjusting the `ecoassistcondaenv` conda environment accordingly.
