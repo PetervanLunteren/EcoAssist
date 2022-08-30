@@ -17,7 +17,7 @@ rm -f "/Applications/EcoAssist.command"
 
 # ask user if anaconda must be uninstalled too
 while true; do
-    read -p "Do you wish to uninstall anaconda too? (y/n)" yn
+    read -p "Do you wish to uninstall anaconda too? Please type 'y' or 'n'." yn
     case $yn in
         [Yy]* ) echo "Removing anaconda now..."; rm -rf $PATH_TO_CONDA; break;;
         [Nn]* ) exit;;
