@@ -1,5 +1,12 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 16 aug 2022.
+# Written by Peter van Lunteren, 5 Sept 2022.
+
+#TODO:
+# - kijken of alles nog werkt op apple en op windows
+# - push to git
+# - install bash script maken voor windows
+# - open bash script maken voor windows
+# - open labelimg maken voor windows
 
 # import packages
 import json
@@ -29,64 +36,119 @@ import sys
 
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
-    print(f"Processing images with MegaDetector model...\n")
     mega_stats['text'] = update_progress_label_megadetector(command="load")
+    print(f"Processing images with MegaDetector model...\n")
+    path_to_image_folder = str(Path(path_to_image_folder)) # convert path separators
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_detector_batch.py")
     model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
-    batch_command = f"{sys.executable} -v '{loc_detector_batch}' '{model_file}'{additional_json_cmds}'{path_to_image_folder}' '{loc_json_file}'"
-    print("sys.executable: ", sys.executable)
-    print(f"batch_command: {batch_command}")
-    with Popen([batch_command],
-               stderr=PIPE, bufsize=1, shell=True,
-               universal_newlines=True) as p:
-        for line in p.stderr:
-            print(line, end='')
-            if '%' in line[0:4]:
-                times = re.search("(\[.*?\])", line)[1]
-                progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
-                percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
-                elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
-                time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
-                mega_progbar['value'] = percentage
-                mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+    if os.name == 'nt': # apparently this is OS dependant
+        batch_command = [sys.executable, "-v", loc_detector_batch, model_file, *additional_json_cmds, path_to_image_folder, loc_json_file]
+        print("sys.executable: ", sys.executable)
+        print(f"batch_command: {batch_command}")
+        with Popen(batch_command,
+                stderr=PIPE, bufsize=1, shell=True,
+                universal_newlines=True) as p:
+            for line in p.stderr:
+                print(line, end='')
+                if '%' in line[0:4]:
+                    times = re.search("(\[.*?\])", line)[1]
+                    progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+                    percentage = re.search("\d*%", progress_bar)[0][:-1]
+                    current_im = re.search("\d*\/", progress_bar)[0][:-1]
+                    total_im = re.search("\/\d*", progress_bar)[0][1:]
+                    elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+                    time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    mega_progbar['value'] = percentage
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                window.update()
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
             window.update()
-        mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
-        window.update()
+    else:
+        additional_json_cmds = "' '".join(additional_json_cmds)
+        batch_command = f"'{sys.executable}' -v '{loc_detector_batch}' '{model_file}' '{additional_json_cmds}' '{path_to_image_folder}' '{loc_json_file}'"
+        print("sys.executable: ", sys.executable)
+        print(f"batch_command: {batch_command}")
+        with Popen([batch_command],
+                stderr=PIPE, bufsize=1, shell=True,
+                universal_newlines=True) as p:
+            for line in p.stderr:
+                print(line, end='')
+                if '%' in line[0:4]:
+                    times = re.search("(\[.*?\])", line)[1]
+                    progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+                    percentage = re.search("\d*%", progress_bar)[0][:-1]
+                    current_im = re.search("\d*\/", progress_bar)[0][:-1]
+                    total_im = re.search("\/\d*", progress_bar)[0][1:]
+                    elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+                    time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    mega_progbar['value'] = percentage
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                window.update()
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            window.update()
 
 
 # function to start the MegaDetector process for video's
 def produce_json_video(path_to_video_folder, additional_json_cmds):
-    print(f"Processing videos with MegaDetector model...\n")
     v_mega_stats['text'] = update_progress_label_megadetector_v(command="load")
+    print(f"Processing videos with MegaDetector model...\n")
+    path_to_video_folder = str(Path(path_to_video_folder)) # convert path separators
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_process_video_py = os.path.join(path_to_git, "cameratraps", "detection", "process_video.py")
     model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
     Path(os.path.join(path_to_video_folder, "json_file")).mkdir(parents=True, exist_ok=True)
-    loc_json_file = os.path.join(path_to_video_folder, "json_file", "output.json")
-    video_command = f"{sys.executable} -v '{loc_process_video_py}'{additional_json_cmds} --output_json_file '{loc_json_file}' '{model_file}' '{path_to_video_folder}'"
-    print("sys.executable: ", sys.executable)
-    print(f"video_command: {video_command}")
-    with Popen([video_command],
-               stderr=PIPE, bufsize=1, shell=True,
-               universal_newlines=True) as p:
-        for line in p.stderr:
-            print(line, end='')
-            if '%' in line[0:4]:
-                times = re.search("(\[.*?\])", line)[1]
-                progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
-                percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
-                elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
-                time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
-                v_mega_progbar['value'] = percentage
-                v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+    loc_json_file = "--output_json_file=" + os.path.join(path_to_video_folder, "json_file", "output.json")
+    if os.name == "nt": # apparently this is OS dependant
+        video_command = [sys.executable, "-v", loc_process_video_py, *additional_json_cmds, loc_json_file, model_file, path_to_video_folder]
+        print("sys.executable: ", sys.executable)
+        print(f"video_command: {video_command}")
+        with Popen(video_command,
+                stderr=PIPE, bufsize=1, shell=True,
+                universal_newlines=True) as p:
+            for line in p.stderr:
+                print(line, end='')
+                if '%' in line[0:4]:
+                    times = re.search("(\[.*?\])", line)[1]
+                    progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+                    percentage = re.search("\d*%", progress_bar)[0][:-1]
+                    current_im = re.search("\d*\/", progress_bar)[0][:-1]
+                    total_im = re.search("\/\d*", progress_bar)[0][1:]
+                    elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+                    time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    v_mega_progbar['value'] = percentage
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                window.update()
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
             window.update()
-        v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
-        window.update()
+    else:
+        additional_json_cmds = "' '".join(additional_json_cmds)
+        video_command = f"'{sys.executable}' -v '{loc_process_video_py}' '{additional_json_cmds}' '{loc_json_file}' '{model_file}' '{path_to_video_folder}'"
+        print("sys.executable: ", sys.executable)
+        print(f"video_command: {video_command}")
+        with Popen([video_command],
+                stderr=PIPE, bufsize=1, shell=True,
+                universal_newlines=True) as p:
+            for line in p.stderr:
+                print(line, end='')
+                if '%' in line[0:4]:
+                    times = re.search("(\[.*?\])", line)[1]
+                    progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+                    percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
+                    elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+                    time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    v_mega_progbar['value'] = percentage
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                window.update()
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            window.update()
+
 
 
 # function to crop detections based on json file (for images)
@@ -581,12 +643,19 @@ def check_if_checkpointfile_is_present(directory):
 def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
-    if command == "running":
-        return f"Percentage done:\t\t{value6}%\n" \
-               f"Processing image:\t\t{value3} of {value4}\n" \
-               f"Elapsed time:\t\t{value1}\n" \
-               f"Remaining time:\t\t{value2}\n" \
-               f"Time per image:\t\t{value5}s"
+    if command == "running": # dependant on OS
+        if os.name == "nt":
+            return f"Percentage done:\t\t{value6}%\n" \
+                f"Processing image:\t{value3} of {value4}\n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Remaining time:\t\t{value2}\n" \
+                f"Time per image:\t\t{value5}s"
+        else:
+            return f"Percentage done:\t\t{value6}%\n" \
+                f"Processing image:\t\t{value3} of {value4}\n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Remaining time:\t\t{value2}\n" \
+                f"Time per image:\t\t{value5}s"
     if command == "done":
         return f"                            Done!                            \n" \
                f"Elapsed time:\t\t{value1}\n" \
@@ -598,10 +667,10 @@ def update_progress_label_megadetector_v(value1="", value2="", value3="", value4
         return f"Algorithm is starting up..."
     if command == "running":
         return f"Percentage done:\t\t{value6}%\n" \
-               f"Processing frame:\t\t{value3} of {value4}\n" \
-               f"Elapsed time:\t\t{value1}\n" \
-               f"Remaining time:\t\t{value2}\n" \
-               f"Time per frame:\t\t{value5}s"
+            f"Processing frame:\t\t{value3} of {value4}\n" \
+            f"Elapsed time:\t\t{value1}\n" \
+            f"Remaining time:\t\t{value2}\n" \
+            f"Time per frame:\t\t{value5}s"
     if command == "done":
         return f"                            Done!                            \n"
 
@@ -857,6 +926,8 @@ def open_labelImg():
 
 # tkinter window to show progress and perform the commands
 def openProgressWindow():
+    global result_ync
+    print(f"got here... produce_JSON.get() is: {produce_JSON.get()}")
     if data_type.get() == "Images":
         if check_use_checkpoints.get() and not int_checkpoint_n.get().isdecimal():
             if mb.askyesno("Invalid value",
@@ -967,21 +1038,19 @@ def openProgressWindow():
                 crop_stats.grid(column=0, row=1, pady=(0,3), columnspan=2)
 
             try:
-                cmd_thres = "--threshold " + str(
-                    round(conf_thresh.get()) / 100) + " "  # create string with additional arguments for the json cmd
+                # create list with additional arguments for the json cmd
+                additional_batch_cmds = []
+                cmd_thres = "--threshold=" + str(round(conf_thresh.get()) / 100) 
+                additional_batch_cmds.append(cmd_thres)
                 if check_recurse_ui:
-                    cmd_check_recurse = "--recursive "
-                else:
-                    cmd_check_recurse = ""
+                    cmd_check_recurse = "--recursive"
+                    additional_batch_cmds.append(cmd_check_recurse)
                 if check_use_checkpoints.get() and int_checkpoint_n.get() != "":
-                    cmd_check_use_chkpnts = "--checkpoint_frequency " + int_checkpoint_n.get() + " "
-                else:
-                    cmd_check_use_chkpnts = ""
+                    cmd_check_use_chkpnts = "--checkpoint_frequency=" + int_checkpoint_n.get()
+                    additional_batch_cmds.append(cmd_check_use_chkpnts)
                 if check_cont_from_checkpoint.get() and loc_chkpnt_file != "":
-                    cmd_loc_chkpnt_file = "--resume_from_checkpoint '" + loc_chkpnt_file + "' "
-                else:
-                    cmd_loc_chkpnt_file = ""
-                additional_batch_cmds = " " + cmd_thres + cmd_check_recurse + cmd_check_use_chkpnts + cmd_loc_chkpnt_file
+                    cmd_loc_chkpnt_file = "--resume_from_checkpoint=" + loc_chkpnt_file
+                    additional_batch_cmds.append(cmd_loc_chkpnt_file)
 
                 if produce_JSON.get():  # run cmds
                     produce_json(loc_input_image_folder.get(), additional_batch_cmds)
@@ -1058,7 +1127,7 @@ def openProgressWindow():
             v_mega_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
             v_mega_frame.columnconfigure(0, weight=3, minsize=115)
             v_mega_frame.columnconfigure(1, weight=1, minsize=115)
-            v_mega_frame.rowconfigure(1, weight=0, minsize=60)
+            v_mega_frame.rowconfigure(1, weight=0, minsize=0)
             global v_mega_progbar
             v_mega_progbar = ttk.Progressbar(master=v_mega_frame, orient='horizontal', mode='determinate', length=280)
             v_mega_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
@@ -1074,7 +1143,7 @@ def openProgressWindow():
             v_sep_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
             v_sep_frame.columnconfigure(0, weight=3, minsize=115)
             v_sep_frame.columnconfigure(1, weight=1, minsize=115)
-            v_sep_frame.rowconfigure(1, weight=0, minsize=60)
+            v_sep_frame.rowconfigure(1, weight=0, minsize=0)
             global v_sep_progbar
             v_sep_progbar = ttk.Progressbar(master=v_sep_frame, orient='horizontal', mode='determinate', length=280)
             v_sep_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
@@ -1083,17 +1152,18 @@ def openProgressWindow():
             v_sep_stats.grid(column=0, row=1, columnspan=2)
 
         try:
+            additional_videos_cmds = []
             if v_check_recurse_ui:
-                v_cmd_check_recurse = "--recursive "
-            else:
-                v_cmd_check_recurse = ""
+                v_cmd_check_recurse = "--recursive"
+                additional_videos_cmds.append(v_cmd_check_recurse)
             v_conf_thresh_str = str(round(v_conf_thresh.get()) / 100)
-            v_cmd_thres = f"--rendering_confidence_threshold {v_conf_thresh_str} --json_confidence_threshold {v_conf_thresh_str} "
+            v_cmd_thres_1 = f"--rendering_confidence_threshold={v_conf_thresh_str}"
+            v_cmd_thres_2 = f"--json_confidence_threshold={v_conf_thresh_str}"
+            additional_videos_cmds.append(v_cmd_thres_1)
+            additional_videos_cmds.append(v_cmd_thres_2)
             if v_check_dont_process_every_frame.get():
-                c_cmd_every_nth_frame = f"--frame_sample {v_int_analyse_every_nth.get()} "
-            else:
-                c_cmd_every_nth_frame = ""
-            additional_videos_cmds = " " + v_cmd_check_recurse + v_cmd_thres + c_cmd_every_nth_frame
+                c_cmd_every_nth_frame = f"--frame_sample={v_int_analyse_every_nth.get()}"
+                additional_videos_cmds.append(c_cmd_every_nth_frame)
             if v_produce_JSON.get():
                 produce_json_video(loc_input_image_folder.get(), additional_videos_cmds)
             if v_check_sep.get():
@@ -1111,15 +1181,28 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist 2.0")
+window.title("EcoAssist 2.1")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
 
+# tkinter looks different on windows and unix computers
+# here I try to make it look a bit simmilar
+if os.name == "nt":
+    resize_img_factor = 0.84
+    textbox_height_adjustment_factor = 0.77
+    textbox_width_adjustment_factor = 1
+    text_size_adjustment_factor = 0.83
+else:
+    resize_img_factor = 1
+    textbox_height_adjustment_factor = 1
+    textbox_width_adjustment_factor = 1
+    text_size_adjustment_factor = 1
+
 # logo
 logo_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs', 'logo.png')
 logo = Image.open(logo_path)
-logo = logo.resize((int(logo.size[0] / 3), int(logo.size[1] / 3)), Image.ANTIALIAS)
+logo = logo.resize((int(logo.size[0] / 3), int(logo.size[1] / 3)), Image.Resampling.LANCZOS)
 white_bg_logo = Image.new("RGBA", logo.size, "WHITE")
 white_bg_logo.paste(logo, (0, 0), logo)
 white_bg_logo.convert('RGB')
@@ -1129,12 +1212,12 @@ grey_bg_logo = ImageTk.PhotoImage(logo)
 # fox image
 fox_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs', 'fox.jpg')
 fox = Image.open(fox_path)
-left = 100
+left = 100 + int(211 * 2 * (1 - resize_img_factor)) # size depends on OS
 top = 150
-right = left + 211 * 2
+right = left + int(211 * resize_img_factor) * 2 # size depends on OS
 bottom = top + 81 * 2
 fox = fox.crop((left, top, right, bottom))
-fox = fox.resize((211, 81), Image.ANTIALIAS)
+fox = fox.resize((int(211 * resize_img_factor), 81), Image.Resampling.LANCZOS) # size depends on OS
 rad = 10
 back = Image.new('RGB', (fox.size[0], fox.size[1]), (255, 255, 255))
 back.paste(fox, (rad, 0))
@@ -1150,10 +1233,10 @@ cam_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs', 'cam
 cam = Image.open(cam_path)
 c_left = 322
 c_top = 190
-c_right = c_left + 211 * 1.5
+c_right = c_left + int(211 * resize_img_factor) * 1.5 # size depends on OS
 c_bottom = c_top + 81 * 1.5
 cam = cam.crop((c_left, c_top, c_right, c_bottom))
-cam = cam.resize((200, 81), Image.ANTIALIAS)
+cam = cam.resize((int(200 * resize_img_factor), 81), Image.Resampling.LANCZOS) # size depends on OS
 back = Image.new('RGB', (cam.size[0] + rad, cam.size[1]), (255, 255, 255))
 back.paste(cam, (0, 0))
 mask = Image.new('L', (cam.size[0] + rad, cam.size[1]), 255)
@@ -1164,19 +1247,12 @@ back.paste(blur, mask=mask)
 cam = ImageTk.PhotoImage(back)
 
 # imgs
-tk.Label(window, image=white_bg_logo, bg="white", highlightthickness=0, highlightbackground="white").grid(column=0,
-                                                                                                          row=0,
-                                                                                                          sticky='ns',
-                                                                                                          pady=(3, 3),
-                                                                                                          padx=(0, 0))
-tk.Label(window, image=cam, bg="white", highlightthickness=0, highlightbackground="white").grid(column=0, row=0,
-                                                                                                sticky='wns',
-                                                                                                pady=(3, 3),
-                                                                                                padx=(3, 0))
-tk.Label(window, image=fox, bg="white", highlightthickness=0, highlightbackground="white").grid(column=0, row=0,
-                                                                                                sticky='ens',
-                                                                                                pady=(3, 3),
-                                                                                                padx=(0, 3))
+logo_widget = tk.Label(window, image=white_bg_logo, bg="white", highlightthickness=0, highlightbackground="white")
+cam_widget = tk.Label(window, image=cam, bg="white", highlightthickness=0, highlightbackground="white")
+fox_widget = tk.Label(window, image=fox, bg="white", highlightthickness=0, highlightbackground="white")
+logo_widget.grid(column=0, row=0, sticky='ns', pady=(3, 3), padx=(0, 0))
+cam_widget.grid(column=0, row=0, sticky='wns', pady=(3, 3), padx=(3, 0))
+fox_widget.grid(column=0, row=0, sticky='ens', pady=(3, 3), padx=(0, 3))
 
 # tabs
 param_tab = ttk.Frame(tabControl)
@@ -1218,6 +1294,7 @@ meg_frame.columnconfigure(0, weight=1, minsize=430)
 meg_frame.columnconfigure(1, weight=1, minsize=115)
 
 produce_JSON = BooleanVar()
+produce_JSON.set(True)
 
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
 lbl1.grid(row=1, sticky='w', pady=5)
@@ -1330,6 +1407,7 @@ v_meg_frame.columnconfigure(0, weight=1, minsize=430)
 v_meg_frame.columnconfigure(1, weight=1, minsize=115)
 
 v_produce_JSON = BooleanVar()
+v_produce_JSON.set(True)
 
 v_lbl1 = Label(v_meg_frame, text="Confidence threshold (%)")
 v_lbl1.grid(row=1, sticky='w', pady=5)
@@ -1390,11 +1468,11 @@ button.grid(column=0, row=7, columnspan=2, padx=5, pady=0, sticky='ew')
 # help tab
 scroll = Scrollbar(help_tab)
 scroll.grid(row=0, column=1, sticky='ns')
-t = Text(help_tab, width=70, height=43, wrap=WORD,
-         yscrollcommand=scroll.set)
-t.tag_config('title', font='TkDefaultFont 13 bold', foreground='darkblue')
-t.tag_config('mark', font='TkDefaultFont 13 italic', foreground='darkred', justify='center')
-t.tag_config('info', font='TkDefaultFont 13 normal')
+t = Text(help_tab, width=int(70 * textbox_width_adjustment_factor), height=int(43 * textbox_height_adjustment_factor), wrap=WORD,
+         yscrollcommand=scroll.set) # size depends on OS
+t.tag_config('title', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
+t.tag_config('mark', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} italic', foreground='darkred', justify='center') # size depends on OS
+t.tag_config('info', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
 
 t.insert(END, "Please find below a list of parameters with an explanation on how to interpret them.\n\n")
 t.tag_add('info', '1.0', '1.end')
@@ -1543,11 +1621,11 @@ t.configure(font=("TkDefaultFont", 11, "bold"), state=DISABLED)
 scroll.config(command=t.yview)
 
 # about tab
-text = Text(about_tab, width=70, height=43, wrap=WORD,
-            yscrollcommand=scroll.set)
-text.tag_config('title', font='TkDefaultFont 13 bold', foreground='darkblue')
-text.tag_config('info', font='TkDefaultFont 13 normal')
-text.tag_config('italic', font='TkDefaultFont 13 italic')
+text = Text(about_tab, width=int(70 * textbox_width_adjustment_factor), height=int(43 * textbox_height_adjustment_factor), wrap=WORD,
+            yscrollcommand=scroll.set) # size depends on OS
+text.tag_config('title', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
+text.tag_config('info', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
+text.tag_config('italic', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} italic') # size depends on OS
 
 text.insert(END, "The application\n")
 text.insert(END,
