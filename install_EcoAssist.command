@@ -266,6 +266,7 @@ pip install seaborn==0.11.2
 pip install PyYAML==5.3.1
 conda install -c conda-forge pytorch==1.10.1 -y
 conda install -c conda-forge torchvision==0.11.2 -y
+conda install -c conda-forge mkl==2021.4.0 -y
 
 # log env info
 conda info --envs >> "$LOG_FILE"
