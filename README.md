@@ -46,7 +46,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 
 If you're updating EcoAssist from v1 to v2, please mannually delete the old `EcoAssist_files` folder and the `open_EcoAssist.command`.
 
-1. Download, unzip and execute [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you should open a new terminal window, copy-paste `chmod 755 ~/Downloads/install_EcoAssist.command` and hit enter. Then try again. TRIAL: [this file](https://PetervanLunteren.github.io/EcoAssist/install_EcoAssist.command)
+1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 ~/Downloads/install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete.
 
 ## How to start the application?
@@ -62,4 +62,4 @@ I'm not sure why, but the first time you open EcoAssist it can take some time. P
 It is possible to run EcoAssist on your GPU for faster processing (I just never tried it before). See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. You would probably be best off by installing EcoAssist following the steps above and afterwards adjusting the `ecoassistcondaenv` conda environment accordingly.
 
 ## How to uninstall EcoAssist?
-You can uninstall EcoAssist by executing [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/uninstall_EcoAssist.command). It will prompt you whether you want to uninstall Anaconda too. If you use Anaconda for something else you will probably don't want to uninstall it. You can just type 'yes' or 'no'.
+You can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/uninstall_EcoAssist.command). It will prompt you whether you want to uninstall Anaconda too. If you use Anaconda for something else you probably don't want to uninstall it. You can just type 'yes' or 'no'.
