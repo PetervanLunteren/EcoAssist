@@ -46,7 +46,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 
 If you're updating EcoAssist from v1 to v2, please mannually delete the old `EcoAssist_files` folder and the `open_EcoAssist.command`.
 
-1. Download, unzip and execute [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you should open a new terminal window, copy-paste `chmod 755 ~/Downloads/install_EcoAssist.command` and hit enter. Then try again.
+1. Download, unzip and execute [this file](https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/PetervanLunteren/EcoAssist/blob/main/install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you should open a new terminal window, copy-paste `chmod 755 ~/Downloads/install_EcoAssist.command` and hit enter. Then try again. TRIAL: [this file](https://PetervanLunteren.github.io/EcoAssist/install_EcoAssist.command)
 2. Go get yourself a beverage because this might take a few minutes to complete.
 
 ## How to start the application?
