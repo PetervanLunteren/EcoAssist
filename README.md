@@ -56,6 +56,8 @@ If you're updating EcoAssist from v1 to v2, please mannually delete the old `Eco
 ```
 EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
+I'm not sure why, but the first time you open EcoAssist it can take some time. Please be patient. Subsequent times will be faster.
+
 ## GPU Support
 It is possible to run EcoAssist on your GPU for faster processing (I just never tried it before). See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. You would probably be best off by installing EcoAssist following the steps above and afterwards adjusting the `ecoassistcondaenv` conda environment accordingly.
 
