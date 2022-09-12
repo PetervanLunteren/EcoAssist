@@ -61,7 +61,7 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    time_per_image = re.search("(?<= )(.*)(?=s\/it)", times)[1] if re.search("(?<= )(.*)(?=s\/it)", times) != None else "?"
                     mega_progbar['value'] = percentage
                     mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
                 window.update()
@@ -85,7 +85,7 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    time_per_image = re.search("(?<= )(.*)(?=s\/it)", times)[1] if re.search("(?<= )(.*)(?=s\/it)", times) != None else "?"
                     mega_progbar['value'] = percentage
                     mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
                 window.update()
@@ -120,7 +120,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    time_per_image = re.search("(?<= )(.*)(?=s\/it)", times)[1] if re.search("(?<= )(.*)(?=s\/it)", times) != None else "?"
                     v_mega_progbar['value'] = percentage
                     v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
                 window.update()
@@ -142,7 +142,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,  )(.*)(?=s\/it)", times)[1] if re.search("(?<=,  )(.*)(?=s\/it)", times) != None else "?"
+                    time_per_image = re.search("(?<= )(.*)(?=s\/it)", times)[1] if re.search("(?<= )(.*)(?=s\/it)", times) != None else "?"
                     v_mega_progbar['value'] = percentage
                     v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
                 window.update()
