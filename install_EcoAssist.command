@@ -252,7 +252,7 @@ fetch_os_type
 
 # create conda env
 conda env remove -n ecoassistcondaenv
-conda create -n ecoassistcondaenv python==3.7 -y
+CONDA_SUBDIR=osx-64 conda create -n ecoassistcondaenv python==3.7 -y
 conda activate ecoassistcondaenv
 pip install --upgrade pip setuptools wheel
 pip install --upgrade pip
@@ -260,12 +260,7 @@ conda install -c conda-forge requests=2.26.0 -y
 pip install -r $LOCATION_ECOASSIST_FILES/EcoAssist/requirements.txt
 
 # additional packages required for MegaDetector v5
-pip install Pillow==9.1.0 
-pip install pandas==1.1.5
-pip install seaborn==0.11.2
-pip install PyYAML==5.3.1
-conda install -c conda-forge pytorch==1.10.1 -y
-conda install -c conda-forge torchvision==0.11.2 -y
+CONDA_SUBDIR=osx-64 conda env update --file $LOCATION_ECOASSIST_FILES/EcoAssist/MD5_for_MAC.yml
 
 # log env info
 conda info --envs >> "$LOG_FILE"
