@@ -67,7 +67,7 @@ else
   cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   FILE="EcoAssist.command"
   ICON="imgs/logo_small_bg.icns" 
-  fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+  bash fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
   mv -f $FILE /Applications/ # move file and replace
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
