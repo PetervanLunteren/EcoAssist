@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 30 August 2022, 11:20
+### Peter van Lunteren, 18 September 2022
 
 # timestamp the start of installation
 START_DATE=`date`
@@ -37,8 +37,6 @@ echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
 # log system information
 UNAME_A=`uname -a`
 MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
-FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
 echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
@@ -46,14 +44,6 @@ echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "System information:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "File sizes with depth 0:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "$FILE_SIZES_DEPTH_0"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "File sizes with depth 1:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "$FILE_SIZES_DEPTH_1"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
 # clone EcoAssist git if not present
@@ -250,47 +240,31 @@ function fetch_os_type() {
 }
 fetch_os_type
 
-# create conda env
+# remove previous EcoAssist conda env if present
 conda env remove -n ecoassistcondaenv
-CONDA_SUBDIR=osx-64 conda create -n ecoassistcondaenv python==3.7 -y
-conda activate ecoassistcondaenv
-pip install --upgrade pip setuptools wheel
-pip install --upgrade pip
-conda install -c conda-forge requests=2.26.0 -y
-pip install -r $LOCATION_ECOASSIST_FILES/EcoAssist/requirements.txt
 
-# additional packages required for MegaDetector v5
-CONDA_SUBDIR=osx-64 conda env update --file $LOCATION_ECOASSIST_FILES/EcoAssist/MD5_for_MAC.yml
+# create fresh conda env
+if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
+  # install packages for M1 computer
+  echo "Chip: `sysctl -n machdep.cpu.brand_string`" 2>&1 | tee -a "$LOG_FILE"
+  echo "This is an M1 computer. Installing the packages for M1 computers..." 2>&1 | tee -a "$LOG_FILE"
+  echo "  - mkl<2022" >> $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+  CONDA_SUBDIR=osx-64 conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+else
+  # install packages for intel computer
+  echo "Chip: `sysctl -n machdep.cpu.brand_string`"
+  echo "This is not an M1 computer. Installing the packages for intel computers..." 2>&1 | tee -a "$LOG_FILE"
+  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+fi
+
+# install extra packages for EcoAssist
+conda activate ecoassistcondaenv
+pip install bounding_box
+
+# install extra packages for labelImg
+pip install pyqt5==5.15.2 lxml
 
 # log env info
-conda info --envs >> "$LOG_FILE"
-conda list >> "$LOG_FILE"
-pip freeze >> "$LOG_FILE"
-
-# check if CPU supports AVX instruction set and install precompiled TensorFlow if it isn't
-case $OS in
-linux*)
-  if ! lscpu | grep -q " avx "; then
-    echo "AVX is not supported by this CPU! Installing a version of TensorFlow compiled for older CPUs..." 2>&1 | tee -a "$LOG_FILE"
-    pip uninstall tensorflow -y
-    pip install https://github.com/spinalcordtoolbox/docker-tensorflow-builder/releases/download/v1.15.5-py3.7/tensorflow-1.15.5-cp37-cp37m-linux_x86_64.whl
-  else
-    echo "AVX is supported on this Linux machine. Keeping default TensorFlow..." 2>&1 | tee -a "$LOG_FILE"
-  fi
-  ;;
-osx)
-  if sysctl machdep.cpu.brand_string | grep -q "Apple M1"; then
-    echo "AVX is not supported on M1 Macs! Installing a version of TensorFlow compiled for M1 Macs..." 2>&1 | tee -a "$LOG_FILE"
-    pip uninstall tensorflow -y
-    pip install https://github.com/spinalcordtoolbox/docker-tensorflow-builder/releases/download/v1.15.5-py3.7/tensorflow-1.15.0-py3-none-any.whl
-    pip freeze
-  else
-    echo "AVX is supported on this macOS machine. Keeping default TensorFlow..." 2>&1 | tee -a "$LOG_FILE"
-  fi
-  ;;
-esac
-
-# log env info again, after the possible new TensorFlow installation
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
 pip freeze >> "$LOG_FILE"
@@ -323,10 +297,6 @@ echo ""  2>&1 | tee -a "$LOG_FILE"
 # timestamp the end of installation
 END_DATE=`date`
 echo "This installation ended at: $END_DATE" 2>&1 | tee -a "$LOG_FILE"
-echo "" 2>&1 | tee -a "$LOG_FILE"
-echo "" 2>&1 | tee -a "$LOG_FILE"
-echo "" 2>&1 | tee -a "$LOG_FILE"
-echo "" 2>&1 | tee -a "$LOG_FILE"
 
 # move LOG_FILE is needed
 WRONG_LOG_FILE_LOCATION=$LOCATION_ECOASSIST_FILES/installation_log.txt
