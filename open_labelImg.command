@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX commands to open labelImg from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 30 August 2022, 11:20
+### Peter van Lunteren, 18 September 2022
 
 # set vars
 LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
