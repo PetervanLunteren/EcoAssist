@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 30 August 2022, 11:20
+### Peter van Lunteren, 18 September 2022
 
 # set vars
 LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
@@ -84,9 +84,6 @@ echo ""
 PYLOCATION=`which python`
 echo "python location: $PYLOCATION"
 echo ""
-
-# check tensorflow version and GPU availability
-python EcoAssist/tf_check.py
 
 # run script
 python EcoAssist/EcoAssist_GUI.py
