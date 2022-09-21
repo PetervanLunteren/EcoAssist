@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 18 September 2022
+### Peter van Lunteren, 21 September 2022
 
 # timestamp the start of installation
 START_DATE=`date`
@@ -13,6 +13,7 @@ PMSETPID=$!
 # set vars
 LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
+PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES
@@ -33,6 +34,16 @@ fi
 
 # log the start
 echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
+
+# check if computer is an M1 mac and set var
+echo "Chip: `sysctl -n machdep.cpu.brand_string`" 2>&1 | tee -a "$LOG_FILE"
+if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
+  echo "This is an M1 computer." 2>&1 | tee -a "$LOG_FILE"
+  M1_MAC=true
+else
+  echo "This is not an M1 computer." 2>&1 | tee -a "$LOG_FILE"
+  M1_MAC=false
+fi
 
 # log system information
 UNAME_A=`uname -a`
@@ -70,7 +81,7 @@ else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout f8417740c1624d38988210a2dd5de58b64ae7827 2>&1 | tee -a "$LOG_FILE"
+  git checkout 27e0f04d53a3a4b0ffa18493a80bbf1fec15c3fe 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -82,7 +93,7 @@ else
   echo "Dir ${AI4} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/ai4eutils 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088 2>&1 | tee -a "$LOG_FILE"
+  git checkout 9260e6b876fd40e9aecac31d38a86fe8ade52dfd 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -94,7 +105,11 @@ else
   echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
+  if [ "$M1_MAC" = true ] ; then
+    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
+  else
+    git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
+  fi
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -118,7 +133,11 @@ if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  curl -v --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
+  if [ "$M1_MAC" = true ] ; then
+    curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
+  else
+    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
+  fi
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
@@ -144,7 +163,7 @@ if [ "$CONDA_LIST_1" == "" ]; then
   if [ "$CONDA_LIST_2" == "" ]; then
     # download and install anaconda
     echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-    curl -v --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+    curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
     echo "Executing installation file now... The installation is not yet done. Please be patient. "  2>&1 | tee -a "$LOG_FILE"
     sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2>&1 | tee -a "$LOG_FILE"
     echo "Lets try to add some common locations of anaconda to the \$PATH variable."  2>&1 | tee -a "$LOG_FILE"
@@ -243,26 +262,86 @@ fetch_os_type
 # remove previous EcoAssist conda env if present
 conda env remove -n ecoassistcondaenv
 
-# create fresh conda env
-if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-  # install packages for M1 computer
-  echo "Chip: `sysctl -n machdep.cpu.brand_string`" 2>&1 | tee -a "$LOG_FILE"
-  echo "This is an M1 computer. Installing the packages for M1 computers..." 2>&1 | tee -a "$LOG_FILE"
-  echo "  - mkl<2022" >> $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
-  CONDA_SUBDIR=osx-64 conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+# create conda env
+if [ "$M1_MAC" = true ] ; then
+  # for m1 macs
+  # requirements for MegaDetector
+  CONDA_SUBDIR=osx-arm64 conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
+  conda activate ecoassistcondaenv
+  pip3 install -U --pre torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+
+  # requirements for labelImg
+  pip3 install lxml
+
+  # we need homebrew to install PyQt5 for M1 macs...
+  # check if homebrew is already installed, if not install
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  BREW_V_1=`brew -v`
+  echo "BREW_V_1 yields: $BREW_V_1" 2>&1 | tee -a "$LOG_FILE"
+  if [ "$BREW_V_1" == "" ]; then
+    # the brew command is not recognised
+    echo "Homebrew might be installed, but the brew command is not recognised. Lets try to add some common locations of homebrew to the \$PATH variable and check again..." 2>&1 | tee -a "$LOG_FILE"
+    export PATH="/usr:$PATH"
+    export PATH="/usr/homebrew:$PATH"
+    export PATH="/usr/bin:$PATH"
+    export PATH="/usr/homebrew/bin:$PATH"
+    export PATH="/usr/local:$PATH"
+    export PATH="/usr/local/homebrew:$PATH"
+    export PATH="/usr/local/bin:$PATH"
+    export PATH="/usr/local/homebrew/bin:$PATH"
+    export PATH="/usr/local/opt:$PATH"
+    export PATH="/usr/local/opt/homebrew:$PATH"
+    export PATH="/usr/local/opt/bin:$PATH"
+    export PATH="/usr/local/opt/homebrew/bin:$PATH"
+    export PATH="/opt:$PATH"
+    export PATH="/opt/homebrew:$PATH"
+    export PATH="/opt/bin:$PATH"
+    export PATH="/opt/homebrew/bin:$PATH"
+    echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
+    # check if brew command works
+    BREW_V_2=`brew -v`
+    echo "BREW_V_2 yields: $BREW_V_2" 2>&1 | tee -a "$LOG_FILE"
+    if [ "$BREW_V_2" == "" ]; then
+      # download and install homebrew
+      echo "Looks like homebrew is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
+      mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew 2>&1 | tee -a "$LOG_FILE"
+      export PATH="$LOCATION_ECOASSIST_FILES/homebrew/bin:$PATH"
+      # check if this worked
+      BREW_V_3=`brew -v`
+      echo "BREW_V_3 yields: $BREW_V_3" 2>&1 | tee -a "$LOG_FILE"
+      if [ "$BREW_V_3" == "" ]; then
+        # could not get it to work
+        echo "The installation of homebrew could not be completed. Please install homebrew manually (https://brew.sh/). After homebrew is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+      else
+        echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
+      fi
+    else
+      echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
+    fi
+  else
+    echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
+  fi
+
+  # write path to homebrew to txt file
+  echo `brew --prefix` > $PATH_TO_BREW_INSTALLATION_TXT_FILE
+  
+  # further requirements for labelImg
+  arch -arm64 brew install pyqt@5
+  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  make qt5py3
+  python3 -m pip install --pre --upgrade lxml
 else
-  # install packages for intel computer
-  echo "Chip: `sysctl -n machdep.cpu.brand_string`"
-  echo "This is not an M1 computer. Installing the packages for intel computers..." 2>&1 | tee -a "$LOG_FILE"
+  # for non m1 macs
+  # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+  conda activate ecoassistcondaenv
+
+  # requirements for labelImg
+  pip install pyqt5==5.15.2 lxml
 fi
 
-# install extra packages for EcoAssist
-conda activate ecoassistcondaenv
+# requirements for EcoAssist
 pip install bounding_box
-
-# install extra packages for labelImg
-pip install pyqt5==5.15.2 lxml
 
 # log env info
 conda info --envs >> "$LOG_FILE"
