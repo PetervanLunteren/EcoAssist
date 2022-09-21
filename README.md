@@ -8,7 +8,7 @@ EcoAssist is an application designed to make life easier for wildlife ecologists
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used. You can contact me at [contact@pvanlunteren.com](mailto:contact@pvanlunteren.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
 ## Features
-* Use MegaDetector v5 to tag animals, persons and vehicles in both images and video's
+* Use the `MDv5` model to tag animals, persons and vehicles in both images and video's
 * Filter out empty images, people, vehicles or animals
 * Review and edit annotations using [labelImg](https://github.com/heartexlabs/labelImg)
 * Export `.xml` label files in Pascal VOC format for further model training
