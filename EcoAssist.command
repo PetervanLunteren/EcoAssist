@@ -6,6 +6,7 @@
 # set vars
 LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
+PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
 
 # log output to logfiles
 exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
@@ -13,7 +14,7 @@ exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
 
 # timestamp and log the start
 START_DATE=`date`
-echo "This installation started at: $START_DATE"
+echo "Starting at: $START_DATE"
 echo ""
 
 # log system information
@@ -91,4 +92,4 @@ python EcoAssist/EcoAssist_GUI.py
 # timestamp and log the end
 END_DATE=`date`
 echo ""
-echo "This installation ended at: $END_DATE"
+echo "Closing at: $END_DATE"
