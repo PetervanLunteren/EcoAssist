@@ -281,6 +281,7 @@ if [ "$M1_MAC" = true ] ; then
   if [ "$BREW_V_1" == "" ]; then
     # the brew command is not recognised
     echo "Homebrew might be installed, but the brew command is not recognised. Lets try to add some common locations of homebrew to the \$PATH variable and check again..." 2>&1 | tee -a "$LOG_FILE"
+    export PATH="$LOCATION_ECOASSIST_FILES/homebrew/bin:$PATH"
     export PATH="/usr:$PATH"
     export PATH="/usr/homebrew:$PATH"
     export PATH="/usr/bin:$PATH"
