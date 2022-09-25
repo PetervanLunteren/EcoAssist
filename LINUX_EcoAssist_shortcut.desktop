@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Terminal=true
+Name=EcoAssist
+Icon=logo_small_bg
+Exec=gnome-terminal -e "bash -c 'bash $HOME/Desktop/EcoAssist_files/EcoAssist/EcoAssist.command;$SHELL'"
+Categories=Application;
