@@ -695,8 +695,10 @@ def update_progress_label_short(value1="", value2="", command=""):
         return f"Elapsed time:\t\t{value1}\n" \
                f"Remaining time:\t\t{value2}"
     if command == "done":
-        return f"                            Done!                            \n" \
-               f"Elapsed time:\t\t{value1}"
+        if sys.platform == "linux" or sys.platform == "linux2":
+            return f"Done!\n"
+        else:
+            return f"                            Done!                            \n"
                
 
 # function to open the folder after finishing
