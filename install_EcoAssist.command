@@ -1,19 +1,39 @@
 #!/usr/bin/env bash
 
-### OSX install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 21 September 2022
+### OSx ans Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
+### Peter van Lunteren, 26 September 2022
+
+
+# check the OS and set var
+if [ "$(uname)" == "Darwin" ]; then
+  echo "This is an OSX computer..."
+  if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
+    echo "   ...with an M1 processor."
+    PLATFORM="M1 Mac"
+  else
+    echo "   ...with an Intel processor."
+    PLATFORM="Intel Mac"
+  fi
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+  echo "This is an Linux computer."
+  PLATFORM="Linux"
+fi
 
 # timestamp the start of installation
 START_DATE=`date`
 
 # prevent mac to sleep during process
-pmset noidle &
-PMSETPID=$!
+if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  pmset noidle &
+  PMSETPID=$!
+fi
 
-# set vars
-LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
-PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
+# set location var
+if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
+elif [ "$PLATFORM" = "Linux" ]; then
+  LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
+fi
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES
@@ -35,41 +55,57 @@ fi
 # log the start
 echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
 
-# check if computer is an M1 mac and set var
-echo "Chip: `sysctl -n machdep.cpu.brand_string`" 2>&1 | tee -a "$LOG_FILE"
-if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-  echo "This is an M1 computer." 2>&1 | tee -a "$LOG_FILE"
-  M1_MAC=true
-else
-  echo "This is not an M1 computer." 2>&1 | tee -a "$LOG_FILE"
-  M1_MAC=false
-fi
-
 # log system information
 UNAME_A=`uname -a`
-MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+elif [ "$PLATFORM" = "Linux" ]; then
+  PATH=$PATH:/usr/sbin
+  MACHINE_INFO_1=`lscpu`
+  MACHINE_INFO_2=`dmidecode`
+  MACHINE_INFO_3=""
+  SYSTEM_INFO_DIRECTORY="/sys/devices/virtual/dmi/id/"
+  if [ -d "$SYSTEM_INFO_DIRECTORY" ]; then
+    echo "$SYSTEM_INFO_DIRECTORY does exist."
+    cd $SYSTEM_INFO_DIRECTORY
+    for f in *; do
+      MACHINE_INFO_3+="
+      $f = `cat $f 2>/dev/null || echo "***_Unavailable_***"`"
+    done
+  fi
+  MACHINE_INFO="${MACHINE_INFO_1}
+  ${MACHINE_INFO_2}
+  ${MACHINE_INFO_3}"
+fi
 echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "System information:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
 # clone EcoAssist git if not present
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
-  # move the open.cmd one dir up and give it an icon
-  cd $LOCATION_ECOASSIST_FILES/EcoAssist || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  FILE="EcoAssist.command"
-  ICON="imgs/logo_small_bg.icns" 
-  bash fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
-  mv -f $FILE /Applications/ # move file and replace
+  # move the open.cmd two dirs up and give it an icon
+  if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/EcoAssist.command"
+    ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns" 
+    bash fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+    mv -f $FILE /Applications/ # move file and replace
+  elif [ "$PLATFORM" = "Linux" ]; then
+    SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
+    DEST="$HOME/.icons/logo_small_bg.png"
+    mkdir -p "$HOME/.icons" # create location if not already present
+    cp $SOURCE $DEST # copy icon to proper location
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/LINUX_EcoAssist_shortcut.desktop"
+    mv -f $FILE "$HOME/Desktop/LINUX_EcoAssist_shortcut.desktop" # move file and replace
+  fi
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -105,7 +141,7 @@ else
   echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  if [ "$M1_MAC" = true ] ; then
+  if [ "$PLATFORM" = "M1 Mac" ] ; then
     git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
   else
     git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
@@ -133,7 +169,7 @@ if [ -f "$MD" ]; then
   echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$M1_MAC" = true ] ; then
+  if [ "$PLATFORM" = "M1 Mac" ] ; then
     curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
   else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
@@ -142,6 +178,7 @@ fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # check if conda is already installed, if not install
+PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 CONDA_LIST_1=`conda list`
 echo "CONDA_LIST_1 yields: $CONDA_LIST_1" 2>&1 | tee -a "$LOG_FILE"
@@ -163,9 +200,17 @@ if [ "$CONDA_LIST_1" == "" ]; then
   if [ "$CONDA_LIST_2" == "" ]; then
     # download and install anaconda
     echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-    curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
-    echo "Executing installation file now... The installation is not yet done. Please be patient. "  2>&1 | tee -a "$LOG_FILE"
-    sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2>&1 | tee -a "$LOG_FILE"
+    if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+      curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+      echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
+      INSTALL_SH=Anaconda3-2021.11-MacOSX-x86_64.sh
+    elif [ "$PLATFORM" = "Linux" ]; then
+      curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
+      echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
+      INSTALL_SH=Anaconda3-2021.11-Linux-x86_64.sh
+    fi
+    echo $INSTALL_SH
+    sh $INSTALL_SH -b 2>&1 | tee -a "$LOG_FILE"
     echo "Lets try to add some common locations of anaconda to the \$PATH variable."  2>&1 | tee -a "$LOG_FILE"
     export PATH="~/anaconda3/bin:$PATH"
     export PATH="~/Anaconda3/bin:$PATH"
@@ -181,7 +226,7 @@ if [ "$CONDA_LIST_1" == "" ]; then
     echo "CONDA_LIST_3 yields: $CONDA_LIST_3" 2>&1 | tee -a "$LOG_FILE"
     if [ "$CONDA_LIST_3" == "" ]; then
       echo "Looks like conda is installed but it still can't find the location of the anaconda3 folder. Lets try regex on the error message."  2>&1 | tee -a "$LOG_FILE"
-      REGEX_PATH=`sh Anaconda3-2021.11-MacOSX-x86_64.sh -b 2> >(grep -o "'.*'") | tr -d "'"`
+      REGEX_PATH=`sh $INSTALL_SH -b 2> >(grep -o "'.*'") | tr -d "'"`
       echo "The prefix extracted from the error message is $REGEX_PATH" 2>&1 | tee -a "$LOG_FILE"
       export PATH="$REGEX_PATH/bin:$PATH"
       echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
@@ -190,7 +235,11 @@ if [ "$CONDA_LIST_1" == "" ]; then
       echo "CONDA_LIST_4 yields: $CONDA_LIST_4" 2>&1 | tee -a "$LOG_FILE"
       if [ "$CONDA_LIST_4" == "" ]; then
         # could not get it to work
-        echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+        if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+        elif [ "$PLATFORM" = "Linux" ]; then
+          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+        fi
       fi
     else
       echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
@@ -204,7 +253,6 @@ fi
 
 # remove if the installation file is still there
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-INSTALL_SH="Anaconda3-2021.11-MacOSX-x86_64.sh"
 if [ -f "$INSTALL_SH" ]; then
   echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
   rm $INSTALL_SH
@@ -263,8 +311,22 @@ fetch_os_type
 conda env remove -n ecoassistcondaenv
 
 # create conda env
-if [ "$M1_MAC" = true ] ; then
-  # for m1 macs
+if [ "$PLATFORM" = "Linux" ]; then
+  # requirements for MegaDetector 
+  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
+  conda activate ecoassistcondaenv
+  # requirements for labelImg
+  pip install pyqt5==5.15.2 lxml libxcb-xinerama0
+  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  pyrcc5 -o libs/resources.py resources.qrc
+  python3 -m pip install --pre --upgrade lxml
+elif [ "$PLATFORM" = "Intel Mac" ]; then
+  # requirements for MegaDetector 
+  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+  conda activate ecoassistcondaenv
+  # requirements for labelImg
+  pip install pyqt5==5.15.2 lxml
+elif [ "$PLATFORM" = "M1 Mac" ] ; then
   # requirements for MegaDetector
   CONDA_SUBDIR=osx-arm64 conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
   conda activate ecoassistcondaenv
@@ -275,6 +337,7 @@ if [ "$M1_MAC" = true ] ; then
 
   # we need homebrew to install PyQt5 for M1 macs...
   # check if homebrew is already installed, if not install
+  PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   BREW_V_1=`brew -v`
   echo "BREW_V_1 yields: $BREW_V_1" 2>&1 | tee -a "$LOG_FILE"
@@ -331,14 +394,6 @@ if [ "$M1_MAC" = true ] ; then
   cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   make qt5py3
   python3 -m pip install --pre --upgrade lxml
-else
-  # for non m1 macs
-  # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
-  conda activate ecoassistcondaenv
-
-  # requirements for labelImg
-  pip install pyqt5==5.15.2 lxml
 fi
 
 # requirements for EcoAssist
@@ -352,19 +407,9 @@ pip freeze >> "$LOG_FILE"
 # deactivate conda env
 conda deactivate
 
-# log system information again after installation
-UNAME_A=`uname -a`
-MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+# log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
 FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
-echo "uname -a:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "$UNAME_A"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "System information:"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
-echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
-echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "File sizes with depth 0:"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 echo "$FILE_SIZES_DEPTH_0"  2>&1 | tee -a "$LOG_FILE"
@@ -390,4 +435,6 @@ echo "THE INSTALLATION IS DONE! You can close this window now and proceed to ope
 echo ""
 
 # the computer may go to sleep again
-kill $PMSETPID
+if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  kill $PMSETPID
+fi

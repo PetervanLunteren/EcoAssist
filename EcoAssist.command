@@ -1,12 +1,29 @@
 #!/usr/bin/env bash
 
-### OSX commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 18 September 2022
+### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
+### Peter van Lunteren, 26 September 2022
 
-# set vars
-LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
-PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
+# check the OS and set var
+if [ "$(uname)" == "Darwin" ]; then
+  echo "This is an OSX computer..."
+  if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
+    echo "   ...with an M1 processor."
+    PLATFORM="M1 Mac"
+  else
+    echo "   ...with an Intel processor."
+    PLATFORM="Intel Mac"
+  fi
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+  echo "This is an Linux computer."
+  PLATFORM="Linux"
+fi
+
+# set location var
+if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
+elif [ "$PLATFORM" = "Linux" ]; then
+  LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
+fi
 
 # log output to logfiles
 exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
@@ -48,6 +65,7 @@ echo ""
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
 # locate conda
+PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
 PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
 echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
 
