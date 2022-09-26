@@ -43,15 +43,15 @@ For now, it is only available for MacOS and Linux users. I'm in the process of a
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
 ### Mac users
-1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/install_EcoAssist.command`. Then try again.
+1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. I have found a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
 
 ### Linux users
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
 2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the following commands.
 ```bash
-chmod 755 $HOME/Downloads/install_EcoAssist.command
-bash $HOME/Downloads/install_EcoAssist.command
+chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
+bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
 3. Go get yourself a beverage because this might take a few minutes to complete.
 
