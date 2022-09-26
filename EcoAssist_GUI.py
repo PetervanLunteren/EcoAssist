@@ -939,7 +939,7 @@ def open_labelImg():
     print(f"path_to_labelImg: {path_to_labelImg}") # log path names
     print(f"path_to_labelImg_command: {path_to_labelImg_command}")
     print(f"path_to_classes_txt: {path_to_classes_txt}")
-    os.system(f"sh '{path_to_labelImg_command}' '{chosen_dir}' '{path_to_classes_txt}'") # open labelimg by bash command
+    os.system(f"bash '{path_to_labelImg_command}' '{chosen_dir}' '{path_to_classes_txt}'") # open labelimg by bash command
 
 
 # tkinter window to show progress and perform the commands
