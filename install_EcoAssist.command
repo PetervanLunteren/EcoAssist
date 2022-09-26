@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-### OSx ans Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
+### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
 ### Peter van Lunteren, 26 September 2022
 
 
