@@ -37,22 +37,41 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 </p>
 
 ## How to download?
-For now, it is only available for OSX users. I'm in the process of also adopting Linux and Windows.
+### General information
+For now, it is only available for MacOS and Linux users. I'm in the process of also adopting it to Windows.
 
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
-1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Mac OS can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 ~/Downloads/install_EcoAssist.command`. Then try again.
+### Mac users
+1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. I have found a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
 
+### Linux users
+1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
+2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the following commands.
+```bash
+chmod 755 $HOME/Downloads/install_EcoAssist.command
+bash $HOME/Downloads/install_EcoAssist.command
+```
+3. Go get yourself a beverage because this might take a few minutes to complete.
+
 ## How to start the application?
+### Mac users
 ```
  📁Applications
  └── 📄EcoAssist.command
 ```
 EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
+### Linux users
+```
+ 📁Desktop
+ └── 📄EcoAssist
+```
+EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. 
+
 ## GPU Support
-It is possible to run EcoAssist on your GPU for faster processing (I just never tried it before). See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. You would probably be best off by installing EcoAssist normally and afterwards installing the proper software into the `ecoassistcondaenv` conda environment.
+EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` hardware and `CUDA` software installed. The approproate software is included in the EcoAssist installation for Linux, but not for Mac users. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Mac users with compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software into the `ecoassistcondaenv` conda environment.
 
 ## How to uninstall EcoAssist?
 You can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command). It will prompt you whether you want to uninstall Anaconda too. If you use Anaconda for something else you probably don't want to uninstall it. You can just type `yes` or `no`.
