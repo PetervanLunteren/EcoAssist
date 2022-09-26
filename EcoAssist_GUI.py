@@ -934,7 +934,7 @@ def open_labelImg():
     if os.path.isdir(separated_chosen_dir): # check if the images are seperated, if yes adjust chosen dir
         chosen_dir = separated_chosen_dir
     path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg") # get path names
-    path_to_labelImg_command = os.path.join(os.path.dirname(os.path.realpath(__file__)), "open_labelImg.command")
+    path_to_labelImg_command = os.path.join(os.path.dirname(os.path.realpath(__file__)), "MacOS_Linux_open_LabelImg.command")
     path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
     print(f"path_to_labelImg: {path_to_labelImg}") # log path names
     print(f"path_to_labelImg_command: {path_to_labelImg_command}")
