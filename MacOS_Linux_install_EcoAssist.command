@@ -94,17 +94,17 @@ else
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/EcoAssist.command"
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_EcoAssist.command"
     ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns" 
     bash fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
-    mv -f $FILE /Applications/ # move file and replace
+    mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
   elif [ "$PLATFORM" = "Linux" ]; then
     SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
     DEST="$HOME/.icons/logo_small_bg.png"
     mkdir -p "$HOME/.icons" # create location if not already present
     cp $SOURCE $DEST # copy icon to proper location
-    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/LINUX_EcoAssist_shortcut.desktop"
-    mv -f $FILE "$HOME/Desktop/LINUX_EcoAssist_shortcut.desktop" # move file and replace
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
+    mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
   fi
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
@@ -236,9 +236,9 @@ if [ "$CONDA_LIST_1" == "" ]; then
       if [ "$CONDA_LIST_4" == "" ]; then
         # could not get it to work
         if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
         elif [ "$PLATFORM" = "Linux" ]; then
-          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
         fi
       fi
     else
@@ -375,7 +375,7 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
       echo "BREW_V_3 yields: $BREW_V_3" 2>&1 | tee -a "$LOG_FILE"
       if [ "$BREW_V_3" == "" ]; then
         # could not get it to work
-        echo "The installation of homebrew could not be completed. Please install homebrew manually (https://brew.sh/). After homebrew is successfully installed, please execute the install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
+        echo "The installation of homebrew could not be completed. Please install homebrew manually (https://brew.sh/). After homebrew is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
       else
         echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
       fi

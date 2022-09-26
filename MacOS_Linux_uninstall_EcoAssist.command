@@ -37,7 +37,7 @@ echo "Deleting EcoAssist.command..."
 if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   rm -f "/Applications/EcoAssist.command"
 elif [ "$PLATFORM" = "Linux" ]; then
-  rm -f "$HOME/Desktop/LINUX_EcoAssist_shortcut.desktop"
+  rm -f "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop"
 fi
 
 # ask user if anaconda must be uninstalled too
