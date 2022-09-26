@@ -14,7 +14,7 @@ if [ "$(uname)" == "Darwin" ]; then
     PLATFORM="Intel Mac"
   fi
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-  echo "This is an Linux computer."
+  echo "This is a Linux computer."
   PLATFORM="Linux"
 fi
 
