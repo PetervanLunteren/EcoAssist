@@ -1,12 +1,5 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 5 Sept 2022.
-
-#TODO:
-# - kijken of alles nog werkt op apple en op windows
-# - push to git
-# - install bash script maken voor windows
-# - open bash script maken voor windows
-# - open labelimg maken voor windows
+# Written by Peter van Lunteren, 26 Sept 2022.
 
 # import packages
 import json
@@ -650,29 +643,49 @@ def update_progress_label_megadetector(value1="", value2="", value3="", value4="
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
                 f"Time per image:\t\t{value5}s"
-        else:
+        elif sys.platform == "linux" or sys.platform == "linux2":
+            return f"Percentage done:\t{value6}%\n" \
+                f"Processing image:\t{value3} of {value4}\n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Remaining time:\t\t{value2}\n" \
+                f"Time per image:\t\t{value5}s"
+        elif sys.platform == "darwin":
             return f"Percentage done:\t\t{value6}%\n" \
                 f"Processing image:\t\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
                 f"Time per image:\t\t{value5}s"
     if command == "done":
-        return f"                            Done!                            \n" \
-               f"Elapsed time:\t\t{value1}\n" \
-               f"Time per image:\t\t{value5}s"
+        if sys.platform == "linux" or sys.platform == "linux2":
+            return f"Elapsed time:\t\t{value1}\n" \
+                f"Time per image:\t\t{value5}s"
+        else:
+            return f"                            Done!                            \n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Time per image:\t\t{value5}s"
 
 # function to print the progress of megadetector when processing movies
 def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running":
-        return f"Percentage done:\t\t{value6}%\n" \
-            f"Processing frame:\t\t{value3} of {value4}\n" \
-            f"Elapsed time:\t\t{value1}\n" \
-            f"Remaining time:\t\t{value2}\n" \
-            f"Time per frame:\t\t{value5}s"
+        if sys.platform == "linux" or sys.platform == "linux2":
+            return f"Percentage done:\t{value6}%\n" \
+                f"Processing frame:\t{value3} of {value4}\n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Remaining time:\t\t{value2}\n" \
+                f"Time per frame:\t\t{value5}s"
+        else:
+            return f"Percentage done:\t\t{value6}%\n" \
+                f"Processing frame:\t\t{value3} of {value4}\n" \
+                f"Elapsed time:\t\t{value1}\n" \
+                f"Remaining time:\t\t{value2}\n" \
+                f"Time per frame:\t\t{value5}s"
     if command == "done":
-        return f"                            Done!                            \n"
+        if sys.platform == "linux" or sys.platform == "linux2":
+            return f"Done!\n"
+        else:
+            return f"                            Done!                            \n"
 
 # function to print the progress of the rest when loading
 def update_progress_label_short(value1="", value2="", command=""):
@@ -693,7 +706,10 @@ def open_file(path):
     elif platform.system() == "Darwin":
         subprocess.Popen(["open", path])
     else:
-        subprocess.Popen(["xdg-open", path])
+        try:
+            subprocess.Popen(["xdg-open", path])
+        except:
+            print(f"Could not open the folder {path}. The xdg-open command dit not work. Nothing happened. User did not see an error message.")
 
 
 # function to browse dirs
@@ -1193,6 +1209,11 @@ if os.name == "nt":
     textbox_height_adjustment_factor = 0.77
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
+if sys.platform == "linux" or sys.platform == "linux2":
+    resize_img_factor = 1
+    textbox_height_adjustment_factor = 0.85
+    textbox_width_adjustment_factor = 1
+    text_size_adjustment_factor = 0.7
 else:
     resize_img_factor = 1
     textbox_height_adjustment_factor = 1
