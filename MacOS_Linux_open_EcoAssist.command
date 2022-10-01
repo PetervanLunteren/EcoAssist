@@ -26,8 +26,8 @@ elif [ "$PLATFORM" = "Linux" ]; then
 fi
 
 # log output to logfiles
-exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
-exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
+# exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
+# exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
 
 # timestamp and log the start
 START_DATE=`date`
