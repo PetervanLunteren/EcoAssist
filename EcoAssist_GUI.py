@@ -978,7 +978,7 @@ def openProgressWindow():
                 mega_frame = LabelFrame(newWindow, text="Algorithm", pady=2, padx=5, relief='solid',
                                         highlightthickness=5,
                                         font=100, fg='darkblue')
-                mega_frame.configure(font=("TkDefaultFont", 15, "bold"))
+                mega_frame.configure(font=(text_font, 15, "bold"))
                 mega_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
                 mega_frame.columnconfigure(0, weight=3, minsize=115)
                 mega_frame.columnconfigure(1, weight=1, minsize=115)
@@ -994,7 +994,7 @@ def openProgressWindow():
             if check_xml.get():
                 xml_frame = LabelFrame(newWindow, text="Create label files", pady=2, padx=5, relief='solid',
                                        highlightthickness=5, font=100, fg='darkblue', width=300, height=200)
-                xml_frame.configure(font=("TkDefaultFont", 15, "bold"))
+                xml_frame.configure(font=(text_font, 15, "bold"))
                 xml_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
                 xml_frame.columnconfigure(0, weight=3, minsize=115)
                 xml_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1010,7 +1010,7 @@ def openProgressWindow():
             if check_sep.get():
                 sep_frame = LabelFrame(newWindow, text="Separate images", pady=2, padx=5, relief='solid',
                                        highlightthickness=5, font=100, fg='darkblue', width=300, height=200)
-                sep_frame.configure(font=("TkDefaultFont", 15, "bold"))
+                sep_frame.configure(font=(text_font, 15, "bold"))
                 sep_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
                 sep_frame.columnconfigure(0, weight=3, minsize=115)
                 sep_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1026,7 +1026,7 @@ def openProgressWindow():
             if check_vis_detec.get():
                 bbox_frame = LabelFrame(newWindow, text="Draw bounding boxes", pady=2, padx=5, relief='solid',
                                         highlightthickness=5, font=100, fg='darkblue')
-                bbox_frame.configure(font=("TkDefaultFont", 15, "bold"))
+                bbox_frame.configure(font=(text_font, 15, "bold"))
                 bbox_frame.grid(column=0, row=4, columnspan=2, sticky='ew')
                 bbox_frame.columnconfigure(0, weight=3, minsize=115)
                 bbox_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1043,7 +1043,7 @@ def openProgressWindow():
                 crop_frame = LabelFrame(newWindow, text="Crop images", pady=2, padx=5, relief='solid',
                                         highlightthickness=5,
                                         font=100, fg='darkblue', width=300, height=200)
-                crop_frame.configure(font=("TkDefaultFont", 15, "bold"))
+                crop_frame.configure(font=(text_font, 15, "bold"))
                 crop_frame.grid(column=0, row=5, columnspan=2, sticky='ew')
                 crop_frame.columnconfigure(0, weight=3, minsize=115)
                 crop_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1141,7 +1141,7 @@ def openProgressWindow():
         if v_produce_JSON.get():
             v_mega_frame = LabelFrame(newWindow, text="Algorithm", pady=2, padx=5, relief='solid', highlightthickness=5,
                                       font=100, fg='darkblue')
-            v_mega_frame.configure(font=("TkDefaultFont", 15, "bold"))
+            v_mega_frame.configure(font=(text_font, 15, "bold"))
             v_mega_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
             v_mega_frame.columnconfigure(0, weight=3, minsize=115)
             v_mega_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1157,7 +1157,7 @@ def openProgressWindow():
         if v_check_sep.get():
             v_sep_frame = LabelFrame(newWindow, text="Separate movies", pady=2, padx=5, relief='solid',
                                      highlightthickness=5, font=100, fg='darkblue', width=300, height=200)
-            v_sep_frame.configure(font=("TkDefaultFont", 15, "bold"))
+            v_sep_frame.configure(font=(text_font, 15, "bold"))
             v_sep_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
             v_sep_frame.columnconfigure(0, weight=3, minsize=115)
             v_sep_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1207,16 +1207,19 @@ tabControl = ttk.Notebook(window)
 # tkinter looks different on windows and unix computers
 # here I try to make it look a bit simmilar
 if os.name == "nt":
+    text_font = "TkDefaultFont"
     resize_img_factor = 0.84
     textbox_height_adjustment_factor = 0.77
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
 if sys.platform == "linux" or sys.platform == "linux2":
+    text_font = "Times"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 0.85
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.7
 else:
+    text_font = "TkDefaultFont"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 1
     textbox_width_adjustment_factor = 1
@@ -1289,7 +1292,7 @@ tabControl.grid()
 # Folder frame
 dir_frame = LabelFrame(param_tab, text="Folder choice", pady=2, padx=5, relief='solid', highlightthickness=5, font=100,
                        fg='darkblue')
-dir_frame.configure(font=("TkDefaultFont", 15, "bold"))
+dir_frame.configure(font=(text_font, 15, "bold"))
 dir_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
 dir_frame.columnconfigure(0, weight=1, minsize=430)
 dir_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1311,7 +1314,7 @@ dropdown.grid(row=1, column=1, sticky='e', padx=5)
 # Megadetector frame for images
 meg_frame = LabelFrame(param_tab, text="Algorithm settings", pady=2, padx=5, relief='solid', highlightthickness=5,
                        fg='darkblue')
-meg_frame.configure(font=("TkDefaultFont", 15, "bold"))
+meg_frame.configure(font=(text_font, 15, "bold"))
 meg_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
 meg_frame.columnconfigure(0, weight=1, minsize=430)
 meg_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1364,7 +1367,7 @@ chb3.grid(row=5, column=1, sticky='e', padx=5)
 # Visualisation frame for images
 vis_frame = LabelFrame(param_tab, text="Visualisation settings", pady=2, padx=5, relief='solid', highlightthickness=5,
                        fg='darkblue')
-vis_frame.configure(font=("TkDefaultFont", 15, "bold"))
+vis_frame.configure(font=(text_font, 15, "bold"))
 vis_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
 vis_frame.columnconfigure(0, weight=3, minsize=430)
 vis_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1391,7 +1394,7 @@ chb7.grid(row=2, column=1, sticky='e', padx=5)
 # Seperator frame for images
 sep_frame = LabelFrame(param_tab, text="Separate images", pady=2, padx=5, relief='solid', highlightthickness=5,
                        fg='darkblue')
-sep_frame.configure(font=("TkDefaultFont", 15, "bold"))
+sep_frame.configure(font=(text_font, 15, "bold"))
 sep_frame.grid(column=0, row=4, columnspan=2, sticky='ew')
 sep_frame.columnconfigure(0, weight=3, minsize=430)
 sep_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1406,7 +1409,7 @@ chb4.grid(row=0, column=1, sticky='e', padx=5)
 # XML frame for images
 xml_frame = LabelFrame(param_tab, text="Create label files", pady=2, padx=5, relief='solid', highlightthickness=5,
                        fg='darkblue')
-xml_frame.configure(font=("TkDefaultFont", 15, "bold"))
+xml_frame.configure(font=(text_font, 15, "bold"))
 xml_frame.grid(column=0, row=5, columnspan=2, sticky='ew')
 xml_frame.columnconfigure(0, weight=3, minsize=430)
 xml_frame.columnconfigure(1, weight=1, minsize=115)
@@ -1425,7 +1428,7 @@ Button(master=xml_frame, text="Open", command=open_labelImg).grid(row=1, column=
 # Megadetector frame for videos
 v_meg_frame = LabelFrame(param_tab, text="Algorithm settings", pady=2, padx=5, relief='solid', highlightthickness=5,
                          fg='darkblue')
-v_meg_frame.configure(font=("TkDefaultFont", 15, "bold"))
+v_meg_frame.configure(font=(text_font, 15, "bold"))
 v_meg_frame.columnconfigure(0, weight=1, minsize=430)
 v_meg_frame.columnconfigure(1, weight=1, minsize=115)
 
@@ -1470,7 +1473,7 @@ v_ent1.config(state=DISABLED)
 # Seperator frame for videos
 v_sep_frame = LabelFrame(param_tab, text="Separate videos", pady=2, padx=5, relief='solid', highlightthickness=5,
                          fg='darkblue')
-v_sep_frame.configure(font=("TkDefaultFont", 15, "bold"))
+v_sep_frame.configure(font=(text_font, 15, "bold"))
 v_sep_frame.columnconfigure(0, weight=3, minsize=430)
 v_sep_frame.columnconfigure(1, weight=1, minsize=115)
 
@@ -1493,9 +1496,9 @@ scroll = Scrollbar(help_tab)
 scroll.grid(row=0, column=1, sticky='ns')
 t = Text(help_tab, width=int(70 * textbox_width_adjustment_factor), height=int(43 * textbox_height_adjustment_factor), wrap=WORD,
          yscrollcommand=scroll.set) # size depends on OS
-t.tag_config('title', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
-t.tag_config('mark', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} italic', foreground='darkred', justify='center') # size depends on OS
-t.tag_config('info', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
+t.tag_config('title', font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
+t.tag_config('mark', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic', foreground='darkred', justify='center') # size depends on OS
+t.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
 
 t.insert(END, "Please find below a list of parameters with an explanation on how to interpret them.\n\n")
 t.tag_add('info', '1.0', '1.end')
@@ -1640,15 +1643,15 @@ t.tag_add('title', '66.0', '66.end')
 t.tag_add('info', '67.0', '67.end')
 
 t.grid(row=0, column=0, sticky="nesw")
-t.configure(font=("TkDefaultFont", 11, "bold"), state=DISABLED)
+t.configure(font=(text_font, 11, "bold"), state=DISABLED)
 scroll.config(command=t.yview)
 
 # about tab
 text = Text(about_tab, width=int(70 * textbox_width_adjustment_factor), height=int(43 * textbox_height_adjustment_factor), wrap=WORD,
             yscrollcommand=scroll.set) # size depends on OS
-text.tag_config('title', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
-text.tag_config('info', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
-text.tag_config('italic', font=f'TkDefaultFont {int(13 * text_size_adjustment_factor)} italic') # size depends on OS
+text.tag_config('title', font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold', foreground='darkblue') # size depends on OS
+text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
+text.tag_config('italic', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic') # size depends on OS
 
 text.insert(END, "The application\n")
 text.insert(END,
@@ -1683,6 +1686,6 @@ text.insert(END, ".")
 text.tag_add('title', '10.0', '10.end')
 text.tag_add('info', '11.0', '11.end')
 text.grid(row=0, column=0, sticky="nesw")
-text.configure(font=("TkDefaultFont", 11, "bold"), state=DISABLED)
+text.configure(font=(text_font, 11, "bold"), state=DISABLED)
 
 window.mainloop()
