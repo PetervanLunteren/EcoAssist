@@ -1,5 +1,5 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 26 Sept 2022.
+# Written by Peter van Lunteren, 2 Oct 2022.
 
 # import packages
 import json
@@ -38,15 +38,20 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
     if os.name == 'nt': # apparently this is OS dependant
-        batch_command = [sys.executable, "-v", loc_detector_batch, model_file, *additional_json_cmds, path_to_image_folder, loc_json_file]
+        batch_command = [sys.executable, loc_detector_batch, model_file, *additional_json_cmds, path_to_image_folder, loc_json_file]
         print("sys.executable: ", sys.executable)
         print(f"batch_command: {batch_command}")
+        GPU_param = "Unknown"
         with Popen(batch_command,
-                stderr=PIPE, bufsize=1, shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, shell=True,
                 universal_newlines=True) as p:
-            for line in p.stderr:
+            for line in p.stdout:
                 print(line, end='')
-                if '%' in line[0:4]:
+                if line.startswith("GPU available: False"):
+                    GPU_param = "CPU"
+                elif line.startswith("GPU available: True"):
+                    GPU_param = "GPU"
+                elif '%' in line[0:4]:
                     times = re.search("(\[.*?\])", line)[1]
                     progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
                     percentage = re.search("\d*%", progress_bar)[0][:-1]
@@ -56,21 +61,26 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
                     time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
                     mega_progbar['value'] = percentage
-                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
                 window.update()
-            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
     else:
         additional_json_cmds = "' '".join(additional_json_cmds)
-        batch_command = f"'{sys.executable}' -v '{loc_detector_batch}' '{model_file}' '{additional_json_cmds}' '{path_to_image_folder}' '{loc_json_file}'"
+        batch_command = f"'{sys.executable}' '{loc_detector_batch}' '{model_file}' '{additional_json_cmds}' '{path_to_image_folder}' '{loc_json_file}'"
         print("sys.executable: ", sys.executable)
         print(f"batch_command: {batch_command}")
+        GPU_param = "Unknown"
         with Popen([batch_command],
-                stderr=PIPE, bufsize=1, shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, shell=True,
                 universal_newlines=True) as p:
-            for line in p.stderr:
+            for line in p.stdout:
                 print(line, end='')
-                if '%' in line[0:4]:
+                if line.startswith("GPU available: False"):
+                    GPU_param = "CPU"
+                elif line.startswith("GPU available: True"):
+                    GPU_param = "GPU"
+                elif '%' in line[0:4]:
                     times = re.search("(\[.*?\])", line)[1]
                     progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
                     percentage = re.search("\d*%", progress_bar)[0][:-1]
@@ -80,9 +90,9 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
                     time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
                     mega_progbar['value'] = percentage
-                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
                 window.update()
-            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
 
 
@@ -97,15 +107,20 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
     Path(os.path.join(path_to_video_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = "--output_json_file=" + os.path.join(path_to_video_folder, "json_file", "output.json")
     if os.name == "nt": # apparently this is OS dependant
-        video_command = [sys.executable, "-v", loc_process_video_py, *additional_json_cmds, loc_json_file, model_file, path_to_video_folder]
+        video_command = [sys.executable, loc_process_video_py, *additional_json_cmds, loc_json_file, model_file, path_to_video_folder]
         print("sys.executable: ", sys.executable)
         print(f"video_command: {video_command}")
+        GPU_param = "Unknown"
         with Popen(video_command,
-                stderr=PIPE, bufsize=1, shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, shell=True,
                 universal_newlines=True) as p:
-            for line in p.stderr:
+            for line in p.stdout:
                 print(line, end='')
-                if '%' in line[0:4]:
+                if line.startswith("GPU available: False"):
+                    GPU_param = "CPU"
+                elif line.startswith("GPU available: True"):
+                    GPU_param = "GPU"
+                elif '%' in line[0:4]:
                     times = re.search("(\[.*?\])", line)[1]
                     progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
                     percentage = re.search("\d*%", progress_bar)[0][:-1]
@@ -115,21 +130,26 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
                     time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
                     v_mega_progbar['value'] = percentage
-                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
                 window.update()
-            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
     else:
         additional_json_cmds = "' '".join(additional_json_cmds)
-        video_command = f"'{sys.executable}' -v '{loc_process_video_py}' '{additional_json_cmds}' '{loc_json_file}' '{model_file}' '{path_to_video_folder}'"
+        video_command = f"'{sys.executable}' '{loc_process_video_py}' '{additional_json_cmds}' '{loc_json_file}' '{model_file}' '{path_to_video_folder}'"
         print("sys.executable: ", sys.executable)
         print(f"video_command: {video_command}")
+        GPU_param = "Unknown"
         with Popen([video_command],
-                stderr=PIPE, bufsize=1, shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, shell=True,
                 universal_newlines=True) as p:
-            for line in p.stderr:
+            for line in p.stdout:
                 print(line, end='')
-                if '%' in line[0:4]:
+                if line.startswith("GPU available: False"):
+                    GPU_param = "CPU"
+                elif line.startswith("GPU available: True"):
+                    GPU_param = "GPU"
+                elif '%' in line[0:4]:
                     times = re.search("(\[.*?\])", line)[1]
                     progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
                     percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
@@ -137,9 +157,9 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
                     time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
                     v_mega_progbar['value'] = percentage
-                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="running")
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
                 window.update()
-            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, command="done")
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
 
 
@@ -633,7 +653,7 @@ def check_if_checkpointfile_is_present(directory):
 
 
 # function to print the progress of megadetector when processing images
-def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
+def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", value6="", value7="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running": # dependant on OS
@@ -642,30 +662,32 @@ def update_progress_label_megadetector(value1="", value2="", value3="", value4="
                 f"Processing image:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per image:\t\t{value5}s"
+                f"Time per image:\t\t{value5}s\n" \
+                f"Running on:\t\t{value7}"
         elif sys.platform == "linux" or sys.platform == "linux2":
             return f"Percentage done:\t{value6}%\n" \
                 f"Processing image:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per image:\t\t{value5}s"
+                f"Time per image:\t\t{value5}s\n" \
+                f"Running on:\t\t{value7}"
         elif sys.platform == "darwin":
-            return f"Percentage done:\t\t{value6}%\n" \
-                f"Processing image:\t\t{value3} of {value4}\n" \
-                f"Elapsed time:\t\t{value1}\n" \
-                f"Remaining time:\t\t{value2}\n" \
-                f"Time per image:\t\t{value5}s"
+            return f"Percentage done:\t{value6}%\n" \
+                f"Processing image:\t{value3} of {value4}\n" \
+                f"Elapsed time:\t{value1}\n" \
+                f"Remaining time:\t{value2}\n" \
+                f"Time per image:\t{value5}s\n" \
+                f"Running on:\t{value7}"
     if command == "done":
         if sys.platform == "linux" or sys.platform == "linux2":
-            return f"Elapsed time:\t\t{value1}\n" \
-                f"Time per image:\t\t{value5}s"
+            return f"Elapsed time:\t{value1}\n" \
+                f"Time per image:\t{value5}s"
         else:
-            return f"                            Done!                            \n" \
-                f"Elapsed time:\t\t{value1}\n" \
-                f"Time per image:\t\t{value5}s"
+            return f"Elapsed time:\t{value1}\n" \
+                f"Time per image:\t{value5}s"
 
 # function to print the progress of megadetector when processing movies
-def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", value6="", command=""):
+def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", value6="", value7="", command=""):
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running":
@@ -674,18 +696,17 @@ def update_progress_label_megadetector_v(value1="", value2="", value3="", value4
                 f"Processing frame:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per frame:\t\t{value5}s"
+                f"Time per frame:\t\t{value5}s\n" \
+                f"Running on:\t\t{value7}"
         else:
-            return f"Percentage done:\t\t{value6}%\n" \
-                f"Processing frame:\t\t{value3} of {value4}\n" \
-                f"Elapsed time:\t\t{value1}\n" \
-                f"Remaining time:\t\t{value2}\n" \
-                f"Time per frame:\t\t{value5}s"
+            return f"Percentage done:\t{value6}%\n" \
+                f"Processing frame:\t{value3} of {value4}\n" \
+                f"Elapsed time:\t{value1}\n" \
+                f"Remaining time:\t{value2}\n" \
+                f"Time per frame:\t{value5}s\n" \
+                f"Running on:\t{value7}"
     if command == "done":
-        if sys.platform == "linux" or sys.platform == "linux2":
-            return f"Done!\n"
-        else:
-            return f"                            Done!                            \n"
+        return f"Done!\n"
 
 # function to print the progress of the rest when loading
 def update_progress_label_short(value1="", value2="", command=""):
@@ -1199,7 +1220,7 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist 2.1")
+window.title("EcoAssist 2.2")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
