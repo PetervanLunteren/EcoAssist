@@ -48,7 +48,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 
 ### Linux users
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
-2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the commands below. If you don't have root privileges you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password you can skip this by pressing CONTROL+D when you are prompted for the password. EcoAssist will still work fine without it but you might have problems with the labelImg software.
+2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the commands below. If you don't have root privileges you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password you can skip this by pressing CONTROL+D when you are prompted for the password. EcoAssist will still work fine without it but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
 ```bash
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
