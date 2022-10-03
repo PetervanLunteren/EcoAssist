@@ -10,7 +10,7 @@ I've written this application in my free evenings and would really appreciate it
 ## Features
 * Use the `MDv5` model to tag animals, persons and vehicles in both images and video's
 * Filter out empty images, people, vehicles or animals
-* Review and edit annotations using [labelImg](https://github.com/heartexlabs/labelImg)
+* Review and edit annotations using the open-source [labelImg](https://github.com/heartexlabs/labelImg) software
 * Export `.xml` label files in Pascal VOC format for further model training
 * Manipulate data by drawing boxes or cropping detections
 <br/>
@@ -36,7 +36,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
-## How to download?
+## How to download/update?
 ### General information
 For now, it is only available for MacOS and Linux users. I'm in the process of also adopting it to Windows.
 
@@ -48,12 +48,11 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 
 ### Linux users
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
-2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the following commands.
+2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the commands below. If you don't have root privileges you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password you can skip this by pressing CONTROL+D when you are prompted for the password. EcoAssist will still work fine without it but you might have problems with the labelImg software.
 ```bash
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
-3. Go get yourself a beverage because this might take a few minutes to complete.
 
 ## How to start the application?
 ### Mac users
