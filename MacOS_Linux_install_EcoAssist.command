@@ -316,7 +316,8 @@ if [ "$PLATFORM" = "Linux" ]; then
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
   conda activate ecoassistcondaenv
   # requirements for labelImg
-  pip install pyqt5==5.15.2 lxml libxcb-xinerama0
+  pip install pyqt5==5.15.2 lxml
+  apt install libxcb-xinerama0 || echo "Trying to install the libxcb-xinerama0 package (https://packages.ubuntu.com/bionic/libxcb-xinerama0). If you don't have root privileges you might be prompted for a password."; sudo apt install libxcb-xinerama0 # first try without sudo
   cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   pyrcc5 -o libs/resources.py resources.qrc
   python3 -m pip install --pre --upgrade lxml
