@@ -74,3 +74,7 @@ EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` har
 
 ## How to uninstall EcoAssist?
 You can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command). It will prompt you whether you want to uninstall Anaconda too. If you use Anaconda for something else you probably don't want to uninstall it. You can just type `yes` or `no`.
+
+## Files for testing windows installation
+[Windows_install_EcoAssist.bat](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat)
+[Windows_uninstall_EcoAssist.bat](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat)
