@@ -77,4 +77,5 @@ You can uninstall EcoAssist by executing [this file](https://PetervanLunteren.gi
 
 ## Files for testing windows installation
 [Windows_install_EcoAssist.bat](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat)
+#
 [Windows_uninstall_EcoAssist.bat](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat)
