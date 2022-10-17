@@ -29,6 +29,7 @@ import sys
 
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
+    print("\n\nMEGADETECTOR IMAGES OUTPUT START -----------------------------------\n\n")
     mega_stats['text'] = update_progress_label_megadetector(command="load")
     print(f"Processing images with MegaDetector model...\n")
     path_to_image_folder = str(Path(path_to_image_folder)) # convert path separators
@@ -94,10 +95,12 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                 window.update()
             mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
+    print("\n\nMEGADETECTOR IMAGES OUTPUT END -----------------------------------\n\n")
 
 
 # function to start the MegaDetector process for video's
 def produce_json_video(path_to_video_folder, additional_json_cmds):
+    print("\n\nMEGADETECTOR VIDEOS OUTPUT START -----------------------------------\n\n")
     v_mega_stats['text'] = update_progress_label_megadetector_v(command="load")
     print(f"Processing videos with MegaDetector model...\n")
     path_to_video_folder = str(Path(path_to_video_folder)) # convert path separators
@@ -161,6 +164,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                 window.update()
             v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
             window.update()
+    print("\n\nMEGADETECTOR VIDEOS OUTPUT END -----------------------------------\n\n")
 
 
 
@@ -950,17 +954,36 @@ def v_handle_enter(txt):
 
 
 def open_labelImg():
+    print("\n\nLABELLIMG OUTPUT START -----------------------------------\n\n")
     chosen_dir = loc_input_image_folder.get() # get folder to open in labelimg
     separated_chosen_dir = os.path.join(chosen_dir, "images", "animals")
     if os.path.isdir(separated_chosen_dir): # check if the images are seperated, if yes adjust chosen dir
         chosen_dir = separated_chosen_dir
+    print(f"chosen_dir: {chosen_dir}") # log path names
     path_to_labelImg = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "labelImg") # get path names
-    path_to_labelImg_command = os.path.join(os.path.dirname(os.path.realpath(__file__)), "MacOS_Linux_open_LabelImg.command")
+    print(f"path_to_labelImg: {path_to_labelImg}")
     path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
-    print(f"path_to_labelImg: {path_to_labelImg}") # log path names
-    print(f"path_to_labelImg_command: {path_to_labelImg_command}")
     print(f"path_to_classes_txt: {path_to_classes_txt}")
-    os.system(f"bash '{path_to_labelImg_command}' '{chosen_dir}' '{path_to_classes_txt}'") # open labelimg by bash command
+    print(f"sys.executable: {sys.executable}")
+    if os.name == "nt": # for windows
+        path_to_labelImg_command_Windows = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Windows_open_LabelImg.bat")
+        print(f"path_to_labelImg_command_Windows: {path_to_labelImg_command_Windows}")
+        labelImg_command = [path_to_labelImg_command_Windows, chosen_dir, path_to_classes_txt]
+        print(f"labelImg_command: {labelImg_command}")
+        with Popen(labelImg_command,
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, shell=True,
+                universal_newlines=True) as p:
+            for line in p.stdout:
+                print(line, end='') # log stdout and stderr
+                if line.startswith("Traceback "): # report traceback when error
+                    mb.showerror("Error opening labelImg", message="An error occured while opening the annotation software labelImg. Please send an email to contact@pvanlunteren.com to resolve this bug.")
+
+    else: # for mac and linux 
+        path_to_labelImg_command_MacOS_Linux = os.path.join(os.path.dirname(os.path.realpath(__file__)), "MacOS_Linux_open_LabelImg.command")
+        print(f"path_to_labelImg_command_MacOS_Linux: {path_to_labelImg_command_MacOS_Linux}")
+        print(f"bash '{path_to_labelImg_command_MacOS_Linux}' '{chosen_dir}' '{path_to_classes_txt}'")
+        os.system(f"bash '{path_to_labelImg_command_MacOS_Linux}' '{chosen_dir}' '{path_to_classes_txt}'") # open labelimg by bash command
+    print("\n\nLABELLIMG OUTPUT END -----------------------------------\n\n")
 
 
 # tkinter window to show progress and perform the commands
@@ -1220,7 +1243,7 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist 2.2")
+window.title("EcoAssist 2.3")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
@@ -1233,7 +1256,7 @@ if os.name == "nt":
     textbox_height_adjustment_factor = 0.77
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
-if sys.platform == "linux" or sys.platform == "linux2":
+elif sys.platform == "linux" or sys.platform == "linux2":
     text_font = "Times"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 0.85
