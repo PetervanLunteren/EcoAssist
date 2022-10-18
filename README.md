@@ -84,5 +84,16 @@ EcoAssist will automatically run on your GPU if you have the proper hardware and
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=30% height="auto" >
 </p>
 
+## Citation
+If you use EcoAssist in you research, don't forget to cite the engine behind EcoAssist.
+```BibTeX
+@article{beery2019efficient,
+  title={Efficient Pipeline for Camera Trap Image Review},
+  author={Beery, Sara and Morris, Dan and Yang, Siyu},
+  journal={arXiv preprint arXiv:1907.06772},
+  year={2019}
+}
+```
+
 ## How to uninstall EcoAssist?
 Mac and Linux users can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command).  Windows users can uninstall it with [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat). It will prompt you whether you want to uninstall Anaconda too. You can just type `y` or `n`.
