@@ -976,7 +976,7 @@ def open_labelImg():
             for line in p.stdout:
                 print(line, end='') # log stdout and stderr
                 if line.startswith("Traceback "): # report traceback when error
-                    mb.showerror("Error opening labelImg", message="An error occured while opening the annotation software labelImg. Please send an email to contact@pvanlunteren.com to resolve this bug.")
+                    mb.showerror("Error opening labelImg", message="An error occured while opening the annotation software labelImg. Please send an email to petervanlunteren@hotmail.com to resolve this bug.")
 
     else: # for mac and linux 
         path_to_labelImg_command_MacOS_Linux = os.path.join(os.path.dirname(os.path.realpath(__file__)), "MacOS_Linux_open_LabelImg.command")
@@ -1641,7 +1641,7 @@ t.insert(INSERT, "LabelImg",
          hyperlink1.add(
              partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
 t.insert(END,
-         ". This is application makes it easy to annotate images for object detection machine learning. Thus, with this option one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double check them and mannualy provide the species labels. For your convenience, it's possible to change the defeault labels to your own by changing the predefined_classes.txt file in EcoAssist_files/labelImg/data. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are sparated. You can change the directory in LabelImg yourself too, if required. \n\n")
+         ". This is application makes it easy to annotate images for object detection machine learning. Thus, with this option one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double check them and mannualy provide the species labels. For your convenience, it's possible to change the defeault labels to your own by changing the predefined_classes.txt file in /EcoAssist_files/labelImg/data directory. This is a hidden folder located at C:\ProgramFiles on Windows, the Application directory on Macs and the user directory on Linux. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are sparated. You can change the directory in LabelImg yourself too, if required. \n\n")
 t.tag_add('title', '48.0', '48.end')
 t.tag_add('info', '49.0', '49.end')
 
@@ -1724,8 +1724,8 @@ text.tag_add('italic', '7.0', '8.end')
 text.insert(END, "The author\n")
 text.insert(END,
             "This program is written by Peter van Lunteren. I am a wildlife ecologist with a special interest in artificial intelligence, and how it can be applied to improve ecological research. EcoAssist is written to assist camera trap ecologists in their day-to-day activities without needing to have any programming skills. Help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would also very much like to know who uses the tool and for what reason. Please send me an email on ")
-text.insert(INSERT, "contact@pvanlunteren.com",
-            hyperlink.add(partial(webbrowser.open, "mailto:contact@pvanlunteren.com")))
+text.insert(INSERT, "petervanlunteren@hotmail.com",
+            hyperlink.add(partial(webbrowser.open, "mailto:petervanlunteren@hotmail.com")))
 text.insert(END, ".")
 text.tag_add('title', '10.0', '10.end')
 text.tag_add('info', '11.0', '11.end')
