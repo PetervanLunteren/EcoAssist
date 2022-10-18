@@ -40,18 +40,18 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 ### General information
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
-### Windows
+### Windows installation
 Download and double-click [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat). [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't know what you are doing - the default options are just fine. 
 
 *Note: EcoAssist is not yet extensively tested on Windows computers. If you find any problems or everything works perfectly, [let me know](mailto:petervanlunteren@hotmail.com)!*
 
-### Mac
+### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
 
 *Note: EcoAssist is not yet extensively tested on M1 macs. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
-### Linux
+### Linux installation
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
 2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the commands below. If you don't have root privileges you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password you can skip this by pressing Ctrl+D when you are prompted for the password. EcoAssist will still work fine without it but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
 ```bash
