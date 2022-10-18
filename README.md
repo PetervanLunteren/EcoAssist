@@ -31,7 +31,7 @@ I've written this application in my free evenings and would really appreciate it
 Camera trap images taken from [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## Users
-Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? Let me know!
+Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [let me know](mailto:petervanlunteren@hotmail.com)!
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
@@ -43,9 +43,13 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 ### Windows
 Download and double-click [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat). [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't know what you are doing - the default options are just fine. 
 
+*Note: EcoAssist is not yet extensively tested on Windows computers. If you find any problems or everything works perfectly, [let me know](mailto:petervanlunteren@hotmail.com)!*
+
 ### Mac
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
+
+*Note: EcoAssist is not yet extensively tested on M1 macs. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ### Linux
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
@@ -54,6 +58,7 @@ Download and double-click [this file](https://PetervanLunteren.github.io/EcoAssi
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
+*Note: EcoAssist is not yet extensively tested on Linux computers. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ## How to start the application?
 ### Windows and Linux
@@ -72,6 +77,8 @@ EcoAssist will open when you double-click the file above. You are free to move t
 
 ## GPU Support
 EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` drivers and `CUDA` software installed. The approproate software is included in the EcoAssist installation for Windows and Linux, but not for Mac users. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Mac users with compatible GPU and drivers will be best off by installing EcoAssist normally and afterwards installing the proper software into the `ecoassistcondaenv` conda environment.
+
+*Note: EcoAssist hasn't been tested on a GPU accelerated computer. I know it should work, but I just never had the opportunity to test it. Please [let me know](mailto:petervanlunteren@hotmail.com) if you tried it.*
 
 ## How to uninstall EcoAssist?
 Mac and Linux users can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command).  Windows users can uninstall it with [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat). It will prompt you whether you want to uninstall Anaconda too. You can just type `y` or `n`.
