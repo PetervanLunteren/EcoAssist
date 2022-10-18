@@ -1,21 +1,6 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
 @REM ### Peter van Lunteren, 17 october 2022
 
-@REM # TODO:
-
-@REM before installation:
-@REM # - FRESH COMP check if winget installation works properly on fresh computer and also if without add to PATH option
-
-@REM during installation
-@REM # - FRESH COMP check eerst even of de install helemaal tot in de krochten van de if else functies gaat wb git, winget, en conda. Dus de add paths out commenten. dan kijken. 
-@REM # - FRESH COMP dan alles uitproberen. Werkt het allemaal?
-
-@REM after installation:
-@REM # - FRESH COMP checken: kijk even goed naar de mkdirs enzo, want schijnbaar wordt er nog steeds een "C:/Program" aangemaakt. Staan alle qoutes wel goed?
-
-@REM new computer with NVIDIA GPU???
-@REM # - FRESH COMP nog een keer testen op een nieuwe computer. miscchien een andere versie van windows?
-
 @REM # set echo settings
 echo off
 @setlocal EnableDelayedExpansion
@@ -59,6 +44,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\installation_log.txt" (
 @REM # log the start of the installation
 echo Installation started at %START_DATE% | wtee -a "%LOG_FILE%"
 
+@REM # check if OS is 32 or 64 bit and set variable
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=32BIT || set OS=64BIT
+if %OS%==32BIT echo This is an 32-bit operating system. | wtee -a "%LOG_FILE%"
+if %OS%==64BIT echo This is an 64-bit operating system. | wtee -a "%LOG_FILE%"
+
 @REM # log system information
 systeminfo | wtee -a "%LOG_FILE%"
 
@@ -68,12 +58,12 @@ git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (1)
 echo Is git installed ^(1^)^? !git_installed_1! | wtee -a "%LOG_FILE%"
 if !git_installed_1!=="No" (
     echo "Git might be installed but not functioning. Searching for git.exe now.... This may take some time." | wtee -a "%LOG_FILE%"
-    set LOCATION_GIT_INSTALLS="%LOCATION_ECOASSIST_FILES%\list_with_git_installations.txt"
-    if exist !LOCATION_GIT_INSTALLS! del !LOCATION_GIT_INSTALLS!
+    set LOCATION_GIT_INSTALLS_1="%LOCATION_ECOASSIST_FILES%\list_with_git_installations_1.txt"
+    if exist !LOCATION_GIT_INSTALLS_1! del !LOCATION_GIT_INSTALLS_1!
     cd \ || ( echo "Could not change directory to C:\. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    dir /b/s git.exe | find /I "\cmd\git.exe" >> !LOCATION_GIT_INSTALLS!
+    dir /b/s git.exe | find /I "\cmd\git.exe" >> !LOCATION_GIT_INSTALLS_1!
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    for /F "tokens=*" %%A in ('type !LOCATION_GIT_INSTALLS!') do (
+    for /F "tokens=*" %%A in ('type !LOCATION_GIT_INSTALLS_1!') do (
         set str=%%A
         @REM # remove the file part of path so that it is a directory
         set str=!str:git.exe=!
@@ -87,83 +77,64 @@ if !git_installed_1!=="No" (
     git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (2) failed." | wtee -a "%LOG_FILE%"
     echo Is git installed (^2^)^? !git_installed_2! | wtee -a "%LOG_FILE%"
     if !git_installed_2!=="No" (
-        echo "Could not find a working installation of git. To download git, we need winget. Let's see if winget is already installed. This may take some time..." | wtee -a "%LOG_FILE%"
-        @REM # check if winget is installed
-        winget && set winget_installed_1="Yes" || set winget_installed_1="No"
-        winget && winget | wtee -a "%LOG_FILE%" || echo "winget (1) failed." | wtee -a "%LOG_FILE%"
-        echo Is winget installed ^(1^)^? !winget_installed_1! | wtee -a "%LOG_FILE%"
-        if "!winget_installed_1!"=="No" (
-            echo "Lets see if we can find winget.exe that is already installed.... This may take some time." | wtee -a "%LOG_FILE%"
-            set LOCATION_WINGET_INSTALLS_1="%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_1.txt"
-            if exist !LOCATION_WINGET_INSTALLS_1! del !LOCATION_WINGET_INSTALLS_1!
+        echo Installing git for windows | wtee -a "%LOG_FILE%"
+        @REM # download git version for 32 or 64 bit OS
+        if %OS%==32BIT (
+            echo Operating system is 32bit | wtee -a "%LOG_FILE%"
+            echo Downloading git for windows now | wtee -a "%LOG_FILE%"
+            curl -OL https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-32-bit.exe
+            Git-2.38.0-32-bit.exe
+            if exist Git-2.38.0-32-bit.exe del Git-2.38.0-32-bit.exe
+        )
+        if %OS%==64BIT (
+            echo Operating system is 64bit | wtee -a "%LOG_FILE%"
+            echo Downloading git for windows now | wtee -a "%LOG_FILE%"
+            curl -OL https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-64-bit.exe
+            Git-2.38.0-64-bit.exe
+            if exist Git-2.38.0-64-bit.exe del Git-2.38.0-64-bit.exe
+        )
+        set PATH=%PATH%;"%ProgramFiles%\Git\cmd"
+        set PATH=%PATH%;"%ProgramFiles(84x)%\Git\cmd"
+        set PATH=!PATH!;"C:\ProgramData\Git\cmd"
+        set PATH=!PATH!;"%UserProfile%\Git\cmd"
+        set PATH=!PATH!;"C:\Users\Git\cmd"
+        set PATH=!PATH!;"C:\Users\All Users\Git\cmd"
+        set PATH=!PATH!;"%SystemRoot%\Git\cmd"
+        echo !PATH! | wtee -a "%LOG_FILE%"
+        @REM # check if git now works
+        git --version && set git_installed_3="Yes" || set git_installed_3="No"
+        git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (3) failed." | wtee -a "%LOG_FILE%"
+        echo Is git installed (^3^)^? !git_installed_3! | wtee -a "%LOG_FILE%"
+        if !git_installed_3!=="No" (
+            echo "Git is installed but not functioning yet. Searching again for git.exe.... This may take some time." | wtee -a "%LOG_FILE%"
+            set LOCATION_GIT_INSTALLS_2="%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt"
+            if exist !LOCATION_GIT_INSTALLS_2! del !LOCATION_GIT_INSTALLS_2!
             cd \ || ( echo "Could not change directory to C:\. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-            dir /b/s winget.exe >> !LOCATION_WINGET_INSTALLS_1!
+            dir /b/s git.exe | find /I "\cmd\git.exe" >> !LOCATION_GIT_INSTALLS_2!
             cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-            for /F "tokens=*" %%A in ('type !LOCATION_WINGET_INSTALLS_1!') do (
+            for /F "tokens=*" %%A in ('type !LOCATION_GIT_INSTALLS_2!') do (
                 set str=%%A
                 @REM # remove the file part of path so that it is a directory
-                set str=!str:winget.exe=!
-                echo Found path to winget here: !str!
+                set str=!str:git.exe=!
+                echo Found path to git here: !str!
                 set PATH=!PATH!;!str!
                 echo "Added !str! to PATH!" | wtee -a "%LOG_FILE%"
                 echo !PATH! | wtee -a "%LOG_FILE%"
                 )
-            @REM # check again if winget is installed
-            winget && set winget_installed_2="Yes" || set winget_installed_2="No"
-            winget && winget | wtee -a "%LOG_FILE%" || echo "winget (2) failed." | wtee -a "%LOG_FILE%"
-            echo Is winget installed ^(2^)^? !winget_installed_2! | wtee -a "%LOG_FILE%"
-            if "!winget_installed_2!"=="No" (
-                echo "Winget is also not yet installed. Installing now..." | wtee -a "%LOG_FILE%"
-                cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-                curl -OL https://github.com/microsoft/winget-cli/releases/download/v1.3.2091/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-                Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-                if exist Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle del /F Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
-                @REM add some common paths where winget is installed
-                set PATH=%PATH%;"%ProgramFiles%\WindowsApps\Microsoft.DesktopAppInstaller_1.18.2091.0_x64__8wekyb3d8bbwe\winget.exe"
-                set PATH=%PATH%;"%ProgramFiles(x86)%\WindowsApps\Microsoft.DesktopAppInstaller_1.18.2091.0_x64__8wekyb3d8bbwe\winget.exe"
-                @REM # check the output of winget again
-                winget && set winget_installed_3="Yes" || set winget_installed_3="No"
-                winget && winget | wtee -a "%LOG_FILE%" || echo "winget (3) failed." | wtee -a "%LOG_FILE%"
-                echo Is winget installed ^(3^)^? !winget_installed_3! | wtee -a "%LOG_FILE%"
-                if "!winget_installed_3!"=="No" (
-                    echo "Winget is installed but not yet functioning. Searching for winget.exe now.... This may take some time."
-                    set LOCATION_WINGET_INSTALLS_2="%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_2.txt"
-                    if exist !LOCATION_WINGET_INSTALLS_2! del !LOCATION_WINGET_INSTALLS_2!
-                    cd \ || ( echo "Could not change directory to C:\. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-                    dir /b/s winget.exe | find /I "\Microsoft.DesktopAppInstaller_1.18.2091.0_x64__8wekyb3d8bbwe\winget.exe" >> !LOCATION_WINGET_INSTALLS_2!
-                    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-                    for /F "tokens=*" %%A in ('type !LOCATION_WINGET_INSTALLS_2!') do (
-                        set str=%%A
-                        @REM # remove the file part of path so that it is a directory
-                        set str=!str:winget.exe=!
-                        echo Found path to winget here: !str!
-                        set PATH=!PATH!;!str!
-                        echo "Added !str! to PATH!" | wtee -a "%LOG_FILE%"
-                        echo !PATH! | wtee -a "%LOG_FILE%"
-                        )
-                    @REM # check the output of winget again
-                    winget && set winget_installed_4="Yes" || set winget_installed_4="No"
-                    winget && winget | wtee -a "%LOG_FILE%" || echo "winget (4) failed." | wtee -a "%LOG_FILE%"
-                    echo Is winget installed ^(4^)^? !winget_installed_4! | wtee -a "%LOG_FILE%"
-                    if "!winget_installed_4!"=="No" (
-                        echo "Winget software could not be installed properly. Please install winget manually (https://learn.microsoft.com/en-us/windows/package-manager/winget/). Try to install EcoAssist again if winget is installed." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT 
-                    ) else (
-                        echo "Winget is installed succesfully after downloading, installing and searching for winget.exe" | wtee -a "%LOG_FILE%"
-                    )
-                ) else (
-                    echo "Winget is installed succesfully." | wtee -a "%LOG_FILE%"
-                )
+            @REM # check if git now works
+            git --version && set git_installed_4="Yes" || set git_installed_4="No"
+            git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (4) failed." | wtee -a "%LOG_FILE%"
+            echo Is git installed (^4^)^? !git_installed_4! | wtee -a "%LOG_FILE%"
+            if !git_installed_4!=="No" (
+                echo "The installation of git did not succeed. Please install git manually (https://gitforwindows.org/). Try to install EcoAssist again if git is installed." | wtee -a "%LOG_FILE%"
+                PAUSE>nul
+                EXIT
             ) else (
-                echo "A working installation of winget was found. Proceeding with rest of script." | wtee -a "%LOG_FILE%"
+                echo Git is working after being downloaded, installed and searched for. | wtee -a "%LOG_FILE%"
             )
         ) else (
-            echo "Winget is already installed. Proceeding to install git now..." | wtee -a "%LOG_FILE%"
+            echo Git is working after installation. | wtee -a "%LOG_FILE%"
         )
-        echo "Installing git now using winget..." | wtee -a "%LOG_FILE%"
-        winget install --id Git.Git -e --source winget --location "%LOCATION_ECOASSIST_FILES%\git"
-        set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%\git\cmd"
-        @REM # check if git is installed and if not exit script
-        git --version && git --version | wtee -a "%LOG_FILE%" || ( echo "The installation of git did not succeed. Please install git manually (https://gitforwindows.org/). Try to install EcoAssist again if git is installed." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     ) else (
         echo "There was an installation of git found which is working. Proceeding with rest of script." | wtee -a "%LOG_FILE%"
     )
@@ -311,10 +282,17 @@ if !conda_installed_1!=="No" (
         if !conda_installed_3!=="No" (
             echo "Looks like Anaconda3 is not installed on this computer. Downloading now..." | wtee -a "%LOG_FILE%"
             cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-            curl --keepalive -OL https://repo.anaconda.com/archive/Anaconda3-2021.11-Windows-x86_64.exe
-            Anaconda3-2021.11-Windows-x86_64.exe
-            if exist Anaconda3-2021.11-Windows-x86_64.exe del /F Anaconda3-2021.11-Windows-x86_64.exe
-            echo "Adding common locations of Anaconda3 to the PATH variable..." | wtee -a "%LOG_FILE%"
+            @REM # depending on number of bits
+            if %OS%==32BIT (
+                curl --keepalive -OL https://repo.anaconda.com/archive/Anaconda3-2021.11-Windows-x86.exe
+                Anaconda3-2021.11-Windows-x86.exe
+                if exist Anaconda3-2021.11-Windows-x86.exe del /F Anaconda3-2021.11-Windows-x86.exe
+            )
+            if %OS%==64BIT (
+                curl --keepalive -OL https://repo.anaconda.com/archive/Anaconda3-2021.11-Windows-x86_64.exe
+                Anaconda3-2021.11-Windows-x86_64.exe
+                if exist Anaconda3-2021.11-Windows-x86_64.exe del /F Anaconda3-2021.11-Windows-x86_64.exe
+            )
             @REM # check if conda works now
             conda -h && set conda_installed_4="Yes" || set conda_installed_4="No"
             conda -h && conda -h | wtee -a "%LOG_FILE%" || echo "conda -h (4) failed." | wtee -a "%LOG_FILE%"
@@ -398,9 +376,8 @@ set END_DATE=%date%%time%
 echo Installation ended at %END_DATE% | wtee -a "%LOG_FILE%"
 
 @REM # move txt files to log_folder if they are in  EcoAssist_files
-if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_git_installations.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
-if exist "%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_1.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_1.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
-if exist "%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_2.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_winget_installations_2.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
+if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_1.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_1.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
+if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
 if exist "%LOCATION_ECOASSIST_FILES%\installation_log.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\installation_log.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
 
 @REM # end process
