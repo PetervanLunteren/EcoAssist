@@ -76,6 +76,9 @@ EcoAssist will open when you double-click the file above. You are free to move t
 EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
 ## GPU Support
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=30% height="auto" />
+</p>
 EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` drivers and `CUDA` software installed. The approproate software is included in the EcoAssist installation for Windows and Linux, but not for Mac users. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Mac users with compatible GPU and drivers will be best off by installing EcoAssist normally and afterwards installing the proper software into the `ecoassistcondaenv` conda environment.
 
 *Note: EcoAssist hasn't been tested on a GPU accelerated computer. I know it should work, but I just never had the opportunity to test it. Please [let me know](mailto:petervanlunteren@hotmail.com) if you tried it.*
