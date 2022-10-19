@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model.
+title: "EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model."
 date-released: 2022-10-19
 doi: 10.5281/zenodo.7223364
 publisher:
