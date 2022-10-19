@@ -1,4 +1,5 @@
-[![DOI](https://zenodo.org/badge/453409365.svg)](https://zenodo.org/badge/latestdoi/453409365)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7223363.svg)](https://doi.org/10.5281/zenodo.7223363)
+
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
@@ -91,7 +92,7 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
   title     = {{EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model}},
   author    = {van Lunteren, Peter},
   year      = {2022},
-  doi       = {10.5281/zenodo.7223364},
+  doi       = {10.5281/zenodo.7223363},
   url       = {https://github.com/PetervanLunteren/EcoAssist}
 }
 ```
