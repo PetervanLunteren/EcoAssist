@@ -1243,7 +1243,7 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist 2.3")
+window.title("EcoAssist v2.0")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
