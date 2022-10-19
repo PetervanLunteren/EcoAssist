@@ -1,17 +1,18 @@
 cff-version: 1.2.0
 title: "EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model."
-date-released: 2022-10-19
-doi: 10.5281/zenodo.7223364
-publisher:
-  - name: Zenodo
-message: If you use this software, please cite it as below.
-type: software
 authors:
   - given-names: Peter
     family-names: van Lunteren
     email: contact@pvanlunteren.com
     orcid: https://orcid.org/0000-0001-5488-4225
+date-released: 2022-10-19
+doi: 10.5281/zenodo.7223364
 repository-code: https://github.com/PetervanLunteren/EcoAssist
+publisher:
+  - name: Zenodo
+    website: https://zenodo.org/
+message: If you use this software, please cite it as below.
+type: software
 keywords:
   - MegaDetector
   - Cameratraps
