@@ -31,12 +31,12 @@ I've written this application in my free evenings and would really appreciate it
 Camera trap images taken from [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
 
 ## Users
-Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [let me know](mailto:petervanlunteren@hotmail.com)!
+Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
-## How to download/update?
+## Download
 ### General information
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
@@ -47,33 +47,24 @@ Download and double-click [this file](https://PetervanLunteren.github.io/EcoAssi
 
 ### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
-2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
+2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1, users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
 
 *Note: EcoAssist is not yet extensively tested on M1 macs. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ### Linux installation
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
-2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasiting the commands below. If you don't have root privileges you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password you can skip this by pressing Ctrl+D when you are prompted for the password. EcoAssist will still work fine without it but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
+2. Change the permission of the file and execute it. You can do that by opening a new terminal window and copy-pasting the commands below. If you don't have root privileges, you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software to use properly on some Linux versions. If you don't know the `sudo` password, you can skip this by pressing Ctrl+D when you are prompted for the password. EcoAssist will still work fine without it, but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
 ```bash
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
 *Note: EcoAssist is not yet extensively tested on Linux computers. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
-## How to start the application?
-### Windows and Linux
-```
- 📁Desktop
- └── 📄EcoAssist
-```
-EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location.
+## Update
+You can update EcoAssist by following the same process described [above](https://github.com/PetervanLunteren/EcoAssist#download). The installation file will automatically update it to the latest version.
 
-### Mac
-```
- 📁Applications
- └── 📄EcoAssist.command
-```
-EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+## Start the application
+After installing EcoAssist, a file named `EcoAssist` will appear on the desktop (Windows and Linux) or in the applications folder (Mac). The application will open when you double-click this. You are free to move this file to a more convenient location. For Mac users: if you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
 ## GPU Support
 EcoAssist will automatically run on your GPU if you have the proper hardware available. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. The approproate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, but unfortunately not for Mac users. Mac users with compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. The progress window will display whether EcoAssist is running on CPU or GPU.
@@ -85,7 +76,7 @@ EcoAssist will automatically run on your GPU if you have the proper hardware ava
 </p>
 
 ## Citation
-If you use EcoAssist in you research, don't forget to cite the engine behind EcoAssist: [MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md).
+If you use EcoAssist in your research, don't forget to cite the engine behind EcoAssist: [MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md).
 ```BibTeX
 @article{beery2019efficient,
   title={Efficient Pipeline for Camera Trap Image Review},
