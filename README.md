@@ -88,7 +88,7 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
 }
 
 @software{van_Lunteren_EcoAssist_2022,
-  title     = {EcoAssist},
+  title     = {{EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model}},
   author    = {van Lunteren, Peter},
   year      = {2022},
   doi       = {10.5281/zenodo.7223364},
