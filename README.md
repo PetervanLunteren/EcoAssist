@@ -76,16 +76,16 @@ EcoAssist will open when you double-click the file above. You are free to move t
 EcoAssist will open when you double-click the file above. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
 ## GPU Support
-EcoAssist will automatically run on your GPU if you have the proper hardware and `NVIDIA` drivers. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. Whether it is running on CPU or GPU will be displayed in the progress window. The approproate `CUDA` software is included in the EcoAssist installation for Windows and Linux, but unfortunately not for Mac users. Mac users with compatible GPU and drivers will be best off by installing EcoAssist normally and afterwards installing the proper software into the `ecoassistcondaenv` conda environment.
+EcoAssist will automatically run on your GPU if you have the proper hardware available. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) for more information. The approproate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, but unfortunately not for Mac users. Mac users with compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. The progress window will display whether EcoAssist is running on CPU or GPU.
 
 *Note: EcoAssist hasn't been tested on a GPU accelerated computer. I know it should work, but I just never had the opportunity to test it. Please [let me know](mailto:petervanlunteren@hotmail.com) if you tried it.*
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=30% height="auto" >
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
 </p>
 
 ## Citation
-If you use EcoAssist in you research, don't forget to cite the engine behind EcoAssist.
+If you use EcoAssist in you research, don't forget to cite the engine behind EcoAssist: [MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md).
 ```BibTeX
 @article{beery2019efficient,
   title={Efficient Pipeline for Camera Trap Image Review},
