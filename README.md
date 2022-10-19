@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/453409365.svg)](https://zenodo.org/badge/latestdoi/453409365)
+
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
 </p>
