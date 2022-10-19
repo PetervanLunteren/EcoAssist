@@ -1,5 +1,7 @@
 cff-version: 1.2.0
 title: EcoAssist
+year: 2022
+month: October
 doi: 10.5281/zenodo.7223364
 message: If you use this software, please cite it as below.
 type: software
