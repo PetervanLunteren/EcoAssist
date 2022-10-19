@@ -90,7 +90,6 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
 @software{van_Lunteren_EcoAssist_2022,
   title     = {EcoAssist},
   author    = {van Lunteren, Peter},
-  publisher = {Zenodo},
   year      = {2022},
   doi       = {10.5281/zenodo.7223364},
   url       = {https://github.com/PetervanLunteren/EcoAssist}
