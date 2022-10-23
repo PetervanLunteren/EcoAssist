@@ -93,8 +93,8 @@ if !git_installed_1!=="No" (
             Git-2.38.0-64-bit.exe
             if exist Git-2.38.0-64-bit.exe del Git-2.38.0-64-bit.exe
         )
-        set PATH=%PATH%;"%ProgramFiles%\Git\cmd"
-        set PATH=%PATH%;"%ProgramFiles(84x)%\Git\cmd"
+        set PATH=!PATH!;"%ProgramFiles%\Git\cmd"
+        set PATH=!PATH!;"%ProgramFiles(84x)%\Git\cmd"
         set PATH=!PATH!;"C:\ProgramData\Git\cmd"
         set PATH=!PATH!;"%UserProfile%\Git\cmd"
         set PATH=!PATH!;"C:\Users\Git\cmd"
