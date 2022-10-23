@@ -44,7 +44,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
 ### Windows installation
-Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and run it as administrator. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine. 
+Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If you run into security or privilege issues, open a command prompt as administrator, drag and drop the install file and press enter.  [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine. 
 
 *Note: EcoAssist is not yet extensively tested on Windows computers. If you find any problems or everything works perfectly, [let me know](mailto:petervanlunteren@hotmail.com)!*
 
