@@ -50,7 +50,7 @@ Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_instal
 
 ### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
-2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1, users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
+2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
 
 *Note: EcoAssist is not yet extensively tested on M1 macs. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
