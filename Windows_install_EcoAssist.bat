@@ -153,20 +153,39 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
 
-@REM  # create a .vbs file which opens EcoAssist without the console window
-echo "Creating Windows_open_EcoAssist_shortcut.vbs now..." | wtee -a "%LOG_FILE%"
+@REM # create a .vbs file which opens EcoAssist without the console window
+@REM # log it first
+echo "Creating Windows_open_EcoAssist_shortcut.vbs:" | wtee -a "%LOG_FILE%"
+echo Set WinScriptHost ^= CreateObject^("WScript.Shell"^) | wtee -a "%LOG_FILE%"
+echo WinScriptHost.Run Chr^(34^) ^& "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist.bat" ^& Chr^(34^)^, 0 | wtee -a "%LOG_FILE%"
+echo Set WinScriptHost ^= Nothing | wtee -a "%LOG_FILE%"
+echo Saved to "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs" | wtee -a "%LOG_FILE%"
+
+@REM # then create
 echo Set WinScriptHost ^= CreateObject^("WScript.Shell"^) > "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs"
 echo WinScriptHost.Run Chr^(34^) ^& "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist.bat" ^& Chr^(34^)^, 0  >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs"
 echo Set WinScriptHost ^= Nothing >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs"
 
-@REM  # create and execute a .vbs file which creates a shortcut with the EcoAssist logo
+@REM  # create a .vbs file which creates a shortcut with the EcoAssist logo
+@REM # log it first
 echo "Creating CreateShortcut.vbs now..." | wtee -a "%LOG_FILE%"
+echo Set oWS ^= WScript.CreateObject^("WScript.Shell"^) | wtee -a "%LOG_FILE%"
+echo sLinkFile ^= "%HOMEDRIVE%%HOMEPATH%\Desktop\EcoAssist.lnk" | wtee -a "%LOG_FILE%"
+echo Set oLink ^= oWS.CreateShortcut^(sLinkFile^) | wtee -a "%LOG_FILE%"
+echo oLink.TargetPath ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs" | wtee -a "%LOG_FILE%"
+echo oLink.IconLocation ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\imgs\logo_small_bg.ico" | wtee -a "%LOG_FILE%"
+echo oLink.Save | wtee -a "%LOG_FILE%"
+echo Saved to "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs" | wtee -a "%LOG_FILE%"
+
+@REM # then create
 echo Set oWS ^= WScript.CreateObject^("WScript.Shell"^) > "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo sLinkFile ^= "%HOMEDRIVE%%HOMEPATH%\Desktop\EcoAssist.lnk" >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo Set oLink ^= oWS.CreateShortcut^(sLinkFile^) >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo oLink.TargetPath ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs" >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo oLink.IconLocation ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\imgs\logo_small_bg.ico" >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo oLink.Save >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
+
+@REM  # execute this .vbs file to creates a shortcut with the EcoAssist logo
 echo "Executing CreateShortcut.vbs now..." | wtee -a "%LOG_FILE%"
 cscript "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo "Created EcoAssist.lnk" | wtee -a "%LOG_FILE%"
