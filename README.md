@@ -44,7 +44,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
 ### Windows installation
-Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If you run into security or privilege issues, open a command prompt as administrator, copy-paste the path to the install file (or drag and drop) and press enter.  [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine. 
+Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If you don't have admin rights, it will prompt you for an admin password. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine. 
 
 *Note: EcoAssist is not yet extensively tested on Windows computers. If you find any problems or everything works perfectly, [let me know](mailto:petervanlunteren@hotmail.com)!*
 
@@ -67,7 +67,25 @@ bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 You can update EcoAssist by following the same process described [above](https://github.com/PetervanLunteren/EcoAssist#download). The installation file will automatically update it to the latest version.
 
 ## Start the application
-After installing EcoAssist, a file named `EcoAssist` will appear in the same directory as the install file (Windows), on the desktop (Linux) or in the applications folder (Mac). The application will open when you double-click this. You are free to move this file to a more convenient location. For Mac users: if you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+EcoAssist will open when double-clicked the file described below. You are free to move this file to a more convenient location. 
+### Windows
+```
+ 📁Downloads
+ └── 📄EcoAssist
+```
+If you don't have admin rights, you will be prompted for an admin password. 
+### Mac
+```
+ 📁Applications
+ └── 📄EcoAssist
+```
+If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+
+### Linux
+```
+ 📁Desktop
+ └── 📄EcoAssist
+```
 
 ## GPU Support
 EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` hardware available. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by Petar Gyurov for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so it *should* run without problems. This software is not included for Mac users, since `NVIDIA` GPU's are not available on macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. The progress window will display whether EcoAssist is running on CPU or GPU.
