@@ -28,7 +28,7 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 
 @REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%PROGRAMDATA%\EcoAssist_files
+set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM # set log file and delete the last one
