@@ -31,7 +31,7 @@ if '%errorlevel%' NEQ '0' (
 set START_DATE=%date%%time%
 
 @REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%HOMEPATH%\EcoAssist_files
+set LOCATION_ECOASSIST_FILES=%USERPROFILE%\EcoAssist_files
 set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
 
 @REM # delete previous installation of EcoAssist if present so that it can update
