@@ -1,10 +1,6 @@
 # GUI wrapper around MegaDetector with some additional features.
 # Written by Peter van Lunteren, 2 Oct 2022.
 
-# zorg dat de speed altijd word laten zien, soms als im/s soms als s/im, anders gewoon als speed CHECK
-# zorg dat de laatste speed eerder wordt gebruikt dan de ? CHECK
-# zorg dat video het ook weer doet CHECK
-
 # import packages
 import json
 from pathlib import Path
