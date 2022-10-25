@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%PROGRAMDATA%\EcoAssist_files
+set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM # log the start of the labelImg session
