@@ -28,7 +28,7 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 
 @REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%USERPROFILE%\EcoAssist_files
+set LOCATION_ECOASSIST_FILES=%PROGRAMDATA%\EcoAssist_files
 
 @REM # locate conda
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
