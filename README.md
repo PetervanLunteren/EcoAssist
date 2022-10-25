@@ -73,7 +73,7 @@ EcoAssist will open when double-clicked the file described below. You are free t
  📁Downloads
  └── 📄EcoAssist
 ```
-This file will be created in the same folder as your install file (so probabaly `Downloads`). Unfortunately, becuase it needs access to your anaconda folder, you'll need admin rights to open EcoAssist. If you don't already have admin rights, you will be prompted for an admin password. 
+This file will be created in the same folder as your install file (so probabaly `Downloads`). Because it needs access to the EcoAssist and anaconda folders (which are located on the `C:` drive), you'll need admin rights to open EcoAssist. If you don't already have admin rights, you will be prompted for an admin password. 
 ### Mac
 ```
  📁Applications
