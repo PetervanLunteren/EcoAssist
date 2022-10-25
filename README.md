@@ -73,7 +73,7 @@ EcoAssist will open when double-clicked the file described below. You are free t
  📁Downloads
  └── 📄EcoAssist
 ```
-If you don't have admin rights, you will be prompted for an admin password. 
+The file will be created in the same folder as your install file (so probabaly `Downloads`). Unfortunately, if you don't have admin rights, you will be prompted for an admin password every time you want to open EcoAssist. 
 ### Mac
 ```
  📁Applications
