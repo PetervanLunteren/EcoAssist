@@ -1,6 +1,10 @@
 # GUI wrapper around MegaDetector with some additional features.
 # Written by Peter van Lunteren, 2 Oct 2022.
 
+# zorg dat de speed altijd word laten zien, soms als im/s soms als s/im, anders gewoon als speed CHECK
+# zorg dat de laatste speed eerder wordt gebruikt dan de ? CHECK
+# zorg dat video het ook weer doet CHECK
+
 # import packages
 import json
 from pathlib import Path
@@ -60,11 +64,11 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
+                    processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
                     mega_progbar['value'] = percentage
-                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="running")
                 window.update()
-            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="done")
             window.update()
     else:
         additional_json_cmds = "' '".join(additional_json_cmds)
@@ -89,11 +93,11 @@ def produce_json(path_to_image_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
+                    processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
                     mega_progbar['value'] = percentage
-                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
+                    mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="running")
                 window.update()
-            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
+            mega_stats['text'] = update_progress_label_megadetector(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="done")
             window.update()
     print("\n\nMEGADETECTOR IMAGES OUTPUT END -----------------------------------\n\n")
 
@@ -131,11 +135,11 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     total_im = re.search("\/\d*", progress_bar)[0][1:]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
+                    processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
                     v_mega_progbar['value'] = percentage
-                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="running")
                 window.update()
-            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="done")
             window.update()
     else:
         additional_json_cmds = "' '".join(additional_json_cmds)
@@ -158,11 +162,11 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
                     percentage, current_im, total_im = [int(x) for x in re.findall('[0-9]+', progress_bar)]
                     elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
                     time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                    time_per_image = re.search("(?<=,)(.*)(?=s\/it)", times)[1].strip() if re.search("(?<=,)(.*)(?=s\/it)", times) != None else "?"
+                    processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
                     v_mega_progbar['value'] = percentage
-                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="running")
+                    v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="running")
                 window.update()
-            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, time_per_image, percentage, GPU_param, command="done")
+            v_mega_stats['text'] = update_progress_label_megadetector_v(elapsed_time, time_left, current_im, total_im, processing_speed, percentage, GPU_param, command="done")
             window.update()
     print("\n\nMEGADETECTOR VIDEOS OUTPUT END -----------------------------------\n\n")
 
@@ -658,6 +662,15 @@ def check_if_checkpointfile_is_present(directory):
 
 # function to print the progress of megadetector when processing images
 def update_progress_label_megadetector(value1="", value2="", value3="", value4="", value5="", value6="", value7="", command=""):
+    if "it/s" in value5:
+        speed_prefix = "Images per sec:"
+        speed_suffix = value5.replace("it/s", "")
+    elif "s/it" in value5:
+        speed_prefix = "Sec per image: "
+        speed_suffix = value5.replace("s/it", "")
+    else:
+        speed_prefix = ""
+        speed_suffix = ""
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running": # dependant on OS
@@ -666,32 +679,41 @@ def update_progress_label_megadetector(value1="", value2="", value3="", value4="
                 f"Processing image:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per image:\t\t{value5}s\n" \
+                f"{speed_prefix}\t\t{speed_suffix}\n" \
                 f"Running on:\t\t{value7}"
         elif sys.platform == "linux" or sys.platform == "linux2":
             return f"Percentage done:\t{value6}%\n" \
                 f"Processing image:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per image:\t\t{value5}s\n" \
+                f"{speed_prefix}\t\t{speed_suffix}\n" \
                 f"Running on:\t\t{value7}"
         elif sys.platform == "darwin":
             return f"Percentage done:\t{value6}%\n" \
                 f"Processing image:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t{value1}\n" \
                 f"Remaining time:\t{value2}\n" \
-                f"Time per image:\t{value5}s\n" \
+                f"{speed_prefix}\t{speed_suffix}\n" \
                 f"Running on:\t{value7}"
     if command == "done":
         if sys.platform == "linux" or sys.platform == "linux2":
             return f"Elapsed time:\t{value1}\n" \
-                f"Time per image:\t{value5}s"
+                f"{speed_prefix}\t{speed_suffix}"
         else:
             return f"Elapsed time:\t{value1}\n" \
-                f"Time per image:\t{value5}s"
+                f"{speed_prefix}\t{speed_suffix}"
 
 # function to print the progress of megadetector when processing movies
 def update_progress_label_megadetector_v(value1="", value2="", value3="", value4="", value5="", value6="", value7="", command=""):
+    if "it/s" in value5:
+        speed_prefix = "Frames per sec:"
+        speed_suffix = value5.replace("it/s", "")
+    elif "s/it" in value5:
+        speed_prefix = "Sec per frame: "
+        speed_suffix = value5.replace("s/it", "")
+    else:
+        speed_prefix = ""
+        speed_suffix = ""
     if command == "load":
         return f"Algorithm is starting up..."
     if command == "running":
@@ -700,17 +722,18 @@ def update_progress_label_megadetector_v(value1="", value2="", value3="", value4
                 f"Processing frame:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t\t{value1}\n" \
                 f"Remaining time:\t\t{value2}\n" \
-                f"Time per frame:\t\t{value5}s\n" \
+                f"{speed_prefix}\t\t{speed_suffix}\n" \
                 f"Running on:\t\t{value7}"
         else:
             return f"Percentage done:\t{value6}%\n" \
                 f"Processing frame:\t{value3} of {value4}\n" \
                 f"Elapsed time:\t{value1}\n" \
                 f"Remaining time:\t{value2}\n" \
-                f"Time per frame:\t{value5}s\n" \
+                f"{speed_prefix}\t{speed_suffix}\n" \
                 f"Running on:\t{value7}"
     if command == "done":
         return f"Done!\n"
+
 
 # function to print the progress of the rest when loading
 def update_progress_label_short(value1="", value2="", command=""):
