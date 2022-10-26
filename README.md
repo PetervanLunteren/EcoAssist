@@ -88,7 +88,7 @@ If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoA
 ```
 
 ## GPU Support
-EcoAssist will automatically run on your GPU if you have the proper `NVIDIA` hardware available. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by Petar Gyurov for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux. This software is not included for Mac users, since `NVIDIA` GPU's are not available on macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. The progress window will display whether EcoAssist is running on CPU or GPU.
+EcoAssist will automatically run on windows and linux if the proper `NVIDIA` GPU is available. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by Petar Gyurov for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatticaly run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
