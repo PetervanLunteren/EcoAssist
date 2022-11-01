@@ -14,6 +14,7 @@ I've written this application in my free evenings and would really appreciate it
 * Use the `MDv5` model to tag animals, persons and vehicles in both images and video's
 * Filter out empty images, people, vehicles or animals
 * Review and edit annotations using the open-source annotation software [labelImg](https://github.com/heartexlabs/labelImg)
+* Create input file for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * Export `.xml` label files in Pascal VOC format for further model training
 * Manipulate data by drawing boxes or cropping detections
 <br/>
