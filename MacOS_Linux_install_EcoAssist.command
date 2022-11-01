@@ -433,7 +433,7 @@ fi
 
 # message for the user
 echo ""
-echo "THE INSTALLATION IS DONE! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.command file in your applications folder."
+echo "THE INSTALLATION IS DONE! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.command file in your applications folder (Mac) or on your desktop (Linux)."
 echo ""
 
 # the computer may go to sleep again
