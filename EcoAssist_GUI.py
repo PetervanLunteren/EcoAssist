@@ -1,5 +1,5 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 2 Oct 2022.
+# Written by Peter van Lunteren, 1 Nov 2022.
 
 # import packages
 import json
@@ -786,7 +786,7 @@ def browse_dir_button():
             result_yn = mb.askyesno("Checkpoint file found", "It seems like you already started to processs the contents of this folder since there is a checkpoint file found.\n\nThe folderstructure and the data needs to be unchanged if you wish to resume this process.\n\nDo you want to resume the process?")
             print("result_yn :", result_yn)
             if result_yn:
-                mb.showinfo("Settings", "The algorithm settings can't be altered since you choose to continue from the last checkpoint onwards. The process will continue with the same settings.")
+                mb.showinfo("Settings", "The algorithm settings can't be altered since you choose to continue from the last checkpoint onwards. The algorithm process will continue with the same settings.\n\nYou can, however, adjust the settings of the additional features.")
                 update_window_continue_chckpnt()
             elif result_yn == False:
                 update_window_process_again()
@@ -808,6 +808,7 @@ def update_window_continue_chckpnt():
     chb2.grid_remove()
     ent1.grid_remove()
     chb3.select()
+    chb_rel_path.grid_remove()
     check_cont_from_checkpoint.set(True)
     produce_JSON.set(True)
     disable_meg()
@@ -822,6 +823,7 @@ def update_window_dont_process():
     chb2.grid_remove()
     ent1.grid_remove()
     chb3.grid_remove()
+    chb_rel_path.grid_remove()
     produce_JSON.set(False)
     v_produce_JSON.set(False)
     disable_meg()
@@ -837,6 +839,7 @@ def update_window_process_again():
     ent1.grid(row=4, column=1, sticky='e', padx=5)
     chb3.grid(row=5, column=1, sticky='e', padx=5)
     chb3.deselect()
+    chb_rel_path.grid(row=6, column=1, sticky='e', padx=5)
     check_cont_from_checkpoint.set(False)
     produce_JSON.set(True)
     v_produce_JSON.set(True)
@@ -874,6 +877,45 @@ def toggle_del():
                            "This action can not be undone."):
             check_del.set(False)
 
+relative_paths_already_shown = 0
+def toggle_relative_paths():
+    global relative_paths_already_shown
+    if not relative_paths_already_shown:
+        relative_paths_already_shown += 1
+        mb.showinfo("Warning","This option creates a .json file which can be used as input for Timelapse (saul.cpsc.ucalgary.ca/timelapse).\n\n"
+        "However, Timelapse requires the file paths to be relative, which means that the other features of EcoAssist do not work. So unfortunately it is not possible to combine these features.")
+    if check_output_relative_paths.get():
+        chb_draw_boxes.deselect()
+        chb_crop_detections.deselect()
+        chb7.deselect()
+        chb4.deselect()
+        chb5.deselect()
+        lbl_draw_boxes.config(state=DISABLED)
+        chb_draw_boxes.config(state=DISABLED)
+        lbl_crop_detections.config(state=DISABLED)
+        chb_crop_detections.config(state=DISABLED)
+        lbl11.config(state=DISABLED)
+        chb7.config(state=DISABLED)
+        lbl8.config(state=DISABLED)
+        chb4.config(state=DISABLED)
+        lbl9.config(state=DISABLED)
+        chb5.config(state=DISABLED)
+        lbl10.config(state=DISABLED)
+        button_open_labelImg.config(state=DISABLED)
+    else:
+        lbl_draw_boxes.config(state=NORMAL)
+        chb_draw_boxes.config(state=NORMAL)
+        lbl_crop_detections.config(state=NORMAL)
+        chb_crop_detections.config(state=NORMAL)
+        lbl11.config(state=NORMAL)
+        chb7.config(state=NORMAL)
+        lbl8.config(state=NORMAL)
+        chb4.config(state=NORMAL)
+        lbl9.config(state=NORMAL)
+        chb5.config(state=NORMAL)
+        lbl10.config(state=NORMAL)
+        button_open_labelImg.config(state=NORMAL)
+
 
 def toggle_data_type(self):
     if data_type.get() == "Images":
@@ -907,6 +949,8 @@ def disable_meg():
     chb3.config(state=DISABLED)
     lbl4.config(state=DISABLED)
     ent1.config(state=DISABLED)
+    lbl_rel_path.config(state=DISABLED)
+    chb_rel_path.config(state=DISABLED)
 
     v_lbl1.config(state=DISABLED)
     v_scl1.config(state=DISABLED)
@@ -930,6 +974,8 @@ def enable_meg():
     chb3.config(state=NORMAL)
     lbl4.config(state=NORMAL)
     ent1.config(state=NORMAL)
+    lbl_rel_path.config(state=NORMAL)
+    chb_rel_path.config(state=NORMAL)
 
     v_lbl1.config(state=NORMAL)
     v_scl1.config(state=NORMAL)
@@ -1132,6 +1178,9 @@ def openProgressWindow():
                 if check_cont_from_checkpoint.get() and loc_chkpnt_file != "":
                     cmd_loc_chkpnt_file = "--resume_from_checkpoint=" + loc_chkpnt_file
                     additional_batch_cmds.append(cmd_loc_chkpnt_file)
+                if check_output_relative_paths.get():
+                    cmd_output_relative_paths = "--output_relative_filenames"
+                    additional_batch_cmds.append(cmd_output_relative_paths)
 
                 if produce_JSON.get():  # run cmds
                     produce_json(loc_input_image_folder.get(), additional_batch_cmds)
@@ -1275,18 +1324,24 @@ if os.name == "nt":
     textbox_height_adjustment_factor = 0.77
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
+    pady_of_labels_and_widgets_factor = 1
+    slider_width_pixels = 15
 elif sys.platform == "linux" or sys.platform == "linux2":
     text_font = "Times"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 0.85
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.7
+    pady_of_labels_and_widgets_factor = 1
+    slider_width_pixels = 15
 else:
     text_font = "TkDefaultFont"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 1
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 1
+    pady_of_labels_and_widgets_factor = 1
+    slider_width_pixels = 15
 
 # logo
 logo_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs', 'logo.png')
@@ -1360,13 +1415,13 @@ dir_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
 dir_frame.columnconfigure(0, weight=1, minsize=430)
 dir_frame.columnconfigure(1, weight=1, minsize=115)
 
-Label(master=dir_frame, text="Folder containing camera trap data").grid(row=0, column=0, sticky='w', pady=5)
+Label(master=dir_frame, text="Folder containing camera trap data").grid(row=0, column=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 loc_input_image_folder = StringVar()
 loc_input_image_folder_short = StringVar()
 dir1 = Label(master=dir_frame, textvariable=loc_input_image_folder_short, fg='darkred')
 Button(master=dir_frame, text="Browse", command=browse_dir_button).grid(row=0, column=1, sticky='e', padx=5)
 
-Label(master=dir_frame, text="Type of data").grid(row=1, column=0, sticky='w', pady=5)
+Label(master=dir_frame, text="Type of data").grid(row=1, column=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 OPTIONS = ["Images", "Video's"]
 data_type = StringVar(dir_frame)
 data_type.set(OPTIONS[0])
@@ -1386,30 +1441,30 @@ produce_JSON = BooleanVar()
 produce_JSON.set(True)
 
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
-lbl1.grid(row=1, sticky='w', pady=5)
+lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 conf_thresh = DoubleVar()
 conf_thresh.set(20)
-scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=conf_thresh, showvalue=0)
+scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=conf_thresh, showvalue=0, width=slider_width_pixels)
 scl1.grid(column=1, row=1, sticky='e', padx=5)
 leftLabel = Label(meg_frame, textvariable=conf_thresh)
 leftLabel.config(fg="darkred")
 leftLabel.grid(column=0, row=1, sticky='e', padx=5)
 
-lbl2 = Label(meg_frame, text="Include subdirectories", pady=5)
+lbl2 = Label(meg_frame, text="Include subdirectories", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl2.grid(row=2, sticky='w')
 check_recurse = BooleanVar()
 check_recurse.set(True)
 chb1 = Checkbutton(meg_frame, variable=check_recurse)
 chb1.grid(row=2, column=1, sticky='e', padx=5)
 
-lbl3 = Label(meg_frame, text="Use checkpoints while running", pady=5)
+lbl3 = Label(meg_frame, text="Use checkpoints while running", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl3.grid(row=3, sticky='w')
 check_use_checkpoints = BooleanVar()
 check_use_checkpoints.set(False)
 chb2 = Checkbutton(meg_frame, variable=check_use_checkpoints, command=togglecf)
 chb2.grid(row=3, column=1, sticky='e', padx=5)
 
-lbl4 = tk.Label(meg_frame, text='Checkpoint frequency', state=DISABLED, pady=5)
+lbl4 = tk.Label(meg_frame, text='Checkpoint frequency', state=DISABLED, pady=round(5*pady_of_labels_and_widgets_factor))
 lbl4.grid(row=4, sticky='w')
 int_checkpoint_n = StringVar()
 ent1 = tk.Entry(meg_frame, width=10, textvariable=int_checkpoint_n, fg='grey', state=NORMAL)
@@ -1420,12 +1475,19 @@ ent1.bind("<FocusOut>", handle_focus_out)
 ent1.bind("<Return>", handle_enter)
 ent1.config(state=DISABLED)
 
-lbl5 = Label(meg_frame, text="Continue from last checkpoint file onwards", pady=5)
+lbl5 = Label(meg_frame, text="Continue from last checkpoint file onwards", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl5.grid(row=5, sticky='w')
 check_cont_from_checkpoint = BooleanVar()
 check_cont_from_checkpoint.set(False)
 chb3 = Checkbutton(meg_frame, variable=check_cont_from_checkpoint)
 chb3.grid(row=5, column=1, sticky='e', padx=5)
+
+lbl_rel_path = Label(meg_frame, text="Create input file for Timelapse", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl_rel_path.grid(row=6, sticky='w')
+check_output_relative_paths = BooleanVar()
+check_output_relative_paths.set(False)
+chb_rel_path = Checkbutton(meg_frame, variable=check_output_relative_paths, command=toggle_relative_paths)
+chb_rel_path.grid(row=6, column=1, sticky='e', padx=5)
 
 # Visualisation frame for images
 vis_frame = LabelFrame(param_tab, text="Visualisation settings", pady=2, padx=5, relief='solid', highlightthickness=5,
@@ -1435,19 +1497,19 @@ vis_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
 vis_frame.columnconfigure(0, weight=3, minsize=430)
 vis_frame.columnconfigure(1, weight=1, minsize=115)
 
-lbl9 = Label(vis_frame, text="Draw boxes around the detections and show confidences", state=NORMAL, pady=5)
-lbl9.grid(row=0, sticky='w')
+lbl_draw_boxes = Label(vis_frame, text="Draw boxes around the detections and show confidences", state=NORMAL, pady=round(5*pady_of_labels_and_widgets_factor))
+lbl_draw_boxes.grid(row=0, sticky='w')
 check_vis_detec = BooleanVar()
-chb5 = Checkbutton(vis_frame, variable=check_vis_detec, state=NORMAL)
-chb5.grid(row=0, column=1, sticky='e', padx=5)
+chb_draw_boxes = Checkbutton(vis_frame, variable=check_vis_detec, state=NORMAL)
+chb_draw_boxes.grid(row=0, column=1, sticky='e', padx=5)
 
-lbl10 = Label(vis_frame, text="Crop detections", pady=5)
-lbl10.grid(row=1, sticky='w')
+lbl_crop_detections = Label(vis_frame, text="Crop detections", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl_crop_detections.grid(row=1, sticky='w')
 check_crop = BooleanVar()
-chb6 = Checkbutton(vis_frame, variable=check_crop)
-chb6.grid(row=1, column=1, sticky='e', padx=5)
+chb_crop_detections = Checkbutton(vis_frame, variable=check_crop)
+chb_crop_detections.grid(row=1, column=1, sticky='e', padx=5)
 
-lbl11 = Label(vis_frame, text="Delete original images", pady=5)
+lbl11 = Label(vis_frame, text="Delete original images", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl11.grid(row=2, sticky='w')
 check_del = BooleanVar()
 check_del.set(False)
@@ -1462,7 +1524,7 @@ sep_frame.grid(column=0, row=4, columnspan=2, sticky='ew')
 sep_frame.columnconfigure(0, weight=3, minsize=430)
 sep_frame.columnconfigure(1, weight=1, minsize=115)
 
-lbl8 = Label(sep_frame, text="Separate images into subdirectories based on their detections", pady=5)
+lbl8 = Label(sep_frame, text="Separate images into subdirectories based on their detections", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl8.grid(row=0, sticky='w')
 check_sep = BooleanVar()
 check_sep.set(True)
@@ -1477,16 +1539,17 @@ xml_frame.grid(column=0, row=5, columnspan=2, sticky='ew')
 xml_frame.columnconfigure(0, weight=3, minsize=430)
 xml_frame.columnconfigure(1, weight=1, minsize=115)
 
-lbl9 = Label(xml_frame, text="Create .xml label files for all detections in Pascal VOC format", pady=5)
+lbl9 = Label(xml_frame, text="Create .xml label files for all detections in Pascal VOC format", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl9.grid(row=0, sticky='w')
 check_xml = BooleanVar()
 check_xml.set(False)
 chb5 = Checkbutton(xml_frame, variable=check_xml)
 chb5.grid(row=0, column=1, sticky='e', padx=5)
 
-lbl10 = Label(xml_frame, text="Review and adjust these label files in the directory sepecified above", pady=5)
+lbl10 = Label(xml_frame, text="Review and adjust these label files in the directory sepecified above", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl10.grid(row=1, sticky='w')
-Button(master=xml_frame, text="Open", command=open_labelImg).grid(row=1, column=1, sticky='e', padx=5)
+button_open_labelImg = Button(master=xml_frame, text="Open", command=open_labelImg)
+button_open_labelImg.grid(row=1, column=1, sticky='e', padx=5)
 
 # Megadetector frame for videos
 v_meg_frame = LabelFrame(param_tab, text="Algorithm settings", pady=2, padx=5, relief='solid', highlightthickness=5,
@@ -1499,7 +1562,7 @@ v_produce_JSON = BooleanVar()
 v_produce_JSON.set(True)
 
 v_lbl1 = Label(v_meg_frame, text="Confidence threshold (%)")
-v_lbl1.grid(row=1, sticky='w', pady=5)
+v_lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 v_conf_thresh = DoubleVar()
 v_conf_thresh.set(50)
 v_scl1 = Scale(v_meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=v_conf_thresh, showvalue=0)
@@ -1508,21 +1571,21 @@ v_leftLabel = Label(v_meg_frame, textvariable=v_conf_thresh)
 v_leftLabel.config(fg="darkred")
 v_leftLabel.grid(column=0, row=1, sticky='e', padx=5)
 
-# v_lbl2 = Label(v_meg_frame, text="Include subdirectories", pady=5)
+# v_lbl2 = Label(v_meg_frame, text="Include subdirectories", pady=round(5*pady_of_labels_and_widgets_factor))
 # v_lbl2.grid(row=2, sticky='w')
 v_check_recurse = BooleanVar()
 v_check_recurse.set(True)
 # v_chb1 = Checkbutton(v_meg_frame, variable=v_check_recurse)
 # v_chb1.grid(row=2, column=1, sticky='e', padx=5)
 
-v_lbl5 = Label(v_meg_frame, text="Don't process every frame", pady=5)
+v_lbl5 = Label(v_meg_frame, text="Don't process every frame", pady=round(5*pady_of_labels_and_widgets_factor))
 v_lbl5.grid(row=4, sticky='w')
 v_check_dont_process_every_frame = BooleanVar()
 v_check_dont_process_every_frame.set(False)
 v_chb3 = Checkbutton(v_meg_frame, variable=v_check_dont_process_every_frame, command=v_togglecf)
 v_chb3.grid(row=4, column=1, sticky='e', padx=5)
 
-v_lbl4 = tk.Label(v_meg_frame, text='Analyse every Nth frame', state=DISABLED, pady=5)
+v_lbl4 = tk.Label(v_meg_frame, text='Analyse every Nth frame', state=DISABLED, pady=round(5*pady_of_labels_and_widgets_factor))
 v_lbl4.grid(row=5, sticky='w')
 v_int_analyse_every_nth = StringVar()
 v_ent1 = tk.Entry(v_meg_frame, width=10, textvariable=v_int_analyse_every_nth, fg='grey', state=NORMAL)
@@ -1540,7 +1603,7 @@ v_sep_frame.configure(font=(text_font, 15, "bold"))
 v_sep_frame.columnconfigure(0, weight=3, minsize=430)
 v_sep_frame.columnconfigure(1, weight=1, minsize=115)
 
-v_lbl8 = Label(v_sep_frame, text="Separate videos into subdirectories based on their detections", pady=5)
+v_lbl8 = Label(v_sep_frame, text="Separate videos into subdirectories based on their detections", pady=round(5*pady_of_labels_and_widgets_factor))
 v_lbl8.grid(row=0, sticky='w')
 v_check_sep = BooleanVar()
 v_check_sep.set(True)
@@ -1563,8 +1626,9 @@ t.tag_config('title', font=f'{text_font} {int(13 * text_size_adjustment_factor)}
 t.tag_config('mark', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic', foreground='darkred', justify='center') # size depends on OS
 t.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
 
+line_number = 1
 t.insert(END, "Please find below a list of parameters with an explanation on how to interpret them.\n\n")
-t.tag_add('info', '1.0', '1.end')
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
 t.insert(END, "General options\n")
@@ -1572,16 +1636,16 @@ t.insert(END, "-----------------------------------------------------------------
 t.insert(END, "Folder containing camera trap data\n")
 t.insert(END,
          "Here you can browse for a folder which contains camera trap images or video\'s. All further specified settings will be performed on this directory.\n\n")
-t.tag_add('mark', '3.0', '3.end')
-t.tag_add('mark', '4.0', '4.end')
-t.tag_add('mark', '5.0', '5.end')
-t.tag_add('title', '6.0', '6.end')
-t.tag_add('info', '7.0', '7.end')
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Type of data\n")
 t.insert(END, "Indicate whether you want to process images or video\'s. The options for analysis differ.\n\n")
-t.tag_add('title', '9.0', '9.end')
-t.tag_add('info', '10.0', '10.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
 t.insert(END, "Options available when analysing images\n")
@@ -1589,80 +1653,91 @@ t.insert(END, "-----------------------------------------------------------------
 t.insert(END, "Has the MegaDetector algorithm already been run over these images?\n")
 t.insert(END,
          "Here you can indicate if you have already run the algorithm over the images using EcoAssist. If so, EcoAssist will use the existing output. Please note that the folder must contain the same images (and filenames). Any new images added afterwards will not be handled and any images removed from the folder will cause an error.\n\n")
-t.tag_add('mark', '12.0', '12.end')
-t.tag_add('mark', '13.0', '13.end')
-t.tag_add('mark', '14.0', '14.end')
-t.tag_add('title', '15.0', '15.end')
-t.tag_add('info', '16.0', '16.end')
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
          "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 20% generally works well, but this might be different with specific ecosystems. My advice is to first run the model with a low threshold on a directory with 100 representative images with the option 'Draw boxes around the detections and show confidences' enabled and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives.\n\n")
-t.tag_add('title', '18.0', '18.end')
-t.tag_add('info', '19.0', '19.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Include subdirectories\n")
 t.insert(END, "Select if your folder contains other directories which should also be handled.\n\n")
-t.tag_add('title', '21.0', '21.end')
-t.tag_add('info', '22.0', '22.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Use checkpoints while running\n")
 t.insert(END,
          "This is a functionality to save results to checkpoints intermittently, in case technical hiccup arises. That way you won't have to restart the entire process again when the process is interrupted.\n\n")
-t.tag_add('title', '24.0', '24.end')
-t.tag_add('info', '25.0', '25.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Checkpoint frequency\n")
 t.insert(END,
          "Fill in how often you want to save the results to checkpoints. The number indicates the number of images after which checkpoints will be saved. The entry must contain only numeric characters.\n\n")
-t.tag_add('title', '27.0', '27.end')
-t.tag_add('info', '28.0', '28.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Continue from last checkpoint file onwards\n")
 t.insert(END,
          "Here you can choose to continue from the last saved checkpoint onwards so that the algorithm can continue where it left off. Checkpoints are saved into the 'json' subdirectory within the main folder.\n\n")
-t.tag_add('title', '30.0', '30.end')
-t.tag_add('info', '31.0', '31.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
+
+t.insert(END, "Create input file for Timelapse\n")
+t.insert(END,
+         "This will create a .json file which can be used in the open-source cameratrap image analyser ")
+hyperlink1 = HyperlinkManager(t)
+t.insert(INSERT, "Timelapse",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
+t.insert(END,
+         ". This file will be located in the subfolder 'json_file' in the chosen directory after the process is finished. Unfortunately this feature can't be combined with the other features, since it requires the file paths to be relative. \n\n")
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Draw boxes around the detections and show confidences\n")
 t.insert(END,
          "This functionality draws boxes around the detections and saves them in the subdirectory '_visualised_images'. Animals, persons and vehicles are visualised using different colours. The confidence with which the model has appointed this detection is also shown.\n\n")
-t.tag_add('title', '33.0', '33.end')
-t.tag_add('info', '34.0', '34.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Crop detections\n")
 t.insert(END, "Specify if you want the detections to be cropped and saved into a subdirectory '_cropped_images'.\n\n")
-t.tag_add('title', '36.0', '36.end')
-t.tag_add('info', '37.0', '37.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Delete original images\n")
 t.insert(END,
          "The crop and draw bounding box functions alter the images. Specify if you want to delete the unaltered orignal images. Please be aware that this action cannot be undone since the images will not be placed in the Trash but will be deleted fully.\n\n")
-t.tag_add('title', '39.0', '39.end')
-t.tag_add('info', '40.0', '40.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Separate images into subdirectories based on their detections\n")
 t.insert(END,
          "This function divides the images in the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'.\n\n")
-t.tag_add('title', '42.0', '42.end')
-t.tag_add('info', '43.0', '43.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Create .xml label files for all detections in Pascal VOC format\n")
 t.insert(END,
          "When training your own model using machine learning the images generally need to be labelled in Pascal VOC format. When this option is enabled it will annotate the images. You only have to assign the appropriate species using the option 'Review and adjust these label files in the directory sepecified above'. The animals are already located by MegaDetector.\n\n")
-t.tag_add('title', '45.0', '45.end')
-t.tag_add('info', '46.0', '46.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Review and adjust these label files in the directory sepecified above\n")
 t.insert(END, "Here you can view and alter the label files created with the option 'Create .xml label files for all detections in Pascal VOC format' in the open source application ")
-hyperlink1 = HyperlinkManager(t)
 t.insert(INSERT, "LabelImg",
          hyperlink1.add(
              partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
 t.insert(END,
          ". This is application makes it easy to annotate images for object detection machine learning. Thus, with this option one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double check them and mannualy provide the species labels. For your convenience, it's possible to change the defeault labels to your own by changing the predefined_classes.txt file in /EcoAssist_files/labelImg/data directory. This is a hidden folder located at C:\ProgramFiles on Windows, the Application directory on Macs and the user directory on Linux. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are sparated. You can change the directory in LabelImg yourself too, if required. \n\n")
-t.tag_add('title', '48.0', '48.end')
-t.tag_add('info', '49.0', '49.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
 t.insert(END, "Options available when analysing video\'s\n")
@@ -1670,40 +1745,40 @@ t.insert(END, "-----------------------------------------------------------------
 t.insert(END, "Has the MegaDetector algorithm already been run over these video\'s?\n")
 t.insert(END,
          "Here you can indicate if you have already run the algorithm over the images using EcoAssist. If so, EcoAssist will use the existing output. Please note that the folder must contain the same files (and filenames). Any new video's added afterwards will not be handled and any video's removed from the folder will cause an error.\n\n")
-t.tag_add('mark', '51.0', '51.end')
-t.tag_add('mark', '52.0', '52.end')
-t.tag_add('mark', '53.0', '53.end')
-t.tag_add('title', '54.0', '54.end')
-t.tag_add('info', '55.0', '55.end')
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
          "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When analysing video's, the model first splits it into frames and then analyses the frames as images. This means that for one video, many frames are processed, so the chance of getting a false positive is higher than for just one image. With one wrongly detected frame the entire video will be placed into the wrong subdirectory. That is why it generally is good practise to set the threshold for video's relatively high compared to what you would do when setting it for individual images. If an animal is present in the video, it will most likely be in many frames and thus will still be detected. In my experience a threshold of 50% generally works well, but also depends on the number of frames analysed and the quality of the video. Additionaly, it might be different with specific ecosystems.\n\n")
-t.tag_add('title', '57.0', '57.end')
-t.tag_add('info', '58.0', '58.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 # t.insert(END, "Include subdirectories\n")
 # t.insert(END, "Select if your folder contains other directories which should also be handled.\n\n")
-# t.tag_add('title', '60.0', '60.end')
-# t.tag_add('info', '61.0', '61.end')
+# t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+# t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Don't process every frame\n")
 t.insert(END,
          "When processing every frame of a video, it can take a long, long time to finish. Here you can specify whether you want to analyse only a selection of frames. At 'analyse every Nth frame' you can specify how many frames you want to be analysed.\n\n")
-t.tag_add('title', '60.0', '60.end')
-t.tag_add('info', '61.0', '61.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Analyse every Nth frame\n")
 t.insert(END,
          "Specify how many frames you want to process. By entering 2, you will process every 2nd frame and thus cut process time by half. By entering 50, you will shorten process time to 1/50, et cetera.\n\n")
-t.tag_add('title', '63.0', '63.end')
-t.tag_add('info', '64.0', '64.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Separate videos into subdirectories based on their detections\n")
 t.insert(END,
          "This function divides the videos in the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'.")
-t.tag_add('title', '66.0', '66.end')
-t.tag_add('info', '67.0', '67.end')
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.grid(row=0, column=0, sticky="nesw")
 t.configure(font=(text_font, 11, "bold"), state=DISABLED)
@@ -1716,11 +1791,12 @@ text.tag_config('title', font=f'{text_font} {int(13 * text_size_adjustment_facto
 text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal') # size depends on OS
 text.tag_config('italic', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic') # size depends on OS
 
+text_line_number=1
 text.insert(END, "The application\n")
 text.insert(END,
             "EcoAssist is a freely available and open-source application with the aim of helping ecologists all over the world with their camera trap imagery. It uses a deep learning algorithm trained to detect the presence of animals, people and vehicles in camera trap data. You can let the algorithm process images or videos and filter out the empties, annotate for further processing (such as training your own algorithm) and visualise or crop the detections.\n\n")
-text.tag_add('title', '1.0', '1.end')
-text.tag_add('info', '2.0', '2.end')
+text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
 text.insert(END, "The model\n")
 text.insert(END, "For this application, I used ")
@@ -1729,25 +1805,34 @@ text.insert(INSERT, "MegaDetector",
             hyperlink.add(
                 partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
 text.insert(END,
-            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on Faster-RCNN with an InceptionResNetv2 base network. The model was trained with the TensorFlow Object Detection API, using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process approximately between 10.000 and 25.000 images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
+            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on the YOLOv5 architecture. The model was trained with the TensorFlow Object Detection API, using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process approximately between 10.000 and 25.000 images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
 text.insert(INSERT, "cameratraps@microsoft.com",
             hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@microsoft.com")))
 text.insert(END, ".\n\n")
-text.tag_add('title', '4.0', '4.end')
-text.tag_add('info', '5.0', '5.end')
-
-text.insert(END, "   Beery, S., Morris, D., & Yang, S. (2019). Efficient pipeline for camera trap image review.\n"
-                 "      ArXiv preprint arXiv:1907.06772.\n\n")
-text.tag_add('italic', '7.0', '8.end')
+text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
 text.insert(END, "The author\n")
 text.insert(END,
             "This program is written by Peter van Lunteren. I am a wildlife ecologist with a special interest in artificial intelligence, and how it can be applied to improve ecological research. EcoAssist is written to assist camera trap ecologists in their day-to-day activities without needing to have any programming skills. Help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would also very much like to know who uses the tool and for what reason. Please send me an email on ")
 text.insert(INSERT, "petervanlunteren@hotmail.com",
             hyperlink.add(partial(webbrowser.open, "mailto:petervanlunteren@hotmail.com")))
-text.insert(END, ".")
-text.tag_add('title', '10.0', '10.end')
-text.tag_add('info', '11.0', '11.end')
+text.insert(END, ".\n\n")
+text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+text.grid(row=0, column=0, sticky="nesw")
+
+text.insert(END, "Citation\n")
+text.insert(END,
+            "If you use EcoAssist in your research, don't forget to the model and the EcoAssist software itself:\n\n")
+text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+
+text.insert(END, "Beery, S., Morris, D., & Yang, S. (2019). Efficient pipeline for camera trap image review. ArXiv preprint arXiv:1907.06772.\n\n")
+text.tag_add('italic', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+text.insert(END, "van Lunteren, P. (2022). EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model. [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.7223363\n\n")
+text.tag_add('italic', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+
 text.grid(row=0, column=0, sticky="nesw")
 text.configure(font=(text_font, 11, "bold"), state=DISABLED)
 
