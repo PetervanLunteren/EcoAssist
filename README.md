@@ -42,18 +42,16 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 
 ## Download
 ### General information
-EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. Please note that when you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
+EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. When you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
+
+*Note: EcoAssist is not yet extensively tested. If you find any problems or - hopefully - everything works perfect, [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ### Windows installation
 Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If that doesn't work you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive to search for anaconda. It's possible to install EcoAssist wihout admin rights, but then the scripts will need some tweaking. [Email me](mailto:petervanlunteren@hotmail.com) if you want help with that. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
 
-*Note: EcoAssist is not yet extensively tested on Windows computers. If you find any problems or everything works perfectly, [let me know](mailto:petervanlunteren@hotmail.com)!*
-
 ### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
 2. Go get yourself a beverage because this might take a few minutes to complete. Especially for M1 users since some of the software packages are not yet adopted to the M1 processor. There is a workaround, but it takes some time. Please be patient and wait until you see a message saying the process is completed.
-
-*Note: EcoAssist is not yet extensively tested on M1 macs. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ### Linux installation
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
@@ -62,7 +60,6 @@ Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_instal
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
-*Note: EcoAssist is not yet extensively tested on Linux computers. If you find any problems or everything works perfectly, please [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ## Update
 You can update EcoAssist by following the same process described [above](https://github.com/PetervanLunteren/EcoAssist#download). The installation file will automatically update it to the latest version.
