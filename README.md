@@ -37,7 +37,7 @@ Camera trap images taken from [Missouri camera trap database](https://lila.scien
 ## Users
 Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.pdf" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
 ## Download
