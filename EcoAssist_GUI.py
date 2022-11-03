@@ -1502,7 +1502,7 @@ check_cont_from_checkpoint.set(False)
 chb3 = Checkbutton(meg_frame, variable=check_cont_from_checkpoint)
 chb3.grid(row=5, column=1, sticky='e', padx=5)
 
-lbl_rel_path = Label(meg_frame, text="Create input file for Timelapse", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl_rel_path = Label(meg_frame, text="Create input file for Timelapse (use relative filepaths)", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl_rel_path.grid(row=6, sticky='w')
 check_output_relative_paths = BooleanVar()
 check_output_relative_paths.set(False)
@@ -1708,7 +1708,7 @@ t.insert(END,
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
-t.insert(END, "Create input file for Timelapse\n")
+t.insert(END, "Create input file for Timelapse (use relative filepaths)\n")
 t.insert(END,
          "This will create a .json file which can be used in the open-source cameratrap image analyser ")
 hyperlink1 = HyperlinkManager(t)
@@ -1716,7 +1716,12 @@ t.insert(INSERT, "Timelapse",
          hyperlink1.add(
              partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
 t.insert(END,
-         ". This file will be located in the subfolder 'json_file' in the chosen directory after the process is finished. Unfortunately this feature can't be combined with the other features, since it requires the file paths to be relative. \n\n")
+         ". This file will be located in the subfolder 'json_file' in the chosen directory after the process is finished. Unfortunately this feature can't be combined with the other features of EcoAssist, since it requires the file paths to be relative. More information how to use Timelapse in conjunction with MegaDetector, see the")
+t.insert(INSERT, "Timelapse Image Recognition Guide",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/TimelapseImageRecognitionGuide.pdf")))
+t.insert(END,
+         ".\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
