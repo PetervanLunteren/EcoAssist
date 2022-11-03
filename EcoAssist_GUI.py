@@ -25,7 +25,7 @@ from functools import partial
 import numpy as np
 import xml.etree.cElementTree as ET
 import sys
-
+from tkinter.messagebox import showinfo
 
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
@@ -35,7 +35,17 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     path_to_image_folder = str(Path(path_to_image_folder)) # convert path separators
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_detector_batch.py")
-    model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
+    #Check if custom model selected
+    model_file = ''
+    if loc_model_file.get() != '':
+        model_file = loc_model_file.get()
+    else:
+        model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
+    
+    showinfo(
+        title='Selected File',
+        message=model_file
+    )
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
     if os.name == 'nt': # apparently this is OS dependant
@@ -799,6 +809,15 @@ def browse_dir_button():
             elif result_ync == False:
                 update_window_dont_process()
 
+#function to load a custom yolov5 model
+def browse_model_button():
+    # print dir on GUI
+    filename = filedialog.askopenfilename(filetypes=[("Yolov5 model","*.pt")])
+    loc_model_file.set(filename)
+    loc_model_file_short.set(os.path.basename(filename))
+    if loc_model_file.get() != '':
+        modeldir1.grid(column=0, row=0, sticky='e')
+
 
 # hide the input widgets except check_cont_from_checkpoint
 def update_window_continue_chckpnt():
@@ -1439,6 +1458,12 @@ meg_frame.columnconfigure(1, weight=1, minsize=115)
 
 produce_JSON = BooleanVar()
 produce_JSON.set(True)
+
+Label(master=meg_frame, text="Model file to use").grid(row=0, column=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+loc_model_file = StringVar()
+loc_model_file_short = StringVar()
+modeldir1 = Label(master=meg_frame, textvariable=loc_model_file_short, fg='darkred')
+Button(master=meg_frame, text="Browse", command=browse_model_button).grid(row=0, column=1, sticky='e', padx=5)
 
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
 lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
