@@ -25,7 +25,6 @@ from functools import partial
 import numpy as np
 import xml.etree.cElementTree as ET
 import sys
-from tkinter.messagebox import showinfo
 
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
@@ -42,10 +41,6 @@ def produce_json(path_to_image_folder, additional_json_cmds):
     else:
         model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
     
-    showinfo(
-        title='Selected File',
-        message=model_file
-    )
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
     if os.name == 'nt': # apparently this is OS dependant
