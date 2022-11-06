@@ -265,6 +265,19 @@ if exist "%LOCATION_ECOASSIST_FILES%\megadetector\md_v5a.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\megadetector" | wtee -a "%LOG_FILE%"
 )
 
+@REM # download the md_v5b.0.0.pt model if not present
+if exist "%LOCATION_ECOASSIST_FILES%\megadetector\md_v5b.0.0.pt" (
+    echo "File md_v5b.0.0.pt already exists! Skipping this step." | wtee -a "%LOG_FILE%"
+) else (
+    echo "File md_v5b.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
+    if not exist "%LOCATION_ECOASSIST_FILES%\megadetector" mkdir "%LOCATION_ECOASSIST_FILES%\megadetector"
+    cd "%LOCATION_ECOASSIST_FILES%\megadetector" || ( echo "Could not change directory to megadetector. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    @REM # check the size of the folder
+    dir "%LOCATION_ECOASSIST_FILES%\megadetector" | wtee -a "%LOG_FILE%"
+)
+
 @REM # check if conda is already installed, if not install
 conda -h && set conda_installed_1="Yes" || set conda_installed_1="No"
 conda -h && conda -h | wtee -a "%LOG_FILE%" || echo "conda -h (1) failed." | wtee -a "%LOG_FILE%"

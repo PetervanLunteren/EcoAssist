@@ -1,0 +1,11 @@
+ERROR:--------------
+[Errno 2] No such file or directory: '/Users/json_file/output.json'
+
+DETAILS:--------------
+Traceback (most recent call last):
+  File "EcoAssist/EcoAssist_GUI.py", line 1217, in openProgressWindow
+    separate_images(loc_input_image_folder.get())
+  File "EcoAssist/EcoAssist_GUI.py", line 341, in separate_images
+    with open(path_to_json) as json_file:
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/json_file/output.json'
+

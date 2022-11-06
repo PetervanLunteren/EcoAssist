@@ -161,18 +161,29 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# download the md_v5a.0.0.pt model if not present
+# download the MDv5 models if not present
 mkdir -p $LOCATION_ECOASSIST_FILES/megadetector
 cd $LOCATION_ECOASSIST_FILES/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-MD="md_v5a.0.0.pt"
-if [ -f "$MD" ]; then
-  echo "File ${MD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+MDv5a="md_v5a.0.0.pt"
+if [ -f "$MDv5a" ]; then
+  echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
-  echo "File ${MD} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
+  echo "File ${MDv5a} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
   if [ "$PLATFORM" = "M1 Mac" ] ; then
     curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
   else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
+  fi
+fi
+MDv5b="md_v5b.0.0.pt"
+if [ -f "$MDv5b" ]; then
+  echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
+  if [ "$PLATFORM" = "M1 Mac" ] ; then
+    curl --keepalive -L -o md_v5b.0.0.pt https://lila.science/public/md_rebuild/md_v5b.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
+  else
+    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
