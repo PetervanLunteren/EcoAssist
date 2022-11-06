@@ -28,19 +28,19 @@ import sys
 
 # function to start the MegaDetector process for images
 def produce_json(path_to_image_folder, additional_json_cmds):
+    global custom_model_choice
     print("\n\nMEGADETECTOR IMAGES OUTPUT START -----------------------------------\n\n")
     mega_stats['text'] = update_progress_label_megadetector(command="load")
     print(f"Processing images with MegaDetector model...\n")
     path_to_image_folder = str(Path(path_to_image_folder)) # convert path separators
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_detector_batch = os.path.join(path_to_git, "cameratraps", "detection", "run_detector_batch.py")
-    #Check if custom model selected
-    model_file = ''
-    if loc_model_file.get() != '':
-        model_file = loc_model_file.get()
-    else:
+    if display_model_file.get() == "MDv5a": # select model based on user input via dropdown menu
         model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
-    
+    elif display_model_file.get() == "MDv5b":
+        model_file = os.path.join(path_to_git, "megadetector", "md_v5b.0.0.pt")
+    else:
+        model_file = custom_model_choice
     Path(os.path.join(path_to_image_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = os.path.join(path_to_image_folder, "json_file", "output.json")
     if os.name == 'nt': # apparently this is OS dependant
@@ -111,7 +111,12 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
     path_to_video_folder = str(Path(path_to_video_folder)) # convert path separators
     path_to_git = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     loc_process_video_py = os.path.join(path_to_git, "cameratraps", "detection", "process_video.py")
-    model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
+    if display_model_file.get() == "MDv5a": # select model based on user input via dropdown menu
+        model_file = os.path.join(path_to_git, "megadetector", "md_v5a.0.0.pt")
+    elif display_model_file.get() == "MDv5b":
+        model_file = os.path.join(path_to_git, "megadetector", "md_v5b.0.0.pt")
+    else:
+        model_file = custom_model_choice
     Path(os.path.join(path_to_video_folder, "json_file")).mkdir(parents=True, exist_ok=True)
     loc_json_file = "--output_json_file=" + os.path.join(path_to_video_folder, "json_file", "output.json")
     if os.name == "nt": # apparently this is OS dependant
@@ -805,14 +810,21 @@ def browse_dir_button():
                 update_window_dont_process()
 
 #function to load a custom yolov5 model
-def browse_model_button():
-    # print dir on GUI
-    filename = filedialog.askopenfilename(filetypes=[("Yolov5 model","*.pt")])
-    loc_model_file.set(filename)
-    loc_model_file_short.set(os.path.basename(filename))
-    if loc_model_file.get() != '':
-        modeldir1.grid(column=0, row=0, sticky='e')
-
+def toggle_model_options(self):
+    global custom_model_choice
+    if display_model_file.get() == "Custom":
+        # choose file
+        filename = filedialog.askopenfilename(filetypes=[("Yolov5 model","*.pt")])
+        custom_model_choice = filename
+        # print choice
+        display_model_file_short.set(os.path.basename(filename))
+        if custom_model_choice != '':
+            modeldir1.grid(column=0, row=0, sticky='e')
+            v_modeldir1.grid(column=0, row=0, sticky='e')
+        else:
+            display_model_file.set("MDv5a") # default
+    else:
+        display_model_file_short.set("")
 
 # hide the input widgets except check_cont_from_checkpoint
 def update_window_continue_chckpnt():
@@ -1338,24 +1350,24 @@ if os.name == "nt":
     textbox_height_adjustment_factor = 0.77
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
-    pady_of_labels_and_widgets_factor = 1
-    slider_width_pixels = 15
+    pady_of_labels_and_widgets_factor = 0.5
+    slider_width_pixels = 10
 elif sys.platform == "linux" or sys.platform == "linux2":
     text_font = "Times"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 0.85
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.7
-    pady_of_labels_and_widgets_factor = 1
-    slider_width_pixels = 15
+    pady_of_labels_and_widgets_factor = 0.5
+    slider_width_pixels = 10
 else:
     text_font = "TkDefaultFont"
     resize_img_factor = 1
-    textbox_height_adjustment_factor = 1
+    textbox_height_adjustment_factor = 0.97
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 1
-    pady_of_labels_and_widgets_factor = 1
-    slider_width_pixels = 15
+    pady_of_labels_and_widgets_factor = 0.5
+    slider_width_pixels = 10
 
 # logo
 logo_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs', 'logo.png')
@@ -1440,7 +1452,7 @@ OPTIONS = ["Images", "Video's"]
 data_type = StringVar(dir_frame)
 data_type.set(OPTIONS[0])
 dropdown = OptionMenu(dir_frame, data_type, *OPTIONS, command=toggle_data_type)
-dropdown.config(width=6)
+dropdown.config(width=5)
 dropdown.grid(row=1, column=1, sticky='e', padx=5)
 
 # Megadetector frame for images
@@ -1454,17 +1466,21 @@ meg_frame.columnconfigure(1, weight=1, minsize=115)
 produce_JSON = BooleanVar()
 produce_JSON.set(True)
 
-Label(master=meg_frame, text="Model file to use").grid(row=0, column=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-loc_model_file = StringVar()
-loc_model_file_short = StringVar()
-modeldir1 = Label(master=meg_frame, textvariable=loc_model_file_short, fg='darkred')
-Button(master=meg_frame, text="Browse", command=browse_model_button).grid(row=0, column=1, sticky='e', padx=5)
+Label(master=meg_frame, text="Model").grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+MODEL_OPTIONS = ["MDv5a", "MDv5b", "Custom"]
+display_model_file = StringVar(meg_frame)
+display_model_file.set(MODEL_OPTIONS[0])
+display_model_file_short = StringVar()
+model_dropdown = OptionMenu(meg_frame, display_model_file, *MODEL_OPTIONS, command=toggle_model_options)
+model_dropdown.config(width=5)
+modeldir1 = Label(master=meg_frame, textvariable=display_model_file_short, fg='darkred')
+model_dropdown.grid(row=0, column=1, sticky='e', padx=5)
 
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
 lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 conf_thresh = DoubleVar()
 conf_thresh.set(20)
-scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=conf_thresh, showvalue=0, width=slider_width_pixels)
+scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=85, variable=conf_thresh, showvalue=0, width=slider_width_pixels)
 scl1.grid(column=1, row=1, sticky='e', padx=5)
 leftLabel = Label(meg_frame, textvariable=conf_thresh)
 leftLabel.config(fg="darkred")
@@ -1487,7 +1503,7 @@ chb2.grid(row=3, column=1, sticky='e', padx=5)
 lbl4 = tk.Label(meg_frame, text='Checkpoint frequency', state=DISABLED, pady=round(5*pady_of_labels_and_widgets_factor))
 lbl4.grid(row=4, sticky='w')
 int_checkpoint_n = StringVar()
-ent1 = tk.Entry(meg_frame, width=10, textvariable=int_checkpoint_n, fg='grey', state=NORMAL)
+ent1 = tk.Entry(meg_frame, width=9, textvariable=int_checkpoint_n, fg='grey', state=NORMAL)
 ent1.grid(row=4, column=1, sticky='e', padx=5)
 ent1.insert(0, "E.g.: 100")
 ent1.bind("<FocusIn>", handle_focus_in)
@@ -1581,6 +1597,12 @@ v_meg_frame.columnconfigure(1, weight=1, minsize=115)
 v_produce_JSON = BooleanVar()
 v_produce_JSON.set(True)
 
+Label(master=v_meg_frame, text="Model").grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+v_model_dropdown = OptionMenu(v_meg_frame, display_model_file, *MODEL_OPTIONS, command=toggle_model_options)
+v_model_dropdown.config(width=5)
+v_modeldir1 = Label(master=v_meg_frame, textvariable=display_model_file_short, fg='darkred')
+v_model_dropdown.grid(row=0, column=1, sticky='e', padx=5)
+
 v_lbl1 = Label(v_meg_frame, text="Confidence threshold (%)")
 v_lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 v_conf_thresh = DoubleVar()
@@ -1667,17 +1689,24 @@ t.insert(END, "Indicate whether you want to process images or video\'s. The opti
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
+t.insert(END, "Model\n")
+t.insert(END,
+         "Here you can indicate the model that you want to use to analyse the data. 'MDv5a' and 'MDv5b' stand for the MegaDetector models version 5a and b. These models differ only in their training data. Each MDv5 model can outperform the other slightly, depending on your data. Try them both and see which one works best for you. If you really don't have a clue, just stick with the default MDv5a. More info ")
+hyperlink1 = HyperlinkManager(t)
+t.insert(INSERT, "here",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/main/megadetector.md#megadetector-v50-20220615")))
+t.insert(END,
+         ". It is also possible to choose your own custom yolov5 model when running inference (e.g. a model trained for specific species).\n\n")
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
+
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
 t.insert(END, "Options available when analysing images\n")
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
-t.insert(END, "Has the MegaDetector algorithm already been run over these images?\n")
-t.insert(END,
-         "Here you can indicate if you have already run the algorithm over the images using EcoAssist. If so, EcoAssist will use the existing output. Please note that the folder must contain the same images (and filenames). Any new images added afterwards will not be handled and any images removed from the folder will cause an error.\n\n")
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
-t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
-t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
@@ -1711,7 +1740,6 @@ t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 t.insert(END, "Create input file for Timelapse (use relative filepaths)\n")
 t.insert(END,
          "This will create a .json file which can be used in the open-source cameratrap image analyser ")
-hyperlink1 = HyperlinkManager(t)
 t.insert(INSERT, "Timelapse",
          hyperlink1.add(
              partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
@@ -1767,14 +1795,9 @@ t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
 t.insert(END, "Options available when analysing video\'s\n")
 t.insert(END, "--------------------------------------------------------------------------------------------\n")
-t.insert(END, "Has the MegaDetector algorithm already been run over these video\'s?\n")
-t.insert(END,
-         "Here you can indicate if you have already run the algorithm over the images using EcoAssist. If so, EcoAssist will use the existing output. Please note that the folder must contain the same files (and filenames). Any new video's added afterwards will not be handled and any video's removed from the folder will cause an error.\n\n")
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
-t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
-t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
@@ -1817,29 +1840,10 @@ text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor
 text.tag_config('italic', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic') # size depends on OS
 
 text_line_number=1
+hyperlink = HyperlinkManager(text)
 text.insert(END, "The application\n")
 text.insert(END,
-            "EcoAssist is a freely available and open-source application with the aim of helping ecologists all over the world with their camera trap imagery. It uses a deep learning algorithm trained to detect the presence of animals, people and vehicles in camera trap data. You can let the algorithm process images or videos and filter out the empties, annotate for further processing (such as training your own algorithm) and visualise or crop the detections.\n\n")
-text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
-
-text.insert(END, "The model\n")
-text.insert(END, "For this application, I used ")
-hyperlink = HyperlinkManager(text)
-text.insert(INSERT, "MegaDetector",
-            hyperlink.add(
-                partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
-text.insert(END,
-            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on the YOLOv5 architecture. The model was trained with the TensorFlow Object Detection API, using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process approximately between 10.000 and 25.000 images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
-text.insert(INSERT, "cameratraps@microsoft.com",
-            hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@microsoft.com")))
-text.insert(END, ".\n\n")
-text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
-
-text.insert(END, "The author\n")
-text.insert(END,
-            "This program is written by Peter van Lunteren. I am a wildlife ecologist with a special interest in artificial intelligence, and how it can be applied to improve ecological research. EcoAssist is written to assist camera trap ecologists in their day-to-day activities without needing to have any programming skills. Help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would also very much like to know who uses the tool and for what reason. Please send me an email on ")
+            "EcoAssist is a freely available and open-source application with the aim of helping ecologists with their camera trap data without the need of any programming skills. It uses a deep learning algorithm trained to detect the presence of animals, people and vehicles in camera trap data. Help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would also very much like to know who uses the tool and for what reason. Please send me an email on ")
 text.insert(INSERT, "petervanlunteren@hotmail.com",
             hyperlink.add(partial(webbrowser.open, "mailto:petervanlunteren@hotmail.com")))
 text.insert(END, ".\n\n")
@@ -1847,9 +1851,22 @@ text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.en
 text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 text.grid(row=0, column=0, sticky="nesw")
 
+text.insert(END, "The model\n")
+text.insert(END, "For this application, I used ")
+text.insert(INSERT, "MegaDetector",
+            hyperlink.add(
+                partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
+text.insert(END,
+            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is based on the YOLOv5 architecture. The model was trained using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a precision of 89%–99% at detecting animals and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process something like 10.000 to 25.000 images per day. If you have a dedicated deep learning GPU, you can probably process along the lines of half a million images per day. The model is free, and it makes the creators super-happy when people use it, so I put their emailadress here for your convenience: ")
+text.insert(INSERT, "cameratraps@microsoft.com",
+            hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@microsoft.com")))
+text.insert(END, ".\n\n")
+text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+
 text.insert(END, "Citation\n")
 text.insert(END,
-            "If you use EcoAssist in your research, don't forget to the model and the EcoAssist software itself:\n\n")
+            "If you use EcoAssist in your research, don't forget to cite the model and the EcoAssist software itself:\n\n")
 text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
 text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 

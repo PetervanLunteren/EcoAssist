@@ -1,0 +1,235 @@
+Starting at: Mon Nov  7 06:37:56 AEST 2022
+
+uname -a:
+
+Darwin Peters-MacBook-Pro-2.local 18.7.0 Darwin Kernel Version 18.7.0: Tue Nov 10 00:07:31 PST 2020; root:xnu-4903.278.51~1/RELEASE_X86_64 x86_64
+
+System information:
+
+Software:
+
+    System Software Overview:
+
+      System Version: macOS 10.14.6 (18G7016)
+      Kernel Version: Darwin 18.7.0
+      Boot Volume: Macintosh HD
+      Boot Mode: Normal
+      Computer Name: Peter’s MacBook Pro (2)
+      User Name: Peter van Lunteren (petervanlunteren)
+      Secure Virtual Memory: Enabled
+      System Integrity Protection: Enabled
+      Time since boot: 5 minutes
+
+Hardware:
+
+    Hardware Overview:
+
+      Model Name: MacBook Pro
+      Model Identifier: MacBookPro14,2
+      Processor Name: Intel Core i7
+      Processor Speed: 3,5 GHz
+      Number of Processors: 1
+      Total Number of Cores: 2
+      L2 Cache (per Core): 256 KB
+      L3 Cache: 4 MB
+      Hyper-Threading Technology: Enabled
+      Memory: 16 GB
+      Boot ROM Version: 429.60.3.0.0
+      SMC Version (system): 2.44f1
+      Serial Number (system): C02W300DHV2T
+      Hardware UUID: 124BF46E-5E7F-58B2-928C-AF57C2C7C51F
+
+Memory:
+
+    Memory Slots:
+
+      ECC: Disabled
+      Upgradeable Memory: No
+
+        BANK 0/DIMM0:
+
+          Size: 8 GB
+          Type: LPDDR3
+          Speed: 2133 MHz
+          Status: OK
+          Manufacturer: 0x802C
+          Part Number: 0x4D5435324C31473332443450472D30393320
+          Serial Number: -
+
+        BANK 1/DIMM0:
+
+          Size: 8 GB
+          Type: LPDDR3
+          Speed: 2133 MHz
+          Status: OK
+          Manufacturer: 0x802C
+          Part Number: 0x4D5435324C31473332443450472D30393320
+          Serial Number: -
+
+Storage:
+
+    Macintosh HD:
+
+      Available: 134,24 GB (134.240.919.552 bytes)
+      Capacity: 499,96 GB (499.963.174.912 bytes)
+      Mount Point: /
+      File System: APFS
+      Writable: Yes
+      Ignore Ownership: No
+      BSD Name: disk1s1
+      Volume UUID: 90938330-9ED1-46C4-8B65-81358D89B5B1
+      Physical Drive:
+          Device Name: APPLE SSD AP0512J
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: PCI-Express
+          Internal: Yes
+          Partition Map Type: Unknown
+
+File sizes with depth 0:
+
+802M	/Applications/.EcoAssist_files
+
+File sizes with depth 1:
+
+ 20M	/Applications/.EcoAssist_files/EcoAssist
+6.9M	/Applications/.EcoAssist_files/ai4eutils
+239M	/Applications/.EcoAssist_files/cameratraps
+248M	/Applications/.EcoAssist_files/labelImg
+272M	/Applications/.EcoAssist_files/megadetector
+ 17M	/Applications/.EcoAssist_files/yolov5
+
+File sizes with depth 2:
+
+108K	/Applications/.EcoAssist_files/EcoAssist/EcoAssist_GUI.py
+4.0K	/Applications/.EcoAssist_files/EcoAssist/LICENSE
+4.0K	/Applications/.EcoAssist_files/EcoAssist/Linux_open_EcoAssist_shortcut.desktop
+ 24K	/Applications/.EcoAssist_files/EcoAssist/MacOS_Linux_install_EcoAssist.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/MacOS_Linux_open_EcoAssist.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/MacOS_Linux_open_LabelImg.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command
+ 12K	/Applications/.EcoAssist_files/EcoAssist/README.md
+ 32K	/Applications/.EcoAssist_files/EcoAssist/Windows_install_EcoAssist.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/Windows_open_EcoAssist.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/Windows_open_LabelImg.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/Windows_uninstall_EcoAssist.bat
+8.0K	/Applications/.EcoAssist_files/EcoAssist/__pycache__
+4.0K	/Applications/.EcoAssist_files/EcoAssist/_config.yml
+4.0K	/Applications/.EcoAssist_files/EcoAssist/citation.cff
+ 28K	/Applications/.EcoAssist_files/EcoAssist/fileicon
+8.3M	/Applications/.EcoAssist_files/EcoAssist/imgs
+4.0K	/Applications/.EcoAssist_files/EcoAssist/index.md
+8.0K	/Applications/.EcoAssist_files/EcoAssist/logfiles
+4.0K	/Applications/.EcoAssist_files/EcoAssist/path_to_conda_installation.txt
+840K	/Applications/.EcoAssist_files/EcoAssist/test_images
+4.0K	/Applications/.EcoAssist_files/EcoAssist/tkHyperlinkManager.py
+4.0K	/Applications/.EcoAssist_files/ai4eutils/LICENSE
+4.0K	/Applications/.EcoAssist_files/ai4eutils/README.md
+4.0K	/Applications/.EcoAssist_files/ai4eutils/SECURITY.md
+ 20K	/Applications/.EcoAssist_files/ai4eutils/TF_OD_API
+8.0K	/Applications/.EcoAssist_files/ai4eutils/__pycache__
+8.0K	/Applications/.EcoAssist_files/ai4eutils/ai4e_azure_utils.py
+4.0K	/Applications/.EcoAssist_files/ai4eutils/ai4e_string_utils.py
+4.0K	/Applications/.EcoAssist_files/ai4eutils/ai4e_web_utils.py
+ 12K	/Applications/.EcoAssist_files/ai4eutils/azcopy-bandwidth-test
+328K	/Applications/.EcoAssist_files/ai4eutils/azure-metrics-calc-storage-size
+336K	/Applications/.EcoAssist_files/ai4eutils/azure-sdk-calc-storage-size
+8.0K	/Applications/.EcoAssist_files/ai4eutils/back_up_blob_containers.py
+ 12K	/Applications/.EcoAssist_files/ai4eutils/directory_listing.py
+8.0K	/Applications/.EcoAssist_files/ai4eutils/enumerate_blob_folders_at_depth.py
+ 16K	/Applications/.EcoAssist_files/ai4eutils/gDrive_download.py
+2.9M	/Applications/.EcoAssist_files/ai4eutils/geospatial
+4.0K	/Applications/.EcoAssist_files/ai4eutils/matlab_porting_tools.py
+4.0K	/Applications/.EcoAssist_files/ai4eutils/mypy.ini
+ 12K	/Applications/.EcoAssist_files/ai4eutils/parallel_change_blob_access_tier.py
+ 12K	/Applications/.EcoAssist_files/ai4eutils/parallel_delete_blobs.py
+ 16K	/Applications/.EcoAssist_files/ai4eutils/parallel_enumerate_blobs.py
+ 12K	/Applications/.EcoAssist_files/ai4eutils/parallel_enumerate_containers.py
+8.0K	/Applications/.EcoAssist_files/ai4eutils/path_utils.py
+ 16K	/Applications/.EcoAssist_files/ai4eutils/pylintrc
+4.0K	/Applications/.EcoAssist_files/ai4eutils/remove_empty_folders.py
+ 20K	/Applications/.EcoAssist_files/ai4eutils/sas_blob_utils.py
+ 20K	/Applications/.EcoAssist_files/ai4eutils/tests
+4.0K	/Applications/.EcoAssist_files/ai4eutils/url_utils.py
+8.0K	/Applications/.EcoAssist_files/ai4eutils/write_html_image_list.py
+4.0K	/Applications/.EcoAssist_files/cameratraps/LICENSE
+ 12K	/Applications/.EcoAssist_files/cameratraps/README.md
+4.0K	/Applications/.EcoAssist_files/cameratraps/SECURITY.md
+8.0K	/Applications/.EcoAssist_files/cameratraps/__pycache__
+6.7M	/Applications/.EcoAssist_files/cameratraps/api
+5.2M	/Applications/.EcoAssist_files/cameratraps/archive
+4.0K	/Applications/.EcoAssist_files/cameratraps/citation.cff
+480K	/Applications/.EcoAssist_files/cameratraps/classification
+8.0K	/Applications/.EcoAssist_files/cameratraps/collaborations.md
+8.0K	/Applications/.EcoAssist_files/cameratraps/ct_utils.py
+5.8M	/Applications/.EcoAssist_files/cameratraps/data_management
+6.7M	/Applications/.EcoAssist_files/cameratraps/demo
+860K	/Applications/.EcoAssist_files/cameratraps/detection
+4.0K	/Applications/.EcoAssist_files/cameratraps/download_megadetector_timing_benchmark_set.bat
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment-classifier-training.yml
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment-classifier.yml
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment-detector-m1.yml
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment-detector-mac.yml
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment-detector.yml
+4.0K	/Applications/.EcoAssist_files/cameratraps/environment.yml
+1.6M	/Applications/.EcoAssist_files/cameratraps/images
+ 36K	/Applications/.EcoAssist_files/cameratraps/megadetector.md
+4.0K	/Applications/.EcoAssist_files/cameratraps/mypy.ini
+ 16K	/Applications/.EcoAssist_files/cameratraps/pylintrc
+7.4M	/Applications/.EcoAssist_files/cameratraps/research
+ 40K	/Applications/.EcoAssist_files/cameratraps/sandbox
+164K	/Applications/.EcoAssist_files/cameratraps/taxonomy_mapping
+ 27M	/Applications/.EcoAssist_files/cameratraps/test_images
+8.0K	/Applications/.EcoAssist_files/cameratraps/uploading-to-the-cloud.md
+116K	/Applications/.EcoAssist_files/cameratraps/visualization
+4.0K	/Applications/.EcoAssist_files/labelImg/CONTRIBUTING.rst
+4.0K	/Applications/.EcoAssist_files/labelImg/HISTORY.rst
+4.0K	/Applications/.EcoAssist_files/labelImg/LICENSE
+4.0K	/Applications/.EcoAssist_files/labelImg/MANIFEST.in
+4.0K	/Applications/.EcoAssist_files/labelImg/Makefile
+ 12K	/Applications/.EcoAssist_files/labelImg/README.rst
+  0B	/Applications/.EcoAssist_files/labelImg/__init__.py
+ 32K	/Applications/.EcoAssist_files/labelImg/build-tools
+4.0K	/Applications/.EcoAssist_files/labelImg/data
+6.0M	/Applications/.EcoAssist_files/labelImg/demo
+4.0K	/Applications/.EcoAssist_files/labelImg/issue_template.md
+ 68K	/Applications/.EcoAssist_files/labelImg/labelImg.py
+1012K	/Applications/.EcoAssist_files/labelImg/libs
+ 16K	/Applications/.EcoAssist_files/labelImg/readme
+4.0K	/Applications/.EcoAssist_files/labelImg/requirements
+440K	/Applications/.EcoAssist_files/labelImg/resources
+4.0K	/Applications/.EcoAssist_files/labelImg/resources.qrc
+4.0K	/Applications/.EcoAssist_files/labelImg/setup.cfg
+4.0K	/Applications/.EcoAssist_files/labelImg/setup.py
+288K	/Applications/.EcoAssist_files/labelImg/tests
+ 12K	/Applications/.EcoAssist_files/labelImg/tools
+272M	/Applications/.EcoAssist_files/megadetector/md_v5a.0.0.pt
+8.0K	/Applications/.EcoAssist_files/yolov5/CONTRIBUTING.md
+ 36K	/Applications/.EcoAssist_files/yolov5/LICENSE
+ 16K	/Applications/.EcoAssist_files/yolov5/README.md
+728K	/Applications/.EcoAssist_files/yolov5/data
+ 16K	/Applications/.EcoAssist_files/yolov5/detect.py
+ 32K	/Applications/.EcoAssist_files/yolov5/export.py
+8.0K	/Applications/.EcoAssist_files/yolov5/hubconf.py
+240K	/Applications/.EcoAssist_files/yolov5/models
+4.0K	/Applications/.EcoAssist_files/yolov5/requirements.txt
+4.0K	/Applications/.EcoAssist_files/yolov5/setup.cfg
+ 36K	/Applications/.EcoAssist_files/yolov5/train.py
+ 60K	/Applications/.EcoAssist_files/yolov5/tutorial.ipynb
+476K	/Applications/.EcoAssist_files/yolov5/utils
+ 20K	/Applications/.EcoAssist_files/yolov5/val.py
+
+Path to conda as imported from /Applications/.EcoAssist_files/EcoAssist/path_to_conda_installation.txt is: /Users/petervanlunteren/anaconda3
+Path to conda.sh: /Users/petervanlunteren/anaconda3/etc/profile.d/conda.sh
+Path to python: /Users/petervanlunteren/anaconda3/envs/ecoassistcondaenv/bin/
+
+PYHTONPATH=:/Users/petervanlunteren/anaconda3/envs/ecoassistcondaenv/bin/:/Applications/.EcoAssist_files/cameratraps:/Applications/.EcoAssist_files/ai4eutils:/Applications/.EcoAssist_files/yolov5
+
+PATH=/Users/petervanlunteren/anaconda3/envs/ecoassistcondaenv/bin/:/usr/bin/:/anaconda3/bin:/Users/petervanlunteren/anaconda3/envs/ecoassistcondaenv/bin:/Users/petervanlunteren/anaconda3/condabin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/opt/X11/bin
+
+python version: Python 3.8.13
+
+python location: /Users/petervanlunteren/anaconda3/envs/ecoassistcondaenv/bin//python
+
+
+Closing at: Mon Nov  7 06:38:24 AEST 2022
