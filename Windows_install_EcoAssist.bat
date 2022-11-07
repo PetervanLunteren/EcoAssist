@@ -232,7 +232,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     git clone https://github.com/ultralytics/yolov5/
     cd "%LOCATION_ECOASSIST_FILES%\yolov5" || ( echo "Could not change directory to yolov5. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1
+    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     @REM # check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
