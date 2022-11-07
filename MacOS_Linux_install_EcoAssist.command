@@ -141,11 +141,7 @@ else
   echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  if [ "$PLATFORM" = "M1 Mac" ] ; then
-    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
-  else
-    git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1 2>&1 | tee -a "$LOG_FILE"
-  fi
+  git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
