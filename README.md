@@ -11,12 +11,13 @@ EcoAssist is an application designed to make life easier for wildlife ecologists
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
 ## Features
-* Use the `MDv5` model to tag animals, persons and vehicles in both images and video's
+* Tag animals, persons and vehicles in both images and video's
 * Filter out empty images, people, vehicles or animals
 * Review and edit annotations using the open-source annotation software [labelImg](https://github.com/heartexlabs/labelImg)
 * Create input file for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * Export `.xml` label files in Pascal VOC format for further model training
 * Manipulate data by drawing boxes or cropping detections
+* Use either the `MDv5a`, `MDv5b` or a custom `yolov5` model 
 <br/>
 
 ## Demo
@@ -43,8 +44,6 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 ## Download
 ### General information
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. When you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
-
-*Note: EcoAssist is not yet extensively tested. If you find any problems or - hopefully - everything works perfect, [let me know](mailto:petervanlunteren@hotmail.com)!*
 
 ### Windows installation
 Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If that doesn't work you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive to search for anaconda. It's possible to install EcoAssist without admin rights, but then the scripts will need some tweaking. [Email me](mailto:petervanlunteren@hotmail.com) if you want help with that. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
