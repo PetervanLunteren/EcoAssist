@@ -232,7 +232,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     git clone https://github.com/ultralytics/yolov5/
     cd "%LOCATION_ECOASSIST_FILES%\yolov5" || ( echo "Could not change directory to yolov5. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1
+    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     @REM # check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
@@ -260,6 +260,19 @@ if exist "%LOCATION_ECOASSIST_FILES%\megadetector\md_v5a.0.0.pt" (
     if not exist "%LOCATION_ECOASSIST_FILES%\megadetector" mkdir "%LOCATION_ECOASSIST_FILES%\megadetector"
     cd "%LOCATION_ECOASSIST_FILES%\megadetector" || ( echo "Could not change directory to megadetector. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    @REM # check the size of the folder
+    dir "%LOCATION_ECOASSIST_FILES%\megadetector" | wtee -a "%LOG_FILE%"
+)
+
+@REM # download the md_v5b.0.0.pt model if not present
+if exist "%LOCATION_ECOASSIST_FILES%\megadetector\md_v5b.0.0.pt" (
+    echo "File md_v5b.0.0.pt already exists! Skipping this step." | wtee -a "%LOG_FILE%"
+) else (
+    echo "File md_v5b.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
+    if not exist "%LOCATION_ECOASSIST_FILES%\megadetector" mkdir "%LOCATION_ECOASSIST_FILES%\megadetector"
+    cd "%LOCATION_ECOASSIST_FILES%\megadetector" || ( echo "Could not change directory to megadetector. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     @REM # check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\megadetector" | wtee -a "%LOG_FILE%"
