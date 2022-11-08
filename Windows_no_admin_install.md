@@ -1,15 +1,14 @@
-It’s the first time I’ll install EcoAssist without admin rights, so I apologise if I might forget something here. The reason why EcoAssist needs admin rights, is that it needs access to files on the C:\ drive. For example, the EcoAssist_files folder with all required documents and possibly the anaconda3 folder. If you want to run it without admin rights, you need to make sure that all these files are in a place that you can access without admin rights (a folder inside your users folder).
+# Windows installation without administrator privileges
+EcoAssist needs admin rights because it requires access to the `EcoAssist_files` folder and the `Anaconda3` installation, which are not in your user profile folder. If we want to be able to install and open EcoAssist without admin rights, we basically have to make sure we don't have to touch anything outside your user profile folder. We can do that with some tweaking of the scripts and a manual anaconda installation.
 
-Step 0: Send me the log files
-There is the hidden EcoAssist_files folder, there is a folder containing log files. Could you send me all the files inside this folder? "C:\ProgramData\EcoAssist_files\EcoAssist\logfiles" This will give me some insight into where your installations are.
+### Step 1: Install Anaconda3 for your user only
+Go to https://www.anaconda.com/ and install anaconda using the graphical installer. Make sure you install it for your user only (and thus inside your user profile folder). If you don't know what your user profile folder is, copy paste this in your command prompt. 
+```batch
+echo %USERPROFILE%
+```
+PHOTOS
 
-Step 1: Find Anaconda3
-Search for “Anaconda3”.
-- Is it located inside your users folder (that means, can you access it without admin rights)? Is so, no worries. That means it all good.
-- If it is located somewhere where you do need admin rights (for example C:\ProgramData\Anaconda3) you’ll need to uninstall anaconda3. If EcoAssist is the only reason that you have Anaconda3 and you don’t use it for anything else, you can simply uninstall Anaconda and reinstall it on a location inside your users folder. If you are using it for other projects and have environments set up, you probably don’t want to uninstall it.
+### Step 2: Download the install file, adjust and run it
+Donwload install file and adjust
 
-Step 2: Uninstall EcoAssist and possibly Anaconda3
-You can do that by using this file: https://petervanlunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat. This uninstall needs admin rights too (sorry). Here you can enter “y” or “n” to uninstall Anaconda3.
-
-Step 3: Adjust install and open files
-I’ll send you the adjusted files later. I’ll have to go out 
+### Step 3
