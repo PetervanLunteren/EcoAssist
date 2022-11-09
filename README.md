@@ -84,12 +84,21 @@ If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoA
  └── 📄EcoAssist
 ```
 
-## GPU Support
+## GPU support
 EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by Petar Gyurov for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
 </p>
+
+## Custom model support
+EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as “animal”, you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses (“animal”, “person” and “vehicle”) and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, let me know!
+
+So basically, EcoAssist can run your custom model if it works with the same command as MegaDetector.
+
+```bash
+python run_detector_batch.py "your_custom_model.pt" "/some/image/folder" "output.json" 
+```
 
 ## Citation
 If you use EcoAssist in your research, don't forget to cite the engine behind EcoAssist ([MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md)) and the EcoAssist software itself.
