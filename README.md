@@ -11,13 +11,13 @@ EcoAssist is an application designed to make life easier for wildlife ecologists
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
 ## Features
-* Tag animals, persons and vehicles in both images and video's
+* Use either `MDv5a` or `MDv5b` to tag animals, persons and vehicles in both images and video's
 * Filter out empty images, people, vehicles or animals
 * Review and edit annotations using the open-source annotation software [labelImg](https://github.com/heartexlabs/labelImg)
 * Create input file for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * Export `.xml` label files in Pascal VOC format for further model training
 * Manipulate data by drawing boxes or cropping detections
-* Use either the `MDv5a`, `MDv5b` or a custom `yolov5` model 
+* Use a custom `yolov5` model trained from `MDv5` using transfer learning
 <br/>
 
 ## Demo
@@ -41,7 +41,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
-## Download
+## Download or update
 ### General information
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. When you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
@@ -59,9 +59,6 @@ Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_instal
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
-
-## Update
-You can update EcoAssist by following the same process described [above](https://github.com/PetervanLunteren/EcoAssist#download). The installation file will automatically update it to the latest version.
 
 ## Start the application
 EcoAssist will open when double-clicked the file described below. You are free to move this file to a more convenient location. 
@@ -92,7 +89,7 @@ EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU i
 </p>
 
 ## Custom model support
-EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as “animal”, you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses (“animal”, “person” and “vehicle”) and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, let me know!
+EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses ("animal", "person" and "vehicle") and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, let me know!
 
 So basically, EcoAssist can run your custom model if it works with the same command as MegaDetector.
 
