@@ -89,7 +89,7 @@ EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU i
 </p>
 
 ## Custom model support
-EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses ("animal", "person" and "vehicle") and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, let me know!
+EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses ("animal", "person" and "vehicle") and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, [let me know](mailto:petervanlunteren@hotmail.com)!
 
 So basically, EcoAssist can run your custom model if it works with the same command as MegaDetector.
 
