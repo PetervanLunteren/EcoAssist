@@ -82,7 +82,7 @@ If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoA
 ```
 
 ## GPU support
-EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by Petar Gyurov for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
+EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by [Petar Gyurov](https://github.com/petargyurov) for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
@@ -116,6 +116,12 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
 }
 ```
 
-
 ## How to uninstall EcoAssist?
 Mac and Linux users can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command).  Windows users can uninstall it with [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat). It will prompt you whether you want to uninstall Anaconda too. You can just type `y` or `n`.
+
+## Contributors
+<a href="https://github.com/PetervanLunteren/EcoAssist/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=PetervanLunteren/EcoAssist" />
+</a>
+
+* [ehallein](https://github.com/ehallein): writing and testing of custom model feature
