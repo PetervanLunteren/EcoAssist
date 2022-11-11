@@ -3,21 +3,20 @@
 THIS TUTORIAL IS WORK IN PROGRESS
 
 TODO:
-* check if it works without the 3rd option of anaconda. 
+* what happens if you already have a installation of git/anaconda?
 
-EcoAssist needs admin rights because it requires access to the `Anaconda3` and `Git` installations and the `EcoAssist_files` folder, which are (generally) not in your user profile folder. If we want to be able to install and open EcoAssist without admin rights, we basically have to make sure we don't have to touch anything outside your user profile folder. We can do that with some tweaking of the scripts and manual installations.
+Normally EcoAssist needs admin rights because it requires access to the `Anaconda3` and `Git` installations and the `EcoAssist_files` folder, which are (generally) not in your user profile folder. If we want to be able to install and open EcoAssist without admin rights, we basically have to make sure we don't have to touch anything outside your user profile folder. We can do that with some script-tweaking and manual installations.
 
 ### Step 1: Mannually download anaconda
-If you don't already have anaconda installed inside your user profile folder, go to www.anaconda.com and install anaconda using the graphical installer. Make sure you install it for your user only ("Just Me") and choose the destination folder directly inside your user profile folder (`C:\Users\<user_name>\anaconda3`). The rest of the default options are just fine.
+Go to www.anaconda.com and install anaconda using the graphical installer. Make sure you install it for your user only ("Just Me") and make sure the destination folder is `C:\Users\<user_name>\anaconda3`. You can leave the rest of the options as the defaults.
 
 <p float="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_1.png" width=33% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_2.png" width=33% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_3.png" width=33% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_1.png" width=45% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_2.png" width=45% height="auto" />
 </p>
 
 ### Step 2: Mannually download git
-If you don't already have git installed inside your user profile folder, go to [gitforwindows.org](https://gitforwindows.org/) and install git using the graphical installer. Make sure you uncheck the "Only show new options" and browse for your user profile folder as destination location (`C:\Users\<user_name>\Git`). The rest of the default options are just fine. I'm not sure why, but you might get still prompted to enter an admin password. If you decline this the installation will still start anyway. 
+Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the graphical installer. Make sure you uncheck the "Only show new options" and browse for your user profile folder as destination location (`C:\Users\<user_name>\Git`). Leave the rest of the options as default. I'm not sure why, but you might still get prompted to enter an admin password. If you just decline this the installation will still start anyway. 
 
 <p float="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_git_1.png" width=45% height="auto" />
