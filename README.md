@@ -17,7 +17,7 @@ I've written this application in my free evenings and would really appreciate it
 * Create input file for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * Export `.xml` label files in Pascal VOC format for further model training
 * Manipulate data by drawing boxes or cropping detections
-* Use a custom `yolov5` model trained from `MDv5` using transfer learning
+* Use custom models trained from `MDv5` using transfer learning
 <br/>
 
 ## Demo
@@ -46,7 +46,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. When you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
 
 ### Windows installation
-Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If that doesn't work you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive to search for anaconda. It's possible to install EcoAssist without admin rights, but then the scripts will need some tweaking. See [this tutorial](https://github.com/PetervanLunteren/EcoAssist/blob/main/Windows_no_admin_install.md) for more information. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
+Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If that doesn't work you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive. Don't have an admin password? See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/Windows_no_admin_install.md) to install it without admin privileges. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
 
 ### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work you can change the file permissions by opening a new terminal window and copy-pasting `chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command`. Then try again.
@@ -82,14 +82,14 @@ If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoA
 ```
 
 ## GPU support
-EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by [Petar Gyurov](https://github.com/petargyurov) for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU will be best off by installing EcoAssist normally and afterwards installing the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
+EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by [Petar Gyurov](https://github.com/petargyurov) for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU can install the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
 </p>
 
 ## Custom model support
-EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes MegaDetector uses ("animal", "person" and "vehicle") and train the model using tranfer learning to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, [let me know](mailto:petervanlunteren@hotmail.com)!
+EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes ("animal", "person" and "vehicle") and train the model to detect custom classes (e.g. "species A" and "species B"). If you add classes, you’ll need to adjust `run_detector.py` and `separate_detections_into_folders.py` too. If you need any help with that, [let me know](mailto:petervanlunteren@hotmail.com)!
 
 So basically, EcoAssist can run your custom model if it works with the same command as MegaDetector.
 
