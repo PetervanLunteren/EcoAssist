@@ -1,13 +1,8 @@
 # Windows installation without administrator privileges
 
-THIS TUTORIAL IS WORK IN PROGRESS
+Normally, EcoAssist needs admin rights because it requires access to the `Anaconda3` and `Git` installations and the `EcoAssist_files` folder, which are (generally) not in your user profile folder. If we want to be able to install and open EcoAssist without admin rights, we basically have to make sure we don't have to touch anything outside your user profile folder. We can do that with some script-tweaking and manual installations.
 
-TODO:
-* what happens if you already have a installation of git/anaconda?
-
-Normally EcoAssist needs admin rights because it requires access to the `Anaconda3` and `Git` installations and the `EcoAssist_files` folder, which are (generally) not in your user profile folder. If we want to be able to install and open EcoAssist without admin rights, we basically have to make sure we don't have to touch anything outside your user profile folder. We can do that with some script-tweaking and manual installations.
-
-### Step 1: Mannually download anaconda
+### Step 1: Manually download anaconda
 Go to www.anaconda.com and install anaconda using the graphical installer. Make sure you install it for your user only ("Just Me") and make sure the destination folder is `C:\Users\<user_name>\anaconda3`. You can leave the rest of the options as the defaults.
 
 <p float="center">
@@ -15,8 +10,8 @@ Go to www.anaconda.com and install anaconda using the graphical installer. Make 
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_anaconda_2.png" width=45% height="auto" />
 </p>
 
-### Step 2: Mannually download git
-Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the graphical installer. Make sure you uncheck the "Only show new options" and browse for your user profile folder as destination location (`C:\Users\<user_name>\Git`). Leave the rest of the options as default. I'm not sure why, but you might still get prompted to enter an admin password. If you just decline this the installation will still start anyway. 
+### Step 2: Manually download git
+Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the graphical installer. Make sure you uncheck the "Only show new options" and browse for your user profile folder as destination location (`C:\Users\<user_name>\Git`). Leave the rest of the options as default. I'm not sure why, but you might still get prompted to enter an admin password. Just click "No" and the installation will start anyway. 
 
 <p float="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Install_git_1.png" width=45% height="auto" />
@@ -24,8 +19,8 @@ Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the 
 </p>
 
 ### Step 3: Adjust install script
-* Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and open it in a text editor (notepad is fine).
-* Delete the following code which asks you for an admin password
+1) Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and open it in a text editor (notepad is fine).
+2) Delete the following code which asks you for an admin password
 
   ```batch
   @REM # set admin rights if not already in use (thanks user399109)
@@ -51,9 +46,11 @@ Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the 
       CD /D "%~dp0"
   ```
 
-* Change the location of the `EcoAssist_files` folder by changing `set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files` into `set LOCATION_ECOASSIST_FILES=%UserProfile%\EcoAssist_files`. 
+3) Adjust the location of the `EcoAssist_files` folder by changing
+  * `set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files` into
+  * `set LOCATION_ECOASSIST_FILES=%UserProfile%\EcoAssist_files`
 
-* Delete the code which installs git
+4) Delete the code which installs git
   ```batch
   @REM # install git if not already present
   git --version && set git_installed_1="Yes" || set git_installed_1="No"
@@ -146,14 +143,14 @@ Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the 
   )
   ```
   
-* And replace it with
+5) And replace it with
 
   ```batch
   echo "No admin install -> Git is manually installed." | wtee -a "%LOG_FILE%"
   set PATH=%PATH%;"%UserProfile%\Git\cmd"
   ```
 
-* Delete the code which installs anaconda
+6) Delete the code which installs anaconda
 
   ```batch
   @REM # check if conda is already installed, if not install
@@ -253,19 +250,19 @@ Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the 
   )
   ```
 
-* And replace it with
+7) And replace it with
 
   ```batch
   echo "No admin install -> Anaconda is manually installed." | wtee -a "%LOG_FILE%"
   set PATH=%PATH%;"%UserProfile%\Anaconda3\Scripts"
   ```
-* Save the file, execute it and wait for it to finish.
+8) Save the file, execute it and wait for it to finish.
 
 ### Step 4: Adjust the script to open EcoAssist
-* Navigate to the hidden folder `C:\Users\<user_name>\EcoAssist_files\EcoAssist` and open `Windows_open_EcoAssist.bat` in a text editor.
-* Just like you did with `Windows_install_EcoAssist.bat`, delete the code which asks you for an admin password and change the location of the `EcoAssist_files` folder.
+1) Navigate to the hidden folder `C:\Users\<user_name>\EcoAssist_files\EcoAssist` and open `Windows_open_EcoAssist.bat` in a text editor.
+2) Just like you did with `Windows_install_EcoAssist.bat`, delete the code which asks you for an admin password and change the location of the `EcoAssist_files` folder (step 3.2 & 3.3).
 
 ### Step 5: Adjust the script to open LabelImg
-* Open `Windows_open_LabelImg.bat` in a text editor and change the location of the `EcoAssist_files` folder. Here there is no code which asks you for an admin password, so no need to delete this.
+Open `Windows_open_LabelImg.bat` in a text editor and change the location of the `EcoAssist_files` folder (step 3.3). Here there is no code which asks you for an admin password, so no need to delete this.
 
 ## And that's it: you've bypassed administration privileges. You're good to go!
