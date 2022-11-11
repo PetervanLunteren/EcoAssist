@@ -41,6 +41,15 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
+## Quick links
+1. [Download or update](#download-or-update)
+2. [Start the application](#start-the-application)
+3. [GPU support](#gpu-support)
+4. [Custom model support](#custom-model-support)
+5. [Citation](#citation)
+6. [How to uninstall EcoAssist](#how-to-uninstall-ecoassist)
+7. [Code contributors](#code-contributors)
+
 ## Download or update
 ### General information
 EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/products/individual) to run properly. The steps below will install Anaconda if not already installed on your computer. When you install EcoAssist it is expected the [license terms of Anaconda](https://legal.anaconda.com/policies/en/?name=end-user-license-agreements#ae-5) are agreed upon.
@@ -119,9 +128,11 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
 ## How to uninstall EcoAssist?
 Mac and Linux users can uninstall EcoAssist by executing [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command).  Windows users can uninstall it with [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_uninstall_EcoAssist.bat). It will prompt you whether you want to uninstall Anaconda too. You can just type `y` or `n`.
 
-## Contributors
+## Code contributors
 <a href="https://github.com/PetervanLunteren/EcoAssist/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=PetervanLunteren/EcoAssist" />
 </a>
 
-* [ehallein](https://github.com/ehallein): writing and testing of custom model feature
+###
+Please feel free to fork this repo and submit fixes, improvements or add new features. Thanks:
+* [ehallein](https://github.com/ehallein) for building and testing the custom model feature
