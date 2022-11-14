@@ -120,6 +120,7 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
   title     = {{EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model}},
   author    = {van Lunteren, Peter},
   year      = {2022},
+  publisher = {Zenodo},
   doi       = {10.5281/zenodo.7223363},
   url       = {https://github.com/PetervanLunteren/EcoAssist}
 }
