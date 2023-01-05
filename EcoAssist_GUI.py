@@ -1,5 +1,5 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 1 Nov 2022.
+# Written by Peter van Lunteren, 3 Jan 2022.
 
 # import packages
 import json
@@ -13,6 +13,7 @@ from tkinter import ttk
 import tkinter as tk
 import os
 import re
+import shutil
 from subprocess import Popen, PIPE
 import time
 import datetime
@@ -179,7 +180,7 @@ def produce_json_video(path_to_video_folder, additional_json_cmds):
 
 
 # function to crop detections based on json file (for images)
-def crop(path_to_image_folder, del_originals, separated_files):
+def custom_crop(path_to_image_folder, del_originals):
     print(f"Cropping images...\n")
     global elapsed_time_crop
     global time_left_crop
@@ -193,34 +194,9 @@ def crop(path_to_image_folder, del_originals, separated_files):
         crop_progbar['value'] += 100 / n_images
         counter = 1
         n_detections = len(image['detections'])
-        detections_list = image['detections']
         if not n_detections == 0:
             for detection in image['detections']:
-                if separated_files:
-                    animal_detecs = 0
-                    person_detecs = 0
-                    vehicle_detecs = 0
-                    for i in range(n_detections):
-                        if detections_list[i]["category"] == "1":
-                            animal_detecs += 1
-                        if detections_list[i]["category"] == "2":
-                            person_detecs += 1
-                        if detections_list[i]["category"] == "3":
-                            vehicle_detecs += 1
-                    if animal_detecs != 0 and person_detecs == 0 and vehicle_detecs == 0:
-                        file = os.path.join(os.path.split(image['file'])[0], 'images', 'animals',
-                                            os.path.split(image['file'])[1])
-                    elif animal_detecs == 0 and person_detecs != 0 and vehicle_detecs == 0:
-                        file = os.path.join(os.path.split(image['file'])[0], 'images', 'persons',
-                                            os.path.split(image['file'])[1])
-                    elif animal_detecs == 0 and person_detecs == 0 and vehicle_detecs != 0:
-                        file = os.path.join(os.path.split(image['file'])[0], 'images', 'vehicles',
-                                            os.path.split(image['file'])[1])
-                    else:
-                        file = os.path.join(os.path.split(image['file'])[0], 'images', 'multiple_categories',
-                                            os.path.split(image['file'])[1])
-                else:
-                    file = image['file']
+                file = image['file']
                 category = detection['category']
                 im = Image.open(file)
                 width, height = im.size
@@ -255,7 +231,7 @@ def crop(path_to_image_folder, del_originals, separated_files):
 
 
 # function to draw boxes around the detections based on json file (for images)
-def visualise_bbox(path_to_image_folder, del_originals, separated_files):
+def visualise_bbox(path_to_image_folder, del_originals):
     print(f"Visualising images...\n")
     global elapsed_time_bbox
     global time_left_bbox
@@ -267,34 +243,9 @@ def visualise_bbox(path_to_image_folder, del_originals, separated_files):
     n_images = len(data['images'])
     for image in data['images']:
         n_detections = len(image['detections'])
-        detections_list = image['detections']
         bbox_progbar['value'] += 100 / n_images
         if not n_detections == 0:
-            if separated_files:
-                animal_detecs = 0
-                person_detecs = 0
-                vehicle_detecs = 0
-                for i in range(n_detections):
-                    if detections_list[i]["category"] == "1":
-                        animal_detecs += 1
-                    if detections_list[i]["category"] == "2":
-                        person_detecs += 1
-                    if detections_list[i]["category"] == "3":
-                        vehicle_detecs += 1
-                if animal_detecs != 0 and person_detecs == 0 and vehicle_detecs == 0:
-                    file = os.path.join(os.path.split(image['file'])[0], 'images', 'animals',
-                                        os.path.split(image['file'])[1])
-                elif animal_detecs == 0 and person_detecs != 0 and vehicle_detecs == 0:
-                    file = os.path.join(os.path.split(image['file'])[0], 'images', 'persons',
-                                        os.path.split(image['file'])[1])
-                elif animal_detecs == 0 and person_detecs == 0 and vehicle_detecs != 0:
-                    file = os.path.join(os.path.split(image['file'])[0], 'images', 'vehicles',
-                                        os.path.split(image['file'])[1])
-                else:
-                    file = os.path.join(os.path.split(image['file'])[0], 'images', 'multiple_categories',
-                                        os.path.split(image['file'])[1])
-            else:
-                file = image['file']
+            file = image['file']
             im = cv2.imread(file)
             if del_originals == True and os.path.exists(file):
                 os.remove(file)
@@ -329,9 +280,29 @@ def visualise_bbox(path_to_image_folder, del_originals, separated_files):
     bbox_stats['text'] = update_progress_label_short(elapsed_time_bbox, time_left_bbox, command="done")
     window.update()
 
+# helper function to create dir and move image files
+def create_dir_and_move_image_files(file_path, file, file_name, detection_type, radio_copy_move):
+    # define directory, source and destination paths
+    dir = os.path.join(file_path, "separated_files", detection_type)
+    src = os.path.join(file[0] + file[1])
+    dst = os.path.join(dir, file_name[0] + file_name[1])
+    src_xml = os.path.join(file[0] + ".xml")
+    dst_xml = os.path.join(dir, file_name[0] + ".xml")
+    # create subfolder
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    # place image or video in subfolder
+    if radio_copy_move == 1: # move
+        shutil.move(src, dst)
+    elif radio_copy_move == 2: # copy
+        shutil.copy2(src, dst)
+    # move xml file if present
+    if os.path.isfile(src_xml):
+        shutil.move(src_xml, dst_xml)
+    # return destination path so the json data can be adjusted in the loop
+    return(dst)
 
-# function to move the images and their xmls (if present) to their associated directories
-def separate_images(path_to_image_folder):
+# function to read the json file, move the images and their xmls (if present) to their associated directories, and adjust the json file
+def separate_images(path_to_image_folder, radio_copy_move):
     print(f"Separating images...\n")
     global elapsed_time_sep
     global time_left_sep
@@ -342,18 +313,15 @@ def separate_images(path_to_image_folder):
         data = json.load(json_file)
     n_images = len(data['images'])
     for image in data['images']:  # mkdir for all dirs containing images
-        file = os.path.splitext(image['file'])  # list: ext in [1] and the rest in [0]
+        file = os.path.splitext(image['file'])  # list: extention in [1] and the rest in [0]
         file_path = os.path.dirname(os.path.normpath(file[0] + file[1]))
         file_name = os.path.splitext(
-            os.path.basename(os.path.normpath(file[0] + file[1])))  # list: ext in [1] and the rest in [0]
+            os.path.basename(os.path.normpath(file[0] + file[1])))  # list: extention in [1] and the rest in [0]
         detections_list = image['detections']
         n_detections = len(detections_list)
         sep_progbar['value'] += 100 / n_images
-        Path(os.path.join(file_path, "images")).mkdir(parents=True, exist_ok=True)
         if n_detections == 0:  # move images based based on detections
-            Path(os.path.join(file_path, "images", "empties")).mkdir(parents=True, exist_ok=True)
-            os.replace(os.path.join(file[0] + file[1]),
-                       os.path.join(file_path, "images", "empties", file_name[0] + file_name[1]))
+            image['file'] = create_dir_and_move_image_files(file_path, file, file_name, "empties", radio_copy_move)
         else:   
             animal_detecs = 0
             person_detecs = 0
@@ -366,33 +334,13 @@ def separate_images(path_to_image_folder):
                 if detections_list[i]["category"] == "3":
                     vehicle_detecs += 1
             if animal_detecs != 0 and person_detecs == 0 and vehicle_detecs == 0:
-                Path(os.path.join(file_path, "images", "animals")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(file[0] + file[1]),
-                           os.path.join(file_path, "images", "animals", file_name[0] + file_name[1]))
-                if os.path.isfile(os.path.join(file[0] + ".xml")):
-                    os.replace(os.path.join(file[0] + ".xml"),
-                               os.path.join(file_path, "images", "animals", file_name[0] + ".xml"))
+                image['file'] = create_dir_and_move_image_files(file_path, file, file_name, "animals", radio_copy_move)
             elif animal_detecs == 0 and person_detecs != 0 and vehicle_detecs == 0:
-                Path(os.path.join(file_path, "images", "persons")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(file[0] + file[1]),
-                           os.path.join(file_path, "images", "persons", file_name[0] + file_name[1]))
-                if os.path.isfile(os.path.join(file[0] + ".xml")):
-                    os.replace(os.path.join(file[0] + ".xml"),
-                               os.path.join(file_path, "images", "persons", file_name[0] + ".xml"))
+                image['file'] = create_dir_and_move_image_files(file_path, file, file_name, "persons", radio_copy_move)
             elif animal_detecs == 0 and person_detecs == 0 and vehicle_detecs != 0:
-                Path(os.path.join(file_path, "images", "vehicles")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(file[0] + file[1]),
-                           os.path.join(file_path, "images", "vehicles", file_name[0] + file_name[1]))
-                if os.path.isfile(os.path.join(file[0] + ".xml")):
-                    os.replace(os.path.join(file[0] + ".xml"),
-                               os.path.join(file_path, "images", "vehicles", file_name[0] + ".xml"))
+                image['file'] = create_dir_and_move_image_files(file_path, file, file_name, "vehicles", radio_copy_move)
             else:
-                Path(os.path.join(file_path, "images", "multiple_categories")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(file[0] + file[1]),
-                           os.path.join(file_path, "images", "multiple_categories", file_name[0] + file_name[1]))
-                if os.path.isfile(os.path.join(file[0] + ".xml")):
-                    os.replace(os.path.join(file[0] + ".xml"),
-                               os.path.join(file_path, "images", "multiple_categories", file_name[0] + ".xml"))
+                image['file'] = create_dir_and_move_image_files(file_path, file, file_name, "multiple_categories", radio_copy_move)
         elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
         time_left_sep = str(
             datetime.timedelta(
@@ -402,10 +350,33 @@ def separate_images(path_to_image_folder):
         window.update()
     sep_stats['text'] = update_progress_label_short(elapsed_time_sep, time_left_sep, command="done")
     window.update()
+    # write adjusted paths back to json file
+    with open(path_to_json, "w") as json_file:
+        json.dump(data, json_file, indent=1)
 
 
-# function to move the video's to their associated directories
-def separate_videos(path_to_video_folder):
+# helper function to create dir and move movie files
+def create_dir_and_move_movie_files(video, path_to_video_folder, detection_type, v_radio_copy_move):
+    video_path_list = os.path.normpath(video).split(os.sep)
+    if len(video_path_list) > 1: # when processing videos in subfolders
+        video_path_excl_video = video_path_list[:-1]
+        file = video_path_list[-1]
+        dir = os.path.join(path_to_video_folder, *video_path_excl_video, "separated_files", detection_type)
+        src = os.path.join(path_to_video_folder, *video_path_excl_video, file)
+        dst = os.path.join(dir, file)
+    else: # when processing videos in main folder
+        dir = os.path.join(path_to_video_folder, "separated_files", detection_type)
+        src = os.path.join(path_to_video_folder, video)
+        dst = os.path.join(dir, video)
+    Path(dir).mkdir(parents=True, exist_ok=True)
+    if v_radio_copy_move == 1: # move
+        shutil.move(src, dst)
+    elif v_radio_copy_move == 2: # copy
+        shutil.copy2(src, dst)
+        
+
+# function to read json file and move the video's to their associated directories
+def separate_videos(path_to_video_folder, v_radio_copy_move):
     print(f"Separating video's...\n")
     global elapsed_time_sep
     global time_left_sep
@@ -419,7 +390,6 @@ def separate_videos(path_to_video_folder):
         video = os.path.dirname(image['file'])
         detections_list = image['detections']
         n_detections = len(detections_list)
-        Path(os.path.join(path_to_video_folder, "videos")).mkdir(parents=True, exist_ok=True)
         animal_detecs = 0
         person_detecs = 0
         vehicle_detecs = 0
@@ -438,75 +408,16 @@ def separate_videos(path_to_video_folder):
             detections_dict[video] = [animal_detecs, person_detecs, vehicle_detecs]
     n_videos = len(detections_dict.keys())
     for video in detections_dict:
-        print(
-            f"\n{video} has {detections_dict[video][0]} animals, {detections_dict[video][1]} persons, {detections_dict[video][2]} vehicles")
         if detections_dict[video][0] != 0 and detections_dict[video][1] == 0 and detections_dict[video][2] == 0:
-            if len(os.path.normpath(video).split(os.sep)) > 1:
-                video_path_excl_video = os.path.normpath(video).split(os.sep)[:-1]
-                file = os.path.normpath(video).split(os.sep)[-1]
-                Path(os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "animals")).mkdir(
-                    parents=True,
-                    exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, *video_path_excl_video, file),
-                           os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "animals", file))
-            else:
-                Path(os.path.join(path_to_video_folder, "videos", "animals")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, video),
-                           os.path.join(path_to_video_folder, "videos", "animals", video))
+            create_dir_and_move_movie_files(video, path_to_video_folder, "animals", v_radio_copy_move)
         elif detections_dict[video][0] == 0 and detections_dict[video][1] != 0 and detections_dict[video][2] == 0:
-            if len(os.path.normpath(video).split(os.sep)) > 1:
-                video_path_excl_video = os.path.normpath(video).split(os.sep)[:-1]
-                file = os.path.normpath(video).split(os.sep)[-1]
-                Path(os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "persons")).mkdir(
-                    parents=True,
-                    exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, *video_path_excl_video, file),
-                           os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "persons", file))
-            else:
-                Path(os.path.join(path_to_video_folder, "videos", "persons")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, video),
-                           os.path.join(path_to_video_folder, "videos", "persons", video))
+            create_dir_and_move_movie_files(video, path_to_video_folder, "persons", v_radio_copy_move)
         elif detections_dict[video][0] == 0 and detections_dict[video][1] == 0 and detections_dict[video][2] != 0:
-            if len(os.path.normpath(video).split(os.sep)) > 1:
-                video_path_excl_video = os.path.normpath(video).split(os.sep)[:-1]
-                file = os.path.normpath(video).split(os.sep)[-1]
-                Path(os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "vehicles")).mkdir(
-                    parents=True,
-                    exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, *video_path_excl_video, file),
-                           os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "vehicles", file))
-            else:
-                Path(os.path.join(path_to_video_folder, "videos", "vehicles")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, video),
-                           os.path.join(path_to_video_folder, "videos", "vehicles", video))
+            create_dir_and_move_movie_files(video, path_to_video_folder, "vehicles", v_radio_copy_move)
         elif detections_dict[video][0] == 0 and detections_dict[video][1] == 0 and detections_dict[video][2] == 0:
-            if len(os.path.normpath(video).split(os.sep)) > 1:
-                video_path_excl_video = os.path.normpath(video).split(os.sep)[:-1]
-                file = os.path.normpath(video).split(os.sep)[-1]
-                Path(os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "empties")).mkdir(
-                    parents=True,
-                    exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, *video_path_excl_video, file),
-                           os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "empties", file))
-            else:
-                Path(os.path.join(path_to_video_folder, "videos", "empties")).mkdir(parents=True, exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, video),
-                           os.path.join(path_to_video_folder, "videos", "empties", video))
+            create_dir_and_move_movie_files(video, path_to_video_folder, "empties", v_radio_copy_move)
         else:
-            if len(os.path.normpath(video).split(os.sep)) > 1:
-                video_path_excl_video = os.path.normpath(video).split(os.sep)[:-1]
-                file = os.path.normpath(video).split(os.sep)[-1]
-                Path(os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "multiple_categories")).mkdir(
-                    parents=True,
-                    exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, *video_path_excl_video, file),
-                           os.path.join(path_to_video_folder, *video_path_excl_video, "videos", "multiple_categories",
-                                        file))
-            else:
-                Path(os.path.join(path_to_video_folder, "videos", "multiple_categories")).mkdir(parents=True,
-                                                                                                exist_ok=True)
-                os.replace(os.path.join(path_to_video_folder, video),
-                           os.path.join(path_to_video_folder, "videos", "multiple_categories", video))
+            create_dir_and_move_movie_files(video, path_to_video_folder, "multiple_categories", v_radio_copy_move)
         v_sep_progbar['value'] += 100 / n_videos
         elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
         time_left_sep = str(
@@ -874,6 +785,30 @@ def update_window_process_again():
 
 
 # functions for the tkinter GUI
+def toggle_copy_move():
+    if check_sep.get():
+        radio_copy_move.set(1)
+        lbl_copy_move.config(state=NORMAL)
+        radio_copy.config(state=NORMAL)
+        radio_move.config(state=NORMAL)
+    else:
+        radio_copy_move.set(0)
+        lbl_copy_move.config(state=DISABLED)
+        radio_copy.config(state=DISABLED)
+        radio_move.config(state=DISABLED)
+
+def v_toggle_copy_move():
+    if v_check_sep.get():
+        v_radio_copy_move.set(1)
+        v_lbl_copy_move.config(state=NORMAL)
+        v_radio_copy.config(state=NORMAL)
+        v_radio_move.config(state=NORMAL)
+    else:
+        v_radio_copy_move.set(0)
+        v_lbl_copy_move.config(state=DISABLED)
+        v_radio_copy.config(state=DISABLED)
+        v_radio_move.config(state=DISABLED)
+
 def togglecf():
     if check_use_checkpoints.get():
         lbl4.config(state=NORMAL)
@@ -902,45 +837,6 @@ def toggle_del():
                            "\n\n"
                            "This action can not be undone."):
             check_del.set(False)
-
-relative_paths_already_shown = 0
-def toggle_relative_paths():
-    global relative_paths_already_shown
-    if not relative_paths_already_shown:
-        relative_paths_already_shown += 1
-        mb.showinfo("Warning","This option creates a .json file which can be used as input for Timelapse (saul.cpsc.ucalgary.ca/timelapse).\n\n"
-        "However, Timelapse requires the file paths to be relative, which means that the other features of EcoAssist do not work. So unfortunately it is not possible to combine these features.")
-    if check_output_relative_paths.get():
-        chb_draw_boxes.deselect()
-        chb_crop_detections.deselect()
-        chb7.deselect()
-        chb4.deselect()
-        chb5.deselect()
-        lbl_draw_boxes.config(state=DISABLED)
-        chb_draw_boxes.config(state=DISABLED)
-        lbl_crop_detections.config(state=DISABLED)
-        chb_crop_detections.config(state=DISABLED)
-        lbl11.config(state=DISABLED)
-        chb7.config(state=DISABLED)
-        lbl8.config(state=DISABLED)
-        chb4.config(state=DISABLED)
-        lbl9.config(state=DISABLED)
-        chb5.config(state=DISABLED)
-        lbl10.config(state=DISABLED)
-        button_open_labelImg.config(state=DISABLED)
-    else:
-        lbl_draw_boxes.config(state=NORMAL)
-        chb_draw_boxes.config(state=NORMAL)
-        lbl_crop_detections.config(state=NORMAL)
-        chb_crop_detections.config(state=NORMAL)
-        lbl11.config(state=NORMAL)
-        chb7.config(state=NORMAL)
-        lbl8.config(state=NORMAL)
-        chb4.config(state=NORMAL)
-        lbl9.config(state=NORMAL)
-        chb5.config(state=NORMAL)
-        lbl10.config(state=NORMAL)
-        button_open_labelImg.config(state=NORMAL)
 
 
 def toggle_data_type(self):
@@ -1047,7 +943,7 @@ def v_handle_enter(txt):
 def open_labelImg():
     print("\n\nLABELLIMG OUTPUT START -----------------------------------\n\n")
     chosen_dir = loc_input_image_folder.get() # get folder to open in labelimg
-    separated_chosen_dir = os.path.join(chosen_dir, "images", "animals")
+    separated_chosen_dir = os.path.join(chosen_dir, "separated_files", "animals")
     if os.path.isdir(separated_chosen_dir): # check if the images are seperated, if yes adjust chosen dir
         chosen_dir = separated_chosen_dir
     print(f"chosen_dir: {chosen_dir}") # log path names
@@ -1080,16 +976,18 @@ def open_labelImg():
 # tkinter window to show progress and perform the commands
 def openProgressWindow():
     global result_ync
-    print(f"got here... produce_JSON.get() is: {produce_JSON.get()}")
     if data_type.get() == "Images":
         if check_use_checkpoints.get() and not int_checkpoint_n.get().isdecimal():
             if mb.askyesno("Invalid value",
                            "You either entered an invalid value for the checkpoint frequency, or none at all. You can only enter numberic characters.\n\nDo you want to proceed with the default value 100?"):
                 int_checkpoint_n.set("100")
                 ent1.config(fg='black')
-            else: check_use_checkpoints.set(False)
-        if loc_input_image_folder.get() == "":
+            else:
+                return # exit function
+        if loc_input_image_folder.get() == "" or loc_input_image_folder.get() == "/" or not os.path.isdir(loc_input_image_folder.get()):
             mb.showerror("Error", message="Please specify a directory with images to be processed.")
+            print("EXCEPTION: Directory with images was not specified.")
+            return # exit function
         check_recurse_ui = check_recurse.get()
         if check_recurse_ui:  # if recurse is checked and no subdirs are present -> uncheck
             for subdir in os.listdir(loc_input_image_folder.get()):
@@ -1193,7 +1091,7 @@ def openProgressWindow():
             try:
                 # create list with additional arguments for the json cmd
                 additional_batch_cmds = []
-                cmd_thres = "--threshold=" + str(round(conf_thresh.get()) / 100) 
+                cmd_thres = "--threshold=" + str(conf_thresh.get() / 100) 
                 additional_batch_cmds.append(cmd_thres)
                 if check_recurse_ui:
                     cmd_check_recurse = "--recursive"
@@ -1204,9 +1102,6 @@ def openProgressWindow():
                 if check_cont_from_checkpoint.get() and loc_chkpnt_file != "":
                     cmd_loc_chkpnt_file = "--resume_from_checkpoint=" + loc_chkpnt_file
                     additional_batch_cmds.append(cmd_loc_chkpnt_file)
-                if check_output_relative_paths.get():
-                    cmd_output_relative_paths = "--output_relative_filenames"
-                    additional_batch_cmds.append(cmd_output_relative_paths)
 
                 if produce_JSON.get():  # run cmds
                     produce_json(loc_input_image_folder.get(), additional_batch_cmds)
@@ -1214,31 +1109,38 @@ def openProgressWindow():
                     path_to_json = os.path.join(loc_input_image_folder.get(), "json_file", "output.json")
                     create_xml(path_to_json)
                 if check_sep.get():
-                    separate_images(loc_input_image_folder.get())
+                    separate_images(loc_input_image_folder.get(), radio_copy_move.get())
                 if check_vis_detec.get() and check_crop.get() and check_del.get():
                     visualise_bbox(path_to_image_folder=loc_input_image_folder.get(),
-                                   del_originals=False,
-                                   separated_files=check_sep.get())
-                    crop(path_to_image_folder=loc_input_image_folder.get(),
-                         del_originals=True,
-                         separated_files=check_sep.get())
+                                   del_originals=False)
+                    custom_crop(path_to_image_folder=loc_input_image_folder.get(),
+                         del_originals=True)
                 elif check_vis_detec.get() and check_crop.get() and not check_del.get():
                     visualise_bbox(path_to_image_folder=loc_input_image_folder.get(),
-                                   del_originals=False,
-                                   separated_files=check_sep.get())
-                    crop(path_to_image_folder=loc_input_image_folder.get(),
-                         del_originals=False,
-                         separated_files=check_sep.get())
+                                   del_originals=False)
+                    custom_crop(path_to_image_folder=loc_input_image_folder.get(),
+                         del_originals=False)
                 elif check_vis_detec.get():
                     visualise_bbox(path_to_image_folder=loc_input_image_folder.get(),
-                                   del_originals=check_del.get(),
-                                   separated_files=check_sep.get())
+                                   del_originals=check_del.get())
                 elif check_crop.get():
-                    crop(path_to_image_folder=loc_input_image_folder.get(),
-                         del_originals=check_del.get(),
-                         separated_files=check_sep.get())
+                    custom_crop(path_to_image_folder=loc_input_image_folder.get(),
+                         del_originals=check_del.get())
+                if check_output_relative_paths.get(): # remove excess path for relative file paths
+                    path_to_json = os.path.join(loc_input_image_folder.get(), "json_file", "output.json")
+                    with open(path_to_json, "r") as json_file:
+                        data = json.load(json_file)
+                    for image in data['images']:
+                        absolute_path = image['file'] # read path
+                        relative_path = absolute_path.replace(os.path.normpath(loc_input_image_folder.get()), "")[1:] # delete path to folder
+                        image['file'] = relative_path # save as new path to json
+                    with open(path_to_json, "w") as json_file:
+                        json.dump(data, json_file, indent=1) # write to file
                 print('Succesfully finished - all processes done!')
                 mb.showinfo('Succesfully finished', "All processes done!")
+                if check_xml.get():
+                    if mb.askyesno("Open labelImg application", "You specified the creation of .xml files.\n\nDo you want to review and adjust these annotations with the labelImg application?"):
+                        open_labelImg()
                 newWindow.destroy()
                 open_file(loc_input_image_folder.get())
             except Exception as error:
@@ -1256,8 +1158,12 @@ def openProgressWindow():
                            "That means you process only 1 out of 10 frames, making the process time 10 times faster."):
                 v_int_analyse_every_nth.set("10")
                 v_ent1.config(fg='black')
-        if loc_input_image_folder.get() == "":
-            mb.showerror("Error", message="Please specify a directory with videos to be processed.")
+            else:
+                return # exit function
+        if loc_input_image_folder.get() == "" or loc_input_image_folder.get() == "/" or not os.path.isdir(loc_input_image_folder.get()):
+            mb.showerror("Error", message="Please specify a directory with images to be processed.")
+            print("EXCEPTION: Directory with images was not specified.")
+            return # exit function
         v_check_recurse_ui = v_check_recurse.get()
         if v_check_recurse_ui:  # if recurse is checked and no subdirs are present -> uncheck
             for subdir in os.listdir(loc_input_image_folder.get()):
@@ -1312,7 +1218,7 @@ def openProgressWindow():
             if v_check_recurse_ui:
                 v_cmd_check_recurse = "--recursive"
                 additional_videos_cmds.append(v_cmd_check_recurse)
-            v_conf_thresh_str = str(round(v_conf_thresh.get()) / 100)
+            v_conf_thresh_str = str(v_conf_thresh.get() / 100)
             v_cmd_thres_1 = f"--rendering_confidence_threshold={v_conf_thresh_str}"
             v_cmd_thres_2 = f"--json_confidence_threshold={v_conf_thresh_str}"
             additional_videos_cmds.append(v_cmd_thres_1)
@@ -1323,7 +1229,7 @@ def openProgressWindow():
             if v_produce_JSON.get():
                 produce_json_video(loc_input_image_folder.get(), additional_videos_cmds)
             if v_check_sep.get():
-                separate_videos(loc_input_image_folder.get())
+                separate_videos(loc_input_image_folder.get(), v_radio_copy_move.get())
             print('Succesfully finished - all processes done!')
             mb.showinfo('Succesfully finished', "All processes done!")
             newWindow.destroy()
@@ -1337,14 +1243,14 @@ def openProgressWindow():
 
 # tkinter main window
 window = Tk()
-window.title("EcoAssist v2.0")
+window.title("EcoAssist v2.2")
 window.geometry()
 window.configure(background="white")
 tabControl = ttk.Notebook(window)
 
 # tkinter looks different on windows and unix computers
 # here I try to make it look a bit simmilar
-if os.name == "nt":
+if os.name == "nt": # windows
     text_font = "TkDefaultFont"
     resize_img_factor = 0.84
     textbox_height_adjustment_factor = 0.77
@@ -1352,7 +1258,7 @@ if os.name == "nt":
     text_size_adjustment_factor = 0.83
     pady_of_labels_and_widgets_factor = 0.5
     slider_width_pixels = 10
-elif sys.platform == "linux" or sys.platform == "linux2":
+elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
     textbox_height_adjustment_factor = 0.85
@@ -1360,10 +1266,10 @@ elif sys.platform == "linux" or sys.platform == "linux2":
     text_size_adjustment_factor = 0.7
     pady_of_labels_and_widgets_factor = 0.5
     slider_width_pixels = 10
-else:
+else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
-    textbox_height_adjustment_factor = 0.97
+    textbox_height_adjustment_factor = 1
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 1
     pady_of_labels_and_widgets_factor = 0.5
@@ -1479,8 +1385,8 @@ model_dropdown.grid(row=0, column=1, sticky='e', padx=5)
 lbl1 = Label(meg_frame, text="Confidence threshold (%)")
 lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 conf_thresh = DoubleVar()
-conf_thresh.set(20)
-scl1 = Scale(meg_frame, from_=10, to=100, orient=HORIZONTAL, length=85, variable=conf_thresh, showvalue=0, width=slider_width_pixels)
+conf_thresh.set(10)
+scl1 = Scale(meg_frame, from_=0.5, to=100, resolution=0.5, orient=HORIZONTAL, length=120, variable=conf_thresh, showvalue=0, width=slider_width_pixels)
 scl1.grid(column=1, row=1, sticky='e', padx=5)
 leftLabel = Label(meg_frame, textvariable=conf_thresh)
 leftLabel.config(fg="darkred")
@@ -1522,7 +1428,7 @@ lbl_rel_path = Label(meg_frame, text="Create input file for Timelapse (use relat
 lbl_rel_path.grid(row=6, sticky='w')
 check_output_relative_paths = BooleanVar()
 check_output_relative_paths.set(False)
-chb_rel_path = Checkbutton(meg_frame, variable=check_output_relative_paths, command=toggle_relative_paths)
+chb_rel_path = Checkbutton(meg_frame, variable=check_output_relative_paths)
 chb_rel_path.grid(row=6, column=1, sticky='e', padx=5)
 
 # Visualisation frame for images
@@ -1557,34 +1463,45 @@ sep_frame = LabelFrame(param_tab, text="Separate images", pady=2, padx=5, relief
                        fg='darkblue')
 sep_frame.configure(font=(text_font, 15, "bold"))
 sep_frame.grid(column=0, row=4, columnspan=2, sticky='ew')
-sep_frame.columnconfigure(0, weight=3, minsize=430)
-sep_frame.columnconfigure(1, weight=1, minsize=115)
+sep_frame.columnconfigure(0, weight=3, minsize=390)
+sep_frame.columnconfigure(1, weight=1, minsize=155)
 
 lbl8 = Label(sep_frame, text="Separate images into subdirectories based on their detections", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl8.grid(row=0, sticky='w')
 check_sep = BooleanVar()
-check_sep.set(True)
-chb4 = Checkbutton(sep_frame, variable=check_sep)
+check_sep.set(False)
+chb4 = Checkbutton(sep_frame, variable=check_sep, command = toggle_copy_move)
 chb4.grid(row=0, column=1, sticky='e', padx=5)
+
+lbl_copy_move = Label(sep_frame, text="I want the files to be", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl_copy_move.grid(row=1, sticky='w')
+radio_copy_move = IntVar()
+radio_copy = Radiobutton(sep_frame, text="moved", variable=radio_copy_move, value=1)
+radio_copy.grid(row=1, column=1, sticky='w', padx=5)
+radio_move = Radiobutton(sep_frame, text="copied", variable=radio_copy_move, value=2)
+radio_move.grid(row=1, column=1, sticky='e', padx=5)
+lbl_copy_move.config(state=DISABLED)
+radio_copy.config(state=DISABLED)
+radio_move.config(state=DISABLED)
 
 # XML frame for images
 xml_frame = LabelFrame(param_tab, text="Create label files", pady=2, padx=5, relief='solid', highlightthickness=5,
                        fg='darkblue')
 xml_frame.configure(font=(text_font, 15, "bold"))
 xml_frame.grid(column=0, row=5, columnspan=2, sticky='ew')
-xml_frame.columnconfigure(0, weight=3, minsize=430)
-xml_frame.columnconfigure(1, weight=1, minsize=115)
+xml_frame.columnconfigure(0, weight=3, minsize=390)
+xml_frame.columnconfigure(1, weight=1, minsize=155)
 
-lbl9 = Label(xml_frame, text="Create .xml label files for all detections in Pascal VOC format", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl9 = Label(xml_frame, text="Create annotations in Pascal VOC format (.xml files)", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl9.grid(row=0, sticky='w')
 check_xml = BooleanVar()
 check_xml.set(False)
 chb5 = Checkbutton(xml_frame, variable=check_xml)
 chb5.grid(row=0, column=1, sticky='e', padx=5)
 
-lbl10 = Label(xml_frame, text="Review and adjust these label files in the directory sepecified above", pady=round(5*pady_of_labels_and_widgets_factor))
+lbl10 = Label(xml_frame, text="Review these annotations after the process is completed", pady=round(5*pady_of_labels_and_widgets_factor))
 lbl10.grid(row=1, sticky='w')
-button_open_labelImg = Button(master=xml_frame, text="Open", command=open_labelImg)
+button_open_labelImg = Button(master=xml_frame, text="Open LabelImg", command=open_labelImg)
 button_open_labelImg.grid(row=1, column=1, sticky='e', padx=5)
 
 # Megadetector frame for videos
@@ -1606,8 +1523,8 @@ v_model_dropdown.grid(row=0, column=1, sticky='e', padx=5)
 v_lbl1 = Label(v_meg_frame, text="Confidence threshold (%)")
 v_lbl1.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 v_conf_thresh = DoubleVar()
-v_conf_thresh.set(50)
-v_scl1 = Scale(v_meg_frame, from_=10, to=100, orient=HORIZONTAL, length=100, variable=v_conf_thresh, showvalue=0)
+v_conf_thresh.set(20)
+v_scl1 = Scale(v_meg_frame, from_=0.5, to=100, resolution=0.5, orient=HORIZONTAL, length=120, variable=v_conf_thresh, showvalue=0, width=slider_width_pixels)
 v_scl1.grid(column=1, row=1, sticky='e', padx=5)
 v_leftLabel = Label(v_meg_frame, textvariable=v_conf_thresh)
 v_leftLabel.config(fg="darkred")
@@ -1642,15 +1559,27 @@ v_ent1.config(state=DISABLED)
 v_sep_frame = LabelFrame(param_tab, text="Separate videos", pady=2, padx=5, relief='solid', highlightthickness=5,
                          fg='darkblue')
 v_sep_frame.configure(font=(text_font, 15, "bold"))
-v_sep_frame.columnconfigure(0, weight=3, minsize=430)
-v_sep_frame.columnconfigure(1, weight=1, minsize=115)
+v_sep_frame.columnconfigure(0, weight=3, minsize=390)
+v_sep_frame.columnconfigure(1, weight=1, minsize=155)
 
 v_lbl8 = Label(v_sep_frame, text="Separate videos into subdirectories based on their detections", pady=round(5*pady_of_labels_and_widgets_factor))
 v_lbl8.grid(row=0, sticky='w')
 v_check_sep = BooleanVar()
-v_check_sep.set(True)
-v_chb4 = Checkbutton(v_sep_frame, variable=v_check_sep)
+v_check_sep.set(False)
+v_chb4 = Checkbutton(v_sep_frame, variable=v_check_sep, command = v_toggle_copy_move)
 v_chb4.grid(row=0, column=1, sticky='e', padx=5)
+
+v_lbl_copy_move = Label(v_sep_frame, text="I want the files to be", pady=round(5*pady_of_labels_and_widgets_factor))
+v_lbl_copy_move.grid(row=1, sticky='w')
+v_radio_copy_move = IntVar()
+v_radio_copy = Radiobutton(v_sep_frame, text="moved", variable=v_radio_copy_move, value=1)
+v_radio_copy.grid(row=1, column=1, sticky='w', padx=5)
+v_radio_move = Radiobutton(v_sep_frame, text="copied", variable=v_radio_copy_move, value=2)
+v_radio_move.grid(row=1, column=1, sticky='e', padx=5)
+v_lbl_copy_move.config(state=DISABLED)
+v_radio_copy.config(state=DISABLED)
+v_radio_move.config(state=DISABLED)
+
 
 # run button
 button = Button(
@@ -1710,7 +1639,7 @@ t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
-         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. In my experience a threshold of 20% generally works well, but this might be different with specific ecosystems. My advice is to first run the model with a low threshold on a directory with 100 representative images with the option 'Draw boxes around the detections and show confidences' enabled and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives.\n\n")
+         "The confidence threshold after which MegaDetector will return a detection. To adjust its value you can drag the slider or press either sides next to the slider for a 0.5% reduction or increment. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When choosing a threshold for your project, it is important to choose a threshold based on your own images and your preference in the ratio of false positives and false negatives. You should always check how different threshold values perform on your data before continuing to process data. My advice is to first run the model with a low threshold on a directory with about 100 representative images with the option 'Draw boxes around the detections and show confidences' enabled and then manually check the detections. This will show you how sure the model is about its detections and will give you an insight into which threshold will yield the least false positives and false negatives. As an indication: if you want EcoAssist to visualise, separate, create label files or create an input file for Timelapse, a normal threshold value would be around 10%. However, if you run EcoAssist to output a json file for other purposes, it is strongly recommended to set it very close to zero, definitely no higher than 5% to avoid missing animals.\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
@@ -1721,7 +1650,7 @@ t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 
 t.insert(END, "Use checkpoints while running\n")
 t.insert(END,
-         "This is a functionality to save results to checkpoints intermittently, in case technical hiccup arises. That way you won't have to restart the entire process again when the process is interrupted.\n\n")
+         "This is a functionality to save results to checkpoints intermittently, in case a technical hiccup arises. That way, you won't have to restart the entire process again when the process is interrupted.\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
@@ -1744,7 +1673,7 @@ t.insert(INSERT, "Timelapse",
          hyperlink1.add(
              partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
 t.insert(END,
-         ". This file will be located in the subfolder 'json_file' in the chosen directory after the process is finished. Unfortunately this feature can't be combined with the other features of EcoAssist, since it requires the file paths to be relative. More information how to use Timelapse in conjunction with MegaDetector, see the")
+         ". The 'Folder containing camera trap data' should be the root folder that contains your .tdb (template) file, as otherwise the paths will be wrong. Then click 'Process files'. After the process is done, you can import the output.json file found in the newly created 'json_file' folder into Timelapse by clicking the menu bar option 'File' > 'Import image recognition data for this image set'. More information how to use Timelapse in conjunction with MegaDetector, see the ")
 t.insert(INSERT, "Timelapse Image Recognition Guide",
          hyperlink1.add(
              partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/TimelapseImageRecognitionGuide.pdf")))
@@ -1766,29 +1695,48 @@ t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 
 t.insert(END, "Delete original images\n")
 t.insert(END,
-         "The crop and draw bounding box functions alter the images. Specify if you want to delete the unaltered orignal images. Please be aware that this action cannot be undone since the images will not be placed in the Trash but will be deleted fully.\n\n")
+         "The crop and draw bounding box functions alter the images. Specify if you want to delete the unaltered original images. Please be aware that this action cannot be undone since the images will not be placed in the bin, but will be deleted completely and instantly.\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
 t.insert(END, "Separate images into subdirectories based on their detections\n")
 t.insert(END,
-         "This function divides the images in the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'.\n\n")
-t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
-t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
-
-t.insert(END, "Create .xml label files for all detections in Pascal VOC format\n")
+         "This function divides the images with a detection above the specified threshold into the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'. Please be warned that there will not be an option to review and adjust (a selection) of these images before they will be placed inside the subfolders. If you want to verify them before they will be tagged, you should use ")
+t.insert(INSERT, "Timelapse",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
 t.insert(END,
-         "When training your own model using machine learning the images generally need to be labelled in Pascal VOC format. When this option is enabled it will annotate the images. You only have to assign the appropriate species using the option 'Review and adjust these label files in the directory sepecified above'. The animals are already located by MegaDetector.\n\n")
+         " for separating your images. In that case, enable 'Create input file for Timelapse (use relative filepaths)' and disable 'Separate images into subdirectories based on their detections'. Then process the images and import the json file to Timelapse. See this ")
+t.insert(INSERT, "paper",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://grouplab.cpsc.ucalgary.ca/Publications/2020-08-ImageRecognitionCameraTraps")))
+t.insert(END," for the importance of a human in the loop for reliable results and the ")
+t.insert(INSERT, "documentation",
+         hyperlink1.add(
+             partial(webbrowser.open, "https://grouplab.cpsc.ucalgary.ca/Publications/2022-01-TimelapseImageRecognitionGuide")))
+t.insert(END," for more information on how to verify the results in Timelapse (starting on page 9).\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
-t.insert(END, "Review and adjust these label files in the directory sepecified above\n")
-t.insert(END, "Here you can view and alter the label files created with the option 'Create .xml label files for all detections in Pascal VOC format' in the open source application ")
+t.insert(END, "I want the files to be <moved> or <copied>\n")
+t.insert(END,
+         "Here you can specify the method of file placement. If you choose 'moved', the original images will be relocated into the newly created subdirectories. When enabled 'copied', the original images will remain where they are and copies will be placed in the subdirectories.\n\n")
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
+
+t.insert(END, "Create annotations in Pascal VOC format (.xml files)\n")
+t.insert(END,
+         "When training your own model using machine learning the images generally need to be labelled in Pascal VOC format. When this option is enabled it will annotate the images. You only have to assign the appropriate species using the option 'Review these annotations after the process is completed'. The animals are already located by MegaDetector.\n\n")
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
+
+t.insert(END, "Review these annotations after the process is completed\n")
+t.insert(END, "Here you can view and alter the label files created with the option 'Create annotations in Pascal VOC format (.xml files)' in the open source application ")
 t.insert(INSERT, "LabelImg",
          hyperlink1.add(
              partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
 t.insert(END,
-         ". This is application makes it easy to annotate images for object detection machine learning. Thus, with this option one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double check them and mannualy provide the species labels. For your convenience, it's possible to change the defeault labels to your own by changing the predefined_classes.txt file in /EcoAssist_files/labelImg/data directory. This is a hidden folder located at C:\ProgramFiles on Windows, the Application directory on Macs and the user directory on Linux. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are sparated. You can change the directory in LabelImg yourself too, if required. \n\n")
+         ". This is an application makes it easy to annotate images for object detection machine learning. Thus, with this option, one can save time by letting MegaDetector draw the bounding boxes around the detections. You would only have to double-check them and manually provide the species labels. For your convenience, it's possible to change the default labels to your own by changing the predefined_classes.txt file in /EcoAssist_files/labelImg/data directory. This is a hidden folder located at C:\ProgramFiles on Windows, the Application directory on Macs and your user directory on Linux. LabelImg will automatically open the directory specified at 'Folder containing camera trap data' or the 'animals' subdirectory within if the images are separated. You can change the directory in LabelImg yourself too, if required. \n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
@@ -1801,7 +1749,7 @@ t.tag_add('mark', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 
 t.insert(END, "Confidence threshold (%)\n")
 t.insert(END,
-         "The confidence threshold after which MegaDetector will return a detection. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When analysing video's, the model first splits it into frames and then analyses the frames as images. This means that for one video, many frames are processed, so the chance of getting a false positive is higher than for just one image. With one wrongly detected frame the entire video will be placed into the wrong subdirectory. That is why it generally is good practise to set the threshold for video's relatively high compared to what you would do when setting it for individual images. If an animal is present in the video, it will most likely be in many frames and thus will still be detected. In my experience a threshold of 50% generally works well, but also depends on the number of frames analysed and the quality of the video. Additionaly, it might be different with specific ecosystems.\n\n")
+         "The confidence threshold after which MegaDetector will return a detection. To adjust its value you can drag the slider or press either sides next to the slider for a 0.5% reduction or increment. If you set a high confidence threshold, you will only get the animals of which MegaDetector is certain (but will probably miss a few less certain animals). If you set the threshold low, you will get false positives. When analysing video's, the model first splits it into frames and then analyses the frames as images. This means that for one video, many frames are processed, so the chance of getting a false positive video is much higher than for just one image. With one wrongly detected frame the entire video will be placed into the wrong subdirectory. That is why it generally is good practise to set the threshold for video's relatively high compared to what you would do when setting it for individual images. If an animal is present in the video, it will most likely be in many frames and thus will still be detected. In my experience a threshold of 20% generally works well, but it depends on the number of frames analysed, the quality of the video, the ecosystem and your preference in the ratio of false positives and false negatives. You should always check how different threshold values perform on your data before continuing to process data.\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
@@ -1824,7 +1772,13 @@ t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_numbe
 
 t.insert(END, "Separate videos into subdirectories based on their detections\n")
 t.insert(END,
-         "This function divides the videos in the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'.")
+         "This function divides the videos in the subdirectories 'empties', 'animals', 'persons', 'vehicles', and 'multiple_categories'.\n\n")
+t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
+t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
+
+t.insert(END, "I want the files to be <moved> or <copied>\n")
+t.insert(END,
+         "Here you can specify the method of file placement. If you choose 'moved', the original images will be relocated into the newly created subdirectories. When enabled 'copied', the original images will remain where they are and copies will be placed in the subdirectories.\n\n")
 t.tag_add('title', str(line_number) + '.0', str(line_number) + '.end');line_number+=1
 t.tag_add('info', str(line_number) + '.0', str(line_number) + '.end');line_number+=2
 
