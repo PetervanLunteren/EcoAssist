@@ -5,7 +5,7 @@
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM # set admin rights if not already in use (thanks user399109 of Stack Overflow)
+@REM # set admin rights if not already in use (thanks user399109 from Stack Overflow)
 @REM check for permissions
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 @REM if error flag set, we do not have admin
@@ -121,7 +121,7 @@ if !git_installed_1!=="No" (
             if exist Git-2.38.0-64-bit.exe del Git-2.38.0-64-bit.exe
         )
         set PATH=!PATH!;"%ProgramFiles%\Git\cmd"
-        set PATH=!PATH!;"%ProgramFiles(84x)%\Git\cmd"
+        set PATH=!PATH!;"%ProgramFiles(x86)%\Git\cmd"
         set PATH=!PATH!;"C:\ProgramData\Git\cmd"
         set PATH=!PATH!;"%UserProfile%\Git\cmd"
         set PATH=!PATH!;"C:\Users\Git\cmd"
@@ -383,7 +383,7 @@ if !conda_installed_1!=="No" (
     echo "Anaconda was already installed!" | wtee -a "%LOG_FILE%"
 )
 
-@REM @REM # get path info, strip and write to txt file
+@REM # get path info, strip and write to txt file
 FOR /F "tokens=*" %%g IN ('conda info ^| find /I "base environment"') do (set PATH_TO_ANACONDA=%%g)
 set "PATH_TO_ANACONDA=!PATH_TO_ANACONDA:base environment : =!"
 set "PATH_TO_ANACONDA=!PATH_TO_ANACONDA:  (writable)=!"
@@ -422,7 +422,7 @@ dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
 set END_DATE=%date%%time%
 echo Installation ended at %END_DATE% | wtee -a "%LOG_FILE%"
 
-@REM # move txt files to log_folder if they are in  EcoAssist_files
+@REM # move txt files to log_folder if they are in EcoAssist_files
 if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_1.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_1.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
 if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
 if exist "%LOCATION_ECOASSIST_FILES%\installation_log.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\installation_log.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
