@@ -1,11 +1,11 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 october 2022
+@REM ### Peter van Lunteren, 6 jan 2023
 
 @REM # set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM # set admin rights if not already in use (thanks user399109)
+@REM # set admin rights if not already in use (thanks user399109 of Stack Overflow)
 @REM check for permissions
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 @REM if error flag set, we do not have admin
@@ -27,6 +27,11 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
+@REM # switch to C: drive in case user executes this script from different drive
+echo Installation file location: '%~dp0'
+C:
+echo For the rest of the installation we will continue on drive: '%CD%'
+
 @REM # timestamp the start of installation
 set START_DATE=%date%%time%
 
@@ -45,13 +50,13 @@ if not exist "%LOCATION_ECOASSIST_FILES%" (
     mkdir "%LOCATION_ECOASSIST_FILES%"
     attrib +h "%LOCATION_ECOASSIST_FILES%"
     echo Created empty dir "%LOCATION_ECOASSIST_FILES%"
-) else (
-    echo Dir "%LOCATION_ECOASSIST_FILES%" was already present.
 )
 
 @REM # install wtee to log information
+echo The current directory is %CD%
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
 curl -OL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/wintee/wtee.exe
+echo The current directory is %CD%
 
 @REM # check if log file already exists, otherwise create empty log file
 if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\installation_log.txt" (
@@ -181,7 +186,7 @@ echo Set WinScriptHost ^= CreateObject^("WScript.Shell"^) > "%LOCATION_ECOASSIST
 echo WinScriptHost.Run Chr^(34^) ^& "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist.bat" ^& Chr^(34^)^, 0  >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs"
 echo Set WinScriptHost ^= Nothing >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoAssist_shortcut.vbs"
 
-@REM  # create a .vbs file which creates a shortcut with the EcoAssist logo
+@REM # create a .vbs file which creates a shortcut with the EcoAssist logo
 @REM # log it first
 echo "Creating CreateShortcut.vbs now..." | wtee -a "%LOG_FILE%"
 echo Set oWS ^= WScript.CreateObject^("WScript.Shell"^) > "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
@@ -191,9 +196,13 @@ echo oLink.TargetPath ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\Windows_open_EcoA
 echo oLink.IconLocation ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\imgs\logo_small_bg.ico" >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 echo oLink.Save >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 
-@REM  # execute this .vbs file to creates a shortcut with the EcoAssist logo
+@REM # execute this .vbs file to create a shortcut with the EcoAssist logo
+@REM # but first change current drive back to the drive where this script is located (in case that is not C:)
+cd /d %~dp0
 echo "Executing CreateShortcut.vbs now..." | wtee -a "%LOG_FILE%"
 cscript "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
+@REM # then change current drive back to C: drive for the rest of this installation
+C:
 echo "Created EcoAssist.lnk" | wtee -a "%LOG_FILE%"
 
 @REM # clone cameratraps git if not present
@@ -419,7 +428,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\list_with_git_installations_2.txt" ( move /
 if exist "%LOCATION_ECOASSIST_FILES%\installation_log.txt" ( move /Y "%LOCATION_ECOASSIST_FILES%\installation_log.txt" "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles" )
 
 @REM # end process
-echo The installation is done^! Press any key to close this window.
+echo THE INSTALLATION IS DONE^^! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.lnk file in the same folder as this installation file ^(so probably Downloads^).
 
 @REM # close window with any key
 PAUSE>nul
