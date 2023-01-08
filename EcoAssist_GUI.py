@@ -894,20 +894,14 @@ def enable_meg():
     chb2.config(state=NORMAL)
     lbl5.config(state=NORMAL)
     chb3.config(state=NORMAL)
-    lbl4.config(state=NORMAL)
-    ent1.config(state=NORMAL)
     lbl_rel_path.config(state=NORMAL)
     chb_rel_path.config(state=NORMAL)
 
     v_lbl1.config(state=NORMAL)
     v_scl1.config(state=NORMAL)
     v_leftLabel.config(state=NORMAL)
-    # v_lbl2.config(state=NORMAL)
-    # v_chb1.config(state=NORMAL)
     v_lbl5.config(state=NORMAL)
     v_chb3.config(state=NORMAL)
-    v_lbl4.config(state=NORMAL)
-    v_ent1.config(state=NORMAL)
 
 
 def handle_focus_in(_):
@@ -916,13 +910,11 @@ def handle_focus_in(_):
 
 
 def handle_focus_out(_):
-    ent1.delete(0, tk.END)
-    ent1.config(fg='grey')
-    ent1.insert(0, "E.g.: 100")
+    window.focus()
 
 
 def handle_enter(txt):
-    handle_focus_out('dummy')
+    window.focus()
 
 
 def v_handle_focus_in(_):
@@ -931,13 +923,11 @@ def v_handle_focus_in(_):
 
 
 def v_handle_focus_out(_):
-    v_ent1.delete(0, tk.END)
-    v_ent1.config(fg='grey')
-    v_ent1.insert(0, "E.g.: 100")
+    window.focus()
 
 
 def v_handle_enter(txt):
-    v_handle_focus_out('dummy')
+    window.focus()
 
 
 def open_labelImg():
