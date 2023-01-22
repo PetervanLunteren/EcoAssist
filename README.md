@@ -69,7 +69,7 @@ EcoAssist needs the open-source software [Anaconda](https://www.anaconda.com/pro
 chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
 ```
-3. During the installation, a file called `EcoAssist` will be created in your home folder. The app will open when double-clicked. You are free to move this file to a more convenient location.
+3. During the installation, a file called `EcoAssist` will be created on your desktop. The app will open when double-clicked. You are free to move this file to a more convenient location.
 
 ## Update
 To update to the latetst version you'll have to repeat the [download](#download) procedure. Running the install file will remove the old version of EcoAssist and its conda environment, and will install the updated versions using your existing conda software. It's all automatic, you don't have to do anything.
