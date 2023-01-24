@@ -104,87 +104,103 @@ def md_process(path_to_image_folder, selected_options, data_type):
     # log
     print(f"command:\n\n{command}\n\n")
 
-    # run command
-    with Popen(command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            bufsize=1,
-            shell=True,
-            universal_newlines=True,
-            preexec_fn=os.setsid) as p:
+    # prepare process and cancel method per OS
+    if os.name == 'nt':
+        # run windows command
+        p = Popen(command,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.STDOUT,
+                  bufsize=1,
+                  shell=True,
+                  universal_newlines=True)
+
+        # cancel button
+        btn_cancel = Button(progress_frame, text="Cancel", command=lambda: Popen(f"TASKKILL /F /PID {p.pid} /T"))
+        btn_cancel.grid(row=9, column=0, columnspan=2)
+
+    else:
+        # run unix command
+        p = Popen(command,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.STDOUT,
+                  bufsize=1,
+                  shell=True,
+                  universal_newlines=True,
+                  preexec_fn=os.setsid)
         
         # add cancel button
         btn_cancel = Button(progress_frame, text="Cancel", command=lambda: os.killpg(os.getpgid(p.pid), signal.SIGTERM))
         btn_cancel.grid(row=9, column=0, columnspan=2)
+
+    
+    # read output and direct to tkinter
+    for line in p.stdout:
+        print(line, end='')
         
-        # read output and direct to tkinter
-        for line in p.stdout:
-            print(line, end='')
-            
-            # catch megadetecor errors
-            if line.startswith("No image files found"):
-                mb.showerror("No images found", f"There are no images found in '{chosen_folder}'. \n\n"
-                             "Are you sure you specified the correct folder? Or should you have "
-                             "selected the option 'Include subdirectories'?")
-                return
-            if line.startswith("No videos found"):
-                mb.showerror("No videos found", line + "\nAre you sure you specified the correct "
-                             "folder? Or should you have selected the option 'Include subdirectories'?")
-                return
-            if line.startswith("No frames extracted"):
-                mb.showerror("Could not extract frames", line + "\nConverting the videos to .mp4 might"
-                             " fix the issue.")
-                return
-            if "Exception:" in line:
-                mb.showerror("Error", line)
-                return
-            if "Warning:" in line and not '%' in line[0:4]:
-                mb.showerror("Warning", line)
-            
-            # get process stats and send them to tkinter
-            if line.startswith("GPU available: False"):
-                GPU_param = "CPU"
-            elif line.startswith("GPU available: True"):
-                GPU_param = "GPU"
-            elif '%' in line[0:4]:
-                
-                # read stats
-                times = re.search("(\[.*?\])", line)[1]
-                progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
-                percentage = re.search("\d*%", progress_bar)[0][:-1]
-                current_im = re.search("\d*\/", progress_bar)[0][:-1]
-                total_im = re.search("\/\d*", progress_bar)[0][1:]
-                elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
-                time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
-                processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
-                
-                # order stats
-                stats = create_md_progress_lbl(elapsed_time = elapsed_time,
-                                               time_left = time_left,
-                                               current_im = current_im,
-                                               total_im = total_im,
-                                               processing_speed = processing_speed,
-                                               percentage = percentage,
-                                               GPU_param = GPU_param,
-                                               data_type = data_type,
-                                               command = "running")
-                
-                # print stats
-                progress_progbar['value'] = percentage
-                progress_stats['text'] = stats
-            root.update()
+        # catch megadetecor errors
+        if line.startswith("No image files found"):
+            mb.showerror("No images found", f"There are no images found in '{chosen_folder}'. \n\n"
+                            "Are you sure you specified the correct folder? Or should you have "
+                            "selected the option 'Include subdirectories'?")
+            return
+        if line.startswith("No videos found"):
+            mb.showerror("No videos found", line + "\nAre you sure you specified the correct "
+                            "folder? Or should you have selected the option 'Include subdirectories'?")
+            return
+        if line.startswith("No frames extracted"):
+            mb.showerror("Could not extract frames", line + "\nConverting the videos to .mp4 might"
+                            " fix the issue.")
+            return
+        if "Exception:" in line:
+            mb.showerror("Error", line)
+            return
+        if "Warning:" in line and not '%' in line[0:4]:
+            mb.showerror("Warning", line)
         
-        # repeat when process is done
-        progress_stats['text'] = create_md_progress_lbl(elapsed_time = elapsed_time,
-                                                        time_left = time_left,
-                                                        current_im = current_im,
-                                                        total_im = total_im,
-                                                        processing_speed = processing_speed,
-                                                        percentage = percentage,
-                                                        GPU_param = GPU_param,
-                                                        data_type = data_type,
-                                                        command = "done")
+        # get process stats and send them to tkinter
+        if line.startswith("GPU available: False"):
+            GPU_param = "CPU"
+        elif line.startswith("GPU available: True"):
+            GPU_param = "GPU"
+        elif '%' in line[0:4]:
+            
+            # read stats
+            times = re.search("(\[.*?\])", line)[1]
+            progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+            percentage = re.search("\d*%", progress_bar)[0][:-1]
+            current_im = re.search("\d*\/", progress_bar)[0][:-1]
+            total_im = re.search("\/\d*", progress_bar)[0][1:]
+            elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+            time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+            processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
+            
+            # order stats
+            stats = create_md_progress_lbl(elapsed_time = elapsed_time,
+                                            time_left = time_left,
+                                            current_im = current_im,
+                                            total_im = total_im,
+                                            processing_speed = processing_speed,
+                                            percentage = percentage,
+                                            GPU_param = GPU_param,
+                                            data_type = data_type,
+                                            command = "running")
+            
+            # print stats
+            progress_progbar['value'] = percentage
+            progress_stats['text'] = stats
         root.update()
+    
+    # repeat when process is done
+    progress_stats['text'] = create_md_progress_lbl(elapsed_time = elapsed_time,
+                                                    time_left = time_left,
+                                                    current_im = current_im,
+                                                    total_im = total_im,
+                                                    processing_speed = processing_speed,
+                                                    percentage = percentage,
+                                                    GPU_param = GPU_param,
+                                                    data_type = data_type,
+                                                    command = "done")
+    root.update()
         
     # remove button after process is done
     btn_cancel.grid_remove()
@@ -217,7 +233,192 @@ def md_process(path_to_image_folder, selected_options, data_type):
     if data_type == "vid" and os.path.isfile(video_recognition_file):
         append_to_json(video_recognition_file, ecoassist_metadata)
         if var_abs_paths.get():
-            make_json_absolute(video_recognition_file)
+            make_json_absolute(video_recognition_file)# create json output files 
+
+
+
+# # ORIRGINAL
+# def md_process(path_to_image_folder, selected_options, data_type):
+#     # log
+#     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    
+#     # adjust variables for images or videos
+#     if data_type == "img":
+#         progress_stats = progress_img_stats
+#         progress_frame = progress_img_frame
+#         progress_progbar = progress_img_progbar
+#     else:
+#         progress_stats = progress_vid_stats
+#         progress_frame = progress_vid_frame
+#         progress_progbar = progress_vid_progbar
+    
+#     # display loading window
+#     progress_stats['text'] = create_md_progress_lbl(command="load", data_type = data_type)
+
+#     # prepare variables
+#     chosen_folder = str(Path(path_to_image_folder))
+#     run_detector_batch_py = os.path.join(EcoAssist_files, "cameratraps", "detection", "run_detector_batch.py")
+#     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
+#     process_video_py = os.path.join(EcoAssist_files, "cameratraps", "detection", "process_video.py")
+#     video_recognition_file = "--output_json_file=" + os.path.join(chosen_folder, "video_recognition_file.json")
+#     GPU_param = "Unknown"
+
+#     # select model based on user input via dropdown menu
+#     custom_model_bool = False
+#     if var_model.get() == "MDv5a": 
+#         model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5a.0.0.pt")
+#     elif var_model.get() == "MDv5b":
+#         model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5b.0.0.pt")
+#     else:
+#         # set model file
+#         model_file = custom_model_choice
+#         custom_model_bool = True
+        
+#         # extract classes
+#         label_map = extract_label_map_from_model(model_file)
+            
+#     # create commands for Windows
+#     if os.name == 'nt':
+#         if selected_options == []:
+#             img_command = [sys.executable, run_detector_batch_py, model_file, chosen_folder, image_recognition_file]
+#             vid_command = [sys.executable, process_video_py, video_recognition_file, model_file, chosen_folder]
+#         else:
+#             img_command = [sys.executable, run_detector_batch_py, model_file, *selected_options, chosen_folder, image_recognition_file]
+#             vid_command = [sys.executable, process_video_py, *selected_options, video_recognition_file, model_file, chosen_folder]
+
+#      # create command for MacOS and Linux
+#     else:
+#         if selected_options == []:
+#             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{model_file}' '{chosen_folder}' '{image_recognition_file}'"]
+#             vid_command = [f"'{sys.executable}' '{process_video_py}' '{video_recognition_file}' '{model_file}' '{chosen_folder}'"]
+#         else:
+#             selected_options = "' '".join(selected_options)
+#             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{model_file}' '{selected_options}' '{chosen_folder}' '{image_recognition_file}'"]
+#             vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '{video_recognition_file}' '{model_file}' '{chosen_folder}'"]
+
+#     # pick one command
+#     if data_type == "img":
+#         command = img_command
+#     else:
+#         command = vid_command
+    
+#     # log
+#     print(f"command:\n\n{command}\n\n")
+
+#     # run command
+#     with Popen(command,
+#             stdout=subprocess.PIPE,
+#             stderr=subprocess.STDOUT,
+#             bufsize=1,
+#             shell=True,
+#             universal_newlines=True,
+#             preexec_fn=os.setsid) as p:
+        
+#         # add cancel button
+#         btn_cancel = Button(progress_frame, text="Cancel", command=lambda: os.killpg(os.getpgid(p.pid), signal.SIGTERM))
+#         btn_cancel.grid(row=9, column=0, columnspan=2)
+        
+#         # read output and direct to tkinter
+#         for line in p.stdout:
+#             print(line, end='')
+            
+#             # catch megadetecor errors
+#             if line.startswith("No image files found"):
+#                 mb.showerror("No images found", f"There are no images found in '{chosen_folder}'. \n\n"
+#                              "Are you sure you specified the correct folder? Or should you have "
+#                              "selected the option 'Include subdirectories'?")
+#                 return
+#             if line.startswith("No videos found"):
+#                 mb.showerror("No videos found", line + "\nAre you sure you specified the correct "
+#                              "folder? Or should you have selected the option 'Include subdirectories'?")
+#                 return
+#             if line.startswith("No frames extracted"):
+#                 mb.showerror("Could not extract frames", line + "\nConverting the videos to .mp4 might"
+#                              " fix the issue.")
+#                 return
+#             if "Exception:" in line:
+#                 mb.showerror("Error", line)
+#                 return
+#             if "Warning:" in line and not '%' in line[0:4]:
+#                 mb.showerror("Warning", line)
+            
+#             # get process stats and send them to tkinter
+#             if line.startswith("GPU available: False"):
+#                 GPU_param = "CPU"
+#             elif line.startswith("GPU available: True"):
+#                 GPU_param = "GPU"
+#             elif '%' in line[0:4]:
+                
+#                 # read stats
+#                 times = re.search("(\[.*?\])", line)[1]
+#                 progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+#                 percentage = re.search("\d*%", progress_bar)[0][:-1]
+#                 current_im = re.search("\d*\/", progress_bar)[0][:-1]
+#                 total_im = re.search("\/\d*", progress_bar)[0][1:]
+#                 elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+#                 time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+#                 processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
+                
+#                 # order stats
+#                 stats = create_md_progress_lbl(elapsed_time = elapsed_time,
+#                                                time_left = time_left,
+#                                                current_im = current_im,
+#                                                total_im = total_im,
+#                                                processing_speed = processing_speed,
+#                                                percentage = percentage,
+#                                                GPU_param = GPU_param,
+#                                                data_type = data_type,
+#                                                command = "running")
+                
+#                 # print stats
+#                 progress_progbar['value'] = percentage
+#                 progress_stats['text'] = stats
+#             root.update()
+        
+#         # repeat when process is done
+#         progress_stats['text'] = create_md_progress_lbl(elapsed_time = elapsed_time,
+#                                                         time_left = time_left,
+#                                                         current_im = current_im,
+#                                                         total_im = total_im,
+#                                                         processing_speed = processing_speed,
+#                                                         percentage = percentage,
+#                                                         GPU_param = GPU_param,
+#                                                         data_type = data_type,
+#                                                         command = "done")
+#         root.update()
+        
+#     # remove button after process is done
+#     btn_cancel.grid_remove()
+    
+#     # remove frames.json file
+#     frames_video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.frames.json")
+#     if os.path.isfile(frames_video_recognition_file):
+#         os.remove(frames_video_recognition_file)
+    
+#     # create ecoassist metadata
+#     ecoassist_metadata = {"ecoassist_metadata" : {"version" : version,
+#                                                   "frame_completion_info" : {"sep_frame_completed" : False,
+#                                                                              "vis_frame_completed" : False,
+#                                                                              "crp_frame_completed" : False,
+#                                                                              "xml_frame_completed" : False},
+#                                                   "custom_model" : custom_model_bool,
+#                                                   "custom_model_info" : {}}}
+#     if custom_model_bool:
+#         ecoassist_metadata["ecoassist_metadata"]["custom_model_info"] = {"model_name" : os.path.basename(os.path.normpath(model_file)),
+#                                                                          "label_map" : label_map}
+    
+#     # write metadata to json
+#     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
+#     video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.json")
+#     if data_type == "img" and os.path.isfile(image_recognition_file):
+#         append_to_json(image_recognition_file, ecoassist_metadata)
+#         if var_abs_paths.get():
+#             # make paths absolute if user specified
+#             make_json_absolute(image_recognition_file)
+#     if data_type == "vid" and os.path.isfile(video_recognition_file):
+#         append_to_json(video_recognition_file, ecoassist_metadata)
+#         if var_abs_paths.get():
+#             make_json_absolute(video_recognition_file)
 
 # start megadetector process
 def start_md():
@@ -347,7 +548,7 @@ def start_md():
         md_progress_window.destroy()
 
 # move the files to their associated directories and adjust the json file paths
-def sep_process(path_to_image_folder, var_file_placement, threshold, data_type):
+def sep_process(path_to_image_folder, var_file_placement, threshold, data_type, var_sep_conf):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
@@ -397,7 +598,7 @@ def sep_process(path_to_image_folder, var_file_placement, threshold, data_type):
         max_detection_conf = image['max_detection_conf']
         progress_sep_progbar['value'] += 100 / n_images
         if n_detections == 0:
-            image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, threshold)
+            image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, var_sep_conf)
         else:
             
             # check detections
@@ -412,11 +613,11 @@ def sep_process(path_to_image_folder, var_file_placement, threshold, data_type):
             
             # move images
             if len(unique_labels) > 1:
-                image['file'] = move_files(file, "multiple_categories", var_file_placement, max_detection_conf, threshold)
+                image['file'] = move_files(file, "multiple_categories", var_file_placement, max_detection_conf, var_sep_conf)
             elif len(unique_labels) == 0:
-                image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, threshold)
+                image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, var_sep_conf)
             else:
-                image['file'] = move_files(file, label, var_file_placement, max_detection_conf, threshold)
+                image['file'] = move_files(file, label, var_file_placement, max_detection_conf, var_sep_conf)
                 
         # calculate stats
         elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
@@ -504,10 +705,10 @@ def start_sep():
     try:
         # separate images ...
         if img_json:
-            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "img")
+            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "img", var_sep_conf.get())
         # ... and videos
         if vid_json:
-            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "vid")
+            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "vid", var_sep_conf.get())
         
         # reset window
         update_frame_states()
@@ -1104,17 +1305,17 @@ def check_json_presence_and_warn_user(infinitive, continuous, noun):
                         f"continue to only {infinitive} the images...")
 
 # dir names for when separating on confidence
-conf_dirs = {0.0 : "conf=0.0",
-             0.1 : "0.0<conf<=0.1",
-             0.2 : "0.1<conf<=0.2",
-             0.3 : "0.2<conf<=0.3",
-             0.4 : "0.3<conf<=0.4",
-             0.5 : "0.4<conf<=0.5",
-             0.6 : "0.5<conf<=0.6",
-             0.7 : "0.6<conf<=0.7",
-             0.8 : "0.7<conf<=0.8",
-             0.9 : "0.8<conf<=0.9",
-             1.0 : "0.9<conf<=1.0"}
+conf_dirs = {0.0 : "conf_0.0",
+             0.1 : "conf_0.0-0.1",
+             0.2 : "conf_0.1-0.2",
+             0.3 : "conf_0.2-0.3",
+             0.4 : "conf_0.3-0.4",
+             0.5 : "conf_0.4-0.5",
+             0.6 : "conf_0.5-0.6",
+             0.7 : "conf_0.6-0.7",
+             0.8 : "conf_0.7-0.8",
+             0.9 : "conf_0.8-0.9",
+             1.0 : "conf_0.9-1.0"}
 
 # create dirs and move image files into
 def move_files(file, detection_type, var_file_placement, max_detection_conf, var_sep_conf):
@@ -1245,12 +1446,20 @@ def create_md_progress_lbl(elapsed_time="",
     # return processing stats (OS dependant)
     if command == "running":
         if os.name == "nt":
-            return f"Percentage done:\t\t{percentage}%\n" \
-                f"Processing {unit}:\t{current_im} of {total_im}\n" \
-                f"Elapsed time:\t\t{elapsed_time}\n" \
-                f"Remaining time:\t\t{time_left}\n" \
-                f"{speed_prefix}\t\t{speed_suffix}\n" \
-                f"Running on:\t\t{GPU_param}"
+            if data_type == "img":
+                return f"Percentage done:\t\t{percentage}%\n" \
+                    f"Processing {unit}:\t{current_im} of {total_im}\n" \
+                    f"Elapsed time:\t\t{elapsed_time}\n" \
+                    f"Remaining time:\t\t{time_left}\n" \
+                    f"{speed_prefix}\t\t{speed_suffix}\n" \
+                    f"Running on:\t\t{GPU_param}"
+            else:
+                return f"Percentage done:\t\t{percentage}%\n" \
+                    f"Processing {unit}:\t\t{current_im} of {total_im}\n" \
+                    f"Elapsed time:\t\t{elapsed_time}\n" \
+                    f"Remaining time:\t\t{time_left}\n" \
+                    f"{speed_prefix}\t\t{speed_suffix}\n" \
+                    f"Running on:\t\t{GPU_param}"
         elif sys.platform == "linux" or sys.platform == "linux2":
             return f"Percentage done:\t{percentage}%\n" \
                 f"Processing {unit}:\t{current_im} of {total_im}\n" \
@@ -1260,7 +1469,7 @@ def create_md_progress_lbl(elapsed_time="",
                 f"Running on:\t\t{GPU_param}"
         elif sys.platform == "darwin":
             return f"Percentage done:\t{percentage}%\n" \
-                f"Processing {unit}:\t{current_im} of {total_im}\n" \
+                f"Processing {unit}:\t\t{current_im} of {total_im}\n" \
                 f"Elapsed time:\t{elapsed_time}\n" \
                 f"Remaining time:\t{time_left}\n" \
                 f"{speed_prefix}\t{speed_suffix}\n" \
@@ -1606,9 +1815,9 @@ def complete_frame(frame):
         lbl_check_mark.image = check_mark_two_rows
         lbl_check_mark.grid(row=0, column=0, rowspan=15, columnspan=2, sticky='nesw')
         # add buttons
-        btn_view_results = Button(master=frame, text="View results", height=1, width=8, command=lambda: view_results(frame))
+        btn_view_results = Button(master=frame, text="View results", height=1, width=10, command=lambda: view_results(frame))
         btn_view_results.grid(row=0, column=1, sticky='e')
-        btn_uncomplete = Button(master=frame, text="Again?", height=1, width=8, command=lambda: enable_frame(frame))
+        btn_uncomplete = Button(master=frame, text="Again?", height=1, width=10, command=lambda: enable_frame(frame))
         btn_uncomplete.grid(row=1, column=1, sticky='e')
 
 # enable a frame
@@ -1853,8 +2062,8 @@ def nth_frame_enter(txt):
 # make it look similar on different systems
 if os.name == "nt": # windows
     text_font = "TkDefaultFont"
-    resize_img_factor = 0.84
-    textbox_height_adjustment_factor = 0.77
+    resize_img_factor = 0.95
+    textbox_height_adjustment_factor = 0.65
     textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
     pady_of_labels_and_widgets_factor = 0.5
@@ -1865,6 +2074,7 @@ if os.name == "nt": # windows
     first_level_frame_column_1_min_size = 0
     second_level_frame_column_0_min_size = 350
     second_level_frame_column_1_min_size = 0
+    minsize_all_rows = 28
 elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
@@ -1879,6 +2089,7 @@ elif sys.platform == "linux" or sys.platform == "linux2": # linux
     first_level_frame_column_1_min_size = 0
     second_level_frame_column_0_min_size = 350
     second_level_frame_column_1_min_size = 0
+    minsize_all_rows = 28
 else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
@@ -1922,7 +2133,7 @@ bottom = top + chosen_height
 left = 0
 right = chosen_width
 fox = fox.crop((left, top, right, bottom))
-fox = fox.resize((422, 84), Image.Resampling.LANCZOS)
+fox = fox.resize((int(resize_img_factor * 422), 84), Image.Resampling.LANCZOS)
 rad = 10
 back = Image.new('RGB', (fox.size[0] + rad, fox.size[1]), (255, 255, 255))
 back.paste(fox, (0, 0))
@@ -1943,7 +2154,7 @@ bottom = top + chosen_height
 left = 0
 right = chosen_width
 ocelot = ocelot.crop((left, top, right, bottom))
-ocelot = ocelot.resize((422, 84), Image.Resampling.LANCZOS) 
+ocelot = ocelot.resize((int(resize_img_factor * 422), 84), Image.Resampling.LANCZOS) 
 back = Image.new('RGB', (ocelot.size[0], ocelot.size[1]), (255, 255, 255))
 back.paste(ocelot, (rad, 0))
 mask = Image.new('L', (ocelot.size[0], ocelot.size[1]), 255)
@@ -2407,7 +2618,7 @@ help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.e
 # sort results based on confidence
 help_text.insert(END, f"{lbl_sep_conf_txt}\n")
 help_text.insert(END, "This feature will further separate the files based on its confidence value (in tenth decimal intervals). That means that each class will"
-                      " have subdirectories like e.g. '0.6<conf<=0.7', '0.7<conf<=0.8', '0.8<conf<=0.9', etc.\n\n")
+                      " have subdirectories like e.g. 'conf_0.6-0.7', 'conf_0.7-0.8', 'conf_0.8-0.9', etc.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 

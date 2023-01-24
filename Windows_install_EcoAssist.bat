@@ -239,9 +239,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
 ) else (
     echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git clone https://github.com/ecologize/yolov5
+    git clone https://github.com/ultralytics/yolov5.git
     cd "%LOCATION_ECOASSIST_FILES%\yolov5" || ( echo "Could not change directory to yolov5. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git checkout ad033704d1a826e70cd365749e1bb01f1ea8282a
+    git checkout 064365d8683fd002e9ad789c1e91fa3d021b44f0
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
     @REM # check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
