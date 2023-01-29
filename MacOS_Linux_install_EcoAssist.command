@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 26 September 2022
+### Peter van Lunteren, 28 Jan 2022 (latest edit)
 
 
 # check the OS and set var
@@ -40,7 +40,7 @@ rm -rf $LOCATION_ECOASSIST_FILES
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance."; exit 1; }
 
 # check if log file already exists, otherwise create empty log file
 LOG_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/installation_log.txt
@@ -85,7 +85,7 @@ echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
 # clone EcoAssist git if not present
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance."; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -106,7 +106,7 @@ else
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
     mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
   fi
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone cameratraps git if not present
@@ -116,9 +116,9 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 6223b48b520abd6ad7fe868ea16ea58f75003595 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone ai4eutils git if not present
@@ -128,21 +128,51 @@ if [ -d "$AI4" ]; then
 else
   echo "Dir ${AI4} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/Microsoft/ai4eutils 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/ai4eutils || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/ai4eutils || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 9260e6b876fd40e9aecac31d38a86fe8ade52dfd 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# clone yolov5 git if not present
-YOL="yolov5"
-if [ -d "$YOL" ]; then
-  echo "Dir ${YOL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+# when it comes to yolov5, we can't support both "old" and "new" YOLOv5 models with a single code path, so I clone them both and switch between them during run time
+# clone yolov5 to accommodate "old" models such as MDv5a and MDv5b
+YOL_OLD="yolov5_old"
+if [ -d "$YOL_OLD" ]; then
+  echo "Dir ${YOL_OLD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
-  echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/ultralytics/yolov5.git 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  echo "Dir ${YOL_OLD} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  if [ "$PLATFORM" = "M1 Mac" ] ; then # ecologize fork does not work for M1 macs
+    git clone --progress https://github.com/ultralytics/yolov5/ yolov5_old 2>&1 | tee -a "$LOG_FILE"
+    cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
+    cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  else
+    git clone --progress https://github.com/ecologize/yolov5/ yolov5_old 2>&1 | tee -a "$LOG_FILE"
+    cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+    git checkout ad033704d1a826e70cd365749e1bb01f1ea8282a 2>&1 | tee -a "$LOG_FILE"
+    cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  fi
+fi
+
+# make sure we still recognize this version of yolov5 as being the version for the "old" models
+echo "Adding tag to dir ${YOL_OLD}..." 2>&1 | tee -a "$LOG_FILE"
+cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively old Yolov5 models, such as MDv5a and MDv5b." > yolov5_for_old_models.txt
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+
+# clone yolov5 to accommodate "new" models such as the custom models people train themselves
+YOL_NEW="yolov5"
+if [ -d "$YOL_NEW" ]; then
+  echo "Dir ${YOL_NEW} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  echo "Dir ${YOL_NEW} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
+  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 064365d8683fd002e9ad789c1e91fa3d021b44f0 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  # make sure we still recognize this version of yolov5 as being the version for the "new" models
+  echo "Adding tag to dir ${YOL_NEW}..." 2>&1 | tee -a "$LOG_FILE"
+  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively new Yolov5 models, such as the custom models people train themselves." > yolov5_for_new_models.txt
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone labelImg git if not present
@@ -157,9 +187,9 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# download the MDv5 models if not present
+# download the MDv5a models if not present
 mkdir -p $LOCATION_ECOASSIST_FILES/megadetector
-cd $LOCATION_ECOASSIST_FILES/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 MDv5a="md_v5a.0.0.pt"
 if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -171,6 +201,8 @@ else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
 fi
+
+# download the MDv5b models if not present
 MDv5b="md_v5b.0.0.pt"
 if [ -f "$MDv5b" ]; then
   echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -182,11 +214,11 @@ else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
 fi
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # check if conda is already installed, if not install
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 CONDA_LIST_1=`conda list`
 echo "CONDA_LIST_1 yields: $CONDA_LIST_1" 2>&1 | tee -a "$LOG_FILE"
 if [ "$CONDA_LIST_1" == "" ]; then
@@ -259,7 +291,7 @@ else
 fi
 
 # remove if the installation file is still there
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 if [ -f "$INSTALL_SH" ]; then
   echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
   rm $INSTALL_SH
@@ -347,7 +379,7 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
   # we need homebrew to install PyQt5 for M1 macs...
   # check if homebrew is already installed, if not install
   PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please install EcoAssist manually: https://github.com/PetervanLunteren/EcoAssist" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   BREW_V_1=`brew -v`
   echo "BREW_V_1 yields: $BREW_V_1" 2>&1 | tee -a "$LOG_FILE"
   if [ "$BREW_V_1" == "" ]; then

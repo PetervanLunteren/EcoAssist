@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 26 September 2022
+### Peter van Lunteren, 26 September 2022 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
