@@ -1,5 +1,5 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 3 Jan 2022.
+# Written by Peter van Lunteren, 27 Jan 2022.
 
 # import packages like a christmas tree
 import os
@@ -65,9 +65,18 @@ def md_process(path_to_image_folder, selected_options, data_type):
     # select model based on user input via dropdown menu
     custom_model_bool = False
     if var_model.get() == "MDv5a": 
+        # set model file
         model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5a.0.0.pt")
+        
+        # set yolov5 git to accommodate old models
+        switch_yolov5_git_to("old models")
+        
     elif var_model.get() == "MDv5b":
+        # set model file
         model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5b.0.0.pt")
+        
+        # set yolov5 git to accommodate old models
+        switch_yolov5_git_to("old models")
     else:
         # set model file
         model_file = custom_model_choice
@@ -75,6 +84,9 @@ def md_process(path_to_image_folder, selected_options, data_type):
         
         # extract classes
         label_map = extract_label_map_from_model(model_file)
+
+        # set yolov5 git to accommodate new models
+        switch_yolov5_git_to("new models")
             
     # create commands for Windows
     if os.name == 'nt':
@@ -152,10 +164,10 @@ def md_process(path_to_image_folder, selected_options, data_type):
                             " fix the issue.")
             return
         if "Exception:" in line:
-            mb.showerror("Error", line)
+            mb.showerror("Error", "MegaDetector error: " + line)
             return
         if "Warning:" in line and not '%' in line[0:4]:
-            mb.showerror("Warning", line)
+            mb.showerror("Warning", "MegaDetector warning: " + line)
         
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
@@ -353,7 +365,7 @@ def start_md():
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred: '" + str(error) + "'.",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # reset root with new states
@@ -537,7 +549,7 @@ def start_sep():
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred: '" + str(error) + "'.",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # reset window
@@ -696,7 +708,7 @@ def start_vis():
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred: '" + str(error) + "'.",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # reset window
@@ -841,7 +853,7 @@ def start_crp():
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred: '" + str(error) + "'.",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # reset window
@@ -989,7 +1001,7 @@ def start_xml():
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred: '" + str(error) + "'.",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # reset window
@@ -1002,11 +1014,36 @@ def start_xml():
 ############# HELPER FUNCTIONS #############
 ############################################
 
+# switch beteen versions of yolov5 git to accommodate either old or new models
+def switch_yolov5_git_to(model_type):
+    # first reset dir names
+    for dir_name in os.listdir(EcoAssist_files):
+        dir = os.path.join(EcoAssist_files, dir_name)
+        if os.path.isdir(dir) and dir_name.startswith("yolov5"):
+            if os.path.isfile(os.path.join(dir, "yolov5_for_new_models.txt")):
+                # this is the version for new models
+                os.rename(dir, os.path.join(EcoAssist_files, "yolov5_new"))
+            
+            if os.path.isfile(os.path.join(dir, "yolov5_for_old_models.txt")):
+                # this is the version for old models
+                os.rename(dir, os.path.join(EcoAssist_files, "yolov5_old"))
+    
+    # now enable the specfied version to be used
+    if model_type == "old models":
+        dst = os.path.join(EcoAssist_files, "yolov5_old")
+    elif model_type == "new models":
+        dst = os.path.join(EcoAssist_files, "yolov5_new")
+    src = os.path.join(EcoAssist_files, "yolov5")
+    os.rename(dst, src)
+
 # extract label map from custom model
 def extract_label_map_from_model(model_file):
     # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
     
+    # set yolov5 git to accommodate old models
+    switch_yolov5_git_to("new models")
+
     # import module from cameratraps dir
     sys.path.append(os.path.join(EcoAssist_files, "cameratraps"))
     from detection.pytorch_detector import PTDetector
@@ -1015,7 +1052,7 @@ def extract_label_map_from_model(model_file):
     detector = PTDetector(model_file)
     
     # log
-    print(f"detector : {detector}")
+    print(f"detector: {detector}")
     
     # fetch classes
     try:
@@ -1028,11 +1065,14 @@ def extract_label_map_from_model(model_file):
         
         # show error
         mb.showerror(title="Error",
-                     message="An error has occurred when trying to extract classes: '" + str(error) + "'"
+                     message="An error has occurred when trying to extract classes (EcoAssist v" + version + "): '" + str(error) + "'"
                              ".\n\nWill try to proceed and produce the output json file, but post-processing"
                              " features of EcoAssist will not work.",
                      detail=traceback.format_exc())
     
+    # log
+    print(f"Label map: {CUSTOM_DETECTOR_LABEL_MAP})\n")
+
     # return label map
     return CUSTOM_DETECTOR_LABEL_MAP
 
@@ -1444,7 +1484,7 @@ def open_labelImg():
 # view results after processing
 def view_results(frame):
     # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
     print(f"frame text: {frame.cget('text')}\n")
     
     # set json paths
@@ -1870,9 +1910,9 @@ def checkpoint_freq_enter(txt):
 def nth_frame_enter(txt):
     root.focus()
     
-######################################################
-############# CREATE MAIN TKINTER WINDOW #############
-######################################################
+##########################################
+############# TKINTER WINDOW #############
+##########################################
 
 # make it look similar on different systems
 if os.name == "nt": # windows

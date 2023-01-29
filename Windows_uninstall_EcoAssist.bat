@@ -1,5 +1,5 @@
 @REM ### Windows commands commands to uninstall the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 october 2022
+@REM ### Peter van Lunteren, 17 october 2022 (latest edit)
 
 @REM # set echo settings
 echo off

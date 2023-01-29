@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to uninstall the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 30 August 2022, 11:20
+### Peter van Lunteren, 30 August 2022 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
