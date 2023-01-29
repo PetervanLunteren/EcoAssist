@@ -1016,6 +1016,9 @@ def start_xml():
 
 # switch beteen versions of yolov5 git to accommodate either old or new models
 def switch_yolov5_git_to(model_type):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    
     # first reset dir names
     for dir_name in os.listdir(EcoAssist_files):
         dir = os.path.join(EcoAssist_files, dir_name)
