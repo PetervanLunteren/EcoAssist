@@ -2117,7 +2117,7 @@ chb_abs_paths = Checkbutton(snd_step, variable=var_abs_paths, command=abs_paths_
 chb_abs_paths.grid(row=4, column=1, sticky='e', padx=5)
 
 # process images
-lbl_process_img_txt = "Process all images in de folder specified"
+lbl_process_img_txt = "Process all images in the folder specified"
 lbl_process_img = Label(snd_step, text=lbl_process_img_txt)
 lbl_process_img.grid(row=5, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 var_process_img = BooleanVar()
@@ -2165,7 +2165,7 @@ chb_cont_checkpnt = Checkbutton(img_frame, variable=var_cont_checkpnt, state=DIS
 chb_cont_checkpnt.grid(row=2, column=1, sticky='e', padx=5)
 
 # process videos
-lbl_process_vid_txt = "Process all videos in de folder specified"
+lbl_process_vid_txt = "Process all videos in the folder specified"
 lbl_process_vid = Label(snd_step, text=lbl_process_vid_txt)
 lbl_process_vid.grid(row=7, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
 var_process_vid = BooleanVar()
