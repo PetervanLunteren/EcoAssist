@@ -233,39 +233,16 @@ if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
 )
 
-@REM # when it comes to yolov5, we can't support both "old" and "new" YOLOv5 models with a single code path, so I clone them both and switch between them during run time
-@REM # clone yolov5 to accommodate "old" models such as MDv5a and MDv5b
-if exist "%LOCATION_ECOASSIST_FILES%\yolov5_old\" (
-    echo Dir yolov5_old already exists! Skipping this step. | wtee -a "%LOG_FILE%"
+@REM # clone yolov5 git if not present
+if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
+    echo Dir yolov5 already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
-    echo Dir yolov5_old does not exists! Clone repo... | wtee -a "%LOG_FILE%"
+    echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git clone https://github.com/ecologize/yolov5/ yolov5_old
-    cd "%LOCATION_ECOASSIST_FILES%\yolov5_old" || ( echo "Could not change directory to yolov5_old. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git checkout ad033704d1a826e70cd365749e1bb01f1ea8282a
-    @REM # add tag so we know this is the old version
-    echo "Adding tag to dir yolov5_old..." | wtee -a "%LOG_FILE%"
-    echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively old Yolov5 models, such as MDv5a and MDv5b." > yolov5_for_old_models.txt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    git clone https://github.com/ultralytics/yolov5.git
+    @REM # checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM # check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5_old" | wtee -a "%LOG_FILE%"
-)
-
-@REM # clone yolov5 to accommodate "new" models such as MDv5a and MDv5b
-if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
-    echo Dir yolov5_new already exists! Skipping this step. | wtee -a "%LOG_FILE%"
-) else (
-    echo Dir yolov5_new does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git clone https://github.com/ultralytics/yolov5/
-    cd "%LOCATION_ECOASSIST_FILES%\yolov5" || ( echo "Could not change directory to yolov5_new. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    git checkout 064365d8683fd002e9ad789c1e91fa3d021b44f0
-    @REM # add tag so we know this is the new version
-    echo "Adding tag to dir yolov5_new..." | wtee -a "%LOG_FILE%"
-    echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively new Yolov5 models, such as MDv5a and MDv5b." > yolov5_for_new_models.txt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-    @REM # check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
 )
 
 @REM # clone labelImg git if not present
@@ -427,6 +404,7 @@ call activate ecoassistcondaenv
 
 @REM # install additional packages for EcoAssist
 %PATH_TO_ANACONDA%\envs\ecoassistcondaenv\python.exe -m pip install bounding_box
+%PATH_TO_ANACONDA%\envs\ecoassistcondaenv\python.exe -m pip install GitPython==3.1.30
 
 @REM # log env info
 call conda info --envs >> "%LOG_FILE%"
