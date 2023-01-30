@@ -168,10 +168,9 @@ def md_process(path_to_image_folder, selected_options, data_type):
                             " fix the issue.")
             return
         if "Exception:" in line:
-            mb.showerror("Error", "MegaDetector error: " + line)
-            return
+            mb.showerror("Error", "MegaDetector error:\n\n" + line)
         if "Warning:" in line and not '%' in line[0:4]:
-            mb.showerror("Warning", "MegaDetector warning: " + line)
+            mb.showerror("Warning", "MegaDetector warning:\n\n" + line)
         
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
