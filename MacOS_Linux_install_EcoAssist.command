@@ -3,7 +3,6 @@
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
 ### Peter van Lunteren, 28 Jan 2022 (latest edit)
 
-
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
   echo "This is an OSX computer..."
@@ -133,45 +132,14 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# when it comes to yolov5, we can't support both "old" and "new" YOLOv5 models with a single code path, so I clone them both and switch between them during run time
-# clone yolov5 to accommodate "old" models such as MDv5a and MDv5b
-YOL_OLD="yolov5_old"
-if [ -d "$YOL_OLD" ]; then
-  echo "Dir ${YOL_OLD} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+# clone yolov5 git if not present
+YOL="yolov5"
+if [ -d "$YOL" ]; then
+  echo "Dir ${YOL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
-  echo "Dir ${YOL_OLD} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$PLATFORM" = "M1 Mac" ] ; then # ecologize fork does not work for M1 macs
-    git clone --progress https://github.com/ultralytics/yolov5/ yolov5_old 2>&1 | tee -a "$LOG_FILE"
-    cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-    git checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1 2>&1 | tee -a "$LOG_FILE"
-    cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  else
-    git clone --progress https://github.com/ecologize/yolov5/ yolov5_old 2>&1 | tee -a "$LOG_FILE"
-    cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-    git checkout ad033704d1a826e70cd365749e1bb01f1ea8282a 2>&1 | tee -a "$LOG_FILE"
-    cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  fi
-fi
-
-# make sure we still recognize this version of yolov5 as being the version for the "old" models
-echo "Adding tag to dir ${YOL_OLD}..." 2>&1 | tee -a "$LOG_FILE"
-cd $LOCATION_ECOASSIST_FILES/yolov5_old || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively old Yolov5 models, such as MDv5a and MDv5b." > yolov5_for_old_models.txt
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-
-# clone yolov5 to accommodate "new" models such as the custom models people train themselves
-YOL_NEW="yolov5"
-if [ -d "$YOL_NEW" ]; then
-  echo "Dir ${YOL_NEW} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
-else
-  echo "Dir ${YOL_NEW} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/ultralytics/yolov5/ 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout 064365d8683fd002e9ad789c1e91fa3d021b44f0 2>&1 | tee -a "$LOG_FILE"
-  # make sure we still recognize this version of yolov5 as being the version for the "new" models
-  echo "Adding tag to dir ${YOL_NEW}..." 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/yolov5 || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  echo "This version of Yolov5 was downloaded for the puspose of accomodating the relatively new Yolov5 models, such as the custom models people train themselves." > yolov5_for_new_models.txt
+  echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/ultralytics/yolov5.git 2>&1 | tee -a "$LOG_FILE"
+  # checkout will happen dynamically during runtime with switch_yolov5_git_to()
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -437,8 +405,9 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
   python3 -m pip install --pre --upgrade lxml
 fi
 
-# requirements for EcoAssist
+# # requirements for EcoAssist
 pip install bounding_box
+pip install GitPython==3.1.30
 
 # log env info
 conda info --envs >> "$LOG_FILE"

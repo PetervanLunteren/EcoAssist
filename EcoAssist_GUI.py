@@ -1,11 +1,12 @@
 # GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 27 Jan 2022.
+# Written by Peter van Lunteren, 30 Jan 2022 (latest edit)
 
 # import packages like a christmas tree
 import os
 import re
 import sys
 import cv2
+import git
 import json
 import math
 import time
@@ -31,6 +32,9 @@ from tkinter import filedialog, ttk, messagebox as mb
 # set global variables
 version = "3.0"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+# append pythonpath to import modules outside repo
+sys.path.append(os.path.join(EcoAssist_files))
 
 ##########################################
 ############# MAIN FUNCTIONS #############
@@ -81,12 +85,12 @@ def md_process(path_to_image_folder, selected_options, data_type):
         # set model file
         model_file = custom_model_choice
         custom_model_bool = True
-        
-        # extract classes
-        label_map = extract_label_map_from_model(model_file)
 
         # set yolov5 git to accommodate new models
         switch_yolov5_git_to("new models")
+        
+        # extract classes
+        label_map = extract_label_map_from_model(model_file)
             
     # create commands for Windows
     if os.name == 'nt':
@@ -1019,37 +1023,23 @@ def switch_yolov5_git_to(model_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
-    # first reset dir names
-    for dir_name in os.listdir(EcoAssist_files):
-        dir = os.path.join(EcoAssist_files, dir_name)
-        if os.path.isdir(dir) and dir_name.startswith("yolov5"):
-            if os.path.isfile(os.path.join(dir, "yolov5_for_new_models.txt")):
-                # this is the version for new models
-                os.rename(dir, os.path.join(EcoAssist_files, "yolov5_new"))
-            
-            if os.path.isfile(os.path.join(dir, "yolov5_for_old_models.txt")):
-                # this is the version for old models
-                os.rename(dir, os.path.join(EcoAssist_files, "yolov5_old"))
-    
-    # now enable the specfied version to be used
+    # checkout repo
+    repo = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
     if model_type == "old models":
-        dst = os.path.join(EcoAssist_files, "yolov5_old")
+        if platform.processor() == "arm": # M1 and M2
+            repo.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1")
+        else:
+            repo.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
     elif model_type == "new models":
-        dst = os.path.join(EcoAssist_files, "yolov5_new")
-    src = os.path.join(EcoAssist_files, "yolov5")
-    os.rename(dst, src)
+        repo.git.checkout("064365d8683fd002e9ad789c1e91fa3d021b44f0")
 
 # extract label map from custom model
 def extract_label_map_from_model(model_file):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
-    
-    # set yolov5 git to accommodate old models
-    switch_yolov5_git_to("new models")
 
     # import module from cameratraps dir
-    sys.path.append(os.path.join(EcoAssist_files, "cameratraps"))
-    from detection.pytorch_detector import PTDetector
+    from cameratraps.detection.pytorch_detector import PTDetector
             
     # load model
     detector = PTDetector(model_file)
