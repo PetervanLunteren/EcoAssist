@@ -242,7 +242,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     git clone https://github.com/ultralytics/yolov5.git
     @REM # checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM # check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\yolov5_old" | wtee -a "%LOG_FILE%"
+    dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
 )
 
 @REM # clone labelImg git if not present
