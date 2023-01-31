@@ -317,7 +317,7 @@ def start_md():
     
     # open new window with progress bar and stats
     md_progress_window = Toplevel(root)
-    md_progress_window.title("Megadetector progress")
+    md_progress_window.title("MegaDetector progress")
     md_progress_window.geometry()
 
     # logo
@@ -2570,11 +2570,10 @@ about_text.insert(END, "For this application, I used ")
 about_text.insert(INSERT, "MegaDetector", hyperlink.add(partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
 about_text.insert(END,
             " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is"
-            " based on the YOLOv5 architecture. The model was trained using several hundred thousand bounding boxes from a variety of ecosystems. MegaDetector has a "
-            "precision of 89%–99% at detecting animals, and on a typical laptop (bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to"
-            " being able to process something like 10000 to 25000 images per day. If you have a dedicated deep learning GPU, you can probably process along the lines "
-            "of half a million images per day. The model is free, and it makes the creators super-happy when people use it, so I put their email address here for your "
-            "convenience: ")
+            " based on the YOLOv5 architecture. The model was trained using several hundred thousand bounding boxes from a variety of ecosystems. On a typical laptop "
+            "(bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process something like 10000 to 25000 images per "
+            "day. If you have a dedicated deep learning GPU, you can probably process along the lines of half a million images per day. The model is free, and it makes"
+            " the creators super-happy when people use it, so I put their email address here for your convenience: ")
 about_text.insert(INSERT, "cameratraps@lila.science", hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@lila.science")))
 about_text.insert(END, ".\n\n")
 about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
