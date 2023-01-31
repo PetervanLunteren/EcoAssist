@@ -1483,9 +1483,12 @@ def view_results(frame):
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
     print(f"frame text: {frame.cget('text')}\n")
     
+    # convert path separators
+    chosen_folder = os.path.normpath(var_choose_folder.get())
+    
     # set json paths
-    image_recognition_file = os.path.join(var_choose_folder.get(), "image_recognition_file.json")
-    video_recognition_file = os.path.join(var_choose_folder.get(), "video_recognition_file.json")
+    image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
+    video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.json")
 
     # open json files at step 2
     if frame.cget('text').startswith(' Step 2'):
@@ -1496,23 +1499,23 @@ def view_results(frame):
     
     # open separated_files folder at file separation
     if frame.cget('text').startswith(' Separate'):
-        open_file_or_folder(os.path.join(var_choose_folder.get(), "separated_files"))
+        open_file_or_folder(os.path.join(chosen_folder, "separated_files"))
     
     # at visualization open visualized_images if present in root, otherwise root
     if frame.cget('text').startswith(' Draw'):
-        vis_folder = os.path.join(var_choose_folder.get(), 'visualized_images')
+        vis_folder = os.path.join(chosen_folder, 'visualized_images')
         if os.path.isdir(vis_folder):
             open_file_or_folder(vis_folder)
         else:
-            open_file_or_folder(var_choose_folder.get())
+            open_file_or_folder(chosen_folder)
     
     # at cropping open cropped_images if present in root, otherwise root
     if frame.cget('text').startswith(' Crop'):
-        crp_folder = os.path.join(var_choose_folder.get(), 'cropped_images')
+        crp_folder = os.path.join(chosen_folder, 'cropped_images')
         if os.path.isdir(crp_folder):
             open_file_or_folder(crp_folder)
         else:
-            open_file_or_folder(var_choose_folder.get())
+            open_file_or_folder(chosen_folder)
     
     # open labelImg folder at xml_frame
     if frame.cget('text').startswith(' Create'):
