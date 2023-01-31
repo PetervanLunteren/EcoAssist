@@ -1499,7 +1499,11 @@ def view_results(frame):
     
     # open separated_files folder at file separation
     if frame.cget('text').startswith(' Separate'):
-        open_file_or_folder(os.path.join(chosen_folder, "separated_files"))
+        sep_folder = os.path.join(chosen_folder, 'separated_files')
+        if os.path.isdir(sep_folder):
+            open_file_or_folder(sep_folder)
+        else:
+            open_file_or_folder(chosen_folder)
     
     # at visualization open visualized_images if present in root, otherwise root
     if frame.cget('text').startswith(' Draw'):
