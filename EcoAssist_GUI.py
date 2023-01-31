@@ -33,8 +33,12 @@ from tkinter import filedialog, ttk, messagebox as mb
 version = "3.0"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-# append pythonpath to import modules outside repo
-sys.path.append(os.path.join(EcoAssist_files))
+# insert pythonpath
+sys.path.insert(0, os.path.join(EcoAssist_files))
+sys.path.insert(0, os.path.join(EcoAssist_files, "ai4eutils"))
+sys.path.insert(0, os.path.join(EcoAssist_files, "yolov5"))
+sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
+print(sys.path)
 
 ##########################################
 ############# MAIN FUNCTIONS #############
