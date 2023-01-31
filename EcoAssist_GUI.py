@@ -2575,7 +2575,7 @@ about_text.insert(END,
             " being able to process something like 10000 to 25000 images per day. If you have a dedicated deep learning GPU, you can probably process along the lines "
             "of half a million images per day. The model is free, and it makes the creators super-happy when people use it, so I put their email address here for your "
             "convenience: ")
-about_text.insert(INSERT, "cameratraps@microsoft.com", hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@microsoft.com")))
+about_text.insert(INSERT, "cameratraps@lila.science", hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@lila.science")))
 about_text.insert(END, ".\n\n")
 about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
 about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
