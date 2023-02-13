@@ -94,8 +94,8 @@ else
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_EcoAssist.command"
-    ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns" 
-    bash fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+    ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns"
+    bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
     mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
   elif [ "$PLATFORM" = "Linux" ]; then
     SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
