@@ -278,42 +278,6 @@ echo "Path to conda.sh: $PATH2CONDA_SH" 2>&1 | tee -a "$LOG_FILE"
 # shellcheck source=src/conda.sh
 source "$PATH2CONDA_SH"
 
-# get os type
-function fetch_os_type() {
-  echo "Checking OS type and version..." 2>&1 | tee -a "$LOG_FILE"
-  OSver="unknown"  # default value
-  uname_output="$(uname -a)"
-  echo "$uname_output" 2>&1 | tee -a "$LOG_FILE"
-  # macOS
-  if echo "$uname_output" | grep -i darwin >/dev/null 2>&1; then
-    # Fetch macOS version
-    sw_vers_output="$(sw_vers | grep -e ProductVersion)"
-    echo "$sw_vers_output" 2>&1 | tee -a "$LOG_FILE"
-    OSver="$(echo "$sw_vers_output" | cut -c 17-)"
-    macOSmajor="$(echo "$OSver" | cut -f 1 -d '.')"
-    macOSminor="$(echo "$OSver" | cut -f 2 -d '.')"
-    # Make sure OSver is supported
-    if [[ "${macOSmajor}" = 10 ]] && [[ "${macOSminor}" < "${MACOSSUPPORTED}" ]]; then
-      die "Sorry, this version of macOS (10.$macOSminor) is not supported. The minimum version is 10.$MACOSSUPPORTED." 2>&1 | tee -a "$LOG_FILE"
-    fi
-    # Fix for non-English Unicode systems on MAC
-    if [[ -z "${LC_ALL:-}" ]]; then
-      export LC_ALL=en_US.UTF-8
-    fi
-
-    if [[ -z "${LANG:-}" ]]; then
-      export LANG=en_US.UTF-8
-    fi
-    OS="osx"
-  # Linux
-  elif echo "$uname_output" | grep -i linux >/dev/null 2>&1; then
-    OS="linux"
-  else
-    die "Sorry, the installer only supports Linux and macOS, quitting installer" 2>&1 | tee -a "$LOG_FILE"
-  fi
-}
-fetch_os_type
-
 # remove previous EcoAssist conda env if present
 conda env remove -n ecoassistcondaenv
 
