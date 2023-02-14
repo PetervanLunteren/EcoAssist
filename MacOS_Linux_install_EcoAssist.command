@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 28 Jan 2022 (latest edit)
+### Peter van Lunteren, 15 Feb 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -56,6 +56,9 @@ script $LOCATION_ECOASSIST_FILES/install_script_output.txt
 
 # log the start
 echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
+
+# lof the platform
+echo "This installation is using platform: $PLATFORM" 2>&1 | tee -a "$LOG_FILE"
 
 # log system information
 UNAME_A=`uname -a`
@@ -210,7 +213,11 @@ if [ "$CONDA_LIST_1" == "" ]; then
   if [ "$CONDA_LIST_2" == "" ]; then
     # download and install anaconda
     echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-    if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+    if [ "$PLATFORM" = "M1 Mac" ]; then
+      curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2022.10-MacOSX-arm64.sh 2>&1 | tee -a "$LOG_FILE"
+      echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
+      INSTALL_SH=Anaconda3-2022.10-MacOSX-arm64.sh
+    elif [ "$PLATFORM" = "Intel Mac" ]; then
       curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
       echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
       INSTALL_SH=Anaconda3-2021.11-MacOSX-x86_64.sh
@@ -306,7 +313,8 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
   # requirements for MegaDetector
   CONDA_SUBDIR=osx-arm64 conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
   conda activate ecoassistcondaenv
-  pip3 install -U --pre torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  # pip3 install -U --pre torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  conda install pytorch torchvision torchaudio -c pytorch-nightly
 
   # requirements for labelImg
   pip3 install lxml
