@@ -51,6 +51,9 @@ else
     echo "LOG_FILE does not exist. Logging to ${LOCATION_ECOASSIST_FILES}/installation_log.txt" 2>&1 | tee -a "$LOG_FILE"
 fi
 
+# log input and output ot file
+script $LOCATION_ECOASSIST_FILES/install_script_output.txt
+
 # log the start
 echo "This installation started at: $START_DATE" 2>&1 | tee -a "$LOG_FILE"
 
@@ -401,6 +404,11 @@ echo "This installation ended at: $END_DATE" 2>&1 | tee -a "$LOG_FILE"
 WRONG_LOG_FILE_LOCATION=$LOCATION_ECOASSIST_FILES/installation_log.txt
 if [ "$LOG_FILE" == "$WRONG_LOG_FILE_LOCATION" ]; then
   mv $LOG_FILE $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles
+fi
+
+# move install_script_output if needed
+if [ -f "$LOCATION_ECOASSIST_FILES/install_script_output.txt" ]; then
+  mv "$LOCATION_ECOASSIST_FILES/install_script_output.txt" "$LOCATION_ECOASSIST_FILES/EcoAssist/logfiles"
 fi
 
 # message for the user
