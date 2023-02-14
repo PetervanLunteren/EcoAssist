@@ -311,7 +311,7 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
   CONDA_SUBDIR=osx-arm64 conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
   conda activate ecoassistcondaenv
   # pip3 install -U --pre torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-  conda install pytorch torchvision torchaudio -c pytorch-nightly
+  conda install pytorch torchvision torchaudio -c pytorch-nightly -y
 
   # requirements for labelImg
   pip3 install lxml
