@@ -249,11 +249,7 @@ if [ "$CONDA_LIST_1" == "" ]; then
       echo "CONDA_LIST_4 yields: $CONDA_LIST_4" 2>&1 | tee -a "$LOG_FILE"
       if [ "$CONDA_LIST_4" == "" ]; then
         # could not get it to work
-        if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.pkg). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
-        elif [ "$PLATFORM" = "Linux" ]; then
-          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
-        fi
+        echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
       fi
     else
       echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
