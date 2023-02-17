@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 26 September 2022 (latest edit)
+### Peter van Lunteren, 18 Feb 2022 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -64,25 +64,31 @@ echo ""
 # change directory
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
-# locate conda
-PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
+# activate conda env
+if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
+  # using the miniforge conda installation for apple silicon macs
+  source $HOME/miniforge3/bin/activate
+  conda activate $HOME/miniforge3/envs/ecoassistcondaenv
+  PATH_TO_PYTHON="$HOME/miniforge3/envs/ecoassistcondaenv/bin/"
+else
+  # using the anaconda installation for itel macs and linux
+  PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
+  PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
+  echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
 
-# path to conda.sh
-PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-echo "Path to conda.sh: $PATH_TO_CONDA_SH"
+  # path to conda.sh
+  PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
+  echo "Path to conda.sh: $PATH_TO_CONDA_SH"
 
-# path to python exe
-PATH_TO_PYTHON="$PATH_TO_CONDA/envs/ecoassistcondaenv/bin/"
-echo "Path to python: $PATH_TO_PYTHON"
-echo ""
+  # path to python exe
+  PATH_TO_PYTHON="$PATH_TO_CONDA/envs/ecoassistcondaenv/bin/"
+  echo "Path to python: $PATH_TO_PYTHON"
+  echo ""
 
-# shellcheck source=src/conda.sh
-source "$PATH_TO_CONDA_SH"
-
-# activate environment
-conda activate ecoassistcondaenv
+  # source anaconda 
+  source "$PATH_TO_CONDA_SH"
+  conda activate ecoassistcondaenv
+fi
 
 # add PYTHONPATH
 export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5"
