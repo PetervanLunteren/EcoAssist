@@ -7,8 +7,8 @@
 if [ "$(uname)" == "Darwin" ]; then
   echo "This is an OSX computer..."
   if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-    echo "   ...with an M1 processor."
-    PLATFORM="M1 Mac"
+    echo "   ...with an Apple Silicon processor."
+    PLATFORM="Apple Silicon Mac"
   else
     echo "   ...with an Intel processor."
     PLATFORM="Intel Mac"
@@ -22,13 +22,13 @@ fi
 START_DATE=`date`
 
 # prevent mac to sleep during process
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   pmset noidle &
   PMSETPID=$!
 fi
 
 # set location var
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 elif [ "$PLATFORM" = "Linux" ]; then
   LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
@@ -59,7 +59,7 @@ echo "This installation is using platform: $PLATFORM" 2>&1 | tee -a "$LOG_FILE"
 
 # log system information
 UNAME_A=`uname -a`
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
 elif [ "$PLATFORM" = "Linux" ]; then
   PATH=$PATH:/usr/sbin
@@ -95,7 +95,7 @@ else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
-  if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_EcoAssist.command"
     ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns"
     bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
@@ -166,8 +166,8 @@ if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MDv5a} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$PLATFORM" = "M1 Mac" ] ; then
-    curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
+  if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
+    curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
   else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
@@ -179,8 +179,8 @@ if [ -f "$MDv5b" ]; then
   echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$PLATFORM" = "M1 Mac" ] ; then
-    curl --keepalive -L -o md_v5b.0.0.pt https://lila.science/public/md_rebuild/md_v5b.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for M1 macs 
+  if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
+    curl --keepalive -L -o md_v5b.0.0.pt https://lila.science/public/md_rebuild/md_v5b.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
   else
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
@@ -210,7 +210,7 @@ if [ "$CONDA_LIST_1" == "" ]; then
   if [ "$CONDA_LIST_2" == "" ]; then
     # download and install anaconda
     echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-    if [ "$PLATFORM" = "M1 Mac" ]; then
+    if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
       curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2022.10-MacOSX-arm64.sh 2>&1 | tee -a "$LOG_FILE"
       echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
       INSTALL_SH=Anaconda3-2022.10-MacOSX-arm64.sh
@@ -302,7 +302,7 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
   conda activate ecoassistcondaenv
   # requirements for labelImg
   pip install pyqt5==5.15.2 lxml
-elif [ "$PLATFORM" = "M1 Mac" ] ; then
+elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   # requirements for MegaDetector
   CONDA_SUBDIR=osx-arm64 conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
   conda activate ecoassistcondaenv
@@ -312,7 +312,7 @@ elif [ "$PLATFORM" = "M1 Mac" ] ; then
   # requirements for labelImg
   pip3 install lxml
 
-  # we need homebrew to install PyQt5 for M1 macs...
+  # we need homebrew to install PyQt5 for Apple Silicon macs...
   # check if homebrew is already installed, if not install
   PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -413,6 +413,6 @@ echo "THE INSTALLATION IS DONE! You can close this window now and proceed to ope
 echo ""
 
 # the computer may go to sleep again
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   kill $PMSETPID
 fi
