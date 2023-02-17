@@ -7,8 +7,8 @@
 if [ "$(uname)" == "Darwin" ]; then
   echo "This is an OSX computer..."
   if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-    echo "   ...with an M1 processor."
-    PLATFORM="M1 Mac"
+    echo "   ...with an Apple Silicon processor."
+    PLATFORM="Apple Silicon Mac"
   else
     echo "   ...with an Intel processor."
     PLATFORM="Intel Mac"
@@ -19,7 +19,7 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 fi
 
 # set location var
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 elif [ "$PLATFORM" = "Linux" ]; then
   LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
