@@ -194,7 +194,8 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   curl --keepalive -OL https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh 2>&1 | tee -a "$LOG_FILE"
   echo "Executing miniforge installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
   # execute install file
-  sh Miniforge3-MacOSX-arm64.sh -b 2>&1 | tee -a "$LOG_FILE"
+  # DEBUG -u option
+  sh Miniforge3-MacOSX-arm64.sh -b -u 2>&1 | tee -a "$LOG_FILE"
   # remove install file
   rm Miniforge3-MacOSX-arm64.sh
   # activate
@@ -371,7 +372,32 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
       $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   } || { # conda install pytorch
       echo "Trying conda install pytorch..." 2>&1 | tee -a "$LOG_FILE"
-      conda install pytorch torchvision torchaudio -c pytorch-nightly
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
+  } || { # conda clean all
+      echo "Trying conda clean all..." 2>&1 | tee -a "$LOG_FILE"
+      conda clean --all
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
+  } || { # conda force reinstall
+      echo "Trying conda force reinstall..." 2>&1 | tee -a "$LOG_FILE"
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y --force-reinstall
+  } || { # pip force reinstall
+      echo "Trying pip force reinstall..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --force-reinstall
+  } || { # pip3 force reinstall 
+      echo "Trying pip3 force reinstall ..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --force-reinstall
+  } || { # pip -I and ignore-installed
+      echo "Trying pip -I and ignore-installed..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install -I --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --ignore-installed --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # pip3 -I and ignore-installed
+      echo "Trying pip3 -I and ignore-installed..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install -I --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # conda update base
+      echo "Trying conda update base..." 2>&1 | tee -a "$LOG_FILE"
+      conda update -n base conda
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
   }
 
   # install lxml
