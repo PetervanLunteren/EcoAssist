@@ -375,7 +375,7 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
       conda install pytorch torchvision torchaudio -c pytorch-nightly -y
   } || { # conda clean all
       echo "Trying conda clean all..." 2>&1 | tee -a "$LOG_FILE"
-      conda clean --all
+      conda clean --all -y
       conda install pytorch torchvision torchaudio -c pytorch-nightly -y
   } || { # conda force reinstall
       echo "Trying conda force reinstall..." 2>&1 | tee -a "$LOG_FILE"
@@ -396,7 +396,7 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
       $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   } || { # conda update base
       echo "Trying conda update base..." 2>&1 | tee -a "$LOG_FILE"
-      conda update -n base conda
+      conda update -n base conda -y
       conda install pytorch torchvision torchaudio -c pytorch-nightly -y
   }
 
