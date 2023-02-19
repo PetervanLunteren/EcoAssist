@@ -195,7 +195,7 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   echo "Executing miniforge installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
   # execute install file
   # DEBUG -u option
-  sh Miniforge3-MacOSX-arm64.sh -b -u 2>&1 | tee -a "$LOG_FILE"
+  sh Miniforge3-MacOSX-arm64.sh -b 2>&1 | tee -a "$LOG_FILE"
   # remove install file
   rm Miniforge3-MacOSX-arm64.sh
   # activate
