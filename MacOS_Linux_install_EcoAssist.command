@@ -324,20 +324,19 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
 
   # install nightly pytorch via miniforge as arm64
   # this command seems to give quite some trouble on M2 macs... can't test it myself. Lets just try some different approches and see what works...
-  { # adding paths to PATH
-      echo "adding paths to PATH..." 2>&1 | tee -a "$LOG_FILE"
-      export PATH="$HOME/miniforge3:$PATH"
-      export PATH="$HOME/miniforge3/scripts:$PATH"
-      export PATH="$HOME/miniforge3/Library/bin:$PATH"
-  } || { # remove install certifi
-      echo "remove install certifi..." 2>&1 | tee -a "$LOG_FILE"
-      conda remove certifi -y
-      conda install certifi -y
-  } || { # brew install openssl
-      echo "brew install openssl..." 2>&1 | tee -a "$LOG_FILE"
-      brew install openssl@1.1
-      export REQUESTS_CA_BUNDLE='/usr/local/etc/openssl@1.1/cert.pem'
-  } || { # normal pip
+  
+  # adding paths to PATH
+  echo "adding paths to PATH..." 2>&1 | tee -a "$LOG_FILE"
+  export PATH="$HOME/miniforge3:$PATH"
+  export PATH="$HOME/miniforge3/scripts:$PATH"
+  export PATH="$HOME/miniforge3/Library/bin:$PATH"
+
+  # remove install certifi
+  echo "remove install certifi..." 2>&1 | tee -a "$LOG_FILE"
+  conda remove certifi -y
+  conda install certifi -y
+  
+  { # normal pip
       echo "Trying normal pip..." 2>&1 | tee -a "$LOG_FILE"
       $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   } || { # normal pip3
@@ -486,6 +485,9 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   } || { # normal pip
       echo "Trying normal pip..." 2>&1 | tee -a "$LOG_FILE"
       $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # conda install pytorch
+      echo "Trying conda install pytorch..." 2>&1 | tee -a "$LOG_FILE"
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
   }
 fi
 
