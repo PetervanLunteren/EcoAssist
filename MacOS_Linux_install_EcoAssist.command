@@ -322,6 +322,10 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   source $HOME/miniforge3/bin/activate
   conda activate $HOME/miniforge3/envs/ecoassistcondaenv
 
+  ###############################################
+  ################ M2 PYTORCH BUG ###############
+  ###############################################
+
   # install nightly pytorch via miniforge as arm64
   # this command seems to give quite some trouble on M2 macs... can't test it myself. Lets just try some different approches and see what works...
   
@@ -413,6 +417,9 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   } || {
       echo "Nothing worked..." 2>&1 | tee -a "$LOG_FILE"
   }
+  ###############################################
+  ################ M2 PYTORCH BUG ###############
+  ###############################################
 
   # install lxml
   $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install lxml
@@ -477,18 +484,93 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   make qt5py3
   python3 -m pip install --pre --upgrade lxml
 
+  ###############################################
+  ################ M2 PYTORCH BUG ###############
+  ###############################################
   # try install new openssl
-  { # brew install openssl
-      echo "brew install openssl..." 2>&1 | tee -a "$LOG_FILE"
-      arch -arm64 brew install openssl@1.1
-      export REQUESTS_CA_BUNDLE='/usr/local/etc/openssl@1.1/cert.pem'
-  } || { # normal pip
+  echo "brew install openssl..." 2>&1 | tee -a "$LOG_FILE"
+  arch -arm64 brew install openssl@1.1
+  export REQUESTS_CA_BUNDLE='/usr/local/etc/openssl@1.1/cert.pem'
+  { # normal pip
       echo "Trying normal pip..." 2>&1 | tee -a "$LOG_FILE"
       $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # normal pip3
+      echo "Trying normal pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # separate six with pip
+      echo "Trying separate six with pip..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --ignore-installed six
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # separate six with pip3
+      echo "Trying separate six with pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed six
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # combined six with pip
+      echo "Trying combined six with pip..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --ignore-installed six
+  } || { # combined six with pip3
+      echo "Trying combined six with pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --ignore-installed six
+  } || { # separate setuptools and six with pip
+      echo "Trying separate setuptools and six with pip..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --ignore-installed six
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --ignore-installed setuptools
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # separate setuptools and six with pip3
+      echo "Trying separate setuptools and six with pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed six
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed setuptools
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # user flag with pip
+      echo "Trying user flag with pip..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --user
+  } || { # user flag with pip3
+      echo "Trying user flag with pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --user
+  } || { # update pip and setuptools with pip
+      echo "Trying update pip and setuptools with pip..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --upgrade pip
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --upgrade setuptools
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # update pip and setuptools with pip3
+      echo "Trying update pip and setuptools with pip3..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --upgrade pip
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --upgrade setuptools
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
   } || { # conda install pytorch
       echo "Trying conda install pytorch..." 2>&1 | tee -a "$LOG_FILE"
       conda install pytorch torchvision torchaudio -c pytorch-nightly -y
+  } || { # conda clean all
+      echo "Trying conda clean all..." 2>&1 | tee -a "$LOG_FILE"
+      conda clean --all -y
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
+  } || { # conda force reinstall
+      echo "Trying conda force reinstall..." 2>&1 | tee -a "$LOG_FILE"
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y --force-reinstall
+  } || { # pip force reinstall
+      echo "Trying pip force reinstall..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --force-reinstall
+  } || { # pip3 force reinstall 
+      echo "Trying pip3 force reinstall ..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu --upgrade --force-reinstall
+  } || { # pip -I and ignore-installed
+      echo "Trying pip -I and ignore-installed..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install -I --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --ignore-installed --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # pip3 -I and ignore-installed
+      echo "Trying pip3 -I and ignore-installed..." 2>&1 | tee -a "$LOG_FILE"
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install -I --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+      $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip3 install --ignore-installed --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # conda update base
+      echo "Trying conda update base..." 2>&1 | tee -a "$LOG_FILE"
+      conda update -n base conda -y
+      conda install pytorch torchvision torchaudio -c pytorch-nightly -y
+  } || {
+      echo "Nothing worked..." 2>&1 | tee -a "$LOG_FILE"
   }
+  ###############################################
+  ################ M2 PYTORCH BUG ###############
+  ###############################################
 fi
 
 # requirements for EcoAssist
