@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 october 2022 (latest edit)
+@REM ### Peter van Lunteren, 20 feb 2023 (latest edit)
 
 @REM # set echo settings
 echo off
@@ -41,6 +41,27 @@ echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
 @REM # change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." >> "%LOG_FILE%" & PAUSE>nul & EXIT )
+
+@REM # locate git
+git --version && set git_installed_1="Yes" || set git_installed_1="No"
+git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (1) failed." | wtee -a "%LOG_FILE%"
+echo Is git installed ^(1^)^? !git_installed_1! | wtee -a "%LOG_FILE%"
+if !git_installed_1!=="No" (
+    if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_2.txt" (
+        set PATH_TO_GIT_INSTALLATION_TXT_FILE="%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_2.txt"
+        ) else (
+        set PATH_TO_GIT_INSTALLATION_TXT_FILE="%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_1.txt"
+        )
+    for /F "tokens=*" %%A in ('type !PATH_TO_GIT_INSTALLATION_TXT_FILE!') do (
+        set str=%%A
+        @REM # remove the file part of path so that it is a directory
+        set str=!str:git.exe=!
+        echo Found path to git here: !str!
+        set PATH=!PATH!;!str!
+        echo "Added !str! to PATH!" | wtee -a "%LOG_FILE%"
+        echo !PATH! | wtee -a "%LOG_FILE%"
+    )
+)
 
 @REM # locate conda
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
