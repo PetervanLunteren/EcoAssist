@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 24 Feb 2023 (latest edit)
+### Peter van Lunteren, 27 Feb 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -323,7 +323,11 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   source $HOME/miniforge3/bin/activate
   conda activate $HOME/miniforge3/envs/ecoassistcondaenv
   # install nightly pytorch via miniforge as arm64
-  $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  {
+    $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || {
+    conda install -c conda-forge pytorch torchvision
+  }
   # install lxml
   $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install lxml
 
