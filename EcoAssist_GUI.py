@@ -1030,7 +1030,7 @@ def switch_yolov5_git_to(model_type):
     repo = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
     if model_type == "old models":
         if platform.processor() == "arm" and os.name != "nt": # M1 and M2
-            repo.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1")
+            repo.git.checkout("4db6757ef9d43f49a780ff29deb06b28e96fbe84")
         else:
             repo.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
     elif model_type == "new models":
