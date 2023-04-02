@@ -2,13 +2,19 @@
 
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/banner.png" width=100% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png" width=50% height="auto" />
 </p>
 
+EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the good people at <a href="https://ultralytics.com/">Ultralytics</a>, it is possible to train your own custom model to detect objects in images and videos. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Here you can annotate, train, and deploy your models **without a single line of code**.
+
+I initially created EcoAssist with the aim of training species classifiers to assist ecological projects (hence the name), but it will train and deploy any kind of object detection model. If you’re not an ecologist, you’ll just have to ignore the references to the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model and select images of your object of interest. The rest will work exactly the same.
+
+<!---
 EcoAssist is an application designed to make life easier for wildlife ecologists who work with camera trap data. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a  model which can recognise animals in camera trap images in a variety of terrestrial ecosystems, so that you can e.g., filter out empty images, use its results in image analysers such as <a href="https://saul.cpsc.ucalgary.ca/timelapse/">Timelapse</a>, or kick-start the training of your own species classifier. The only problem with using this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody.
 
 ###
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
+--->
 
 ## Features
 * Use either `MDv5a` or `MDv5b` to tag animals, persons and vehicles in both images and video's
