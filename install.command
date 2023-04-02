@@ -140,9 +140,6 @@ else
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
     mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
   fi
-  # change permission for the command files
-  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/label.command"
-  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command"
 fi
 
 # clone cameratraps git 
