@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 18 Feb 2022 (latest edit)
+### Peter van Lunteren, 2 Apr 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -25,6 +25,12 @@ elif [ "$PLATFORM" = "Linux" ]; then
   LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
 fi
 
+# set variables
+CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
+ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
+PIP="${ECOASSISTCONDAENV}/bin/pip"
+HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
+
 # log output to logfiles
 exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
 exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
@@ -36,7 +42,9 @@ echo ""
 
 # log system information
 UNAME_A=`uname -a`
-MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+fi
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
 FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
 FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ECOASSIST_FILES/*/*`
@@ -44,10 +52,12 @@ echo "uname -a:"
 echo ""
 echo "$UNAME_A"
 echo ""
-echo "System information:"
-echo ""
-echo "$MACHINE_INFO"
-echo ""
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  echo "System information:"
+  echo ""
+  echo "$MACHINE_INFO"
+  echo ""
+fi
 echo "File sizes with depth 0:"
 echo ""
 echo "$FILE_SIZES_DEPTH_0"
@@ -65,37 +75,22 @@ echo ""
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
 
 # activate conda env
-if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  # using the miniforge conda installation for apple silicon macs
-  source $HOME/miniforge3/bin/activate
-  conda activate $HOME/miniforge3/envs/ecoassistcondaenv
-  PATH_TO_PYTHON="$HOME/miniforge3/envs/ecoassistcondaenv/bin/"
-else
-  # using the anaconda installation for itel macs and linux
-  PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-  PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-  echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
+source "${LOCATION_ECOASSIST_FILES}/miniforge/etc/profile.d/conda.sh"
+source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+export PATH="${CONDA_DIR}/bin":$PATH
+conda activate $ECOASSISTCONDAENV
 
-  # path to conda.sh
-  PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-  echo "Path to conda.sh: $PATH_TO_CONDA_SH"
+# path to python exe
+PATH_TO_PYTHON="${ECOASSISTCONDAENV}/bin/"
+echo "Path to python: $PATH_TO_PYTHON"
+echo ""
 
-  # path to python exe
-  PATH_TO_PYTHON="$PATH_TO_CONDA/envs/ecoassistcondaenv/bin/"
-  echo "Path to python: $PATH_TO_PYTHON"
-  echo ""
-
-  # source anaconda 
-  source "$PATH_TO_CONDA_SH"
-  conda activate ecoassistcondaenv
-fi
-
-# add PYTHONPATH
-export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5"
+# add to PYTHONPATH
+export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5:$PWD/EcoAssist"
 echo "PYHTONPATH=$PYTHONPATH"
 echo ""
 
-# add python exe to PATH
+# add to PATH
 export PATH="$PATH_TO_PYTHON:/usr/bin/:$PATH"
 echo "PATH=$PATH"
 echo ""

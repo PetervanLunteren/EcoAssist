@@ -1,5 +1,5 @@
-# GUI wrapper around MegaDetector with some additional features.
-# Written by Peter van Lunteren, 30 Jan 2022 (latest edit)
+# Non-code GUI platform for training and deploying object detection models.
+# Written by Peter van Lunteren, 2 Apr 2023 (latest edit)
 
 # import packages like a christmas tree
 import os
@@ -10,6 +10,8 @@ import git
 import json
 import math
 import time
+import torch
+import random
 import signal
 import shutil
 import platform
@@ -18,11 +20,12 @@ import traceback
 import subprocess
 import webbrowser
 import numpy as np
+import pandas as pd
 import tkinter as tk
+from tkinter import *
 from pathlib import Path
 from random import randint
 from functools import partial
-from tkHyperlinkManager import *
 from subprocess import Popen, PIPE
 import xml.etree.cElementTree as ET
 from PIL import ImageTk, Image, ImageFilter
@@ -30,7 +33,7 @@ from bounding_box import bounding_box as bb
 from tkinter import filedialog, ttk, messagebox as mb
 
 # set global variables
-version = "3.0"
+version = "4.0"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # insert pythonpath
@@ -38,14 +41,694 @@ sys.path.insert(0, os.path.join(EcoAssist_files))
 sys.path.insert(0, os.path.join(EcoAssist_files, "ai4eutils"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "yolov5"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
+
+# log pythonpath
 print(sys.path)
 
 ##########################################
 ############# MAIN FUNCTIONS #############
 ##########################################
 
-# create json output files 
-def md_process(path_to_image_folder, selected_options, data_type):
+# post-process files
+def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # prepare data specific vars
+    if data_type == "img":
+        recognition_file = os.path.join(src_dir, "image_recognition_file.json")
+        progress_postprocess_frame = img_progress_postprocess_frame
+        progress_postprocess_progbar = img_progress_postprocess_progbar
+        progress_postprocess_stats = img_progress_postprocess_stats
+    else:
+        recognition_file = os.path.join(src_dir, "video_recognition_file.json")
+        progress_postprocess_frame = vid_progress_postprocess_frame
+        progress_postprocess_progbar = vid_progress_postprocess_progbar
+        progress_postprocess_stats = vid_progress_postprocess_stats
+
+    # init vars
+    global cancel_var
+    start_time = time.time()
+    nloop = 1
+
+    # warn user
+    if data_type == "vid":
+        if vis or crp or yol:
+            check_json_presence_and_warn_user("visualize, crop or annotate", "visualizing, cropping or annotating", "visualization, cropping, and annotation")
+            vis, crp, yol = [False] * 3
+
+    # fetch label map
+    label_map = fetch_label_map_from_json(recognition_file)
+    inverted_label_map = {v: k for k, v in label_map.items()}
+
+    # create list with colours for visualisation
+    if vis:
+        colors = ["fuchsia", "blue", "orange", "yellow", "green", "red"]
+        length_diff = len(colors) - len(label_map)
+        if length_diff > 0:
+            # first 6 classes get default colors
+            colors = colors[:length_diff]
+        if length_diff < 0:
+            # all classes after that get random color
+            for i in range(abs(length_diff)):
+                colors.append('#%06X' % randint(0, 0xFFFFFF))
+    
+    # make sure json has relative paths
+    json_paths_converted = False
+    if check_json_paths(recognition_file) != "relative":
+        make_json_relative(recognition_file)
+        json_paths_converted = True
+    
+    # add cancel button
+    cancel_var = False
+    btn_cancel = Button(progress_postprocess_frame, text="Cancel", command=cancel)
+    btn_cancel.grid(row=9, column=0, columnspan=2)
+
+    # create classes.txt
+    if yol:
+        classes_txt = os.path.join(dst_dir, "classes.txt")
+        with open(classes_txt, 'w') as f:
+            for key in label_map:
+                f.write(f"{label_map[key]}\n")
+    
+    # open json file
+    with open(recognition_file) as image_recognition_file_content:
+        data = json.load(image_recognition_file_content)
+    n_images = len(data['images'])
+
+    # initialise the csv files
+    if csv:
+        # for files
+        csv_for_files = os.path.join(dst_dir, f"results_files.csv")
+        if not os.path.isfile(csv_for_files):
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
+            df.to_csv(csv_for_files, encoding='utf-8', index=False)
+        
+        # for detections
+        csv_for_detections = os.path.join(dst_dir, f"results_detections.csv")
+        if not os.path.isfile(csv_for_detections):
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
+            df.to_csv(csv_for_detections, encoding='utf-8', index=False)
+    
+    # loop through images
+    for image in data['images']:
+
+        # cancel process if required
+        if cancel_var:
+            break
+        
+        # get image info
+        file = image['file']
+        detections_list = image['detections']
+        n_detections = len(detections_list)
+        max_detection_conf = image['max_detection_conf']
+        progress_postprocess_progbar['value'] += 100 / n_images
+
+        # init lists
+        unique_labels = []
+        bbox_info = []
+        csv_detectons = []
+        csv_files = []
+
+        # open image
+        if vis or crp or yol or csv:
+            if data_type == "img":
+                im_to_vis = cv2.imread(os.path.join(src_dir, file))
+                im_to_crp = Image.open(os.path.join(src_dir, file))
+            else:
+                vid = cv2.VideoCapture(os.path.join(src_dir, file))
+
+        # loop through detections
+        for detection in image['detections']:
+
+            # get confidence
+            conf = detection["conf"]
+
+            # if above user specified thresh
+            if conf >= thresh:
+
+                # get detection info
+                category = detection["category"]
+                label = label_map[category]
+                if sep:
+                    unique_labels.append(label)
+                    unique_labels = sorted(list(set(unique_labels)))
+
+                # get bbox info
+                if vis or crp or yol or csv:
+                    if data_type == "img":
+                        height, width = im_to_vis.shape[:2]
+                    else:
+                        height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                        width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+                    w_box = detection['bbox'][2]
+                    h_box = detection['bbox'][3]
+                    xo = detection['bbox'][0] + (w_box/2)
+                    yo = detection['bbox'][1] + (h_box/2)
+                    left = int(round(detection['bbox'][0] * width))
+                    top = int(round(detection['bbox'][1] * height))
+                    right = int(round(w_box * width)) + left
+                    bottom = int(round(h_box * height)) + top
+
+                    # store in list
+                    bbox_info.append([label, conf, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
+
+        # separate files
+        if sep:
+            if n_detections == 0:
+                file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+            else:
+                if len(unique_labels) > 1:
+                    labels_str = "_".join(unique_labels)
+                    file = move_files(file, labels_str, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                elif len(unique_labels) == 0:
+                    file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                else:
+                    file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+        
+        # collect info for csv files
+        if csv:
+            # file info
+            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf]])
+            row.to_csv(csv_for_files, encoding='utf-8', mode='a', index=False, header=False)
+
+            # detections info
+            rows = []
+            for bbox in bbox_info:
+                row = [src_dir, file, data_type, *bbox[:8]]
+                rows.append(row)
+            rows = pd.DataFrame(rows)
+            rows.to_csv(csv_for_detections, encoding='utf-8', mode='a', index=False, header=False)
+    
+        # visualize images
+        if vis and len(bbox_info) > 0:
+            for bbox in bbox_info:
+                vis_label = f"{bbox[0]} {bbox[1]}"
+                color = colors[int(inverted_label_map[bbox[0]])-1]
+                bb.add(im_to_vis, *bbox[2:6], vis_label, color)
+            im = os.path.join(dst_dir, file)
+            Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
+            cv2.imwrite(im, im_to_vis)
+        
+        # crop images
+        if crp and len(bbox_info) > 0:
+            counter = 1
+            for bbox in bbox_info:
+                crp_im = im_to_crp.crop((bbox[2:6]))
+                filename, file_extension = os.path.splitext(file)
+                im_path = os.path.join(dst_dir, filename + '_crop' + str(counter) + '_' + bbox[0] + file_extension)
+                Path(os.path.dirname(im_path)).mkdir(parents=True, exist_ok=True)
+                crp_im.save(im_path)
+                counter += 1
+
+        # create yolo annotations
+        if yol and len(bbox_info) > 0:
+            filename, file_extension = os.path.splitext(file)
+            annot_file = os.path.join(dst_dir, filename + ".txt")
+            Path(os.path.dirname(annot_file)).mkdir(parents=True, exist_ok=True)
+            with open(annot_file, 'w') as f:
+                for bbox in bbox_info:
+                    class_id = int(inverted_label_map[bbox[0]])-1
+                    f.write(f"{class_id} {bbox[8]} {bbox[9]} {bbox[10]} {bbox[11]}\n")
+
+        # calculate stats
+        elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
+        time_left_sep = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
+        progress_postprocess_stats['text'] = create_postprocess_lbl(elapsed_time_sep, time_left_sep, command="running")
+        nloop += 1
+        root.update()
+
+    # remove cancel button
+    btn_cancel.grid_remove()
+    
+    # change json paths back, if converted earlier
+    if json_paths_converted:
+        make_json_absolute(recognition_file)
+    
+    # let the user know it's done
+    progress_postprocess_stats['text'] = create_postprocess_lbl(elapsed_time_sep, time_left_sep, command="done")
+    root.update()
+
+# open progress window and initiate the post-process
+def start_postprocess():
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+        
+    # set global variables
+    global img_progress_postprocess_frame
+    global vid_progress_postprocess_frame
+    
+    # fix user input
+    src_dir = var_choose_folder.get()
+    dst_dir = var_output_dir.get()
+    thresh = var_thresh.get()
+    sep = var_separate_files.get()
+    file_placement = var_file_placement.get()
+    sep_conf = var_sep_conf.get()
+    vis = var_vis_files.get()
+    crp = var_crp_files.get()
+    yol = var_yol_files.get()
+    csv = var_csv.get()
+
+    # check which json files are present
+    img_json = False
+    if os.path.isfile(os.path.join(src_dir, "image_recognition_file.json")):
+        img_json = True
+    vid_json = False
+    if os.path.isfile(os.path.join(src_dir, "video_recognition_file.json")):
+        vid_json = True
+    if not img_json and not vid_json:
+        mb.showerror("Error", "No model output file present. Make sure you run step "
+                     "2 before post-processing the files.")
+        return
+    
+    # check if destination dir is valid and set to input dir if not
+    if dst_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(dst_dir):
+        mb.showerror("Destination folder not set", "Destination folder not set.\n\n You have not specified where the post-processing results should "
+                     "be placed or the set folder does not exist. This is required.")
+        return
+
+    # warn user if the original files will be overwritten with visualized files
+    if dst_dir == src_dir and vis and not sep:
+        if not mb.askyesno("Original images will be overwritten", 
+                      f"WARNING! The visualized images will be placed in the folder with the original data: '{src_dir}'. By doing this, you will overwrite the original images"
+                      " with the visualized ones. Are you sure you want to continue?"):
+            return
+
+    # open new window with progress bar and stats
+    pp_process_window = Toplevel(root)
+    pp_process_window.title("Post-process progress")
+    pp_process_window.geometry()
+
+    # logo
+    logo = tk.Label(pp_process_window, image=grey_bg_logo)
+    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
+
+    # add image progress
+    if img_json:
+        img_progress_postprocess_frame = LabelFrame(pp_process_window, text=" Postprocessing images ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+        img_progress_postprocess_frame.configure(font=(text_font, 15, "bold"))
+        img_progress_postprocess_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
+        img_progress_postprocess_frame.columnconfigure(0, weight=3, minsize=115)
+        img_progress_postprocess_frame.columnconfigure(1, weight=1, minsize=115)
+        global img_progress_postprocess_progbar
+        img_progress_postprocess_progbar = ttk.Progressbar(master=img_progress_postprocess_frame, orient='horizontal', mode='determinate', length=280)
+        img_progress_postprocess_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
+        global img_progress_postprocess_stats
+        img_progress_postprocess_stats = ttk.Label(master=img_progress_postprocess_frame, text=create_postprocess_lbl())
+        img_progress_postprocess_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
+
+    # add video progress
+    if vid_json:
+        vid_progress_postprocess_frame = LabelFrame(pp_process_window, text=" Postprocessing videos ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+        vid_progress_postprocess_frame.configure(font=(text_font, 15, "bold"))
+        vid_progress_postprocess_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
+        vid_progress_postprocess_frame.columnconfigure(0, weight=3, minsize=115)
+        vid_progress_postprocess_frame.columnconfigure(1, weight=1, minsize=115)
+        global vid_progress_postprocess_progbar
+        vid_progress_postprocess_progbar = ttk.Progressbar(master=vid_progress_postprocess_frame, orient='horizontal', mode='determinate', length=280)
+        vid_progress_postprocess_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
+        global vid_progress_postprocess_stats
+        vid_progress_postprocess_stats = ttk.Label(master=vid_progress_postprocess_frame, text=create_postprocess_lbl())
+        vid_progress_postprocess_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
+    
+    try:
+        # postprocess images
+        if img_json:
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type = "img")
+
+        # postprocess videos
+        if vid_json:
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type = "vid")
+        
+        # complete
+        complete_frame(trd_step)
+
+        # close progress window
+        pp_process_window.destroy()
+    
+    except Exception as error:
+        # log error
+        print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+        
+        # show error
+        mb.showerror(title="Error",
+                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
+                     detail=traceback.format_exc())
+        
+        # close window
+        pp_process_window.destroy()
+
+# check data and prepare for training
+def prepare_data_for_training(data_folder, prop_to_test, prop_to_val):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # get list of all images in dir
+    data_folder = os.path.normpath(data_folder)
+    files = [f for f in os.listdir(data_folder) if os.path.isfile(os.path.join(data_folder, f)) and not f.endswith(".DS_Store") and f.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))]
+
+    # calculate amounts
+    total_n = len(files)
+    n_test = int(total_n * prop_to_test)
+    n_val = int(total_n * prop_to_val)
+
+    # select random files
+    random.shuffle(files)
+    test_files = files[:n_test]
+    val_files = files[n_test:n_test+n_val]
+    train_files = files[n_test+n_val:]
+
+    # remove files for previous training
+    old_files = ["dataset.yaml", "train_selection.txt", "train_selection.cache", "train_selection.cache.npy", "val_selection.txt", "val_selection.cache",
+                 "val_selection.cache.npy", "test_selection.txt", "test_selection.cache", "test_selection.cache.npy"]
+    for filename in old_files:
+        old_file = os.path.join(data_folder, filename)
+        if os.path.isfile(old_file):
+            os.remove(old_file)
+
+    # write text files with images
+    for elem in [[train_files, "train"], [val_files, "val"], [test_files, "test"]]:
+        counter = 0
+        with open(os.path.join(data_folder, elem[1] + "_selection.txt"), 'w') as f:
+            for file in elem[0]:
+                f.write("./" + file + "\n")
+                counter += 1
+        send_to_output_window(f"\nWill use {counter} images as {elem[1]}");root.update()
+
+    # read class names
+    with open(os.path.join(data_folder, "classes.txt")) as f:
+        lines = f.readlines()
+        names = [line.rstrip('\n') for line in lines]
+    nc = len(names)
+
+    # create dataset.yaml
+    if prop_to_test == 0:
+        yaml_content = f"# set paths\npath: '{data_folder}'\ntrain: ./train_selection.txt\nval: ./val_selection.txt\n\n# n classes\nnc: {nc}\n\n# class names\nnames: {names}\n"
+    else:
+        yaml_content = f"# set paths\npath: '{data_folder}'\ntrain: ./train_selection.txt\nval: ./val_selection.txt\ntest: ./test_selection.txt\n\n# n classes\nnc: {nc}\n\n# class names\nnames: {names}\n"
+    yaml_file = os.path.join(data_folder, "dataset.yaml")
+    with open(yaml_file, 'w') as f:
+        f.write(yaml_content)
+        send_to_output_window(f"\nWritten {yaml_file} with content:\n\n{yaml_content}\n");root.update()
+
+# check input and execute train command
+def start_training():
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # set button states
+    cancel_training_bool.set(False)
+    set_buttons_to_training()
+
+    # checkout yolov5 repo to new models
+    switch_yolov5_git_to("new models")
+
+    # build command
+    send_to_output_window("Building train command...");root.update()
+    command_args = []
+    command_args.append(sys.executable)
+    command_args.append(os.path.join(EcoAssist_files, "yolov5", "train.py"))
+
+    # resume existing training
+    if var_train_type.get() == dpd_train_type_options[1]: 
+        # resume from file
+        checkpoint_file = var_resume_checkpoint_path.get()
+        if not os.path.isfile(checkpoint_file):
+            mb.showerror("Error", message="Please specify the last checkpoint file to resume from.")
+            set_buttons_to_idle()
+            return
+        command_args.append(f"--resume={checkpoint_file}")
+    
+        # extract output folder from checkpoint file
+        results_dir =  os.path.dirname(
+                            os.path.dirname(
+                                os.path.dirname(
+                                    os.path.dirname(
+                                        os.path.normpath(
+                                            checkpoint_file)))))
+        
+    # start new training
+    elif var_train_type.get() == dpd_train_type_options[0]: 
+        # set retrain from
+        command_args.append(f"--weights={var_learning_model_path.get()}")
+
+        # prepare data for training
+        send_to_output_window("Preparing data training set...");root.update()
+        data_dir = var_annotated_data.get()
+        if data_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(data_dir):
+            mb.showerror("Error", message="Please specify a directory with annotated data to train on.")
+            set_buttons_to_idle()
+            return
+        prepare_data_for_training(data_dir, var_test_prop.get(), var_val_prop.get())
+
+        # add data argument
+        command_args.append(f"--data={os.path.normpath(os.path.join(data_dir, 'dataset.yaml'))}")
+        
+        # select gpu if available
+        if var_train_gpu.get():
+            send_to_output_window("Searching for GPU...");root.update()
+
+            # for windows machines
+            if torch.cuda.is_available():
+                send_to_output_window("\tCUDA is available.");root.update()
+                command_args.append(f"--device=0")
+            else:
+                send_to_output_window("\tCUDA is not available.");root.update()
+                
+            # for apple silicon machines
+            try:
+                if torch.backends.mps.is_built() and torch.backends.mps.is_available():
+                    send_to_output_window("\tGPU (MPS) is available.");root.update()
+                    command_args.append(f"--device=mps")
+                else:
+                    send_to_output_window("\tGPU (MPS) is not available.");root.update()
+            except AttributeError:
+                pass
+        
+        # number of epochs
+        if not var_n_epochs.get().isdecimal() or var_n_epochs.get() == "":
+            invalid_value_warning("number of epochs")
+            set_buttons_to_idle()
+            return
+        command_args.append(f"--epochs={var_n_epochs.get()}")
+
+        # batch size
+        if no_user_input(var_batch_size):
+            command_args.append("--batch-size=-1")
+        elif not var_batch_size.get().isdecimal():
+            invalid_value_warning("batch size")
+            set_buttons_to_idle()
+            return
+        else:
+            command_args.append(f"--batch-size={var_batch_size.get()}")
+
+        # number of dataloader workers
+        if no_user_input(var_n_workers):
+            command_args.append("--workers=4")
+        elif not var_n_workers.get().isdecimal():
+            invalid_value_warning("number of workers")
+            set_buttons_to_idle()
+            return
+        else:
+            command_args.append(f"--workers={var_n_workers.get()}")
+
+        # image size
+        if no_user_input(var_img_size) == False:
+            if not var_img_size.get().isdecimal():
+                invalid_value_warning("image size")
+                set_buttons_to_idle()
+                return
+            else:
+                command_args.append(f"--img={var_img_size.get()}")
+        elif var_learning_model.get() == dpd_learning_model_options[0] or var_learning_model.get() == dpd_learning_model_options[1]:
+            # megadetector models
+            command_args.append(f"--img=1280")
+        
+        # frozen layers
+        if var_learning_model.get() == dpd_learning_model_options[0] or var_learning_model.get() == dpd_learning_model_options[1]:
+            # megadetector models
+            command_args.append(f"--freeze=12")
+        elif var_learning_model.get() == dpd_learning_model_options[7]:
+            # custom model
+            if no_user_input(var_n_freeze_layers) == False:
+                if not var_n_freeze_layers.get().isdecimal():
+                    invalid_value_warning("number of frozen layers")
+                    set_buttons_to_idle()
+                    return
+                else:
+                    command_args.append(f"--freeze={var_n_freeze_layers.get()}")
+        
+        # model architecture
+        if var_learning_model.get() == dpd_learning_model_options[8]:
+            # from scratch
+            if not var_model_architecture.get() == dpd_model_architecture_options[6]:
+                # not "none" selected
+                command_args.append(f"--cfg={var_model_architecture_path.get()}")
+
+        # check user input for destination folder
+        results_dir = var_results_dir.get()
+        if results_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(results_dir):
+            mb.showerror("Error", message="Please specify the destination directory.")
+            set_buttons_to_idle()
+            return
+
+        # project name
+        if no_user_input(var_project_name):
+            invalid_value_warning("project name", numeric = False)
+            set_buttons_to_idle()
+            return
+        command_args.append(f"--project={var_project_name.get()}")
+            
+        # name of the run
+        if no_user_input(var_run_name) == False:
+            command_args.append(f"--name={var_run_name.get()}")
+
+        # hyperparameter file
+        if var_hyper_file_path.get() != "":
+            command_args.append(f"--hyp={var_hyper_file_path.get()}")
+
+        # cache images
+        if var_cache_imgs.get():
+            command_args.append(f"--cache")
+
+        # evolve
+        if var_evolve.get():
+            # get n generations
+            if no_user_input(var_n_generations) == False:
+                if not var_n_generations.get().isdecimal():
+                    invalid_value_warning("number of generations")
+                    set_buttons_to_idle()
+                    return
+                command_args.append(f"--evolve={var_n_generations.get()}")
+            else:
+                command_args.append(f"--evolve=300")
+    
+    # change directory to the destination folder
+    os.chdir(results_dir)
+
+    # adjust command for unix OS
+    if os.name != 'nt':
+        command_args = "'" + "' '".join(command_args) + "'"
+    
+    # log command
+    send_to_output_window(f"\ncommand_args : {command_args}\n");root.update()
+    send_to_output_window("\nStarting training process...\n");root.update()
+
+    # run command
+    p = Popen(command_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                bufsize=1,
+                shell=True,
+                universal_newlines=True)
+    
+    # read the output
+    skip = False
+    for line in p.stdout:
+
+        # send to console but only update the window for the lines that matter
+        send_to_output_window(line)
+
+        # skip the model summary 
+        if line.split() == ["from", "n", "params", "module", "arguments"]:
+            skip = True
+        if line.startswith("Model summary: "):
+            skip = False
+
+        # skip the freezing process
+        if not line.startswith("freezing ") and not skip:
+
+            # pause process for unix OS
+            if os.name != 'nt':
+                p.send_signal(signal.SIGSTOP)
+            
+            # check if user cancelled the training
+            if cancel_training_bool.get():
+                send_to_output_window("TRAINING CANCELLED BY USER...")
+                set_buttons_to_idle()
+                return
+            
+            # update root so that console output will be updated for the user
+            root.update()
+
+            # continue process for unix OS
+            if os.name != 'nt':
+                p.send_signal(signal.SIGCONT)
+    
+    # let user know when it's done
+    send_to_output_window(f"TRAINING IS DONE! Results are saved to {results_dir}.")
+
+    # set button states
+    cancel_training_bool.set(False)
+    set_buttons_to_idle()
+
+# create required files and open the LabelImg software
+def start_annotation():
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # set vars
+    images_dir = var_annot_dir.get()
+    classes_txt = os.path.join(images_dir, "classes.txt")
+
+    # check if images dir is valid
+    if images_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(images_dir):
+        mb.showerror("Error", message="Please specify a directory with images to annotate.")
+        return
+
+    # check if user specified classes
+    if not os.path.isfile(classes_txt) and no_user_input(var_annot_classes):
+        invalid_value_warning("classes", numeric = False)
+        return
+
+    # create classes.txt if required
+    if not os.path.isfile(classes_txt):
+        classes_list = ent_annot_classes.get().split(",")
+        classes_list = [s.strip() for s in classes_list]
+        with open(classes_txt, 'w') as fp:
+            for elem in classes_list:
+                fp.write(f"{elem}\n")
+
+    # locate open script
+    if os.name == 'nt':
+        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "Windows_open_LabelImg.bat")
+    else:
+        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "MacOS_Linux_open_LabelImg.command")
+
+    # create command
+    command_args = []
+    command_args.append(labelImg_script)
+    command_args.append(images_dir)
+    command_args.append(classes_txt)
+
+    # adjust command for unix OS
+    if os.name != 'nt':
+        command_args = "'" + "' '".join(command_args) + "'"
+    
+    # log command
+    print(command_args)
+
+    # run command
+    p = Popen(command_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                bufsize=1,
+                shell=True,
+                universal_newlines=True)
+    for line in p.stdout:
+        # log stdout and stderr
+        print(line, end='')
+        
+        # report traceback when error
+        if line.startswith("Traceback "): 
+            mb.showerror("Error opening labelImg", message="An error occured while opening the "
+                            "annotation software labelImg. Please send an email to petervanlunteren@hotmail.com"
+                            " to resolve this bug.")
+
+# delpoy model and create json output files 
+def deploy_model(path_to_image_folder, selected_options, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
@@ -72,22 +755,22 @@ def md_process(path_to_image_folder, selected_options, data_type):
 
     # select model based on user input via dropdown menu
     custom_model_bool = False
-    if var_model.get() == "MDv5a": 
+    if var_model.get() == dpd_options_model[0]: 
         # set model file
-        model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5a.0.0.pt")
+        model_file = os.path.join(EcoAssist_files, "pretrained_models", "md_v5a.0.0.pt")
         
         # set yolov5 git to accommodate old models
         switch_yolov5_git_to("old models")
         
-    elif var_model.get() == "MDv5b":
+    elif var_model.get() == dpd_options_model[1]:
         # set model file
-        model_file = os.path.join(EcoAssist_files, "megadetector", "md_v5b.0.0.pt")
+        model_file = os.path.join(EcoAssist_files, "pretrained_models", "md_v5b.0.0.pt")
         
         # set yolov5 git to accommodate old models
         switch_yolov5_git_to("old models")
     else:
         # set model file
-        model_file = custom_model_choice
+        model_file = var_model_path.get()
         custom_model_bool = True
 
         # set yolov5 git to accommodate new models
@@ -157,7 +840,7 @@ def md_process(path_to_image_folder, selected_options, data_type):
     for line in p.stdout:
         print(line, end='')
         
-        # catch megadetecor errors
+        # catch model errors
         if line.startswith("No image files found"):
             mb.showerror("No images found", f"There are no images found in '{chosen_folder}'. \n\n"
                             "Are you sure you specified the correct folder? Or should you have "
@@ -172,9 +855,10 @@ def md_process(path_to_image_folder, selected_options, data_type):
                             " fix the issue.")
             return
         if "Exception:" in line:
-            mb.showerror("Error", "MegaDetector error:\n\n" + line)
+            mb.showerror("Error", "Model error:\n\n" + line)
         if "Warning:" in line and not '%' in line[0:4]:
-            mb.showerror("Warning", "MegaDetector warning:\n\n" + line)
+            if not "could not determine MegaDetector version" in line and not "no metadata for unknown detector version" in line:
+                mb.showerror("Warning", "Model warning:\n\n" + line)
         
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
@@ -231,31 +915,26 @@ def md_process(path_to_image_folder, selected_options, data_type):
     
     # create ecoassist metadata
     ecoassist_metadata = {"ecoassist_metadata" : {"version" : version,
-                                                  "frame_completion_info" : {"sep_frame_completed" : False,
-                                                                             "vis_frame_completed" : False,
-                                                                             "crp_frame_completed" : False,
-                                                                             "xml_frame_completed" : False},
                                                   "custom_model" : custom_model_bool,
                                                   "custom_model_info" : {}}}
     if custom_model_bool:
         ecoassist_metadata["ecoassist_metadata"]["custom_model_info"] = {"model_name" : os.path.basename(os.path.normpath(model_file)),
                                                                          "label_map" : label_map}
     
-    # write metadata to json
+    # write metadata to json and make abosulte if specified
     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
     video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.json")
     if data_type == "img" and os.path.isfile(image_recognition_file):
         append_to_json(image_recognition_file, ecoassist_metadata)
         if var_abs_paths.get():
-            # make paths absolute if user specified
             make_json_absolute(image_recognition_file)
     if data_type == "vid" and os.path.isfile(video_recognition_file):
         append_to_json(video_recognition_file, ecoassist_metadata)
         if var_abs_paths.get():
-            make_json_absolute(video_recognition_file)# create json output files 
+            make_json_absolute(video_recognition_file)
 
-# start megadetector process
-def start_md():
+# open progress window and initiate the model deployment
+def start_deploy():
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
@@ -317,7 +996,7 @@ def start_md():
     
     # open new window with progress bar and stats
     md_progress_window = Toplevel(root)
-    md_progress_window.title("MegaDetector progress")
+    md_progress_window.title("Deploy progress")
     md_progress_window.geometry()
 
     # logo
@@ -355,10 +1034,10 @@ def start_md():
     try:
         # process images ...
         if var_process_img.get():
-            md_process(var_choose_folder.get(), additional_img_options, data_type = "img")
+            deploy_model(var_choose_folder.get(), additional_img_options, data_type = "img")
         # ... and/or videos
         if var_process_vid.get():
-            md_process(var_choose_folder.get(), additional_vid_options, data_type = "vid")
+            deploy_model(var_choose_folder.get(), additional_vid_options, data_type = "vid")
         
         # reset window
         update_frame_states()
@@ -381,645 +1060,39 @@ def start_md():
         # close window
         md_progress_window.destroy()
 
-# move the files to their associated directories and adjust the json file paths
-def sep_process(path_to_image_folder, var_file_placement, threshold, data_type, var_sep_conf):
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-    # prepare variables
-    global cancel_var
-    if data_type == "img":
-        recognition_file = os.path.join(path_to_image_folder, "image_recognition_file.json")
-        progress_sep_frame = img_progress_sep_frame
-        progress_sep_progbar = img_progress_sep_progbar
-        progress_sep_stats = img_progress_sep_stats
-    else:
-        recognition_file = os.path.join(path_to_image_folder, "video_recognition_file.json")
-        progress_sep_frame = vid_progress_sep_frame
-        progress_sep_progbar = vid_progress_sep_progbar
-        progress_sep_stats = vid_progress_sep_stats
-    start_time = time.time()
-    nloop = 1
-    
-    # make sure json has absolute paths
-    json_paths_converted = False
-    if check_json_paths(recognition_file) == "relative":
-        make_json_absolute(recognition_file)
-        json_paths_converted = True
-    
-    # add cancel button
-    cancel_var = False
-    btn_cancel = Button(progress_sep_frame, text="Cancel", command=cancel)
-    btn_cancel.grid(row=9, column=0, columnspan=2)
-    
-    # fetch label map
-    label_map = fetch_label_map_from_json(recognition_file)
-        
-    # open json file
-    with open(recognition_file) as image_recognition_file_content:
-        data = json.load(image_recognition_file_content)
-    n_images = len(data['images'])
-    
-    # loop though json
-    for image in data['images']:
-        if cancel_var:
-            break
-        
-        # get info
-        file = image['file']
-        detections_list = image['detections']
-        n_detections = len(detections_list)
-        max_detection_conf = image['max_detection_conf']
-        progress_sep_progbar['value'] += 100 / n_images
-        if n_detections == 0:
-            image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, var_sep_conf)
-        else:
-            
-            # check detections
-            unique_labels = []
-            for detection in image['detections']:
-                conf = detection["conf"]
-                category = detection["category"]
-                if conf >= threshold:
-                    label = label_map[category]
-                    unique_labels.append(label)
-                    unique_labels = list(set(unique_labels))
-            
-            # move images
-            if len(unique_labels) > 1:
-                image['file'] = move_files(file, "multiple_categories", var_file_placement, max_detection_conf, var_sep_conf)
-            elif len(unique_labels) == 0:
-                image['file'] = move_files(file, "empty", var_file_placement, max_detection_conf, var_sep_conf)
-            else:
-                image['file'] = move_files(file, label, var_file_placement, max_detection_conf, var_sep_conf)
-                
-        # calculate stats
-        elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
-        time_left_sep = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
-        progress_sep_stats['text'] = create_postprocess_lbl(elapsed_time_sep, time_left_sep, command="running")
-        nloop += 1
-        root.update()
-    
-    # remove cancel button
-    btn_cancel.grid_remove()
-    
-    # write adjusted paths to json file
-    with open(recognition_file, "w") as json_file:
-        json.dump(data, json_file, indent=1)
-    
-    # change json paths back, if converted earlier
-    if json_paths_converted:
-        make_json_relative(recognition_file)
-    
-    # update completed status in json
-    update_frame_completion_info(recognition_file, "sep_frame_completed", True)
-    
-    # let the user know it's done
-    progress_sep_stats['text'] = create_postprocess_lbl(elapsed_time_sep, time_left_sep, command="done")
-    root.update()
-
-# start folder separation
-def start_sep():
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-        
-    # set global variables
-    global img_progress_sep_frame
-    global vid_progress_sep_frame
-    
-    # check which json files are present
-    img_json = False
-    if os.path.isfile(os.path.join(var_choose_folder.get(), "image_recognition_file.json")):
-        img_json = True
-    vid_json = False
-    if os.path.isfile(os.path.join(var_choose_folder.get(), "video_recognition_file.json")):
-        vid_json = True
-    if not img_json and not vid_json:
-        mb.showerror("Error", "No MegaDetector output file present. Make sure you run step "
-                     "2 before separating the files.")
-        return
-    
-    # open new window with progress bar and stats
-    sep_progress_window = Toplevel(root)
-    sep_progress_window.title("File separation progress")
-    sep_progress_window.geometry()
-
-    # logo
-    logo = tk.Label(sep_progress_window, image=grey_bg_logo)
-    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
-
-    # add image progress
-    if img_json:
-        img_progress_sep_frame = LabelFrame(sep_progress_window, text=" Separating images ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
-        img_progress_sep_frame.configure(font=(text_font, 15, "bold"))
-        img_progress_sep_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-        img_progress_sep_frame.columnconfigure(0, weight=3, minsize=115)
-        img_progress_sep_frame.columnconfigure(1, weight=1, minsize=115)
-        global img_progress_sep_progbar
-        img_progress_sep_progbar = ttk.Progressbar(master=img_progress_sep_frame, orient='horizontal', mode='determinate', length=280)
-        img_progress_sep_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
-        global img_progress_sep_stats
-        img_progress_sep_stats = ttk.Label(master=img_progress_sep_frame, text=create_postprocess_lbl())
-        img_progress_sep_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
-
-    # add video progress
-    if vid_json:
-        vid_progress_sep_frame = LabelFrame(sep_progress_window, text=" Separating videos ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
-        vid_progress_sep_frame.configure(font=(text_font, 15, "bold"))
-        vid_progress_sep_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
-        vid_progress_sep_frame.columnconfigure(0, weight=3, minsize=115)
-        vid_progress_sep_frame.columnconfigure(1, weight=1, minsize=115)
-        global vid_progress_sep_progbar
-        vid_progress_sep_progbar = ttk.Progressbar(master=vid_progress_sep_frame, orient='horizontal', mode='determinate', length=280)
-        vid_progress_sep_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
-        global vid_progress_sep_stats
-        vid_progress_sep_stats = ttk.Label(master=vid_progress_sep_frame, text=create_postprocess_lbl())
-        vid_progress_sep_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
-    
-    try:
-        # separate images ...
-        if img_json:
-            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "img", var_sep_conf.get())
-        # ... and videos
-        if vid_json:
-            sep_process(var_choose_folder.get(), var_file_placement.get(), var_sep_thresh.get(), "vid", var_sep_conf.get())
-        
-        # reset window
-        update_frame_states()
-        
-        # close progress window
-        sep_progress_window.destroy()
-    
-    except Exception as error:
-        # log error
-        print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        
-        # show error
-        mb.showerror(title="Error",
-                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
-                     detail=traceback.format_exc())
-        
-        # reset window
-        update_frame_states()
-        
-        # close window
-        sep_progress_window.destroy()
-
-# draw bounding boxes
-def vis_process(path_to_image_folder, threshold):
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-    # warn user if needed
-    if check_json_presence_and_warn_user("visualize", "visualizing", "visualization"):
-        return
-
-    # prepare variables
-    global cancel_var
-    start_time = time.time()
-    nloop = 1
-    recognition_file = os.path.join(path_to_image_folder, "image_recognition_file.json")
-
-    # make sure json has absolute paths
-    json_paths_converted = False
-    if check_json_paths(recognition_file) == "relative":
-        make_json_absolute(recognition_file)
-        json_paths_converted = True
-    
-    # add cancel button
-    cancel_var = False
-    btn_cancel = Button(progress_vis_frame, text="Cancel", command=cancel)
-    btn_cancel.grid(row=9, column=0, columnspan=2)
-    
-    # fetch label map
-    label_map = fetch_label_map_from_json(recognition_file)
-    
-    # create list with colours
-    colors = ["fuchsia", "blue", "orange", "yellow", "green", "red"]
-    length_diff = len(colors) - len(label_map)
-    if length_diff > 0:
-        # first 6 classes get default colors
-        colors = colors[:length_diff]
-    if length_diff < 0:
-        # all classes after that get random color
-        for i in range(abs(length_diff)):
-            colors.append('#%06X' % randint(0, 0xFFFFFF))
-    
-    # open json file
-    with open(recognition_file) as json_file:
-        data = json.load(json_file)
-    n_images = len(data['images'])
-    
-    # loop though json
-    for image in data['images']:
-        if cancel_var:
-            break
-        n_detections = len(image['detections'])
-        progress_vis_progbar['value'] += 100 / n_images
-        if not n_detections == 0:
-            file = image['file']
-            
-            # open image
-            im = cv2.imread(file)
-            
-            # loop though detections
-            for detection in image['detections']:
-                
-                # get info 
-                category = detection['category']
-                conf = detection['conf']
-                height, width = im.shape[:2]
-                left = int(round(detection['bbox'][0] * width))
-                top = int(round(detection['bbox'][1] * height))
-                right = int(round(detection['bbox'][2] * width)) + left
-                bottom = int(round(detection['bbox'][3] * height)) + top
-                
-                # draw box
-                visualizations = 0
-                if conf >= threshold:
-                    label = f"{str(label_map[category])} {conf}"
-                    color = colors[int(category)-1]
-                    bb.add(im, left, top, right, bottom, label, color)
-                    visualizations += 1
-            
-            # save image
-            if visualizations > 0:
-                path, file = os.path.split(os.path.splitext(file)[0] + '_visualized' + '.jpg')
-                Path(os.path.join(path, 'visualized_images')).mkdir(parents=True, exist_ok=True)
-                cv2.imwrite(os.path.join(path, 'visualized_images', file), im)
-        
-        # calculate stats
-        elapsed_time_bbox = str(datetime.timedelta(seconds=round(time.time() - start_time)))
-        time_left_bbox = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
-        progress_vis_stats['text'] = create_postprocess_lbl(elapsed_time_bbox, time_left_bbox, command="running")
-        nloop += 1
-        root.update()
-    
-    # remove cancel button
-    btn_cancel.grid_remove()
-
-    # change json paths back, if converted earlier
-    if json_paths_converted:
-        make_json_relative(recognition_file)
-    
-    # update completed status in json
-    update_frame_completion_info(recognition_file, "vis_frame_completed", True)
-    
-    # let the user know it's done
-    progress_vis_stats['text'] = create_postprocess_lbl(elapsed_time_bbox, time_left_bbox, command="done")
-    root.update()
-
-# start drawing bounding boxes
-def start_vis():
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-
-    # set global variable
-    global progress_vis_frame
-
-    # open new window with progress bar and stats
-    vis_progress_window = Toplevel(root)
-    vis_progress_window.title("File visualization progress")
-    vis_progress_window.geometry()
-    
-    # logo
-    logo = tk.Label(vis_progress_window, image=grey_bg_logo)
-    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
-    
-    # show visualisation progress
-    progress_vis_frame = LabelFrame(vis_progress_window, text=" Visualizing images ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
-    progress_vis_frame.configure(font=(text_font, 15, "bold"))
-    progress_vis_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-    progress_vis_frame.columnconfigure(0, weight=3, minsize=115)
-    progress_vis_frame.columnconfigure(1, weight=1, minsize=115)
-    global progress_vis_progbar
-    progress_vis_progbar = ttk.Progressbar(master=progress_vis_frame, orient='horizontal', mode='determinate', length=280)
-    progress_vis_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
-    global progress_vis_stats
-    progress_vis_stats = ttk.Label(master=progress_vis_frame, text=create_postprocess_lbl())
-    progress_vis_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
-
-    try:
-        # start actual visualisation process
-        vis_process(var_choose_folder.get(), var_vis_thresh.get())
-        
-        # reset window
-        update_frame_states()
-        
-        # close progress window
-        vis_progress_window.destroy()
-
-    except Exception as error:
-        # log error
-        print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        
-        # show error
-        mb.showerror(title="Error",
-                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
-                     detail=traceback.format_exc())
-        
-        # reset window
-        update_frame_states()
-        
-        # close window
-        vis_progress_window.destroy()
-
-# crop detections
-def crp_process(path_to_image_folder, threshold):
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-
-    # warn user if needed
-    if check_json_presence_and_warn_user("crop", "cropping", "cropping"):
-        return
-
-    # prepare variables
-    global cancel_var
-    start_time = time.time()
-    nloop = 1
-    recognition_file = os.path.join(path_to_image_folder, "image_recognition_file.json")
-
-    # make sure json has absolute paths
-    json_paths_converted = False
-    if check_json_paths(recognition_file) == "relative":
-        make_json_absolute(recognition_file)
-        json_paths_converted = True
-
-    # add cancel button
-    cancel_var = False
-    btn_cancel = Button(progress_crp_frame, text="Cancel", command=cancel)
-    btn_cancel.grid(row=9, column=0, columnspan=2)
-
-    # fetch label map
-    label_map = fetch_label_map_from_json(recognition_file)
-
-    # open json file
-    with open(recognition_file) as json_file:
-        data = json.load(json_file)
-    n_images = len(data['images'])
-    
-    # loop though json
-    for image in data['images']:
-        if cancel_var:
-            break
-        n_detections = len(image['detections'])
-        progress_crp_progbar['value'] += 100 / n_images
-        counter = 1
-        if not n_detections == 0:
-            
-            # loop though detections
-            for detection in image['detections']:
-                
-                # get info 
-                file = image['file']
-                category = detection['category']
-                conf = detection['conf']
-                im = Image.open(file)
-                width, height = im.size
-                left = int(round(detection['bbox'][0] * width))
-                top = int(round(detection['bbox'][1] * height))
-                right = int(round(detection['bbox'][2] * width)) + left
-                bottom = int(round(detection['bbox'][3] * height)) + top
-                
-                # crop image
-                cropped_im = im.crop((left, top, right, bottom))
-                if conf >= threshold:
-                    label = label_map[category]
-                    path, file_ext = os.path.split(os.path.splitext(file)[0] + '_crop' + str(counter) + '_' + label + '.jpg')
-                    counter += 1
-                
-                # save image
-                if counter > 1:
-                    Path(os.path.join(path, 'cropped_images')).mkdir(parents=True, exist_ok=True)
-                    cropped_im.save(os.path.join(path, 'cropped_images', file_ext))
-
-        # calculate stats
-        elapsed_time_crop = str(datetime.timedelta(seconds=round(time.time() - start_time)))
-        time_left_crop = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
-        progress_crp_stats['text'] = create_postprocess_lbl(elapsed_time_crop, time_left_crop, command="running")
-        nloop += 1
-        root.update()
-
-    # remove cancel button
-    btn_cancel.grid_remove()
-
-    # change json paths back, if converted earlier
-    if json_paths_converted:
-        make_json_relative(recognition_file)
-    
-    # update completed status in json
-    update_frame_completion_info(recognition_file, "crp_frame_completed", True)
-
-    # let the user know it's done
-    progress_crp_stats['text'] = create_postprocess_lbl(elapsed_time_crop, time_left_crop, command="done")
-    root.update()
-
-# start cropping
-def start_crp():
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-    # set global variable
-    global progress_crp_frame
-    
-    # open new window with progress bar and stats
-    crp_progress_window = Toplevel(root)
-    crp_progress_window.title("File cropping progress")
-    crp_progress_window.geometry()
-    
-    # logo
-    logo = tk.Label(crp_progress_window, image=grey_bg_logo)
-    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
-    
-    # show cropping progress
-    progress_crp_frame = LabelFrame(crp_progress_window, text=" Cropping images ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
-    progress_crp_frame.configure(font=(text_font, 15, "bold"))
-    progress_crp_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-    progress_crp_frame.columnconfigure(0, weight=3, minsize=115)
-    progress_crp_frame.columnconfigure(1, weight=1, minsize=115)
-    global progress_crp_progbar
-    progress_crp_progbar = ttk.Progressbar(master=progress_crp_frame, orient='horizontal', mode='determinate', length=280)
-    progress_crp_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
-    global progress_crp_stats
-    progress_crp_stats = ttk.Label(master=progress_crp_frame, text=create_postprocess_lbl())
-    progress_crp_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
-
-    try:
-        # start actual cropping process
-        crp_process(var_choose_folder.get(), var_crp_thresh.get())
-        
-        # reset window
-        update_frame_states()
-        
-        # close progress window
-        crp_progress_window.destroy()
-
-    except Exception as error:
-        # log error
-        print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        
-        # show error
-        mb.showerror(title="Error",
-                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
-                     detail=traceback.format_exc())
-        
-        # reset window
-        update_frame_states()
-        
-        # close window
-        crp_progress_window.destroy()
-
-# create xml files
-def xml_process(path_to_image_folder, threshold):
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-
-    # warn user if needed
-    if check_json_presence_and_warn_user("annotate", "annotating", "annotation"):
-        return
-    
-    # prepare variables
-    global cancel_var
-    start_time = time.time()
-    nloop = 1
-    recognition_file = os.path.join(path_to_image_folder, "image_recognition_file.json")
-
-    # make sure json has absolute paths
-    json_paths_converted = False
-    if check_json_paths(recognition_file) == "relative":
-        make_json_absolute(recognition_file)
-        json_paths_converted = True
-    
-    # add cancel button
-    cancel_var = False
-    btn_cancel = Button(progress_xml_frame, text="Cancel", command=cancel)
-    btn_cancel.grid(row=9, column=0, columnspan=2)
-    
-    # fetch label map
-    label_map = fetch_label_map_from_json(recognition_file)
-    
-    # open json file
-    with open(recognition_file) as json_file:
-        data = json.load(json_file)
-    n_images = len(data['images'])
-    
-    # loop though json
-    for image in data['images']:
-        if cancel_var:
-            break
-        progress_xml_progbar['value'] += 100 / n_images
-        file = str(image['file'])
-        n_detections = len(image['detections'])
-        annotation_list = []
-        if not n_detections == 0:
-            
-            # loop though detections
-            for detection in image['detections']:
-                
-                # open image
-                im = Image.open(file)
-                
-                # get info
-                annotations = 0
-                width, height = im.size
-                left = int(round(detection['bbox'][0] * width))
-                top = int(round(detection['bbox'][1] * height))
-                right = int(round(detection['bbox'][2] * width)) + left
-                bottom = int(round(detection['bbox'][3] * height)) + top
-                conf = detection['conf']
-                category = detection['category']
-                label = label_map[category]
-
-                # create string with annotation info
-                list_of_coords = [left, bottom, left, left, right, top, left, label]
-                string = ','.join(map(str, list_of_coords))
-                if conf > threshold:
-                    annotation_list.append(string)
-                    annotations += 1
-            
-            # create annotation file
-            if annotations > 0:
-                create_labimg_xml(file, annotation_list)
-        
-        # calculate stats
-        elapsed_time_xml = str(datetime.timedelta(seconds=round(time.time() - start_time)))
-        time_left_xml = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
-        progress_xml_stats['text'] = create_postprocess_lbl(elapsed_time_xml, time_left_xml, command="running")
-        nloop += 1
-        root.update()
-
-    # remove cancel button
-    btn_cancel.grid_remove()
-
-    # change json paths back, if converted earlier
-    if json_paths_converted:
-        make_json_relative(recognition_file)
-    
-    # update completed status in json
-    update_frame_completion_info(recognition_file, "xml_frame_completed", True)
-    
-    # let the user know it's done
-    progress_xml_stats['text'] = create_postprocess_lbl(elapsed_time_xml, time_left_xml, command="done")
-    root.update()
-
-# start creating annotation files
-def start_xml():
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-    # set global variable
-    global progress_xml_frame
-    
-    # open new window with progress bar and stats
-    xml_progress_window = Toplevel(root)
-    xml_progress_window.title("Annotation progress")
-    xml_progress_window.geometry()
-    
-    # logo
-    logo = tk.Label(xml_progress_window, image=grey_bg_logo)
-    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
-    
-    # show cropping progress
-    progress_xml_frame = LabelFrame(xml_progress_window, text=" Creating annotation files ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
-    progress_xml_frame.configure(font=(text_font, 15, "bold"))
-    progress_xml_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-    progress_xml_frame.columnconfigure(0, weight=3, minsize=115)
-    progress_xml_frame.columnconfigure(1, weight=1, minsize=115)
-    global progress_xml_progbar
-    progress_xml_progbar = ttk.Progressbar(master=progress_xml_frame, orient='horizontal', mode='determinate', length=280)
-    progress_xml_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
-    global progress_xml_stats
-    progress_xml_stats = ttk.Label(master=progress_xml_frame, text=create_postprocess_lbl())
-    progress_xml_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
-
-    try:
-        # start actual cropping process
-        xml_process(var_choose_folder.get(), var_xml_thresh.get())
-        
-        # reset window
-        update_frame_states()
-        
-        # close progress window
-        xml_progress_window.destroy()
-
-    except Exception as error:
-        # log error
-        print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        
-        # show error
-        mb.showerror(title="Error",
-                     message="An error has occurred (EcoAssist v" + version + "): '" + str(error) + "'.",
-                     detail=traceback.format_exc())
-        
-        # reset window
-        update_frame_states()
-        
-        # close window
-        xml_progress_window.destroy()
-
 ############################################
 ############# HELPER FUNCTIONS #############
 ############################################
+
+# set button states to training
+def set_buttons_to_training():
+    btn_cancel_training.config(state=NORMAL)
+    btn_start_training.config(state=DISABLED)
+
+# set button states to idle
+def set_buttons_to_idle():
+    btn_cancel_training.config(state=DISABLED)
+    btn_start_training.config(state=NORMAL)
+
+# browse file and display result
+def browse_file(var, var_short, var_path, dsp, filetype, cut_off_length, options, nrow):
+    # choose file
+    file = filedialog.askopenfilename(filetypes=filetype)
+    
+    # shorten if needed
+    dsp_file = os.path.basename(file)
+    if len(dsp_file) > cut_off_length:
+        dsp_file = "..." + dsp_file[0 - cut_off_length + 3:]
+    
+    # set variables
+    var_short.set(dsp_file)
+
+    # reset to default if faulty
+    if file != "":
+        dsp.grid(column=0, row=nrow, sticky='e')
+        var_path.set(file)
+    else:
+        var.set(options[0])
 
 # switch beteen versions of yolov5 git to accommodate either old or new models
 def switch_yolov5_git_to(model_type):
@@ -1027,14 +1100,14 @@ def switch_yolov5_git_to(model_type):
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
     # checkout repo
-    repo = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
+    repository = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
     if model_type == "old models":
         if platform.processor() == "arm" and os.name != "nt": # M1 and M2
-            repo.git.checkout("4db6757ef9d43f49a780ff29deb06b28e96fbe84")
+            repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1")
         else:
-            repo.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
+            repository.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
     elif model_type == "new models":
-        repo.git.checkout("064365d8683fd002e9ad789c1e91fa3d021b44f0")
+        repository.git.checkout("3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8")
 
 # extract label map from custom model
 def extract_label_map_from_model(model_file):
@@ -1096,57 +1169,67 @@ def check_json_paths(path_to_json):
 # make json paths relative
 def make_json_relative(path_to_json):
     if check_json_paths(path_to_json) == "absolute":
+        # open
         with open(path_to_json, "r") as json_file:
             data = json.load(json_file)
+        
+        # adjust
         for image in data['images']:
             absolute_path = image['file']
             relative_path = absolute_path.replace(os.path.normpath(var_choose_folder.get()), "")[1:]
             image['file'] = relative_path
+        
+        # write
         with open(path_to_json, "w") as json_file:
             json.dump(data, json_file, indent=1)
             
 # make json paths absolute
 def make_json_absolute(path_to_json):
     if check_json_paths(path_to_json) == "relative":
+        # open
         with open(path_to_json, "r") as json_file:
             data = json.load(json_file)
+        
+        # adjust
         for image in data['images']:
             relative_path = image['file']
             absolute_path = os.path.normpath(os.path.join(var_choose_folder.get(), relative_path))
             image['file'] = absolute_path
+        
+        # write
         with open(path_to_json, "w") as json_file:
             json.dump(data, json_file, indent=1)
 
 # add information to json file
 def append_to_json(path_to_json, object_to_be_appended):
+    # open
     with open(path_to_json, "r") as json_file:
         data = json.load(json_file)
+    
+    # adjust
     data['info'].update(object_to_be_appended)
+
+    # write
     with open(path_to_json, "w") as json_file:
         json.dump(data, json_file, indent=1)
 
-# update information in json file
-def update_frame_completion_info(path_to_json, parameter_to_be_updated, value):
-    with open(path_to_json, "r") as json_file:
-        data = json.load(json_file)
-    data['info']['ecoassist_metadata']['frame_completion_info'][parameter_to_be_updated] = value
-    with open(path_to_json, "w") as json_file:
-        json.dump(data, json_file, indent=1)
-
-# check json presence and show warnings
+# show warning for video post-processing
 def check_json_presence_and_warn_user(infinitive, continuous, noun):
+    # check json presence
     img_json = False
     if os.path.isfile(os.path.join(var_choose_folder.get(), "image_recognition_file.json")):
         img_json = True
     vid_json = False
     if os.path.isfile(os.path.join(var_choose_folder.get(), "video_recognition_file.json")):
         vid_json = True
+    
+    # show warning
     if not img_json:
         if vid_json:
             mb.showerror("Error", f"{noun.capitalize()} is not supported for videos.")
             return True
         if not vid_json:
-            mb.showerror("Error", f"No MegaDetector output file present. Make sure you run step "
+            mb.showerror("Error", f"No model output file present. Make sure you run step "
                         f"2 before {continuous} the files. {noun.capitalize()} is only supported "
                         f"for images.")
             return True
@@ -1168,26 +1251,26 @@ conf_dirs = {0.0 : "conf_0.0",
              0.9 : "conf_0.8-0.9",
              1.0 : "conf_0.9-1.0"}
 
-# create dirs and move image files into
-def move_files(file, detection_type, var_file_placement, max_detection_conf, var_sep_conf):
-    # prepare variables
-    global conf_dirs
-    file_no_ext, file_ext = os.path.splitext(os.path.basename(os.path.normpath(file)))
-    src_dir = os.path.dirname(file)
+# move files into subdirectories
+def move_files(file, detection_type, var_file_placement, max_detection_conf, var_sep_conf, dst_root, src_dir):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # squeeze in extra dir if sorting on confidence
     if var_sep_conf and detection_type != "empty":
-        # squeeze in an extra dir
+        global conf_dirs
         ceiled_confidence = math.ceil(max_detection_conf * 10) / 10.0
         confidence_dir = conf_dirs[ceiled_confidence]
-        dst_dir = os.path.join(src_dir, "separated_files", detection_type, confidence_dir)
+        new_file = os.path.join(detection_type, confidence_dir, file)
     else:
-        dst_dir = os.path.join(src_dir, "separated_files", detection_type)
-    src = os.path.join(src_dir, file_no_ext + file_ext)
-    dst = os.path.join(dst_dir, file_no_ext + file_ext)
-    src_xml = os.path.join(src_dir, file_no_ext + ".xml")
-    dst_xml = os.path.join(dst_dir, file_no_ext + ".xml")
+        new_file = os.path.join(detection_type, file)
+    
+    # set paths
+    src = os.path.join(src_dir, file)
+    dst = os.path.join(dst_root, new_file)
     
     # create subfolder
-    Path(dst_dir).mkdir(parents=True, exist_ok=True)
+    Path(os.path.dirname(dst)).mkdir(parents=True, exist_ok=True)
     
     # place image or video in subfolder
     if var_file_placement == 1: # move
@@ -1195,12 +1278,8 @@ def move_files(file, detection_type, var_file_placement, max_detection_conf, var
     elif var_file_placement == 2: # copy
         shutil.copy2(src, dst)
         
-    # move xml file if present
-    if os.path.isfile(src_xml):
-        shutil.move(src_xml, dst_xml)
-        
-    # return destination path so the json data can be adjusted
-    return(dst)
+    # return new relative file path
+    return(new_file)
 
 # indent xml files so it is human readable (thanks to ade from stack overflow)
 def indent(elem, level=0):
@@ -1218,40 +1297,6 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
-# create xml label files in Pascal VOC format (thanks to uzzal podder from stack overflow)
-def create_labimg_xml(image_path, annotation_list):
-    image_path = Path(image_path)
-    img = np.array(Image.open(image_path).convert('RGB'))
-    annotation = ET.Element('annotation')
-    ET.SubElement(annotation, 'folder').text = str(image_path.parent.name)
-    ET.SubElement(annotation, 'filename').text = str(image_path.name)
-    ET.SubElement(annotation, 'path').text = str(image_path)
-    source = ET.SubElement(annotation, 'source')
-    ET.SubElement(source, 'database').text = 'Unknown'
-    size = ET.SubElement(annotation, 'size')
-    ET.SubElement(size, 'width').text = str(img.shape[1])
-    ET.SubElement(size, 'height').text = str(img.shape[0])
-    ET.SubElement(size, 'depth').text = str(img.shape[2])
-    ET.SubElement(annotation, 'segmented').text = '0'
-    for annot in annotation_list:
-        tmp_annot = annot.split(',')
-        cords, label = tmp_annot[0:-2], tmp_annot[-1]
-        xmin, ymin, xmax, ymax = cords[0], cords[1], cords[4], cords[5]
-        object = ET.SubElement(annotation, 'object')
-        ET.SubElement(object, 'name').text = label
-        ET.SubElement(object, 'pose').text = 'Unspecified'
-        ET.SubElement(object, 'truncated').text = '0'
-        ET.SubElement(object, 'difficult').text = '0'
-        bndbox = ET.SubElement(object, 'bndbox')
-        ET.SubElement(bndbox, 'xmin').text = str(xmin)
-        ET.SubElement(bndbox, 'ymin').text = str(ymin)
-        ET.SubElement(bndbox, 'xmax').text = str(xmax)
-        ET.SubElement(bndbox, 'ymax').text = str(ymax)
-    indent(annotation)
-    tree = ET.ElementTree(annotation)
-    xml_file_name = image_path.parent / (image_path.name.split('.')[0] + '.xml')
-    tree.write(xml_file_name)
-
 # check if checkpoint file is present and assign global variable
 def check_checkpnt():
     global loc_chkpnt_file
@@ -1263,7 +1308,7 @@ def check_checkpnt():
                 "from checkpoint file...")
     return False
 
-# order statistics from megadetector output and return string
+# order statistics from model output and return string
 def create_md_progress_lbl(elapsed_time="",
                            time_left="",
                            current_im="",
@@ -1273,13 +1318,14 @@ def create_md_progress_lbl(elapsed_time="",
                            GPU_param="",
                            data_type="",
                            command=""):
-    # difference between processing images and videos
+
+    # set unit
     if data_type == "img":
         unit = "image"
     else:
         unit = "frame"
     
-    # properly translate processing speed 
+    # translate processing speed 
     if "it/s" in processing_speed:
         speed_prefix = f"{unit.capitalize()} per sec:"
         speed_suffix = processing_speed.replace("it/s", "")
@@ -1290,11 +1336,11 @@ def create_md_progress_lbl(elapsed_time="",
         speed_prefix = ""
         speed_suffix = ""
         
-    # return load text
+    # loading
     if command == "load":
         return f"Algorithm is starting up..."
     
-    # return processing stats (OS dependant)
+    # running (OS dependant)
     if command == "running":
         if os.name == "nt":
             if data_type == "img":
@@ -1326,7 +1372,7 @@ def create_md_progress_lbl(elapsed_time="",
                 f"{speed_prefix}\t{speed_suffix}\n" \
                 f"Running on:\t{GPU_param}"
     
-    # return stats when process is done
+    # done
     if command == "done":
         return f"Elapsed time:\t{elapsed_time}\n" \
             f"{speed_prefix}\t{speed_suffix}"     
@@ -1347,135 +1393,45 @@ def create_postprocess_lbl(elapsed_time="", time_left="", command=""):
         return f"Done!\n"
 
 # browse directory
-def browse_dir_button():
+def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
     # choose directory
     chosen_dir = filedialog.askdirectory()
-    var_choose_folder.set(chosen_dir)
+
+    # set choice to variable
+    var.set(chosen_dir)
     
-    # display it and shorten if needed
+    # shorten, set and grid display
     dsp_chosen_dir = chosen_dir
-    cut_off_length = 100
     if len(dsp_chosen_dir) > cut_off_length:
         dsp_chosen_dir = "..." + dsp_chosen_dir[0 - cut_off_length + 3:]
-    dsp_chosen_dir = "  " + dsp_chosen_dir
-    var_choose_folder_short.set(dsp_chosen_dir)
-    if var_choose_folder.get() != '':
-        dsp_choose_folder.grid(column=1, row=0, sticky='w')
-        
-    # reset frame states
-    reset_frame_states()
+    if var == var_choose_folder:
+        dsp_chosen_dir = "  " + dsp_chosen_dir
+    var_short.set(dsp_chosen_dir)
+    dsp.grid(column=n_column, row=n_row, sticky=str_sticky)
 
-# load a custom yolov5 model and set global variable
+# load a custom yolov5 model
 def model_options(self):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
-    global custom_model_choice
-    if var_model.get() == "Custom":
+    # if custom model is selected
+    if var_model.get() == dpd_options_model[2]:
         
-        # choose file
-        custom_model_choice = filedialog.askopenfilename(filetypes=[("Yolov5 model","*.pt")])
-        
-        # display it and shorten if needed
-        dsp_filename = custom_model_choice
-        cut_off_length = 30
-        if len(dsp_filename) > cut_off_length:
-            dsp_filename = "..." + dsp_filename[0 - cut_off_length + 3:]
-        var_model_short.set(os.path.basename(dsp_filename))
-        
-        # set to default if faulty choice
-        if custom_model_choice != '':
-            dsp_model.grid(column=0, row=0, sticky='e')
-        else:
-            var_model.set("MDv5a")
+        # choose, display and set global var
+        browse_file(var_model,
+                    var_model_short,
+                    var_model_path,
+                    dsp_model,
+                    [("Yolov5 model","*.pt")],
+                    30,
+                    dpd_options_model,
+                    row_model)
+
     else:
         var_model_short.set("")
-        
-# open graphic annotation program labelImg 
-def open_labelImg():
-    # log
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-    # prepare variables
-    chosen_dir = var_choose_folder.get()
-    path_to_labelImg = os.path.join(EcoAssist_files, "labelImg")
-    path_to_classes_txt = os.path.join(path_to_labelImg, "data", "predefined_classes.txt")
-
-    # check if the files are separated ...
-    image_recognition_file = os.path.join(var_choose_folder.get(), "image_recognition_file.json")
-    with open(image_recognition_file, "r") as json_file:
-        data = json.load(json_file)
-    sep_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['sep_frame_completed']
-    # ... and show warning
-    if sep_frame_completed:
-        mb.showinfo("Files are separated", "Because the images are separated, labelImg "
-                "doesn't know which folder to open first.\n\nYou'll have to mannualy set"
-                " the options 'Open Dir' and 'Change Save Dir' to the folder you want to"
-                " inspect (top left of window), and then double-click an image in the file"
-                " list (bottom right of window).")
-        root.destroy()
-
-    # log
-    print(f"chosen_dir: {chosen_dir}")
-    print(f"path_to_labelImg: {path_to_labelImg}")
-    print(f"path_to_classes_txt: {path_to_classes_txt}")
-    print(f"sys.executable: {sys.executable}")
-    
-    # run commands
-    if os.name == "nt":
-        # prepare command
-        path_to_labelImg_command_Windows = os.path.join(EcoAssist_files, "EcoAssist", "Windows_open_LabelImg.bat")
-        labelImg_command = [path_to_labelImg_command_Windows, chosen_dir, path_to_classes_txt]
-
-        # log command
-        print(f"command:\n\n{labelImg_command}\n\n")
-        
-        # run command
-        with Popen(labelImg_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                bufsize=1,
-                shell=True,
-                universal_newlines=True) as p:
-            for line in p.stdout:
-                
-                # log stdout and stderr
-                print(line, end='')
-                
-                # report traceback when error
-                if line.startswith("Traceback "): 
-                    mb.showerror("Error opening labelImg", message="An error occured while opening the "
-                                 "annotation software labelImg. Please send an email to petervanlunteren@hotmail.com"
-                                 " to resolve this bug.")
-
-    else:
-        # prepare command
-        path_to_labelImg_command_MacOS_Linux = os.path.join(EcoAssist_files, "EcoAssist", "MacOS_Linux_open_LabelImg.command")
-        labelImg_command = [f"bash '{path_to_labelImg_command_MacOS_Linux}' '{chosen_dir}' '{path_to_classes_txt}'"]
-        
-        # log command
-        print(f"command:\n\n{labelImg_command}\n\n")
-        
-        # run command
-        with Popen(labelImg_command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                bufsize=1,
-                shell=True,
-                universal_newlines=True) as p:
-            for line in p.stdout:
-                
-                # log stdout and stderr
-                print(line, end='')
-                
-                # report traceback when error
-                if line.startswith("Traceback "): 
-                    mb.showerror("Error opening labelImg", message="An error occured while opening the "
-                                 "annotation software labelImg. Please send an email to petervanlunteren@hotmail.com"
-                                 " to resolve this bug.")
 
 # view results after processing
 def view_results(frame):
@@ -1497,53 +1453,29 @@ def view_results(frame):
         if os.path.isfile(video_recognition_file):
             open_file_or_folder(video_recognition_file)
     
-    # open separated_files folder at file separation
-    if frame.cget('text').startswith(' Separate'):
-        sep_folder = os.path.join(chosen_folder, 'separated_files')
-        if os.path.isdir(sep_folder):
-            open_file_or_folder(sep_folder)
-        else:
-            open_file_or_folder(chosen_folder)
-    
-    # at visualization open visualized_images if present in root, otherwise root
-    if frame.cget('text').startswith(' Draw'):
-        vis_folder = os.path.join(chosen_folder, 'visualized_images')
-        if os.path.isdir(vis_folder):
-            open_file_or_folder(vis_folder)
-        else:
-            open_file_or_folder(chosen_folder)
-    
-    # at cropping open cropped_images if present in root, otherwise root
-    if frame.cget('text').startswith(' Crop'):
-        crp_folder = os.path.join(chosen_folder, 'cropped_images')
-        if os.path.isdir(crp_folder):
-            open_file_or_folder(crp_folder)
-        else:
-            open_file_or_folder(chosen_folder)
-    
-    # open labelImg folder at xml_frame
-    if frame.cget('text').startswith(' Create'):
-        open_labelImg()
+    # open destination folder at step 3
+    if frame.cget('text').startswith(' Step 3'):
+        open_file_or_folder(var_output_dir.get())
 
-# open file or folder on windows, mac and linux
+# open file or folder
 def open_file_or_folder(path):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
     # open file
-    if platform.system() == 'Darwin':
+    if platform.system() == 'Darwin': # mac  
         try:
             subprocess.call(('open', path))
         except:
             mb.showerror("Error opening results", f"Could not open '{path}'. "
                          "You'll have to find it yourself...")
-    elif platform.system() == 'Windows':
+    elif platform.system() == 'Windows': # windows
         try:
             os.startfile(path)
         except:
             mb.showerror("Error opening results", f"Could not open '{path}'. "
                          "You'll have to find it yourself...")
-    else:
+    else: # linux
         try:
             subprocess.call(('xdg-open', path))
         except:
@@ -1557,6 +1489,283 @@ def open_file_or_folder(path):
 ##############################################
 ############# FRONTEND FUNCTIONS #############
 ##############################################
+
+# update frame states
+def update_frame_states():
+    # check dir validity
+    if var_choose_folder.get() not in ["", "/", "\\", ".", "~", ":"] and os.path.isdir(var_choose_folder.get()):
+        complete_frame(fst_step)
+    else:
+        enable_frame(fst_step)
+
+    # check json files
+    img_json = False
+    if os.path.isfile(os.path.join(var_choose_folder.get(), "image_recognition_file.json")):
+        img_json = True
+    vid_json = False
+    if os.path.isfile(os.path.join(var_choose_folder.get(), "video_recognition_file.json")):
+        vid_json = True
+    
+    # check if dir is already processed
+    if img_json or vid_json:
+        complete_frame(snd_step)
+        enable_frame(trd_step)
+    else:
+        enable_frame(snd_step)
+        disable_frame(trd_step)
+
+# show entry box if classes.txt is not yet present
+def grid_annot_classes():
+    classes_txt = os.path.join(var_annot_dir.get(), "classes.txt")
+    if not os.path.isfile(classes_txt):
+        lbl_annot_classes.grid(row=row_annot_classes, sticky='nesw')
+        ent_annot_classes.grid(row=row_annot_classes, column=1, sticky='nesw', padx=5)
+    else:
+        lbl_annot_classes.grid_remove()
+        ent_annot_classes.grid_remove()
+
+# set hyperparameter file variable based on user selection
+def set_hyper_file(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # if "other" is selected
+    if self == dpd_hyper_file_options[6]:
+        browse_file(var_hyper_file,
+                    var_hyper_file_short,
+                    var_hyper_file_path,
+                    dsp_hyper_file,
+                    [("YAML file","*.yaml")],
+                    20,
+                    dpd_hyper_file_options,
+                    row_hyper_file)
+    
+    # if one of the pre-defined files is selected
+    else:
+        yolo_hyps = os.path.join(EcoAssist_files, "yolov5", "data", "hyps")
+        if self == dpd_hyper_file_options[0]:
+            var_hyper_file_path.set("")
+        elif self == dpd_hyper_file_options[1]:
+            var_hyper_file_path.set(os.path.join(yolo_hyps, "hyp.scratch-low.yaml"))
+        elif self == dpd_hyper_file_options[2]:
+            var_hyper_file_path.set(os.path.join(yolo_hyps, "hyp.scratch-med.yaml"))
+        elif self == dpd_hyper_file_options[3]:
+            var_hyper_file_path.set(os.path.join(yolo_hyps, "hyp.scratch-high.yaml"))
+        elif self == dpd_hyper_file_options[4]:
+            var_hyper_file_path.set(os.path.join(yolo_hyps, "hyp.Objects365.yaml"))
+        elif self == dpd_hyper_file_options[5]:
+            var_hyper_file_path.set(os.path.join(yolo_hyps, "hyp.VOC.yaml"))
+
+# set model architecture variable based on user selection
+def set_model_architecture(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # if "other config" is selected
+    if self == dpd_model_architecture_options[5]:
+        browse_file(var_model_architecture,
+                    var_model_architecture_short,
+                    var_model_architecture_path,
+                    dsp_model_architecture,
+                    [("YAML file","*.yaml")],
+                    20,
+                    dpd_model_architecture_options,
+                    row_model_architecture)
+    
+    # if one of the pre-defined archs is selected
+    else:
+        model_architectures = os.path.join(EcoAssist_files, "yolov5", "models")
+        if self == dpd_model_architecture_options[0]:
+            var_model_architecture_path.set(os.path.join(model_architectures, "yolov5n.yaml"))
+        elif self == dpd_model_architecture_options[1]:
+            var_model_architecture_path.set(os.path.join(model_architectures, "yolov5s.yaml"))
+        elif self == dpd_model_architecture_options[2]:
+            var_model_architecture_path.set(os.path.join(model_architectures, "yolov5m.yaml"))
+        elif self == dpd_model_architecture_options[3]:
+            var_model_architecture_path.set(os.path.join(model_architectures, "yolov5l.yaml"))
+        elif self == dpd_model_architecture_options[4]:
+            var_model_architecture_path.set(os.path.join(model_architectures, "yolov5x.yaml"))
+        elif self == dpd_model_architecture_options[6]:
+            var_model_architecture_path.set("")
+
+# set learning model variable based on user selection
+def set_learning_model(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # set variable
+    choice = var_learning_model.get()
+
+    # user selected custom model
+    if choice == dpd_learning_model_options[7]:
+        # choose file
+        browse_file(var_learning_model,
+                    var_learning_model_short,
+                    var_learning_model_path,
+                    dsp_learning_model,
+                    [("Yolov5 model","*.pt")],
+                    20,
+                    dpd_learning_model_options,
+                    row_learning_model)
+
+        # add widget to freeze layers if custom model is selected
+        if not var_learning_model_path.get().startswith(os.path.join(EcoAssist_files, "pretrained_models")):
+            lbl_n_freeze_layers.grid(row=row_n_freeze_layers, sticky='nesw')
+            ent_n_freeze_layers.grid(row=row_n_freeze_layers, column=1, sticky='nesw', padx=5)
+    
+    # user selected pre-defined model or from scratch
+    else:
+        var_learning_model_short.set("")
+        lbl_n_freeze_layers.grid_forget()
+        ent_n_freeze_layers.grid_forget()
+
+    # show scratch learning widgets
+    if choice == dpd_learning_model_options[8]:
+        lbl_model_architecture.grid(row=row_model_architecture, sticky='nesw', pady=2)
+        dpd_model_architecture.grid(row=row_model_architecture, column=1, sticky='nesw', padx=5)
+
+    # hide scratch learning widgets
+    else:
+        lbl_model_architecture.grid_forget()
+        dpd_model_architecture.grid_forget()
+        dsp_model_architecture.grid_forget()
+    
+    # set path to model
+    pretrained_models = os.path.join(EcoAssist_files, "pretrained_models")
+    if choice == dpd_learning_model_options[0]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "md_v5a.0.0.pt"))
+    elif choice == dpd_learning_model_options[1]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "md_v5b.0.0.pt"))
+    elif choice == dpd_learning_model_options[2]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5n.pt"))
+    elif choice == dpd_learning_model_options[3]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5s.pt"))
+    elif choice == dpd_learning_model_options[4]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5m.pt"))
+    elif choice == dpd_learning_model_options[5]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5l.pt"))
+    elif choice == dpd_learning_model_options[6]:
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5xl.pt"))
+    elif choice == dpd_learning_model_options[8]:
+        var_learning_model_path.set("")
+
+# set global cancel var to end training
+def cancel_training():
+    cancel_training_bool.set(True)
+
+# check if user entered text in entry widget
+def no_user_input(var):
+    if var.get() == "" or var.get().startswith("E.g.:"):
+        return True
+    else:
+        return False
+
+# send text to output window and log 
+def send_to_output_window(txt):
+    # show user
+    txt_train_output.configure(state=NORMAL)
+    txt_train_output.insert(END, f"{txt}\n")
+    txt_train_output.see("end")
+    txt_train_output.configure(state=DISABLED)
+
+    # log
+    print(txt)
+
+# show warning if not valid input
+def invalid_value_warning(str, numeric = True):
+    string = f"You either entered an invalid value for the {str}, or none at all." 
+    if numeric:
+        string += " You can only enter numberic characters."
+    mb.showerror("Invalid value", string)
+
+# show and hide project widget depending on existing projects and user input
+def grid_project_name():
+    # set vars
+    global var_project_name
+    global ent_project_name
+
+    # remove all project name widgets
+    project_name_widgets = [*req_params.grid_slaves(row_project_name, 0), *req_params.grid_slaves(row_project_name, 1)]
+    for widget in project_name_widgets:
+        widget.grid_forget()
+
+    # check if any existing projects
+    dpd_project_name_options = sorted([o for o in os.listdir(var_results_dir.get()) if os.path.isdir(os.path.join(var_results_dir.get(), o))])
+
+    # shared label widget
+    lbl_project_name_txt = "Project name"
+    lbl_project_name = tk.Label(req_params, text=lbl_project_name_txt, pady=2, width=1, anchor="w")
+    lbl_project_name.grid(row=row_project_name, sticky='nesw')
+
+    # if existing projects: dropdown menu
+    if len(dpd_project_name_options) != 0:
+        dpd_project_name_options.append("<new project>")
+        dpd_project_name = OptionMenu(req_params, var_project_name, *dpd_project_name_options, command=swtich_dropdown_to_entry)
+        dpd_project_name.configure(width=1)
+        dpd_project_name.grid(row=row_project_name, column=1, sticky='nesw', padx=5)
+        var_project_name.set(dpd_project_name_options[0])
+
+    # if no existing projects: entry box
+    else:
+        ent_project_name.grid(row=row_project_name, column=1, sticky='nesw', padx=5)
+        var_project_name.set("")
+
+        # first time user will see this entry box
+        if ent_project_name.cget("fg") == "grey":
+            ent_project_name.insert(0, "E.g.: Tiger ID")
+            ent_project_name.bind("<FocusIn>", project_name_focus_in)
+
+# show entry box when user selected to add a new project from dropdown menu
+def swtich_dropdown_to_entry(self):
+    # set vars
+    global var_project_name
+    global ent_project_name
+
+    # remove all project name widgets
+    if self == "<new project>":
+        project_name_widgets = [*req_params.grid_slaves(row_project_name, 0), *req_params.grid_slaves(row_project_name, 1)]
+        for widget in project_name_widgets:
+            widget.grid_forget()
+
+        # add entry widget, label and button
+        lbl_project_name_txt = "Project name"
+        lbl_project_name = tk.Label(req_params, text=lbl_project_name_txt, pady=2, width=1, anchor="w")
+        lbl_project_name.grid(row=row_project_name, sticky='nesw')
+        var_project_name.set("")
+        ent_project_name.grid(row=row_project_name, column=1, sticky='nesw', padx=5)
+        ent_project_name.configure(fg="black")
+        btn_project_name = Button(req_params, text="x", command=grid_project_name)
+        btn_project_name.grid(row=row_project_name, column=0, sticky='e', padx=5)
+
+# create hyperlinks (thanks marvin from GitHub) 
+class HyperlinkManager:
+    def __init__(self, text):
+        self.text = text
+        self.text.tag_config("hyper", foreground="blue", underline=1)
+        self.text.tag_bind("hyper", "<Enter>", self._enter)
+        self.text.tag_bind("hyper", "<Leave>", self._leave)
+        self.text.tag_bind("hyper", "<Button-1>", self._click)
+        self.reset()
+
+    def reset(self):
+        self.links = {}
+
+    def add(self, action):
+        tag = "hyper-%d" % len(self.links)
+        self.links[tag] = action
+        return "hyper", tag
+
+    def _enter(self, event):
+        self.text.config(cursor="hand2")
+
+    def _leave(self, event):
+        self.text.config(cursor="")
+
+    def _click(self, event):
+        for tag in self.text.tag_names(CURRENT):
+            if tag[:6] == "hyper-":
+                self.links[tag]()
+                return
 
 # set cancel variable to true
 def cancel():
@@ -1582,7 +1791,33 @@ def enable_widgets(frame):
         if child.winfo_class() != "Labelframe":
             child.config(state=NORMAL)
 
-# show warning and toggle megadetector threshold option
+# toggle options to resume from existing training
+def toggle_train_type(self):
+    if var_train_type.get() == dpd_train_type_options[0]:
+        # start new training
+        for child in req_params.winfo_children():
+            child.config(state=NORMAL)
+        for child in adv_params.winfo_children():
+            child.config(state=NORMAL)
+        lbl_resume_checkpoint.grid_remove()
+        btn_resume_checkpoint.grid_remove()
+        dsp_resume_checkpoint.grid_remove()
+    if var_train_type.get() == dpd_train_type_options[1]:
+        # resume existing training
+        for child in req_params.winfo_children():
+            child.config(state=DISABLED)
+        for child in adv_params.winfo_children():
+            child.config(state=DISABLED)
+        lbl_train_type.config(state=NORMAL)
+        dpd_train_type.config(state=NORMAL)
+        lbl_resume_checkpoint.grid(row=row_resume_checkpoint, sticky='nesw', pady=2)
+        lbl_resume_checkpoint.config(state=NORMAL)
+        btn_resume_checkpoint.grid(row=row_resume_checkpoint, column=1, sticky='nesw', padx=5)
+        btn_resume_checkpoint.config(state=NORMAL)
+        dsp_resume_checkpoint.config(state=NORMAL)
+        var_resume_checkpoint_path.set("")
+
+# show warning and toggle model threshold option
 md_thresh_warning = True
 def toggle_md_thresh():
     global md_thresh_warning
@@ -1590,13 +1825,13 @@ def toggle_md_thresh():
         place_md_thresh()
     elif var_excl_detecs.get() and md_thresh_warning:
         md_thresh_warning = False
-        if mb.askyesno("Warning", "It is strongly advised to not exclude detections from the MegaDetector output file. "
+        if mb.askyesno("Warning", "It is strongly advised to not exclude detections from the model output file. "
                        "Only set the confidence threshold to a very small value if you really know what you're doing. "
-                       "The MegaDetector output should include just about everything that MegaDetector produces. If you,"
+                       "The model output should include just about everything that the model produces. If you,"
                        " because for some reason, want an extra-small output file, you would typically use a threshold of"
                        " 0.01 or 0.05.\n\nIf you want to use a threshold for post-processing features (visualization / "
                        "folder separation / cropping / annotation), please use the associated thresholds there.\n\nDo "
-                       "you still want to exclude detections from the MegaDetector output file?"):
+                       "you still want to exclude detections from the model output file?"):
             place_md_thresh()
         else:
             var_excl_detecs.set(False)
@@ -1614,17 +1849,26 @@ def abs_paths_warning():
                     " this option if you know what you are doing.")
         shown_abs_paths_warning = False
 
-# place megadetector threshold
+# place model threshold
 def place_md_thresh():    
-    lbl_md_thresh.grid(row=3, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-    scl_md_thresh.grid(row=3, column=1, sticky='e', padx=5)
-    dsp_md_thresh.grid(row=3, column=0, sticky='e', padx=5)
+    lbl_md_thresh.grid(row=row_md_thresh, sticky='nesw', pady=2)
+    scl_md_thresh.grid(row=row_md_thresh, column=1, sticky='ew', padx=10)
+    dsp_md_thresh.grid(row=row_md_thresh, column=0, sticky='e', padx=0)
 
-# remove megadetector threshold
+# remove model threshold
 def remove_md_thresh():
     lbl_md_thresh.grid_remove()
     scl_md_thresh.grid_remove()
     dsp_md_thresh.grid_remove()
+
+# toggle separation subframe
+def toggle_sep_frame():
+    if var_separate_files.get():
+        enable_widgets(sep_frame)
+        sep_frame.configure(fg='black')
+    else:
+        disable_widgets(sep_frame)
+        sep_frame.configure(fg='grey80')
 
 # toggle image subframe
 def toggle_img_frame():
@@ -1693,6 +1937,10 @@ def enable_frame(frame):
         img_frame.configure(relief = 'solid')
         toggle_vid_frame()
         vid_frame.configure(relief = 'solid')
+    if frame.cget('text').startswith(' Step 3'):
+        # trd_step only
+        toggle_sep_frame()
+        sep_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
 def uncomplete_frame(frame):
@@ -1722,7 +1970,12 @@ def disable_frame(frame):
         disable_widgets(vid_frame)
         vid_frame.configure(fg='grey80')
         vid_frame.configure(relief = 'flat')
-
+    if frame.cget('text').startswith(' Step 3'):
+        # trd_step only
+        disable_widgets(sep_frame)
+        sep_frame.configure(fg='grey80')
+        sep_frame.configure(relief = 'flat')
+    
 # check if checkpoint is present and set checkbox accordingly
 def disable_chb_cont_checkpnt():
     if var_cont_checkpnt.get():
@@ -1732,148 +1985,7 @@ def disable_chb_cont_checkpnt():
 def set_minsize_rows(frame):
     row_count = frame.grid_size()[1]
     for row in range(row_count):
-        frame.grid_rowconfigure(row, minsize=minsize_all_rows)
-
-# check if steps are completed already
-def check_which_frames_are_completed():
-    # start fresh
-    fst_step_completed = False
-    snd_step_completed = False
-    sep_frame_completed = False
-    vis_frame_completed = False
-    crp_frame_completed = False
-    xml_frame_completed = False
-    
-    # set json paths
-    image_recognition_file = os.path.join(var_choose_folder.get(), "image_recognition_file.json")
-    video_recognition_file = os.path.join(var_choose_folder.get(), "video_recognition_file.json")
-    
-    # is folder specified?
-    if os.path.isdir(var_choose_folder.get()):
-        fst_step_completed = True
-    
-    # is a json file present?
-    if fst_step_completed:
-        if os.path.isfile(image_recognition_file) or os.path.isfile(video_recognition_file):
-            snd_step_completed = True
-    
-    # check other vars in image json file since they depend on json file
-    if fst_step_completed:
-        if os.path.isfile(image_recognition_file):
-            # get them from image json if present
-            with open(image_recognition_file, "r") as json_file:
-                data = json.load(json_file)
-            sep_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['sep_frame_completed']
-            vis_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['vis_frame_completed']
-            crp_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['crp_frame_completed']
-            xml_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['xml_frame_completed']
-        elif os.path.isfile(video_recognition_file):
-            # otherwise from video json
-            with open(video_recognition_file, "r") as json_file:
-                data = json.load(json_file)
-            sep_frame_completed = data['info']['ecoassist_metadata']['frame_completion_info']['sep_frame_completed']
-    
-    # return results
-    return [fst_step_completed,
-            snd_step_completed,
-            sep_frame_completed,
-            vis_frame_completed,
-            crp_frame_completed,
-            xml_frame_completed]
-
-# start with a fresh screen and update all frames from there (the long way)
-def reset_frame_states():
-    # fetch bools
-    fst_step_completed, \
-        snd_step_completed, \
-            sep_frame_completed, \
-                vis_frame_completed, \
-                    crp_frame_completed, \
-                        xml_frame_completed \
-                            = check_which_frames_are_completed()
-    
-    # always start with this ...
-    enable_frame(fst_step)
-    disable_frame(snd_step)
-    disable_frame(trd_step)
-    disable_frame(sep_frame)
-    disable_frame(vis_frame)
-    disable_frame(crp_frame)
-    disable_frame(xml_frame)
-       
-    # ... and adjust frame states accordingly
-    if fst_step_completed:
-        complete_frame(fst_step)
-        enable_frame(snd_step)
-    if snd_step_completed:
-        complete_frame(snd_step)
-        enable_frame(trd_step)
-        enable_frame(sep_frame)
-        enable_frame(vis_frame)
-        enable_frame(crp_frame)
-        enable_frame(xml_frame)
-    if sep_frame_completed:
-        complete_frame(sep_frame)
-    if vis_frame_completed:
-        complete_frame(vis_frame)
-    if crp_frame_completed:
-        complete_frame(crp_frame)
-    if xml_frame_completed:
-        complete_frame(xml_frame)
-    if all([sep_frame_completed,
-            vis_frame_completed,
-            crp_frame_completed,
-            xml_frame_completed]):
-        trd_step.configure(fg='green3')
-        trd_step.configure(relief = 'groove')
-
-# update only the next step or frame (the short way)
-def update_frame_states():
-    # fetch bools
-    fst_step_completed, \
-        snd_step_completed, \
-            sep_frame_completed, \
-                vis_frame_completed, \
-                    crp_frame_completed, \
-                        xml_frame_completed \
-                            = check_which_frames_are_completed()
-    
-    # update screen based on these bools
-    if fst_step_completed and not any([snd_step_completed,
-                                       sep_frame_completed,
-                                       vis_frame_completed,
-                                       crp_frame_completed,
-                                       xml_frame_completed]):
-        # only step 1 completed ...
-        complete_frame(fst_step)
-        enable_frame(snd_step)
-    elif fst_step_completed and snd_step_completed and not any([sep_frame_completed,
-                                                                vis_frame_completed,
-                                                                crp_frame_completed,
-                                                                xml_frame_completed]):
-        # ... now also step 2 completed ...
-        complete_frame(snd_step)
-        enable_frame(trd_step)
-        enable_frame(sep_frame)
-        enable_frame(vis_frame)
-        enable_frame(crp_frame)
-        enable_frame(xml_frame)
-    else:
-        # ... now we are at the post-processing features
-        if xml_frame_completed:
-            complete_frame(xml_frame)
-        if crp_frame_completed:
-            complete_frame(crp_frame)
-        if vis_frame_completed:
-            complete_frame(vis_frame)
-        if sep_frame_completed:
-            complete_frame(sep_frame)
-        if all([sep_frame_completed,
-                vis_frame_completed,
-                crp_frame_completed,
-                xml_frame_completed]):
-                trd_step.configure(fg='green3')
-                trd_step.configure(relief = 'groove')
+        frame.grid_rowconfigure(row, minsize=minsize_rows)
 
 # toggle state of checkpoint frequency
 def toggle_checkpoint_freq():
@@ -1893,26 +2005,117 @@ def toggle_nth_frame():
         lbl_nth_frame.config(state=DISABLED)
         ent_nth_frame.config(state=DISABLED)
 
-# entry boxes event focus in
+# toggle hyperparameter evolution
+def toggle_n_evolutions():
+    mb.showwarning("Warning", "Note that evolution is generally expensive and time consuming, as the base scenario is trained hundreds of times."
+                              " Be aware that it can take weeks or months to finish.")
+    if var_evolve.get():
+        lbl_n_generations.grid(row=row_n_generations, sticky='nesw')
+        ent_n_generations.grid(row=row_n_generations, column=1, sticky='nesw', padx=5)
+    else:
+        lbl_n_generations.grid_forget()
+        ent_n_generations.grid_forget()
+
+# functions to delete the grey text in the entry boxes for the...
+# ... checkpoint frequency
+checkpoint_freq_init = True
 def checkpoint_freq_focus_in(_):
-    ent_checkpoint_freq.delete(0, tk.END)
-    ent_checkpoint_freq.config(fg='black')
+    global checkpoint_freq_init
+    if checkpoint_freq_init:
+        ent_checkpoint_freq.delete(0, tk.END)
+        ent_checkpoint_freq.config(fg='black')
+    checkpoint_freq_init = False
+
+# ... nth frame
+nth_frame_init = True
 def nth_frame_focus_in(_):
-    ent_nth_frame.delete(0, tk.END)
-    ent_nth_frame.config(fg='black')
+    global nth_frame_init
+    if nth_frame_init:
+        ent_nth_frame.delete(0, tk.END)
+        ent_nth_frame.config(fg='black')
+    nth_frame_init = False
 
-# entry boxes event focus out
-def checkpoint_freq_focus_out(_):
-    root.focus()
-def nth_frame_focus_out(_):
-    root.focus()
+# ... project name
+project_name_init = True
+def project_name_focus_in(_):
+    global project_name_init
+    if project_name_init:
+        ent_project_name.delete(0, tk.END)
+        ent_project_name.config(fg='black')
+    project_name_init = False
 
-# entry boxes event press enter
-def checkpoint_freq_enter(txt):
-    root.focus()
-def nth_frame_enter(txt):
-    root.focus()
+# ... run name
+run_name_init = True
+def run_name_focus_in(_):
+    global run_name_init
+    if run_name_init:
+        ent_run_name.delete(0, tk.END)
+        ent_run_name.config(fg='black')
+    run_name_init = False
+
+# ... number of epochs
+n_epochs_init = True
+def n_epochs_focus_in(_):
+    global n_epochs_init
+    if n_epochs_init:
+        ent_n_epochs.delete(0, tk.END)
+        ent_n_epochs.config(fg='black')
+    n_epochs_init = False
+
+# ... number of layers to freeze
+n_freeze_layers_init = True
+def n_freeze_layers_focus_in(_):
+    global n_freeze_layers_init
+    if n_freeze_layers_init:
+        ent_n_freeze_layers.delete(0, tk.END)
+        ent_n_freeze_layers.config(fg='black')
+    n_freeze_layers_init = False
+
+# ... batch size
+batch_size_init = True
+def batch_size_focus_in(_):
+    global batch_size_init
+    if batch_size_init:
+        ent_batch_size.delete(0, tk.END)
+        ent_batch_size.config(fg='black')
+    batch_size_init = False
+
+# ... number of generations
+n_generations_init = True
+def n_generations_focus_in(_):
+    global n_generations_init
+    if n_generations_init:
+        ent_n_generations.delete(0, tk.END)
+        ent_n_generations.config(fg='black')
+    n_generations_init = False
+
+# ... image size
+img_size_init = True
+def img_size_focus_in(_):
+    global img_size_init
+    if img_size_init:
+        ent_img_size.delete(0, tk.END)
+        ent_img_size.config(fg='black')
+    img_size_init = False
+
+# ... annotation classes
+annot_classes_init = True
+def annot_classes_focus_in(_):
+    global annot_classes_init
+    if annot_classes_init:
+        ent_annot_classes.delete(0, tk.END)
+        ent_annot_classes.config(fg='black')
+    annot_classes_init = False
     
+# ... n dataloader workers
+n_workers_init = True
+def n_workers_focus_in(_):
+    global n_workers_init
+    if n_workers_init:
+        ent_n_workers.delete(0, tk.END)
+        ent_n_workers.config(fg='black')
+    n_workers_init = False
+
 ##########################################
 ############# TKINTER WINDOW #############
 ##########################################
@@ -1921,48 +2124,33 @@ def nth_frame_enter(txt):
 if os.name == "nt": # windows
     text_font = "TkDefaultFont"
     resize_img_factor = 0.95
-    textbox_height_adjustment_factor = 0.65
-    textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.83
-    pady_of_labels_and_widgets_factor = 0.5
-    slider_width_pixels = 10
-    first_level_frame_font_size = 15
-    second_level_frame_font_size = 13
-    first_level_frame_column_0_min_size = 350
-    first_level_frame_column_1_min_size = 0
-    second_level_frame_column_0_min_size = 350
-    second_level_frame_column_1_min_size = 0
-    minsize_all_rows = 28
+    first_level_frame_font_size = 13
+    second_level_frame_font_size = 11
+    label_width = 320
+    widget_width = 150
+    frame_width = label_width + widget_width + 50
+    minsize_rows = 28
 elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
-    textbox_height_adjustment_factor = 0.85
-    textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 0.7
-    pady_of_labels_and_widgets_factor = 0.5
-    slider_width_pixels = 10
     first_level_frame_font_size = 15
     second_level_frame_font_size = 13
-    first_level_frame_column_0_min_size = 350
-    first_level_frame_column_1_min_size = 0
-    second_level_frame_column_0_min_size = 350
-    second_level_frame_column_1_min_size = 0
-    minsize_all_rows = 28
+    label_width = 330
+    widget_width = 160
+    frame_width = label_width + widget_width + 50
+    minsize_rows = 28
 else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
-    textbox_height_adjustment_factor = 0.8
-    textbox_width_adjustment_factor = 1
     text_size_adjustment_factor = 1
-    pady_of_labels_and_widgets_factor = 0.5
-    slider_width_pixels = 10
     first_level_frame_font_size = 15
     second_level_frame_font_size = 13
-    first_level_frame_column_0_min_size = 350
-    first_level_frame_column_1_min_size = 120
-    second_level_frame_column_0_min_size = 350
-    second_level_frame_column_1_min_size = 120
-    minsize_all_rows = 28
+    label_width = 320
+    widget_width = 150
+    frame_width = label_width + widget_width + 50
+    minsize_rows = 28
 
 # tkinter main window
 root = Tk()
@@ -1974,7 +2162,6 @@ tabControl = ttk.Notebook(root)
 # prepare logo
 logo_path = os.path.join(EcoAssist_files,'EcoAssist', 'imgs', 'logo.png')
 logo = Image.open(logo_path)
-logo = logo.resize((int(logo.size[0] / 3), int(logo.size[1] / 3)), Image.Resampling.LANCZOS)
 white_bg_logo = Image.new("RGBA", logo.size, "WHITE")
 white_bg_logo.paste(logo, (0, 0), logo)
 white_bg_logo.convert('RGB')
@@ -2038,329 +2225,707 @@ check_mark_two_rows = check_mark.resize((45, 45), Image.Resampling.LANCZOS)
 check_mark_two_rows = ImageTk.PhotoImage(check_mark_two_rows)
 
 # tabs
-param_tab = ttk.Frame(tabControl)
-param_tab.columnconfigure(0, weight=1, minsize=500)
-param_tab.columnconfigure(1, weight=1, minsize=500)
+deploy_tab = ttk.Frame(tabControl)
+deploy_tab.columnconfigure(0, weight=1, minsize=frame_width)
+deploy_tab.columnconfigure(1, weight=1, minsize=frame_width)
+train_tab = ttk.Frame(tabControl)
+train_tab.columnconfigure(0, weight=1, minsize=frame_width)
+train_tab.columnconfigure(1, weight=1, minsize=frame_width)
+annotate_tab = ttk.Frame(tabControl)
+annotate_tab.columnconfigure(0, weight=1, minsize=frame_width)
+annotate_tab.columnconfigure(1, weight=1, minsize=frame_width)
 help_tab = ttk.Frame(tabControl)
 about_tab = ttk.Frame(tabControl)
-tabControl.add(param_tab, text='Parameters')
+tabControl.add(deploy_tab, text='Deploy')
+tabControl.add(train_tab, text='Train')
+tabControl.add(annotate_tab, text='Annotate')
 tabControl.add(help_tab, text='Help')
 tabControl.add(about_tab, text='About')
 tabControl.grid()
 
-#### parameter tab
+#### deploy tab
 ### first step
 fst_step_txt = "Step 1: Choose folder to analyse"
-fst_step = LabelFrame(param_tab, text=" " + fst_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+row_fst_step = 1
+fst_step = LabelFrame(deploy_tab, text=" " + fst_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 fst_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
-fst_step.grid(column=0, row=1, columnspan=2, sticky='ew')
+fst_step.grid(column=0, row=row_fst_step, columnspan=2, sticky='ew')
 
 # choose folder
+row_choose_folder = 0
 var_choose_folder = StringVar()
 var_choose_folder_short = StringVar()
 dsp_choose_folder = Label(master=fst_step, textvariable=var_choose_folder_short)
-btn_choose_folder = Button(master=fst_step, text="Browse", command=browse_dir_button)
-btn_choose_folder.grid(row=0, column=0, sticky='w', padx=5)
+btn_choose_folder = Button(master=fst_step, text="Browse", command=lambda: [browse_dir(var_choose_folder, var_choose_folder_short, dsp_choose_folder, 100, row_choose_folder, 1, 'w'), complete_frame(fst_step), update_frame_states()])
+btn_choose_folder.grid(row=row_choose_folder, column=0, sticky='w', padx=5)
 
 ### second step
-snd_step_txt = "Step 2: Run MegaDetector"
-snd_step = LabelFrame(param_tab, text=" " + snd_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+snd_step_txt = "Step 2: Run model"
+row_snd_step = 2
+snd_step = LabelFrame(deploy_tab, text=" " + snd_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 snd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
-snd_step.grid(column=0, row=2, sticky='nesw')
-snd_step.columnconfigure(0, weight=1, minsize=first_level_frame_column_0_min_size)
-snd_step.columnconfigure(1, weight=1, minsize=first_level_frame_column_1_min_size)
+snd_step.grid(column=0, row=row_snd_step, sticky='nesw')
+snd_step.columnconfigure(0, weight=1, minsize=label_width)
+snd_step.columnconfigure(1, weight=1, minsize=widget_width)
 
 # choose model
 lbl_model_txt = "Model"
-lbl_model = Label(master=snd_step, text=lbl_model_txt)
-lbl_model.grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-dpd_options_model = ["MDv5a", "MDv5b", "Custom"]
+row_model = 0
+lbl_model = Label(master=snd_step, text=lbl_model_txt, width=1, anchor="w")
+lbl_model.grid(row=row_model, sticky='nesw', pady=2)
+dpd_options_model = ["MegaDetector 5a", "MegaDetector 5b", "Custom model"]
 var_model = StringVar(snd_step)
 var_model.set(dpd_options_model[0])
 var_model_short = StringVar()
+var_model_path = StringVar()
 dpd_model = OptionMenu(snd_step, var_model, *dpd_options_model, command=model_options)
-dpd_model.config(width=5)
-dpd_model.grid(row=0, column=1, sticky='e', padx=5)
+dpd_model.configure(width=1)
+dpd_model.grid(row=row_model, column=1, sticky='nesw', padx=5)
 dsp_model = Label(master=snd_step, textvariable=var_model_short, fg='darkred')
 
 # include subdirectories
 lbl_exclude_subs_txt = "Don't process subdirectories"
-lbl_exclude_subs = Label(snd_step, text=lbl_exclude_subs_txt)
-lbl_exclude_subs.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_exclude_subs = 1
+lbl_exclude_subs = Label(snd_step, text=lbl_exclude_subs_txt, width=1, anchor="w")
+lbl_exclude_subs.grid(row=row_exclude_subs, sticky='nesw', pady=2)
 var_exclude_subs = BooleanVar()
 var_exclude_subs.set(False)
-chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs)
-chb_exclude_subs.grid(row=1, column=1, sticky='e', padx=5)
+chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w")
+chb_exclude_subs.grid(row=row_exclude_subs, column=1, sticky='nesw', padx=5)
 
 # limit detections
 lbl_excl_detecs_txt = "Exclude detections from output file"
-lbl_excl_detecs = Label(snd_step, text=lbl_excl_detecs_txt)
-lbl_excl_detecs.grid(row=2, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_excl_detecs = 2
+lbl_excl_detecs = Label(snd_step, text=lbl_excl_detecs_txt, width=1, anchor="w")
+lbl_excl_detecs.grid(row=row_excl_detecs, sticky='nesw', pady=2)
 var_excl_detecs = BooleanVar()
 var_excl_detecs.set(False)
-chb_excl_detecs = Checkbutton(snd_step, variable=var_excl_detecs, command=toggle_md_thresh)
-chb_excl_detecs.grid(row=2, column=1, sticky='e', padx=5)
+chb_excl_detecs = Checkbutton(snd_step, variable=var_excl_detecs, command=toggle_md_thresh, anchor="w")
+chb_excl_detecs.grid(row=row_excl_detecs, column=1, sticky='nesw', padx=5)
 
-# threshold for megadetector (not grid by deafult)
+# threshold for model deploy (not grid by deafult)
 lbl_md_thresh_txt = "Confidence threshold"
-lbl_md_thresh = Label(snd_step, text=" ↳ " + lbl_md_thresh_txt)
+row_md_thresh = 3
+lbl_md_thresh = Label(snd_step, text=" ↳ " + lbl_md_thresh_txt, width=1, anchor="w")
 var_md_thresh = DoubleVar()
 var_md_thresh.set(0.01)
-scl_md_thresh = Scale(snd_step, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, length=120, variable=var_md_thresh, showvalue=0, width=slider_width_pixels)
+scl_md_thresh = Scale(snd_step, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, variable=var_md_thresh, showvalue=0, width=10, length=1)
 dsp_md_thresh = Label(snd_step, textvariable=var_md_thresh)
 dsp_md_thresh.config(fg="darkred")
 
 # use absolute paths
 lbl_abs_paths_txt = "Use absolute paths in output file"
-lbl_abs_paths = Label(snd_step, text=lbl_abs_paths_txt)
-lbl_abs_paths.grid(row=4, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_abs_path = 4
+lbl_abs_paths = Label(snd_step, text=lbl_abs_paths_txt, width=1, anchor="w")
+lbl_abs_paths.grid(row=row_abs_path, sticky='nesw', pady=2)
 var_abs_paths = BooleanVar()
 var_abs_paths.set(False)
-chb_abs_paths = Checkbutton(snd_step, variable=var_abs_paths, command=abs_paths_warning)
-chb_abs_paths.grid(row=4, column=1, sticky='e', padx=5)
+chb_abs_paths = Checkbutton(snd_step, variable=var_abs_paths, command=abs_paths_warning, anchor="w")
+chb_abs_paths.grid(row=row_abs_path, column=1, sticky='nesw', padx=5)
 
 # process images
 lbl_process_img_txt = "Process all images in the folder specified"
-lbl_process_img = Label(snd_step, text=lbl_process_img_txt)
-lbl_process_img.grid(row=5, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_process_img = 5
+lbl_process_img = Label(snd_step, text=lbl_process_img_txt, width=1, anchor="w")
+lbl_process_img.grid(row=row_process_img, sticky='nesw', pady=2)
 var_process_img = BooleanVar()
 var_process_img.set(False)
-chb_process_img = Checkbutton(snd_step, variable=var_process_img, command=toggle_img_frame, anchor="e")
-chb_process_img.grid(row=5, column=1, sticky='e', padx=5)
+chb_process_img = Checkbutton(snd_step, variable=var_process_img, command=toggle_img_frame, anchor="w")
+chb_process_img.grid(row=row_process_img, column=1, sticky='nesw', padx=5)
 
 ## image option frame (dsiabled by default)
 img_frame_txt = "Image options"
+img_frame_row = 6
 img_frame = LabelFrame(snd_step, text=" ↳ " + img_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 img_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-img_frame.grid(row=6, column=0, columnspan=2, sticky = 'ew')
-img_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-img_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+img_frame.grid(row=img_frame_row, column=0, columnspan=2, sticky = 'ew')
+img_frame.columnconfigure(0, weight=1, minsize=label_width)
+img_frame.columnconfigure(1, weight=1, minsize=widget_width)
 
 # use checkpoints
 lbl_use_checkpnts_txt = "Use checkpoints while running"
-lbl_use_checkpnts = Label(img_frame, text="    " + lbl_use_checkpnts_txt, pady=round(5*pady_of_labels_and_widgets_factor), state=DISABLED)
-lbl_use_checkpnts.grid(row=0, sticky='w')
+row_use_checkpnts = 0
+lbl_use_checkpnts = Label(img_frame, text="     " + lbl_use_checkpnts_txt, pady=2, state=DISABLED, width=1, anchor="w")
+lbl_use_checkpnts.grid(row=row_use_checkpnts, sticky='nesw')
 var_use_checkpnts = BooleanVar()
 var_use_checkpnts.set(False)
-chb_use_checkpnts = Checkbutton(img_frame, variable=var_use_checkpnts, command=toggle_checkpoint_freq, state=DISABLED)
-chb_use_checkpnts.grid(row=0, column=1, sticky='e', padx=5)
+chb_use_checkpnts = Checkbutton(img_frame, variable=var_use_checkpnts, command=toggle_checkpoint_freq, state=DISABLED, anchor="w")
+chb_use_checkpnts.grid(row=row_use_checkpnts, column=1, sticky='nesw', padx=5)
 
 # checkpoint frequency
 lbl_checkpoint_freq_txt = "Checkpoint frequency"
-lbl_checkpoint_freq = tk.Label(img_frame, text="       ↳ " + lbl_checkpoint_freq_txt, pady=round(5*pady_of_labels_and_widgets_factor), state=DISABLED)
-lbl_checkpoint_freq.grid(row=1, sticky='w')
+row_checkpoint_freq = 1
+lbl_checkpoint_freq = tk.Label(img_frame, text="        ↳ " + lbl_checkpoint_freq_txt, pady=2, state=DISABLED, width=1, anchor="w")
+lbl_checkpoint_freq.grid(row=row_checkpoint_freq, sticky='nesw')
 var_checkpoint_freq = StringVar()
-ent_checkpoint_freq = tk.Entry(img_frame, width=9, textvariable=var_checkpoint_freq, fg='grey', state=NORMAL)
-ent_checkpoint_freq.grid(row=1, column=1, sticky='e', padx=5)
+ent_checkpoint_freq = tk.Entry(img_frame, textvariable=var_checkpoint_freq, fg='grey', state=NORMAL, width=1)
+ent_checkpoint_freq.grid(row=row_checkpoint_freq, column=1, sticky='nesw', padx=5)
 ent_checkpoint_freq.insert(0, "E.g.: 100")
 ent_checkpoint_freq.bind("<FocusIn>", checkpoint_freq_focus_in)
-ent_checkpoint_freq.bind("<FocusOut>", checkpoint_freq_focus_out)
-ent_checkpoint_freq.bind("<Return>", checkpoint_freq_enter)
 ent_checkpoint_freq.config(state=DISABLED)
 
 # continue from checkpoint file
-lbl_cont_checkpnt_txt = "Continue from last checkpoint file onwards"
-lbl_cont_checkpnt = Label(img_frame, text="    " + lbl_cont_checkpnt_txt, pady=round(5*pady_of_labels_and_widgets_factor), state=DISABLED)
-lbl_cont_checkpnt.grid(row=2, sticky='w')
+lbl_cont_checkpnt_txt = "Continue from last checkpoint file"
+row_cont_checkpnt = 2
+lbl_cont_checkpnt = Label(img_frame, text="     " + lbl_cont_checkpnt_txt, pady=2, state=DISABLED, width=1, anchor="w")
+lbl_cont_checkpnt.grid(row=row_cont_checkpnt, sticky='nesw')
 var_cont_checkpnt = BooleanVar()
 var_cont_checkpnt.set(False)
-chb_cont_checkpnt = Checkbutton(img_frame, variable=var_cont_checkpnt, state=DISABLED, command=disable_chb_cont_checkpnt)
-chb_cont_checkpnt.grid(row=2, column=1, sticky='e', padx=5)
+chb_cont_checkpnt = Checkbutton(img_frame, variable=var_cont_checkpnt, state=DISABLED, command=disable_chb_cont_checkpnt, anchor="w")
+chb_cont_checkpnt.grid(row=row_cont_checkpnt, column=1, sticky='nesw', padx=5)
 
 # process videos
 lbl_process_vid_txt = "Process all videos in the folder specified"
-lbl_process_vid = Label(snd_step, text=lbl_process_vid_txt)
-lbl_process_vid.grid(row=7, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_process_vid = 7
+lbl_process_vid = Label(snd_step, text=lbl_process_vid_txt, width=1, anchor="w")
+lbl_process_vid.grid(row=row_process_vid, sticky='nesw', pady=2)
 var_process_vid = BooleanVar()
 var_process_vid.set(False)
-chb_process_vid = Checkbutton(snd_step, variable=var_process_vid, command=toggle_vid_frame)
-chb_process_vid.grid(row=7, column=1, sticky='e', padx=5)
+chb_process_vid = Checkbutton(snd_step, variable=var_process_vid, command=toggle_vid_frame, anchor="w")
+chb_process_vid.grid(row=row_process_vid, column=1, sticky='nesw', padx=5)
 
 ## video option frame (disabled by default)
 vid_frame_txt = "Video options"
+vid_frame_row = 8
 vid_frame = LabelFrame(snd_step, text=" ↳ " + vid_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 vid_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-vid_frame.grid(row=8, column=0, columnspan=2, sticky='ew')
-vid_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-vid_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+vid_frame.grid(row=vid_frame_row, column=0, columnspan=2, sticky='ew')
+vid_frame.columnconfigure(0, weight=1, minsize=label_width)
+vid_frame.columnconfigure(1, weight=1, minsize=widget_width)
 
 # dont process all frames
 lbl_not_all_frames_txt = "Don't process every frame"
-lbl_not_all_frames = Label(vid_frame, text="    " + lbl_not_all_frames_txt, pady=round(5*pady_of_labels_and_widgets_factor), state=DISABLED)
-lbl_not_all_frames.grid(row=0, sticky='w')
+row_not_all_frames = 0
+lbl_not_all_frames = Label(vid_frame, text="     " + lbl_not_all_frames_txt, pady=2, state=DISABLED, width=1, anchor="w")
+lbl_not_all_frames.grid(row=row_not_all_frames, sticky='nesw')
 var_not_all_frames = BooleanVar()
 var_not_all_frames.set(False)
-chb_not_all_frames = Checkbutton(vid_frame, variable=var_not_all_frames, command=toggle_nth_frame, state=DISABLED)
-chb_not_all_frames.grid(row=0, column=1, sticky='e', padx=5)
+chb_not_all_frames = Checkbutton(vid_frame, variable=var_not_all_frames, command=toggle_nth_frame, state=DISABLED, anchor="w")
+chb_not_all_frames.grid(row=row_not_all_frames, column=1, sticky='nesw', padx=5)
 
 # process every nth frame
 lbl_nth_frame_txt = "Analyse every Nth frame"
-lbl_nth_frame = tk.Label(vid_frame, text="       ↳ " + lbl_nth_frame_txt, pady=round(5*pady_of_labels_and_widgets_factor), state=DISABLED)
-lbl_nth_frame.grid(row=1, sticky='w')
+row_nth_frame = 1
+lbl_nth_frame = tk.Label(vid_frame, text="        ↳ " + lbl_nth_frame_txt, pady=2, state=DISABLED, width=1, anchor="w")
+lbl_nth_frame.grid(row=row_nth_frame, sticky='nesw')
 var_nth_frame = StringVar()
-ent_nth_frame = tk.Entry(vid_frame, width=9, textvariable=var_nth_frame, fg='grey', state=NORMAL)
-ent_nth_frame.grid(row=1, column=1, sticky='e', padx=5)
+ent_nth_frame = tk.Entry(vid_frame, textvariable=var_nth_frame, fg='grey', state=NORMAL, width=1)
+ent_nth_frame.grid(row=row_nth_frame, column=1, sticky='nesw', padx=5)
 ent_nth_frame.insert(0, "E.g.: 10")
 ent_nth_frame.bind("<FocusIn>", nth_frame_focus_in)
-ent_nth_frame.bind("<FocusOut>", nth_frame_focus_out)
-ent_nth_frame.bind("<Return>", nth_frame_enter)
 ent_nth_frame.config(state=DISABLED)
 
-# button start MegaDetector
-btn_start_md = Button(snd_step, text="Process files", command=start_md)
-btn_start_md.grid(row=9, column=0, columnspan=2, sticky='ew')
+# button start deploy
+row_btn_start_deploy = 9
+btn_start_deploy = Button(snd_step, text="Deploy model", command=start_deploy)
+btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='ew')
 
 ### third step
 trd_step_txt = "Step 3: Post-processing (optional)"
-trd_step = LabelFrame(param_tab, text=" " + trd_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+trd_step_row = 2
+trd_step = LabelFrame(deploy_tab, text=" " + trd_step_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 trd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
-trd_step.grid(column=1, row=2, sticky='nesw')
-trd_step.columnconfigure(0, weight=1, minsize=first_level_frame_column_0_min_size)
-trd_step.columnconfigure(1, weight=1, minsize=first_level_frame_column_1_min_size)
+trd_step.grid(column=1, row=trd_step_row, sticky='nesw')
+trd_step.columnconfigure(0, weight=1, minsize=label_width)
+trd_step.columnconfigure(1, weight=1, minsize=widget_width)
+
+# folder for results
+lbl_output_dir_txt = "Destination folder"
+row_output_dir = 0
+lbl_output_dir = Label(master=trd_step, text=lbl_output_dir_txt, width=1, anchor="w")
+lbl_output_dir.grid(row=row_output_dir, sticky='nesw', pady=2)
+var_output_dir = StringVar()
+var_output_dir.set("")
+var_output_dir_short = StringVar()
+dsp_output_dir = Label(master=trd_step, textvariable=var_output_dir_short, fg='darkred')
+btn_output_dir = Button(master=trd_step, text="Browse", width=1, command=lambda: browse_dir(var_output_dir, var_output_dir_short, dsp_output_dir, 25, row_output_dir, 0, 'e'))
+btn_output_dir.grid(row=row_output_dir, column=1, sticky='nesw', padx=5)
+
+# separate files
+lbl_separate_files_txt = "Separate files into subdirectories"
+row_separate_files = 1
+lbl_separate_files = Label(trd_step, text=lbl_separate_files_txt, width=1, anchor="w")
+lbl_separate_files.grid(row=row_separate_files, sticky='nesw', pady=2)
+var_separate_files = BooleanVar()
+var_separate_files.set(False)
+chb_separate_files = Checkbutton(trd_step, variable=var_separate_files, command=toggle_sep_frame, anchor="w")
+chb_separate_files.grid(row=row_separate_files, column=1, sticky='nesw', padx=5)
 
 ## separation frame
-sep_frame_txt = "Separate files into subdirectories based on detections"
-sep_frame = LabelFrame(trd_step, text=" " + sep_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1)
+sep_frame_txt = "Separation options"
+sep_frame_row = 2
+sep_frame = LabelFrame(trd_step, text=" ↳ " + sep_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 sep_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-sep_frame.grid(column=0, row=0, columnspan=2, sticky='ew')
-sep_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-sep_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+sep_frame.grid(row=sep_frame_row, column=0, columnspan=2, sticky = 'ew')
+sep_frame.columnconfigure(0, weight=1, minsize=label_width)
+sep_frame.columnconfigure(1, weight=1, minsize=widget_width)
 
-# method of file placement
+# # method of file placement
 lbl_file_placement_txt = "Method of file placement"
-lbl_file_placement = Label(sep_frame, text=lbl_file_placement_txt, pady=round(5*pady_of_labels_and_widgets_factor))
-lbl_file_placement.grid(row=0, sticky='w')
+row_file_placement = 0
+lbl_file_placement = Label(sep_frame, text="     " + lbl_file_placement_txt, pady=2, width=1, anchor="w")
+lbl_file_placement.grid(row=row_file_placement, sticky='nesw')
 var_file_placement = IntVar()
 var_file_placement.set(2)
 rad_file_placement_move = Radiobutton(sep_frame, text="Copy", variable=var_file_placement, value=2)
-rad_file_placement_move.grid(row=0, column=1, sticky='w', padx=5)
+rad_file_placement_move.grid(row=row_file_placement, column=1, sticky='w', padx=5)
 rad_file_placement_copy = Radiobutton(sep_frame, text="Move", variable=var_file_placement, value=1)
-rad_file_placement_copy.grid(row=0, column=1, sticky='e', padx=5)
+rad_file_placement_copy.grid(row=row_file_placement, column=1, sticky='e', padx=5)
 
 # separate per confidence
 lbl_sep_conf_txt = "Sort results based on confidence"
-lbl_sep_conf = Label(sep_frame, text=lbl_sep_conf_txt)
-lbl_sep_conf.grid(row=1, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
+row_sep_conf = 1
+lbl_sep_conf = Label(sep_frame, text="     " + lbl_sep_conf_txt, width=1, anchor="w")
+lbl_sep_conf.grid(row=row_sep_conf, sticky='nesw', pady=2)
 var_sep_conf = BooleanVar()
-var_sep_conf.set(True)
-chb_sep_conf = Checkbutton(sep_frame, variable=var_sep_conf, anchor="e")
-chb_sep_conf.grid(row=1, column=1, sticky='e', padx=5)
+var_sep_conf.set(False)
+chb_sep_conf = Checkbutton(sep_frame, variable=var_sep_conf, anchor="w")
+chb_sep_conf.grid(row=row_sep_conf, column=1, sticky='nesw', padx=5)
 
-# threshold for separation
-lbl_sep_thresh_txt = "Confidence threshold"
-lbl_sep_thresh = Label(sep_frame, text=lbl_sep_thresh_txt)
-lbl_sep_thresh.grid(row=2, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-var_sep_thresh = DoubleVar()
-var_sep_thresh.set(0.2)
-scl_sep_thresh = Scale(sep_frame, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, length=120, variable=var_sep_thresh, showvalue=0, width=slider_width_pixels)
-scl_sep_thresh.grid(row=2, column=1, sticky='e', padx=5)
-dsp_sep_thresh = Label(sep_frame, textvariable=var_sep_thresh)
-dsp_sep_thresh.config(fg="darkred")
-dsp_sep_thresh.grid(row=2, column=0, sticky='e', padx=5)
+## visualize images
+lbl_vis_files_txt = "Draw bounding boxes and confidences"
+row_vis_files = 3
+lbl_vis_files = Label(trd_step, text=lbl_vis_files_txt, width=1, anchor="w")
+lbl_vis_files.grid(row=row_vis_files, sticky='nesw', pady=2)
+var_vis_files = BooleanVar()
+var_vis_files.set(False)
+chb_vis_files = Checkbutton(trd_step, variable=var_vis_files, command=toggle_sep_frame, anchor="w")
+chb_vis_files.grid(row=row_vis_files, column=1, sticky='nesw', padx=5)
 
-# button start separation
-btn_start_sep = Button(sep_frame, text="Separate files", command=start_sep)
-btn_start_sep.grid(row=3, column=0, columnspan=2, sticky='ew')
+## crop images
+lbl_crp_files_txt = "Crop detections"
+row_crp_files = 4
+lbl_crp_files = Label(trd_step, text=lbl_crp_files_txt, width=1, anchor="w")
+lbl_crp_files.grid(row=row_crp_files, sticky='nesw', pady=2)
+var_crp_files = BooleanVar()
+var_crp_files.set(False)
+chb_crp_files = Checkbutton(trd_step, variable=var_crp_files, command=toggle_sep_frame, anchor="w")
+chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
 
-## visualization frame
-vis_frame_txt = "Draw boxes around the detections and show confidences"
-vis_frame = LabelFrame(trd_step, text=" " + vis_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1)
-vis_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-vis_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-vis_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-vis_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+# annotate images
+lbl_yol_files_txt = "Create annotations in YOLO format"
+row_yol_files = 5
+lbl_yol_files = Label(trd_step, text=lbl_yol_files_txt, width=1, anchor="w")
+lbl_yol_files.grid(row=row_yol_files, sticky='nesw', pady=2)
+var_yol_files = BooleanVar()
+var_yol_files.set(False)
+chb_yol_files = Checkbutton(trd_step, variable=var_yol_files, command=toggle_sep_frame, anchor="w")
+chb_yol_files.grid(row=row_yol_files, column=1, sticky='nesw', padx=5)
 
-# threshold for visualization
-lbl_vis_thresh_txt = "Confidence threshold"
-lbl_vis_thresh = Label(vis_frame, text=lbl_vis_thresh_txt)
-lbl_vis_thresh.grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-var_vis_thresh = DoubleVar()
-var_vis_thresh.set(0.2)
-scl_vis_thresh = Scale(vis_frame, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, length=120, variable=var_vis_thresh, showvalue=0, width=slider_width_pixels)
-scl_vis_thresh.grid(row=0, column=1, sticky='e', padx=5)
-dsp_vis_thresh = Label(vis_frame, textvariable=var_vis_thresh)
-dsp_vis_thresh.config(fg="darkred")
-dsp_vis_thresh.grid(row=0, column=0, sticky='e', padx=5)
+# create csv files
+lbl_csv_txt = "Export results in csv files"
+row_csv = 6
+lbl_csv = Label(trd_step, text=lbl_csv_txt, width=1, anchor="w")
+lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
+var_csv = BooleanVar()
+var_csv.set(False)
+chb_csv = Checkbutton(trd_step, variable=var_csv, command=toggle_sep_frame, anchor="w")
+chb_csv.grid(row=row_csv, column=1, sticky='nesw', padx=5)
 
-# button start visaration
-btn_start_vis = Button(vis_frame, text="Visualize files", command=start_vis)
-btn_start_vis.grid(row=1, column=0, columnspan=2, sticky='ew')
+# threshold
+lbl_thresh_txt = "Confidence threshold"
+row_lbl_thresh = 7
+lbl_thresh = Label(trd_step, text=lbl_thresh_txt, width=1, anchor="w")
+lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
+var_thresh = DoubleVar()
+var_thresh.set(0.2)
+scl_thresh = Scale(trd_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_thresh, showvalue=0, width=10, length=1)
+scl_thresh.grid(row=row_lbl_thresh, column=1, sticky='ew', padx=10)
+dsp_thresh = Label(trd_step, textvariable=var_thresh)
+dsp_thresh.config(fg="darkred")
+dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
-## crop frame
-crp_frame_txt = "Crop detections"
-crp_frame = LabelFrame(trd_step, text=" " + crp_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1)
-crp_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-crp_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
-crp_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-crp_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+# postprocessing button
+row_start_postprocess = 8
+btn_start_postprocess = Button(trd_step, text="Post-process files", command=start_postprocess)
+btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
-# threshold for cropping
-lbl_crp_thresh_txt = "Confidence threshold"
-lbl_crp_thresh = Label(crp_frame, text=lbl_crp_thresh_txt)
-lbl_crp_thresh.grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-var_crp_thresh = DoubleVar()
-var_crp_thresh.set(0.2)
-scl_crp_thresh = Scale(crp_frame, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, length=120, variable=var_crp_thresh, showvalue=0, width=slider_width_pixels)
-scl_crp_thresh.grid(row=0, column=1, sticky='e', padx=5)
-dsp_crp_thresh = Label(crp_frame, textvariable=var_crp_thresh)
-dsp_crp_thresh.config(fg="darkred")
-dsp_crp_thresh.grid(row=0, column=0, sticky='e', padx=5)
+#### train tab
+### required parameters
+req_params_txt = "Required parameters"
+req_params_row = 1
+req_params = LabelFrame(train_tab, text=" " + req_params_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+req_params.configure(font=(text_font, first_level_frame_font_size, "bold"))
+req_params.grid(column=0, row=req_params_row, sticky='nesw')
+req_params.columnconfigure(0, weight=1, minsize=label_width)
+req_params.columnconfigure(1, weight=1, minsize=widget_width)
 
-# button start cropping
-btn_start_crp = Button(crp_frame, text="Crop files", command=start_crp)
-btn_start_crp.grid(row=1, column=0, columnspan=2, sticky='ew')
+# train type
+lbl_train_type_txt = "Training type"
+row_train_type = 0
+lbl_train_type = Label(req_params, text=lbl_train_type_txt, pady=2, width=1, anchor="w")
+lbl_train_type.grid(row=row_train_type, sticky='nesw', pady=2)
+dpd_train_type_options = ["Start new training", "Resume existing"]
+var_train_type = StringVar(req_params)
+var_train_type.set(dpd_train_type_options[0])
+dpd_train_type = OptionMenu(req_params, var_train_type, *dpd_train_type_options, command=toggle_train_type)
+dpd_train_type.configure(width=1)
+dpd_train_type.grid(row=row_train_type, column=1, sticky='nesw', padx=5)
 
-## xml frame
-xml_frame_txt = "Create annotations in Pascal VOC format (.xml files)"
-xml_frame = LabelFrame(trd_step, text=" " + xml_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1)
-xml_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-xml_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
-xml_frame.columnconfigure(0, weight=1, minsize=second_level_frame_column_0_min_size)
-xml_frame.columnconfigure(1, weight=1, minsize=second_level_frame_column_1_min_size)
+# folder with annotated data
+lbl_annotated_data_txt = "Folder with labeled data"
+row_annotated_data = 1
+lbl_annotated_data = Label(master=req_params, text=lbl_annotated_data_txt, width=1, anchor="w")
+lbl_annotated_data.grid(row=row_annotated_data, sticky='nesw', pady=2)
+var_annotated_data = StringVar()
+var_annotated_data_short = StringVar()
+dsp_annotated_data = Label(master=req_params, textvariable=var_annotated_data_short, fg='darkred')
+btn_annotated_data = Button(master=req_params, text="Browse", width=1, command=lambda: browse_dir(var_annotated_data, var_annotated_data_short, dsp_annotated_data, 25, row_annotated_data, 0, 'e'))
+btn_annotated_data.grid(row=row_annotated_data, column=1, sticky='nesw', padx=5)
 
-# threshold for xml annotation
-lbl_xml_thresh_txt = "Confidence threshold"
-lbl_xml_thresh = Label(xml_frame, text=lbl_xml_thresh_txt)
-lbl_xml_thresh.grid(row=0, sticky='w', pady=round(5*pady_of_labels_and_widgets_factor))
-var_xml_thresh = DoubleVar()
-var_xml_thresh.set(0.2)
-scl_xml_thresh = Scale(xml_frame, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, length=120, variable=var_xml_thresh, showvalue=0, width=slider_width_pixels)
-scl_xml_thresh.grid(row=0, column=1, sticky='e', padx=5)
-dsp_xml_thresh = Label(xml_frame, textvariable=var_xml_thresh)
-dsp_xml_thresh.config(fg="darkred")
-dsp_xml_thresh.grid(row=0, column=0, sticky='e', padx=5)
+# transfer learning model
+lbl_learning_model_txt = "Retrain from"
+row_learning_model = 2
+lbl_learning_model = Label(req_params, text=lbl_learning_model_txt, pady=2, width=1, anchor="w")
+lbl_learning_model.grid(row=row_learning_model, sticky='nesw', pady=2)
+dpd_learning_model_options = ["MegaDetector 5a", "MegaDetector 5b", "YOLOv5 Nano", "YOLOv5 Small", "YOLOv5 Medium", "YOLOv5 Large", "YOLOv5 XLarge", "Custom model", "Scratch"]
+var_learning_model = StringVar(req_params)
+var_learning_model.set(dpd_learning_model_options[0])
+var_learning_model_short = StringVar()
+var_learning_model_path = StringVar()
+var_learning_model_path.set(os.path.join(EcoAssist_files, "pretrained_models", "md_v5a.0.0.pt"))
+dpd_learning_model = OptionMenu(req_params, var_learning_model, *dpd_learning_model_options, command=set_learning_model)
+dpd_learning_model.configure(width=1)
+dpd_learning_model.grid(row=row_learning_model, column=1, sticky='nesw', padx=5)
+dsp_learning_model = Label(master=req_params, textvariable=var_learning_model_short, fg='darkred')
 
-# button create xml files
-btn_start_xml = Button(xml_frame, text="Create annotation files", command=start_xml)
-btn_start_xml.grid(row=1, column=0, columnspan=2, sticky='ew')
+# model architecture
+lbl_model_architecture_txt = "Model architecture"
+row_model_architecture = 3
+lbl_model_architecture = Label(req_params, text=lbl_model_architecture_txt, pady=2, width=1, anchor="w")
+dpd_model_architecture_options = ["YOLOv5 Nano", "YOLOv5 Small", "YOLOv5 Medium", "YOLOv5 Large", "YOLOv5 XLarge", "Other config", "None"]
+var_model_architecture = StringVar(req_params)
+var_model_architecture.set(dpd_model_architecture_options[2])
+var_model_architecture_short = StringVar()
+var_model_architecture_path = StringVar()
+var_model_architecture_path.set(os.path.join(EcoAssist_files, "yolov5", "models", "yolov5m.yaml"))
+dpd_model_architecture = OptionMenu(req_params, var_model_architecture, *dpd_model_architecture_options, command=set_model_architecture)
+dpd_model_architecture.configure(width=1)
+dsp_model_architecture = Label(master=req_params, textvariable=var_model_architecture_short, fg='darkred')
 
-# set minsize for all rows inside labelframes
-set_minsize_rows(fst_step)
-set_minsize_rows(snd_step)
-snd_step.grid_rowconfigure(3, minsize=0) # hidden md tresh
-set_minsize_rows(img_frame)
-set_minsize_rows(vid_frame)
-set_minsize_rows(trd_step)
-set_minsize_rows(sep_frame)
-set_minsize_rows(vis_frame)
-set_minsize_rows(crp_frame)
-set_minsize_rows(xml_frame)
+# number of epochs
+lbl_n_epochs_txt = "Number of epochs"
+row_n_epochs = 4
+lbl_n_epochs = tk.Label(req_params, text=lbl_n_epochs_txt, pady=2, width=1, anchor="w")
+lbl_n_epochs.grid(row=row_n_epochs, sticky='nesw')
+var_n_epochs = StringVar()
+ent_n_epochs = tk.Entry(req_params, textvariable=var_n_epochs, fg='grey', width=1)
+ent_n_epochs.grid(row=row_n_epochs, column=1, sticky='nesw', padx=5)
+ent_n_epochs.insert(0, "E.g.: 300")
+ent_n_epochs.bind("<FocusIn>", n_epochs_focus_in)
+
+# folder for results
+lbl_results_dir_txt = "Destination folder"
+row_results_dir = 5
+lbl_results_dir = Label(master=req_params, text=lbl_results_dir_txt, width=1, anchor="w")
+lbl_results_dir.grid(row=row_results_dir, sticky='nesw', pady=2)
+var_results_dir = StringVar()
+var_results_dir_short = StringVar()
+dsp_results_dir = Label(master=req_params, textvariable=var_results_dir_short, fg='darkred')
+btn_results_dir = Button(master=req_params, text="Browse", width=1, command=lambda: [browse_dir(var_results_dir, var_results_dir_short, dsp_results_dir, 25, row_results_dir, 0, 'e'), grid_project_name()])
+btn_results_dir.grid(row=row_results_dir, column=1, sticky='nesw', padx=5)
+
+# specify resume checkpoint
+lbl_resume_checkpoint_txt = "Specify resume checkpoint"
+row_resume_checkpoint = 6
+lbl_resume_checkpoint = Label(master=req_params, text=lbl_resume_checkpoint_txt, width=1, anchor="w")
+var_resume_checkpoint = StringVar()
+var_resume_checkpoint_short = StringVar()
+var_resume_checkpoint_path = StringVar()
+var_resume_checkpoint_path.set("")
+dsp_resume_checkpoint = Label(master=req_params, textvariable=var_resume_checkpoint_short, fg='darkred')
+btn_resume_checkpoint = Button(master=req_params, text="Browse", width=1, command=lambda: browse_file(var_resume_checkpoint, var_resume_checkpoint_short, var_resume_checkpoint_path, dsp_resume_checkpoint, [("Model file","*.pt")], 20, ["dummy"], row_resume_checkpoint))
+
+# name of the project
+row_project_name = 7
+var_project_name = StringVar()
+ent_project_name = tk.Entry(req_params, textvariable=var_project_name, fg='grey', width=1)
+# the entry box, dropdown menu and button are created through grid_project_name() and swtich_dropdown_to_entry()
+
+### advanced settings
+adv_params_txt = "Advanced settings (optional)"
+adv_params_row = 2
+adv_params = LabelFrame(train_tab, text=" " + adv_params_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+adv_params.configure(font=(text_font, first_level_frame_font_size, "bold"))
+adv_params.grid(column=0, row=adv_params_row, sticky='nesw')
+adv_params.columnconfigure(0, weight=1, minsize=label_width)
+adv_params.columnconfigure(1, weight=1, minsize=widget_width)
+
+# proportion of validation data
+lbl_val_prop_txt = "Proportion as validation data"
+row_lbl_val_prop = 0
+lbl_val_prop = Label(adv_params, text=lbl_val_prop_txt, width=1, anchor="w")
+lbl_val_prop.grid(row=row_lbl_val_prop, sticky='nesw', pady=2)
+var_val_prop = DoubleVar()
+var_val_prop.set(0.1)
+scl_val_prop = Scale(adv_params, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_val_prop, showvalue=0, width=10, length=1)
+scl_val_prop.grid(row=row_lbl_val_prop, column=1, sticky='ew', padx=10)
+dsp_val_prop = Label(adv_params, textvariable=var_val_prop)
+dsp_val_prop.config(fg="darkred")
+dsp_val_prop.grid(row=row_lbl_val_prop, column=0, sticky='e', padx=0)
+
+# proportion of test data
+lbl_test_prop_txt = "Proportion as test data"
+row_lbl_test_prop = 1
+lbl_test_prop = Label(adv_params, text=lbl_test_prop_txt, width=1, anchor="w")
+lbl_test_prop.grid(row=row_lbl_test_prop, sticky='nesw', pady=2)
+var_test_prop = DoubleVar()
+var_test_prop.set(0.1)
+scl_test_prop = Scale(adv_params, from_=0.000000001, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_test_prop, showvalue=0, width=10, length=1) # not 0 because display needs two digits
+scl_test_prop.grid(row=row_lbl_test_prop, column=1, sticky='ew', padx=10)
+dsp_test_prop = Label(adv_params, textvariable=var_test_prop)
+dsp_test_prop.config(fg="darkred")
+dsp_test_prop.grid(row=row_lbl_test_prop, column=0, sticky='e', padx=0)
+
+# use GPU for training
+lbl_train_gpu_txt = "Search for GPU and use if available"
+row_train_gpu = 2
+lbl_train_gpu = Label(adv_params, text=lbl_train_gpu_txt, width=1, anchor="w")
+lbl_train_gpu.grid(row=row_train_gpu, sticky='nesw', pady=2)
+var_train_gpu = BooleanVar()
+if platform.system() == 'Darwin': # Apple Silicon still has some issues with running on MPS 
+    var_train_gpu.set(False)
+else:
+    var_train_gpu.set(True)
+chb_train_gpu = Checkbutton(adv_params, variable=var_train_gpu, anchor = "w")
+chb_train_gpu.grid(row=row_train_gpu, column=1, sticky='nesw', padx=5)
+
+# batch size
+lbl_batch_size_txt = "Batch size"
+row_batch_size = 3
+lbl_batch_size = tk.Label(adv_params, text=lbl_batch_size_txt + " (leave blank for auto detect maximum)", pady=2, width=1, anchor="w")
+lbl_batch_size.grid(row=row_batch_size, sticky='nesw')
+var_batch_size = StringVar()
+ent_batch_size = tk.Entry(adv_params, textvariable=var_batch_size, fg='grey', width=1)
+ent_batch_size.grid(row=row_batch_size, column=1, sticky='nesw', padx=5)
+ent_batch_size.insert(0, "E.g.: 8")
+ent_batch_size.bind("<FocusIn>", batch_size_focus_in)
+
+# number of workers
+lbl_n_workers_txt = "Number of workers"
+row_n_workers = 4
+lbl_n_workers = tk.Label(adv_params, text=lbl_n_workers_txt + " (leave blank for default 4)", pady=2, width=1, anchor="w")
+lbl_n_workers.grid(row=row_n_workers, sticky='nesw')
+var_n_workers = StringVar()
+ent_n_workers = tk.Entry(adv_params, textvariable=var_n_workers, fg='grey', width=1)
+ent_n_workers.grid(row=row_n_workers, column=1, sticky='nesw', padx=5)
+ent_n_workers.insert(0, "E.g.: 2")
+ent_n_workers.bind("<FocusIn>", n_workers_focus_in)
+
+# image size
+lbl_img_size_txt = "Image size"
+row_img_size = 5
+lbl_img_size = tk.Label(adv_params, text=lbl_img_size_txt + " (leave blank for auto selection)", pady=2, width=1, anchor="w")
+lbl_img_size.grid(row=row_img_size, sticky='nesw')
+var_img_size = StringVar()
+ent_img_size = tk.Entry(adv_params, textvariable=var_img_size, fg='grey', width=1)
+ent_img_size.grid(row=row_img_size, column=1, sticky='nesw', padx=5)
+ent_img_size.insert(0, "E.g.: 1280")
+ent_img_size.bind("<FocusIn>", img_size_focus_in)
+
+# cache images
+lbl_cache_imgs_txt = "Cache images for faster training"
+row_cache_imgs = 6
+lbl_cache_imgs = Label(adv_params, text=lbl_cache_imgs_txt, width=1, anchor="w")
+lbl_cache_imgs.grid(row=row_cache_imgs, sticky='nesw', pady=2)
+var_cache_imgs = BooleanVar()
+var_cache_imgs.set(False)
+chb_cache_imgs = Checkbutton(adv_params, variable=var_cache_imgs, anchor = "w")
+chb_cache_imgs.grid(row=row_cache_imgs, column=1, sticky='nesw', padx=5)
+
+# hyperparameters config file
+lbl_hyper_file_txt = "Hyperparameter configuration file"
+row_hyper_file = 7
+lbl_hyper_file = Label(adv_params, text=lbl_hyper_file_txt, pady=2, width=1, anchor="w")
+lbl_hyper_file.grid(row=row_hyper_file, sticky='nesw', pady=2)
+dpd_hyper_file_options = ["None", "Low augmentation", "Med augmentation", "High augmentation", "Objects365 training", "VOC training", "Other"]
+var_hyper_file = StringVar(adv_params)
+var_hyper_file.set(dpd_hyper_file_options[0])
+var_hyper_file_short = StringVar()
+var_hyper_file_path = StringVar()
+var_hyper_file_path.set("")
+dpd_hyper_file = OptionMenu(adv_params, var_hyper_file, *dpd_hyper_file_options, command=set_hyper_file)
+dpd_hyper_file.configure(width=1)
+dpd_hyper_file.grid(row=row_hyper_file, column=1, sticky='nesw', padx=5)
+dsp_hyper_file = Label(master=adv_params, textvariable=var_hyper_file_short, fg='darkred')
+
+# evolve hyperparameters
+lbl_evolve_txt = "Evolve hyperparameters"
+row_evolve = 8
+lbl_evolve = Label(adv_params, text=lbl_evolve_txt, width=1, anchor="w")
+lbl_evolve.grid(row=row_evolve, sticky='nesw', pady=2)
+var_evolve = BooleanVar()
+var_evolve.set(False)
+chb_evolve = Checkbutton(adv_params, variable=var_evolve, command=toggle_n_evolutions, anchor = "w")
+chb_evolve.grid(row=row_evolve, column=1, sticky='nesw', padx=5)
+
+# number of generations to evolve
+lbl_n_generations_txt = "Number of generations"
+row_n_generations = 9
+lbl_n_generations = tk.Label(adv_params, text=lbl_n_generations_txt + " (leave blank for default 300)", pady=2, width=1, anchor="w")
+var_n_generations = StringVar()
+ent_n_generations = tk.Entry(adv_params, textvariable=var_n_generations, fg='grey', width=1)
+ent_n_generations.insert(0, "E.g.: 500")
+ent_n_generations.bind("<FocusIn>", n_generations_focus_in)
+
+# name of the run
+lbl_run_name_txt = "Run name"
+row_run_name = 10
+lbl_run_name = tk.Label(adv_params, text=lbl_run_name_txt + " (leave blank for auto iterate)", pady=2, width=1, anchor="w")
+lbl_run_name.grid(row=row_run_name, sticky='nesw')
+var_run_name = StringVar()
+ent_run_name = tk.Entry(adv_params, textvariable=var_run_name, fg='grey', width=1)
+ent_run_name.grid(row=row_run_name, column=1, sticky='nesw', padx=5)
+ent_run_name.insert(0, "E.g.: Initial run")
+ent_run_name.bind("<FocusIn>", run_name_focus_in)
+
+# number of frozen layers
+lbl_n_freeze_layers_txt = "Number of layers to freeze (leave blank for all)"
+row_n_freeze_layers = 11
+lbl_n_freeze_layers = tk.Label(adv_params, text=lbl_n_freeze_layers_txt, pady=2, width=1, anchor="w")
+var_n_freeze_layers = StringVar()
+ent_n_freeze_layers = tk.Entry(adv_params, textvariable=var_n_freeze_layers, fg='grey', width=1)
+ent_n_freeze_layers.insert(0, "E.g.: 12")
+ent_n_freeze_layers.bind("<FocusIn>", n_freeze_layers_focus_in)
+
+# create command button
+row_start_training = 5
+btn_start_training = Button(train_tab, text="Start training", command=start_training)
+btn_start_training.grid(row=row_start_training, column=0, sticky='ew')
+
+### console output
+train_output_txt = "Console output"
+row_train_output = 0
+train_output = LabelFrame(train_tab, text=" " + train_output_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+train_output.configure(font=(text_font, first_level_frame_font_size, "bold"))
+train_output.grid(column=1, row=row_train_output, rowspan=4, sticky='nesw')
+txt_train_output = Text(train_output, wrap=WORD, width=1, height=1)
+txt_train_output.pack(fill="both", expand=True)
+cancel_training_bool = BooleanVar()
+cancel_training_bool.set(False)
+
+# cancel button
+row_cancel_training = 5
+btn_cancel_training = Button(train_tab, text="Cancel training", command=cancel_training)
+btn_cancel_training.grid(row=row_cancel_training, column=1, sticky='ew')
+btn_cancel_training.config(state=DISABLED)
+
+#### annotate tab
+annotate_text = Text(annotate_tab, width=1, height=1, wrap=WORD) 
+annotate_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
+annotate_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=40, lmargin2=40)
+annotate_text.tag_config('bulletpoint', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=40, lmargin2=60)
+hyperlink3 = HyperlinkManager(annotate_text)
+line_number = 1 
+
+# labelimg software
+annotate_text.insert(END, "LabelImg software\n")
+annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "Here you can annotate your images using the open-source annotation software ")
+annotate_text.insert(INSERT, "LabelImg", hyperlink3.add(partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
+annotate_text.insert(END, " created by Tzutalin. This application makes it easy to visually review annotations and adjust their labels, which are required to train your own object detection model.\n\n")
+annotate_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# steps
+annotate_text.insert(END, "Steps\n")
+annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "1. Select a folder with images you would like to annotate using the 'Browse' button below.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "2. If the classes are not yet defined in a file named 'classes.txt' inside this folder, you will be asked to fill in the classes you'd like to work with. Don't worry, you can always add more classes if you need to. Removing classes is difficult though, so choose wisely.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "3. Click the 'Start annotation' button to open the program. It will open the images (and annotation files, if present) specified in step 1.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "4. Make sure LabelImg is set to save the annotations in 'YOLO' format. Right below the 'Save' button in the toolbar, check if 'YOLO' is set. If not, click the 'PascalVOC' or 'CreateML' button to switch to 'YOLO' format.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "5. See ")
+annotate_text.insert(INSERT, "this website", hyperlink3.add(partial(webbrowser.open, "https://github.com/heartexlabs/labelImg#hotkeys")))
+annotate_text.insert(END, " for hotkeys and more information.\n\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# note
+annotate_text.insert(END, "Note\n")
+annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "- After annotation, each image containing a detection will have a separate txt file with the annotation information. This txt file has the same file name as the image. That is how the software knows the two belong together. So, after annotation, you can't change the file names anymore.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+annotate_text.insert(END, "- A file named 'classes.txt' defines the list of class names that your YOLO label refers to. That means that you can't change the order, or remove classes. However, adding an extra class to the end of the list is possible via LabelImg itself or by manually adding a class at the bottom of the list in a text editor. In the latter case, you'll have to restart the application for it to have effect.\n")
+annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# configure annotation text
+annotate_text.pack(fill="both", expand=True)
+annotate_text.configure(font=(text_font, 11, "bold"), state=DISABLED)
+
+# frame
+annot_frame_txt = "Required input"
+row_annot_frame = 0
+annot_frame = LabelFrame(annotate_tab, text=" " + annot_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+annot_frame.configure(font=(text_font, first_level_frame_font_size, "bold"))
+annot_frame.pack(fill="x", anchor = "s", expand=False)
+annot_frame.columnconfigure(0, weight=1, minsize=label_width*2)
+annot_frame.columnconfigure(1, weight=1, minsize=widget_width*2)
+
+# select folder
+lbl_annot_dir_txt = "Select folder with images to annotate"
+row_annot_dir = 0
+lbl_annot_dir = Label(master=annot_frame, text=lbl_annot_dir_txt, width=1, anchor="w")
+lbl_annot_dir.grid(row=row_annot_dir, sticky='nesw', pady=2)
+var_annot_dir = StringVar()
+var_annot_dir_short = StringVar()
+dsp_annot_dir = Label(master=annot_frame, textvariable=var_annot_dir_short, fg='darkred')
+btn_annot_dir = Button(master=annot_frame, text="Browse", width=1, command=lambda: [browse_dir(var_annot_dir, var_annot_dir_short, dsp_annot_dir, 50, row_annot_dir, 0, 'e'), grid_annot_classes()])
+btn_annot_dir.grid(row=row_annot_dir, column=1, sticky='nesw', padx=5)
+
+# provide classes
+lbl_annot_classes_txt = "Provide classes (separated by commas)"
+row_annot_classes = 1
+lbl_annot_classes = tk.Label(annot_frame, text=lbl_annot_classes_txt, pady=2, width=1, anchor="w")
+var_annot_classes = StringVar()
+ent_annot_classes = tk.Entry(annot_frame, width=1, textvariable=var_annot_classes, fg='grey')
+ent_annot_classes.insert(0, "E.g.: dog, cat, cow, polar bear, rat")
+ent_annot_classes.bind("<FocusIn>", annot_classes_focus_in)
+
+# button
+btn_start_annot = Button(annotate_tab, text="Start annotation", command=start_annotation)
+btn_start_annot.pack()
+
+# set minsize for all rows inside labelframes...
+for frame in [fst_step, snd_step, img_frame, vid_frame, trd_step, sep_frame, req_params, adv_params, annot_frame]:
+    set_minsize_rows(frame)
+
+# ... but not for the hidden rows
+snd_step.grid_rowconfigure(row_md_thresh, minsize=0) # model tresh
+req_params.grid_rowconfigure(row_model_architecture, minsize=0) # model architecture
+adv_params.grid_rowconfigure(row_n_freeze_layers, minsize=0) # n frozen layers
+adv_params.grid_rowconfigure(row_n_generations, minsize=0) # n generations
 
 # help tab
 scroll = Scrollbar(help_tab)
-help_text = Text(help_tab, width=int(130 * textbox_width_adjustment_factor), height=int(36 * textbox_height_adjustment_factor), wrap=WORD, yscrollcommand=scroll.set) 
+help_text = Text(help_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.set) 
 help_text.config(spacing1=2, spacing2=3, spacing3=2)
-help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
+help_text.tag_config('intro', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic', foreground='black', lmargin1=10, lmargin2=10, underline = False) 
+help_text.tag_config('tab', font=f'{text_font} {int(16 * text_size_adjustment_factor)} bold', foreground='black', lmargin1=10, lmargin2=10, underline = True) 
+help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=15, lmargin2=15) 
 help_text.tag_config('feature', font=f'{text_font} {int(14 * text_size_adjustment_factor)} normal', foreground='black', lmargin1=20, lmargin2=20, underline = True) 
-help_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=40, lmargin2=40)
+help_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=25, lmargin2=25)
 hyperlink1 = HyperlinkManager(help_text)
 line_number = 1 
+
+# intro sentence
+help_text.insert(END, "Below you can find detailed documentation for each setting. If you have any questions, feel free to contact me on ")
+help_text.insert(INSERT, "petervanlunteren@hotmail.com", hyperlink1.add(partial(webbrowser.open, "mailto:petervanlunteren@hotmail.com")))
+help_text.insert(END, " or raise an issue on the ")
+help_text.insert(INSERT, "GitHub page", hyperlink1.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist/issues")))
+help_text.insert(END, ".\n\n")
+help_text.tag_add('intro', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# deploy tab
+help_text.insert(END, "DEPLOY TAB\n")
+help_text.tag_add('tab', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 
 # first step
 help_text.insert(END, f"{fst_step_txt}\n")
 help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.insert(END, f"Browse\n")
-help_text.insert(END, "Here you can browse for a folder which contains camera trap images or video\'s. All features will be performed on this directory.\n\n")
+help_text.insert(END, "Here you can browse for a folder which contains images and/or video\'s. The model will be deployed on this directory, as well as the post-processing analyses.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -2370,33 +2935,32 @@ help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");l
 
 # model
 help_text.insert(END, f"{lbl_model_txt}\n")
-help_text.insert(END, "Here, you can indicate the model that you want to use to analyse the data. 'MDv5a' and 'MDv5b' stand for the MegaDetector models version 5a"
-                 " and b. These models differ only in their training data. Each MDv5 model can outperform the other slightly, depending on your data. Try them both"
-                 " and see which one works best for you. If you really don't have a clue, just stick with the default MDv5a. More info ")
+help_text.insert(END, "Here, you can indicate the yolov5 model that you want to deploy. If the dropdown option 'Custom model' is selected, you will be prompted to select "
+                "a .pt model file. This can be a custom model trained via EcoAssist. The preloaded 'MegaDetector' models detect animals, people, and vehicles in camera "
+                "trap imagery. It does not identify the animals; it just finds them. Version A and B differ only in their training data. Each model can outperform the "
+                "other slightly, depending on your data. Try them both and see which one works best for you. If you really don't have a clue, just stick with the default"
+                " 'MegaDetector 5a'. More info about MegaDetector models ")
 help_text.insert(INSERT, "here", hyperlink1.add(partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/main/megadetector.md#megadetector-v50-20220615")))
-help_text.insert(END, ". It is also possible to choose your own custom yolov5 model when running inference (e.g. a model trained for specific species). More info "
-                 "about how to train your custom model ")
-help_text.insert(INSERT, "here", hyperlink1.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist#custom-model-support")))
 help_text.insert(END, ".\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
 # exclude subs
 help_text.insert(END, f"{lbl_exclude_subs_txt}\n")
-help_text.insert(END, "By default, MegaDetector will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only the"
-                 " files directly in your chosen folder.\n\n")
+help_text.insert(END, "By default, EcoAssist will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only the "
+                "files directly in the chosen folder.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
 # exclude detections
 help_text.insert(END, f"{lbl_excl_detecs_txt} / {lbl_md_thresh_txt}\n")
 help_text.insert(END, "This option will exclude detections from the output file. Please don't use this confidence threshold in order to set post-processing features"
-                 " or third party software. The idea is that the output file contains everything that MegaDetector can find, and all processes which use this output "
-                 "file will have their own ways of handling the confidence values. Once detections are excluded from the output file, there is no way of getting it"
-                 " back. It is strongly advised to not exclude detections from the MegaDetector output file. Only set the confidence threshold to a very small value"
-                 " if you really know what you're doing. If you, because for some reason, want an extra-small output file, you would typically use a threshold of 0.01"
-                 " or 0.05. To adjust the threshold value, you can drag the slider or press either sides next to the slider for a 0.005 reduction or increment. "
-                 "Confidence values are within the [0.005, 1] interval. \n\n")
+                 " or third party software. The idea is that the output file contains everything that the model can find, and all processes which use this output file "
+                 "will have their own ways of handling the confidence values. Once detections are excluded from the output file, there is no way of getting it back. "
+                 "It is strongly advised to not exclude detections from the output file. Only set the confidence threshold to a very small value if you really know what"
+                 " you're doing. If you, because for some reason, want an extra-small output file, you would typically use a threshold of 0.01 or 0.05. To adjust the "
+                 "threshold value, you can drag the slider or press either sides next to the slider for a 0.005 reduction or increment. Confidence values are within the "
+                 "[0.005, 1] interval.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -2436,9 +3000,8 @@ help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.e
 
 # don't process every frame
 help_text.insert(END, f"{lbl_not_all_frames_txt}\n")
-help_text.insert(END,
-         "When processing every frame of a video, it can take a long, long time to finish. Here, you can specify whether you want to analyse only a selection of frames."
-         f" At '{lbl_nth_frame_txt}' you can specify how many frames you want to be analysed.\n\n")
+help_text.insert(END,"When processing every frame of a video, it can take a long time to finish. Here, you can specify whether you want to analyse only a selection of frames."
+                 f" At '{lbl_nth_frame_txt}' you can specify how many frames you want to be analysed.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -2453,11 +3016,17 @@ help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.e
 help_text.insert(END, f"{trd_step_txt}\n")
 help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 
+# destination folder
+help_text.insert(END, f"{lbl_output_dir_txt}\n")
+help_text.insert(END, "Here you can browse for a folder in which the results of the post-processing features will be placed. If nothing is selected, the folder "
+                 "chosen at step one will be used as the destination folder.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
 # separate files
-help_text.insert(END, f"{sep_frame_txt}\n")
-help_text.insert(END, "This function divides the images into subdirectories based on their detections. Please be warned that this will be done automatically based"
-                 " on the detections made by MegaDetector. There will not be an option to review and adjust the detections before the images will be moved. If you "
-                 "want that (a human in the loop), take a look at ")
+help_text.insert(END, f"{lbl_separate_files_txt}\n")
+help_text.insert(END, "This function divides the files into subdirectories based on their detections. Please be warned that this will be done automatically. "
+                "There will not be an option to review and adjust the detections before the images will be moved. If you want that (a human in the loop), take a look at ")
 help_text.insert(INSERT, "Timelapse", hyperlink1.add(partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/")))
 help_text.insert(END, ", which offers such a feature. More information about that ")
 help_text.insert(INSERT, "here", hyperlink1.add(partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/TimelapseImageRecognitionGuide.pdf")))
@@ -2480,74 +3049,256 @@ help_text.insert(END, "This feature will further separate the files based on its
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-# sep confidence threshold
-help_text.insert(END, f"{lbl_sep_thresh_txt} of the separation process\n")
-help_text.insert(END, f"Detections below this value will not count for the separation process. To adjust the threshold value you can drag the slider or press either"
-                       " sides next to the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval. If you set the confidence "
-                       "threshold too high, you will miss some detections. On the other hand, if you set the threshold too low, you will get false positives. When "
-                       "choosing a threshold for your project, it is important to choose a threshold based on your own data. My advice is to first visualize your data"
-                       f" ('{vis_frame_txt}') with a low threshold to get a feeling of the confidence values in your data. This will show you how sure the model is about"
-                       " its detections and will give you an insight into which threshold will work best for you. If you really don't know, 0.2 is probably a conservative"
-                       " threshold for most ecosystems.\n\n")
-help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
 # visualize files
-help_text.insert(END, f"{vis_frame_txt}\n")
-help_text.insert(END, "This functionality draws boxes around the detections, prints their confidence values and saves them in the subdirectory 'visualized_images'."
-                      " This can be useful to visually check the results. Videos can't be visualized using this tool.\n\n")
-help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-# confidence threshold for visualization
-help_text.insert(END, f"{lbl_vis_thresh_txt} of the visualization process\n")
-help_text.insert(END, f"Detections below this value will not be visualized. To adjust the threshold, value you can drag the slider or press either"
-                       " sides next to the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval.\n\n")
+help_text.insert(END, f"{lbl_vis_files_txt}\n")
+help_text.insert(END, "This functionality draws boxes around the detections and prints their confidence values. This can be useful to visually check the results."
+                 " Videos can't be visualized using this tool.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
 # crop files
-help_text.insert(END, f"{crp_frame_txt}\n")
-help_text.insert(END, "This feature will crop the detections and save them as separate images in the subdirectory 'cropped_images'. These cropped images can be used"
-                      " to train your own species classifier. Not applicable for videos.\n\n")
+help_text.insert(END, f"{lbl_crp_files_txt}\n")
+help_text.insert(END, "This feature will crop the detections and save them as separate images. Not applicable for videos.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-# confidence threshold for cropping
-help_text.insert(END, f"{lbl_crp_thresh_txt} of the cropping process\n")
-help_text.insert(END, f"Detections below this value will not be cropped. To adjust the threshold value, you can drag the slider or press either"
-                       " sides next to the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval.\n\n")
+# create yolo annotations
+help_text.insert(END, f"{lbl_yol_files_txt}\n")
+help_text.insert(END, "When training your own model using machine learning using the yolov5 software, the images need to be annotated in yolo format. This feature "
+                 "does that by creating individual text files for each image containing their detections, and one text file containing all the classes. If these "
+                 "annotations are in the same folder as the images, you can visually review and adjust them using the Annotate tab. Not applicable to videos.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-# annotate files
-help_text.insert(END, f"{xml_frame_txt}\n")
-help_text.insert(END, "When training your own model using machine learning, the images generally need to be annotated with .xml files in Pascal VOC format. Here you can "
-                      "create these annotation files. Pressing 'View results' after the process is finished will open the open-source annotation software ")
-help_text.insert(INSERT, "LabelImg", hyperlink1.add(partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
-help_text.insert(END, ". This application makes it easy to visually review annotations and adjust their labels. It's possible to change the default labels to your own "
-                      f"by changing (the hidden file) {os.path.join(EcoAssist_files, 'labelImg', 'data', 'predefined_classes.txt')}. LabelImg will automatically open the "
-                      "directory specified at step 1. However, if the files are separated into subfolders, labelImg doesn't know which folder to open first. In that case "
-                      "you'll have to manually set the labelImg options 'Open Dir' and 'Change Save Dir' to the folder you want to inspect (top left of labelImg window), "
-                      "and then double-click an image in the file list (bottom right of labelImg window). Not applicable to videos.\n\n")
+# export csv files
+help_text.insert(END, f"{lbl_csv_txt}\n")
+help_text.insert(END, "This will translate the output files of step 2 into csv files. Can be opened in spreadsheet applications such as Excel and Numbers and imported"
+                 " for further processing in R, Python, etc.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-# confidence threshold for annotating
-help_text.insert(END, f"{lbl_xml_thresh_txt} of the annotation process\n")
-help_text.insert(END, f"Detections below this value will not be included in the annotation file. To adjust the threshold value, you can drag the slider or press either"
-                       " sides next to the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval.\n\n")
+# confidence threshold
+help_text.insert(END, f"{lbl_md_thresh_txt}\n")
+help_text.insert(END, "Detections below this value will not be post-processed. To adjust the threshold value, you can drag the slider or press either sides next to "
+                 "the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval. If you set the confidence threshold too high, "
+                 "you will miss some detections. On the other hand, if you set the threshold too low, you will get false positives. When choosing a threshold for your "
+                 f"project, it is important to choose a threshold based on your own data. My advice is to first visualize your data ('{lbl_vis_files_txt}') with a low "
+                 "threshold to get a feeling of the confidence values in your data. This will show you how sure the model is about its detections and will give you an "
+                 "insight into which threshold will work best for you. If you really don't know, 0.2 is probably a conservative threshold for most projects.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# train tab
+help_text.insert(END, "TRAIN TAB\n")
+help_text.tag_add('tab', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+
+# training type
+help_text.insert(END, f"{req_params_txt}\n")
+help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.insert(END, f"{lbl_train_type_txt}\n")
+help_text.insert(END, "Here, you can specify whether you want to start a new training or resume an existing one. If you want to resume, you'll need to specify the checkpoint"
+                 f" file at '{lbl_resume_checkpoint_txt}'.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# folder with labelled data
+help_text.insert(END, f"{lbl_annotated_data_txt}\n")
+help_text.insert(END, "Browse the folder containing images and annotations in yolo format. All data should be in this folder, not in subfolders. EcoAssist will randomly partition"
+                 " the data into a training, test and validation set (based on the proportions set by you). You can annotate your data using the 'Annotate' tab, or (if you"
+                 f" already have a model which can detect the objects of interest) the post-processing feature '{lbl_yol_files_txt}' in the 'Deploy' tab.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# retrain from
+help_text.insert(END, f"{lbl_learning_model_txt}\n")
+help_text.insert(END, "In machine learning, it is possible to reuse an existing model as the starting point for a new model. For example, the MegaDetector model is "
+                 "excellent at detecting animals in camera trap images. We can transfer the knowledge of how an animal looks like to a new model which can, for example,"
+                 " classify species. Here, you can specify which model you would like to transfer knowledge from. If your dataset is relatively small (i.e., not tens of "
+                 "thousands of images), it is advised to train your own custom model using transfer learning. Besides MegaDetector 5a and b, you can choose from "
+                 "five pre-trained yolov5 models (see image below). These go from small and fast to large and slow and are trained on the ")
+help_text.insert(INSERT, "COCO dataset", hyperlink1.add(partial(webbrowser.open, "https://cocodataset.org/#home")))
+help_text.insert(END, " consisting of more than 330,000 images of 80 classes. The larger the model, the better the results. The Nano model is the smallest and fastest and is "
+                 "most suitable for mobile solutions and embedded devices. The small model is perfect for a laptop which doesn't have any GPU acceleration. The medium-sized "
+                 "model provides a good balance between speed and accuracy, but you'll probably want a GPU for this. The large model is ideal for detecting small objects, and "
+                 "the extra-large model is the most accurate of them all (but it takes time and quite some processing power to train and deploy). The last two models are "
+                 "recommended for cloud deployments. You can also specify a custom model or choose to train from scratch, but it is usually not recommended. Only train"
+                 " from scratch if you know what you are doing and have a very large dataset (i.e., around 150.000 images or more).\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# image of yolo models
+yolo_models=Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "yolo_models.png"))
+yolo_models=yolo_models.resize((int(yolo_models.size[0] / 5), int(yolo_models.size[1] / 5)))
+yolo_models=ImageTk.PhotoImage(yolo_models)
+help_text.image_create(tk.END, image = yolo_models)
+help_text.insert(END, "\n\n")
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# model architecture
+help_text.insert(END, f"{lbl_model_architecture_txt}\n")
+help_text.insert(END, "When training from scratch, you can specify the model architecture here. The options link to the architectures of the models depicted above.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# n epochs
+help_text.insert(END, f"{lbl_n_epochs_txt}\n")
+help_text.insert(END, "An epoch is one cycle in which all the training data is processed once. The number of epochs required depends on the project. It is recommended to"
+                 " start with 300 epochs and then check the results for overfitting. Reduce the number of epochs if the data is overfitted, and increase if not. Overfitting"
+                 " is indicated by increasing validation losses. You can see this these validation losses in the 'results.png' file located in the destination folder after "
+                 "completing a training. Increase the amount of data or use data augmentation to avoid overfitting. \n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# destination folder
+help_text.insert(END, f"{lbl_output_dir_txt}\n")
+help_text.insert(END, "Select the folder in which you want the results to be placed.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# project name
+help_text.insert(END, "Project name\n")
+help_text.insert(END, "Specify the name of the project. Results will be saved in the folder <destination folder>\<project name>\<run name>\.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# resume checkpoint
+help_text.insert(END, f"{lbl_resume_checkpoint_txt}\n")
+help_text.insert(END, "If your training was interrupted and you want to resume where you left off, you can specify the resume checkpoint here. It is the last.pt file"
+                 " in the weights subfolder of the training you want to resume. For example: Project_name\exp\weights\last.pt. \n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# validation prop
+help_text.insert(END, f"{adv_params_txt}\n")
+help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.insert(END, f"{lbl_val_prop_txt}\n")
+help_text.insert(END, "Here, you can select the proportion of images which will be randomly selected to become the validation subset. Validation images are required,"
+                 " so choosing 0 is not allowed. To adjust the value, you can drag the slider or press either sides next to the slider for a 0.01 reduction or increment."
+                 " Values are within the [0.01, 1] interval.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# test prop
+help_text.insert(END, f"{lbl_test_prop_txt}\n")
+help_text.insert(END, "Here, you can select the proportion of images which will be randomly selected to become the test subset. Test images are not required, so choosing"
+                 " 0 is allowed. To adjust the value, you can drag the slider or press either sides next to the slider for a 0.01 reduction or increment. Values are within"
+                 " the [0, 1] interval.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# search for GPU
+help_text.insert(END, f"{lbl_train_gpu_txt}\n")
+help_text.insert(END, "If enabled, EcoAssist will check your device for any suitable GPU and use it to train on.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# batch size
+help_text.insert(END, f"{lbl_batch_size_txt}\n")
+help_text.insert(END, "The batch size is the number of training examples used in one iteration. The larger the batch size, the more processing power you'll need. For "
+                 "the best results, use the largest batch size that your hardware allows for. Leave the entry box empty to automatically check and use the maximum batch"
+                 " size your device can handle. If your device has no GPU acceleration, the default is 16. Try lowering this if you run into out-of-memory errors.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# number of dataloader workers
+help_text.insert(END, f"{lbl_n_workers_txt}\n")
+help_text.insert(END, "Usually, not all images can be loaded into your computers RAM at once. Subsets of the images are therefore loaded at every iteration. This number "
+                 "indicates the maximum amount of workers being set for this dataloading task. Normally, the default of 4 should be fine for most computers, but if you run"
+                 " into out-of-memory errors, it might help to lower the number of dataloaders.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# image size
+help_text.insert(END, f"{lbl_img_size_txt}\n")
+help_text.insert(END, "Larger image sizes usually lead to better results, but take longer to process. Training on smaller images will cost less computing power. An image"
+                 " that is twice as large will have 4 times as many pixels to learn from. Resizing images is therefore a crucial part of object detection. Best results are"
+                 " obtained if the same image size is used as the original model you are retraining. Therefore, if you leave the image size entry box empty, EcoAssist will"
+                 " take the image size of the pretrained model you selected (1280 for MegaDetector and 640 for the YOLO models). If you selected a custom model or are "
+                 "training from scratch, the default is 640. \n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# cache
+help_text.insert(END, f"{lbl_cache_imgs_txt}\n")
+help_text.insert(END, "This feature caches the dataset into your RAM for faster load times.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# hyperparam file
+help_text.insert(END, f"{lbl_hyper_file_txt}\n")
+help_text.insert(END, "Here, you can select an existing or custom hyperparameter configuration file. This consists of parameters like learning rate and data augmentations"
+                 f" options. It's recommened to train with default hyperparameters first ('{dpd_hyper_file_options[0]}') before trying others. A few ready-to-use options are "
+                 "preloaded into EcoAsisst:\n"
+                 f"  - '{dpd_hyper_file_options[0]}' to not specify any hyperparameters and use the default settings\n"
+                 f"  - '{dpd_hyper_file_options[1]}' for small models like {dpd_learning_model_options[2]} and {dpd_learning_model_options[3]}\n"
+                 f"  - '{dpd_hyper_file_options[2]}' for medium sized models like {dpd_learning_model_options[4]}\n"
+                 f"  - '{dpd_hyper_file_options[3]}' for large models like {dpd_learning_model_options[5]}, {dpd_learning_model_options[6]} and MegaDetector\n"
+                 f"  - '{dpd_hyper_file_options[4]}' when training on the ")
+help_text.insert(INSERT, "Objects365 dataset", hyperlink1.add(partial(webbrowser.open, "https://paperswithcode.com/dataset/objects365")))
+help_text.insert(END, "\n")
+help_text.insert(END, 
+                 f"  - '{dpd_hyper_file_options[5]}' for training on the ")
+help_text.insert(INSERT, "VOC dataset", hyperlink1.add(partial(webbrowser.open, "http://host.robots.ox.ac.uk/pascal/VOC/")))
+help_text.insert(END, "\n")
+help_text.insert(END, 
+                 f"  - '{dpd_hyper_file_options[6]}' to select a custom hyperparameter file\n"
+                 f"Please be aware that the optimal settings are project-specific and the '{lbl_evolve_txt}' option should be used to finetune them for the best results. "
+                 "Hyperparameter evolution can, however, be very time and energy consuming and therefore not always preferable. "
+                 "In general, increasing augmentation hyperparameters will reduce and delay overfitting, allowing for longer trainings and higher final accuracy. YOLOv5 "
+                 "applies online imagespace and colorspace augmentations to present a new and unique augmented mosaic. Images are never presented twice in the same way."
+                 " You can view the effect of your augmentation policy in your train_batch*.jpg images once training starts. These images will be in your train logging "
+                 "directory.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# data augmentation image
+data_augs=Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "data_augmentations.jpg"))
+data_augs=data_augs.resize((int(data_augs.size[0] / 5), int(data_augs.size[1] / 5)))
+data_augs=ImageTk.PhotoImage(data_augs)
+help_text.image_create(tk.END, image = data_augs)
+help_text.insert(END, "\n\n")
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# evolve
+help_text.insert(END, f"{lbl_evolve_txt}\n")
+help_text.insert(END, "Use this feature to fine-tune the hyperparameters for maximum fitness. It will run the base training multiple times and slightly adjust the "
+                 "hyperparameters to find the optimum values. The resulting hyperparameter file is the 'hyp_evolve.yaml' in your train logging directory and"
+                 f" can be used for subsequent trainings. To do so, select the 'hyp_evolve.yaml' file as option under '{dpd_hyper_file_options[6]}' at '{lbl_hyper_file_txt}'. "
+                 "Please note that evolution is generally expensive and time-consuming. It can take weeks or months to finish, depending on the number of generations "
+                 "you select and your processing power.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# n generations
+help_text.insert(END, f"{lbl_n_generations_txt}\n")
+help_text.insert(END, "Here, you can specify how often you want the base scenario to be trained during the evolution. A minimum of 300 generations of evolution is "
+                 "recommended for best results. The default 300 is used when the entry box is left blank.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# run name
+help_text.insert(END, f"{lbl_run_name_txt}\n")
+help_text.insert(END, "Here you can specify the name of the run. Results will be saved in the folder <destination folder>\<project name>\<run name>. If you leave this "
+                 "entry box blank, it will automatically iterate new names: exp, exp2, exp3, etc.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
 # config help_text
-help_text.grid(row=0, column=0, sticky="nesw")
+help_text.pack(fill="both", expand=True)
 help_text.configure(font=(text_font, 11, "bold"), state=DISABLED)
 scroll.config(command=help_text.yview)
 
 # about tab
 about_scroll = Scrollbar(about_tab)
-about_text = Text(about_tab, width=int(130 * textbox_width_adjustment_factor), height=int(36 * textbox_height_adjustment_factor), wrap=WORD, yscrollcommand=scroll.set)
+about_text = Text(about_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.set)
 about_text.config(spacing1=2, spacing2=3, spacing3=2)
 about_text.tag_config('title', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
 about_text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=20, lmargin2=20)
@@ -2555,42 +3306,30 @@ about_text.tag_config('citation', font=f'{text_font} {int(13 * text_size_adjustm
 hyperlink = HyperlinkManager(about_text)
 text_line_number=1
 
-# the application
-about_text.insert(END, "The application\n")
-about_text.insert(END,
-            "EcoAssist is a freely available and open-source application with the aim of helping ecologists with their camera trap data without the need of any "
-            "programming skills. It uses a deep learning algorithm trained to detect the presence of animals, people and vehicles in camera trap data. Help me to "
-            "keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can continue to keep it up-to-date. Also, I would also"
-            " very much like to know who uses the tool and for what reason. Please email me on ")
+# contact
+about_text.insert(END, "Contact\n")
+about_text.insert(END, "Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can contact me at ")
 about_text.insert(INSERT, "petervanlunteren@hotmail.com", hyperlink.add(partial(webbrowser.open, "mailto:petervanlunteren@hotmail.com")))
-about_text.insert(END, ".\n\n")
-about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
-about_text.grid(row=0, column=0, sticky="nesw")
-
-# the model
-about_text.insert(END, "The model\n")
-about_text.insert(END, "For this application, I used ")
-about_text.insert(INSERT, "MegaDetector", hyperlink.add(partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/master/megadetector.md")))
-about_text.insert(END,
-            " to detect animals, people, and vehicles. It does not identify animals, it just finds them. The model is created by Beery, Morris, and Yang (2019) and is"
-            " based on the YOLOv5 architecture. The model was trained using several hundred thousand bounding boxes from a variety of ecosystems. On a typical laptop "
-            "(bought in 2021) it takes somewhere between 3 and 8 seconds per image. This works out to being able to process something like 10000 to 25000 images per "
-            "day. If you have a dedicated deep learning GPU, you can probably process along the lines of half a million images per day. The model is free, and it makes"
-            " the creators super-happy when people use it, so I put their email address here for your convenience: ")
-about_text.insert(INSERT, "cameratraps@lila.science", hyperlink.add(partial(webbrowser.open, "mailto:cameratraps@lila.science")))
+about_text.insert(END, " or raise an issue on the ")
+about_text.insert(INSERT, "GitHub page", hyperlink.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist/issues")))
 about_text.insert(END, ".\n\n")
 about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
 about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
-# citation
-about_text.insert(END, "Citation\n")
-about_text.insert(END, "If you use EcoAssist in your research, don't forget to cite the model and the EcoAssist software itself:\n")
-about_text.insert(END, "- Beery, S., Morris, D., & Yang, S. (2019). Efficient pipeline for camera trap image review. ArXiv preprint arXiv:1907.06772.\n")
+# ecoassist citation
+about_text.insert(END, "EcoAssist citation\n")
+about_text.insert(END, "If you used EcoAssist in your research, please use the following citation.\n")
 about_text.insert(END, "- van Lunteren, P. (2022). EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model. [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.7223363\n\n")
 about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
 about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+
+# megadetector citation
+about_text.insert(END, "MegaDetector citation\n")
+about_text.insert(END, "If you used the MegaDetector model to analyse images or retrain your model, please use the following citation.\n")
+about_text.insert(END, "- Beery, S., Morris, D., & Yang, S. (2019). Efficient pipeline for camera trap image review. ArXiv preprint arXiv:1907.06772.\n\n")
+about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
 about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
 # image credits
@@ -2604,13 +3343,18 @@ about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) 
 about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
 # config about_text
-about_text.grid(row=0, column=0, sticky="nesw")
+about_text.pack(fill="both", expand=True)
 about_text.configure(font=(text_font, 11, "bold"), state=DISABLED)
 scroll.config(command=about_text.yview)
 
 # main function
 def main():
-    reset_frame_states()
+    # initialise start screen
+    enable_frame(fst_step)
+    disable_frame(snd_step)
+    disable_frame(trd_step)
+
+    # run
     root.mainloop()
 
 # executable as script
