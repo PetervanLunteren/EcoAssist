@@ -693,9 +693,9 @@ def start_annotation():
 
     # locate open script
     if os.name == 'nt':
-        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "Windows_open_LabelImg.bat")
+        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "label.bat")
     else:
-        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "MacOS_Linux_open_LabelImg.command")
+        labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "label.command")
 
     # create command
     command_args = []

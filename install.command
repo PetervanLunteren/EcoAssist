@@ -118,7 +118,7 @@ else
   git clone --progress https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_EcoAssist.command"
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
     ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns"
     bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
     mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
@@ -130,7 +130,7 @@ else
     echo "Terminal=true" >> $FILE
     echo "Name=EcoAssist" >> $FILE
     echo "Icon=logo_small_bg" >> $FILE
-    echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/MacOS_Linux_open_EcoAssist.command;\$SHELL'\"" >> $FILE
+    echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/open.command;\$SHELL'\"" >> $FILE
     echo "Categories=Application;" >> $FILE
     # and give it an icon
     SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
@@ -141,7 +141,7 @@ else
     mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
   fi
   # change permission for the command files
-  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_LabelImg.command"
+  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/label.command"
   chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command"
 fi
 
