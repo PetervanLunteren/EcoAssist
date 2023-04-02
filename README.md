@@ -5,25 +5,28 @@
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png" width=60% height="auto" />
 </p>
 
-EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the good people at <a href="https://ultralytics.com/">Ultralytics</a>, it is possible to train your own custom model to detect objects in images and videos. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Here you can annotate, train, and deploy your models **without a single line of code**.
+EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the people at <a href="https://ultralytics.com/">Ultralytics</a>, it is possible to train a model to detect objects in images and videos. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Here you can annotate, train, and deploy your models without a single line of code.
 
-I initially created EcoAssist with the aim of training species classifiers to assist ecological projects (hence the name), but it will train and deploy any kind of object detection model. If you’re not an ecologist, you’ll just have to ignore the references to the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model and let EcoAssist train the model on your images. The rest will work exactly the same.
+I initially created EcoAssist with the aim of training species classifiers to assist ecological projects (hence the name), but it will handle any kind of object detection model. If you’re not an ecologist, you’ll just have to ignore the references to the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model. The rest will be exactly the same.
+
+I've written this application in my free evenings and would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
 <!---
 EcoAssist is an application designed to make life easier for wildlife ecologists who work with camera trap data. Thanks to the good people at <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a>, there is a  model which can recognise animals in camera trap images in a variety of terrestrial ecosystems, so that you can e.g., filter out empty images, use its results in image analysers such as <a href="https://saul.cpsc.ucalgary.ca/timelapse/">Timelapse</a>, or kick-start the training of your own species classifier. The only problem with using this model is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody.
-
-###
-I've written this application in my free evenings and would really appreciate it if people would let me know when it's used. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 --->
 
-## Features
-* Use either `MDv5a` or `MDv5b` to tag animals, persons and vehicles in both images and video's
-* Filter out empty images, people, vehicles or animals
-* Review and edit annotations using the open-source annotation software [labelImg](https://github.com/heartexlabs/labelImg)
+## Main features
+* Easy install all dependencies with one-click
+* Annotate your data using the open-source [labelImg](https://github.com/heartexlabs/labelImg) software
+* Train a custom model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
+* Deploy your model on images or videos
+* Post-process your data to separate, visualise, crop, label, or export detections to .csv
+
+## Extra features (for ecologists)
+* Use MegaDetector to tag animals in camera trap images
+* Filter out the empties
 * Create input file for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
-* Export `.xml` label files in Pascal VOC format for further model training
-* Manipulate data by drawing boxes or cropping detections
-* Use custom models trained from `MDv5` using transfer learning
+* Easily create your own species classifier by transfer-learning from MegaDetector
 <br/>
 
 ## Demo
@@ -31,7 +34,9 @@ I've written this application in my free evenings and would really appreciate it
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/demo.gif" width=60% height="auto" />
 </p>
 
-## Example detections
+## General workflow (for ecologists)
+
+## Teasers
 <p float="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=45% height="auto" />
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=45% height="auto" />
