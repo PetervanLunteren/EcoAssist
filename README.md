@@ -54,24 +54,24 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 EcoAssist needs [Anaconda](https://www.anaconda.com/products/individual), [Git](https://git-scm.com/) and a bunch of other open-source software to run properly. The installation files linked in the steps below will check if these software packages are already present on your computer, and install them if needed. Since EcoAssist will install quite a lot of Python stuff, don't panic if the installation takes 10-20 minutes (depending on your internet connection and RAM) and generates lots of textual feedback as it does so. Somewhere during the installation, there will be a message saying that you need to update anaconda (`Please update conda by running $ conda update -n base -c defaults conda`). That is just Anaconda saying there is a new version available. You can ignore that. Futhermore, some anti-virus, VPN or other protection software enabled during the EcoAssist installation might block the download of some files. If you're having trouble, please disable this protection software during the EcoAssist installation.
 
 ### Windows installation
-1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/Windows_install_EcoAssist.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive. Don't have an admin password? See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/Windows_no_admin_install.md) to install it without admin privileges. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
+1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive. Don't have an admin password? See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/Windows_no_admin_install.md) to install it without admin privileges. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
 2. When the installation is finished, there will be a shortcut file in the same folder as your installation file (so probably `Downloads`). You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 ### Mac installation
-1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work, you can change the file permissions by opening a new terminal window and copy-pasting the following commands.
+1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/install.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work, you can change the file permissions by opening a new terminal window and copy-pasting the following commands.
 ```bash
-chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
-bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
+chmod 755 $HOME/Downloads/install.command
+bash $HOME/Downloads/install.command
 ```
 2. If you're a M1/M2 user, go for a nice walk outside because this may take about 30 minutes to complete. Some of the software packages are not yet adopted to the M1/M2 processor. There is a workaround, but it takes some time. In order to make it work on M1/M2 computers, the guys at MegaDetector had to re-build the models with *slightly* different results. The bounding boxes appear to be the same to around two decimal places in both location and confidence, which is good, but not *exactly* the same. Please keep in mind that this is an unvalidated version of MegaDetector, and they don't exactly know how it compares to the validated version since it is much less tested.
 3. When the installation is done, you'll find a `EcoAssist.command` file in your `Applications` folder. The app will open when double-clicked. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
 ### Linux installation
-1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/MacOS_Linux_install_EcoAssist.command).
+1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.command).
 2. Change the permission of the file and execute it by running the following commands in a new terminal window. If you don't have root privileges, you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software on some Linux versions. If you don't know the `sudo` password, you can skip this by pressing Ctrl+D when you are prompted for the password. EcoAssist will still work fine without it, but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
 ```bash
-chmod 755 $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
-bash $HOME/Downloads/MacOS_Linux_install_EcoAssist.command
+chmod 755 $HOME/Downloads/install.command
+bash $HOME/Downloads/install.command
 ```
 3. During the installation, a file called `EcoAssist` will be created on your desktop. The app will open when double-clicked. You are free to move this file to a more convenient location.
 
