@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png" width=50% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png" width=60% height="auto" />
 </p>
 
 EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the good people at <a href="https://ultralytics.com/">Ultralytics</a>, it is possible to train your own custom model to detect objects in images and videos. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Here you can annotate, train, and deploy your models **without a single line of code**.
