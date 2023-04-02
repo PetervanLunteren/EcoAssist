@@ -1,13 +1,22 @@
 @REM ### Windows commands to open the labelImg software via the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 october 2022 (latest edit)
+@REM ### Peter van Lunteren, 2 Apr 2023 (latest edit)
 
 @REM # set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files
-set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
+@REM set variables
+set LOCATION_ECOASSIST_FILES=%homedrive%%homepath%\EcoAssist_files
+set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
+set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
+set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
+set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
+set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
+set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
+set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
+
+@REM change directory
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
 
 @REM # log the start of the labelImg session
 set START_DATE=%date% %time%

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 27 Feb 2023 (latest edit)
+### Peter van Lunteren, 2 Apr 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -33,6 +33,12 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
 elif [ "$PLATFORM" = "Linux" ]; then
   LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
 fi
+
+# set variables
+CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
+ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
+PIP="${ECOASSISTCONDAENV}/bin/pip"
+HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES
@@ -86,7 +92,23 @@ echo "System information:"  2>&1 | tee -a "$LOG_FILE"
 echo "$MACHINE_INFO"  2>&1 | tee -a "$LOG_FILE"
 echo ""  2>&1 | tee -a "$LOG_FILE"
 
-# clone EcoAssist git if not present
+# install command line tools if needed (thanks BaseZen of StackOverflow)
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  os=$(sw_vers -productVersion | awk -F. '{print $1 "." $2}')
+  if softwareupdate --history | grep --silent "Command Line Tools.*${os}"; then
+      echo 'Command-line tools already installed.' 2>&1 | tee -a "$LOG_FILE"
+  else
+      echo 'Installing Command-line tools...' 2>&1 | tee -a "$LOG_FILE"
+      in_progress=/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress
+      touch ${in_progress}
+      product=$(softwareupdate --list | awk "/\* Command Line.*${os}/ { sub(/^   \* /, \"\"); print }")
+      softwareupdate --verbose --install "${product}" || echo 'Installation failed.' 1>&2 && rm ${in_progress} && exit 1
+      rm ${in_progress}
+      echo 'Installation succeeded.' 2>&1 | tee -a "$LOG_FILE"
+  fi
+fi
+
+# clone EcoAssist git 
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance."; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
@@ -101,6 +123,16 @@ else
     bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
     mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
   elif [ "$PLATFORM" = "Linux" ]; then
+    # create shortcut file
+    FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
+    echo "[Desktop Entry]" > $FILE
+    echo "Type=Application" >> $FILE
+    echo "Terminal=true" >> $FILE
+    echo "Name=EcoAssist" >> $FILE
+    echo "Icon=logo_small_bg" >> $FILE
+    echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/MacOS_Linux_open_EcoAssist.command;\$SHELL'\"" >> $FILE
+    echo "Categories=Application;" >> $FILE
+    # and give it an icon
     SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
     DEST="$HOME/.icons/logo_small_bg.png"
     mkdir -p "$HOME/.icons" # create location if not already present
@@ -108,10 +140,12 @@ else
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
     mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
   fi
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  # change permission for the command files
+  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_open_LabelImg.command"
+  chmod 755 "$LOCATION_ECOASSIST_FILES/EcoAssist/MacOS_Linux_uninstall_EcoAssist.command"
 fi
 
-# clone cameratraps git if not present
+# clone cameratraps git 
 CAM="cameratraps"
 if [ -d "$CAM" ]; then
   echo "Dir ${CAM} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -123,7 +157,7 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# clone ai4eutils git if not present
+# clone ai4eutils git 
 AI4="ai4eutils"
 if [ -d "$AI4" ]; then
   echo "Dir ${AI4} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -135,7 +169,7 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# clone yolov5 git if not present
+# clone yolov5 git 
 YOL="yolov5"
 if [ -d "$YOL" ]; then
   echo "Dir ${YOL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -146,7 +180,7 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# clone labelImg git if not present
+# clone labelImg git 
 LBL="labelImg"
 if [ -d "$LBL" ]; then
   echo "Dir ${LBL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -158,9 +192,9 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# download the MDv5a model if not present
-mkdir -p $LOCATION_ECOASSIST_FILES/megadetector
-cd $LOCATION_ECOASSIST_FILES/megadetector || { echo "Could not change directory to megadetector. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+# download the MDv5a model 
+mkdir -p $LOCATION_ECOASSIST_FILES/pretrained_models
+cd $LOCATION_ECOASSIST_FILES/pretrained_models || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 MDv5a="md_v5a.0.0.pt"
 if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -173,7 +207,7 @@ else
   fi
 fi
 
-# download the MDv5b model if not present
+# download the MDv5b model 
 MDv5b="md_v5b.0.0.pt"
 if [ -f "$MDv5b" ]; then
   echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -187,203 +221,67 @@ else
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
-# install an environment manager
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  # we'll need miniforge for apple silicon macs
-  curl --keepalive -OL https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh 2>&1 | tee -a "$LOG_FILE"
-  echo "Executing miniforge installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
-  # execute install file
-  sh Miniforge3-MacOSX-arm64.sh -b 2>&1 | tee -a "$LOG_FILE"
-  # remove install file
-  rm Miniforge3-MacOSX-arm64.sh
-  # activate
-  source $HOME/miniforge3/bin/activate
-  # check it
-  conda --version
-
-elif [ "$PLATFORM" = "Intel Mac" ] || [ "$PLATFORM" = "Linux" ]; then
-  # and anaconda for intel macs and linux
-  PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-  CONDA_LIST_1=`conda list`
-  echo "CONDA_LIST_1 yields: $CONDA_LIST_1" 2>&1 | tee -a "$LOG_FILE"
-  if [ "$CONDA_LIST_1" == "" ]; then
-    # the conda command is not recognised
-    echo "Conda might be installed, but the conda command is not recognised. Lets try to add some common locations of anaconda to the \$PATH variable and check again..." 2>&1 | tee -a "$LOG_FILE"
-    export PATH="~/anaconda3/bin:$PATH"
-    export PATH="~/Anaconda3/bin:$PATH"
-    export PATH="$HOME/anaconda3/bin:$PATH"
-    export PATH="$HOME/Anaconda3/bin:$PATH"
-    export PATH="/opt/anaconda3/bin:$PATH"
-    export PATH="/Opt/anaconda3/bin:$PATH"
-    export PATH="/opt/Anaconda3/bin:$PATH"
-    export PATH="/Opt/Anaconda3/bin:$PATH"
-    echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
-    # check if conda command works
-    CONDA_LIST_2=`conda list`
-    echo "CONDA_LIST_2 yields: $CONDA_LIST_2" 2>&1 | tee -a "$LOG_FILE"
-    if [ "$CONDA_LIST_2" == "" ]; then
-      # download and install anaconda
-      echo "Looks like anaconda is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-      if [ "$PLATFORM" = "Intel Mac" ]; then
-        curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-MacOSX-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
-        echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
-        INSTALL_SH=Anaconda3-2021.11-MacOSX-x86_64.sh
-      elif [ "$PLATFORM" = "Linux" ]; then
-        curl --keepalive -O https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh 2>&1 | tee -a "$LOG_FILE"
-        echo "Executing installation file now... The installation is not yet done. Please be patient."  2>&1 | tee -a "$LOG_FILE"
-        INSTALL_SH=Anaconda3-2021.11-Linux-x86_64.sh
-      fi
-      echo $INSTALL_SH
-      sh $INSTALL_SH -b 2>&1 | tee -a "$LOG_FILE"
-      echo "Lets try to add some common locations of anaconda to the \$PATH variable."  2>&1 | tee -a "$LOG_FILE"
-      export PATH="~/anaconda3/bin:$PATH"
-      export PATH="~/Anaconda3/bin:$PATH"
-      export PATH="$HOME/anaconda3/bin:$PATH"
-      export PATH="$HOME/Anaconda3/bin:$PATH"
-      export PATH="/opt/anaconda3/bin:$PATH"
-      export PATH="/Opt/anaconda3/bin:$PATH"
-      export PATH="/opt/Anaconda3/bin:$PATH"
-      export PATH="/Opt/Anaconda3/bin:$PATH"
-      echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
-      # check if this worked
-      CONDA_LIST_3=`conda list`
-      echo "CONDA_LIST_3 yields: $CONDA_LIST_3" 2>&1 | tee -a "$LOG_FILE"
-      if [ "$CONDA_LIST_3" == "" ]; then
-        echo "Looks like conda is installed but it still can't find the location of the anaconda3 folder. Lets try regex on the error message."  2>&1 | tee -a "$LOG_FILE"
-        REGEX_PATH=`sh $INSTALL_SH -b 2> >(grep -o "'.*'") | tr -d "'"`
-        echo "The prefix extracted from the error message is $REGEX_PATH" 2>&1 | tee -a "$LOG_FILE"
-        export PATH="$REGEX_PATH/bin:$PATH"
-        echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
-        # check if this worked
-        CONDA_LIST_4=`conda list`
-        echo "CONDA_LIST_4 yields: $CONDA_LIST_4" 2>&1 | tee -a "$LOG_FILE"
-        if [ "$CONDA_LIST_4" == "" ]; then
-          # could not get it to work
-          echo "The installation of anaconda could not be completed. Please install anaconda using the graphic installer (https://www.anaconda.com/products/distribution). After the anaconda is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
-        fi
-      else
-        echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
-      fi
-    else
-      echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
-    fi
-  else
-    echo "The conda command works!" 2>&1 | tee -a "$LOG_FILE"
-  fi
-  
-  # remove if the installation file is still there
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  if [ -f "$INSTALL_SH" ]; then
-    echo "File ${INSTALL_SH} is still there! Deleting now." 2>&1 | tee -a "$LOG_FILE"
-    rm $INSTALL_SH
-  else
-    echo "File ${INSTALL_SH} does not exist! Nothing to delete..." 2>&1 | tee -a "$LOG_FILE"
-  fi
-  
-  # write path to conda to txt file
-  echo `conda info | grep 'base environment' | cut -d ':' -f 2 | xargs | cut -d ' ' -f 1` > $PATH_TO_CONDA_INSTALLATION_TXT_FILE
-
-  # locate conda.sh on local machine and source it
-  PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-  echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA" 2>&1 | tee -a "$LOG_FILE"
-  PATH2CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-  echo "Path to conda.sh: $PATH2CONDA_SH" 2>&1 | tee -a "$LOG_FILE"
-  # shellcheck source=src/conda.sh
-  source "$PATH2CONDA_SH"
+# install miniforge
+MFG="miniforge"
+if [ -d "$MFG" ]; then
+  echo "Dir ${MFG} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  curl --keepalive -L -o Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+  bash Miniforge3.sh -b -p "${LOCATION_ECOASSIST_FILES}/miniforge"
+  rm Miniforge3.sh
 fi
 
+# source conda executable
+source "${CONDA_DIR}/etc/profile.d/conda.sh"
+source "${CONDA_DIR}/bin/activate"
+export PATH="${CONDA_DIR}/bin":$PATH
+
 # remove previous EcoAssist conda env if present
-conda env remove -n ecoassistcondaenv
+conda env remove -p $ECOASSISTCONDAENV
 
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
-  conda activate ecoassistcondaenv
+  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+  conda activate $ECOASSISTCONDAENV
   # requirements for labelImg
-  pip install pyqt5==5.15.2 lxml libxcb-xinerama0
+  $PIP install pyqt5==5.15.2 lxml libxcb-xinerama0
   echo "For the use of labelImg we need to install the libxcb-xinerama0 package (https://packages.ubuntu.com/bionic/libxcb-xinerama0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install libxcb-xinerama0. EcoAssist will still work fine without it but you might have problems with the labelImg software."
-  apt install libxcb-xinerama0 || sudo apt install libxcb-xinerama0 # first try without sudo
-  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  { # first try without sudo
+    apt install libxcb-xinerama0 
+  } || { # otherwise with sudo
+    sudo apt install libxcb-xinerama0 
+    }
+  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Exiting installation." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   pyrcc5 -o libs/resources.py resources.qrc
   python3 -m pip install --pre --upgrade lxml
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
-  conda activate ecoassistcondaenv
+  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+  conda activate $ECOASSISTCONDAENV
   # requirements for labelImg
-  pip install pyqt5==5.15.2 lxml
+  $PIP install pyqt5==5.15.2 lxml
 
-elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
+elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  $HOME/miniforge3/bin/conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
-  # activate environment
-  source $HOME/miniforge3/bin/activate
-  conda activate $HOME/miniforge3/envs/ecoassistcondaenv
-  # install nightly pytorch via miniforge as arm64
-  {
-    $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-  } || {
-    conda install -c conda-forge pytorch torchvision
+  conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
+  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+  conda activate $ECOASSISTCONDAENV
+  { # install nightly pytorch via miniforge as arm64
+    $PIP install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+  } || { # if the first try didn't work
+    conda install -c conda-forge pytorch torchvision -y
   }
   # install lxml
-  $HOME/miniforge3/envs/ecoassistcondaenv/bin/pip install lxml
+  $PIP install lxml
 
-  # we need homebrew to install PyQt5 for Apple Silicon macs...
-  # check if homebrew is already installed, if not install
-  PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
+  # we need homebrew to install PyQt5 for Apple Silicon macs
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  BREW_V_1=`brew -v`
-  echo "BREW_V_1 yields: $BREW_V_1" 2>&1 | tee -a "$LOG_FILE"
-  if [ "$BREW_V_1" == "" ]; then
-    # the brew command is not recognised
-    echo "Homebrew might be installed, but the brew command is not recognised. Lets try to add some common locations of homebrew to the \$PATH variable and check again..." 2>&1 | tee -a "$LOG_FILE"
-    export PATH="$LOCATION_ECOASSIST_FILES/homebrew/bin:$PATH"
-    export PATH="/usr:$PATH"
-    export PATH="/usr/homebrew:$PATH"
-    export PATH="/usr/bin:$PATH"
-    export PATH="/usr/homebrew/bin:$PATH"
-    export PATH="/usr/local:$PATH"
-    export PATH="/usr/local/homebrew:$PATH"
-    export PATH="/usr/local/bin:$PATH"
-    export PATH="/usr/local/homebrew/bin:$PATH"
-    export PATH="/usr/local/opt:$PATH"
-    export PATH="/usr/local/opt/homebrew:$PATH"
-    export PATH="/usr/local/opt/bin:$PATH"
-    export PATH="/usr/local/opt/homebrew/bin:$PATH"
-    export PATH="/opt:$PATH"
-    export PATH="/opt/homebrew:$PATH"
-    export PATH="/opt/bin:$PATH"
-    export PATH="/opt/homebrew/bin:$PATH"
-    echo "PATH var is: $PATH"  2>&1 | tee -a "$LOG_FILE"
-    # check if brew command works
-    BREW_V_2=`brew -v`
-    echo "BREW_V_2 yields: $BREW_V_2" 2>&1 | tee -a "$LOG_FILE"
-    if [ "$BREW_V_2" == "" ]; then
-      # download and install homebrew
-      echo "Looks like homebrew is not yet installed. Downloading installation file now..." 2>&1 | tee -a "$LOG_FILE"
-      mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew 2>&1 | tee -a "$LOG_FILE"
-      export PATH="$LOCATION_ECOASSIST_FILES/homebrew/bin:$PATH"
-      # check if this worked
-      BREW_V_3=`brew -v`
-      echo "BREW_V_3 yields: $BREW_V_3" 2>&1 | tee -a "$LOG_FILE"
-      if [ "$BREW_V_3" == "" ]; then
-        # could not get it to work
-        echo "The installation of homebrew could not be completed. Please install homebrew manually (https://brew.sh/). After homebrew is successfully installed, please execute the MacOS_Linux_install_EcoAssist.command again by double-clicking." 2>&1 | tee -a "$LOG_FILE"; exit 1; 
-      else
-        echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
-      fi
-    else
-      echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
-    fi
-  else
-    echo "The brew command works!" 2>&1 | tee -a "$LOG_FILE"
-  fi
-
-  # write path to homebrew to txt file
-  echo `brew --prefix` > $PATH_TO_BREW_INSTALLATION_TXT_FILE
+  mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew 2>&1 | tee -a "$LOG_FILE"
+  export PATH="${HOMEBREW_DIR}/bin:$PATH"
   
   # further requirements for labelImg
   arch -arm64 brew install pyqt@5
@@ -393,16 +291,19 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
 fi
 
 # requirements for EcoAssist
-pip install bounding_box
-pip install GitPython==3.1.30
+$PIP install bounding_box
+
+# requirements for yolov5
+$PIP install "gitpython>=3.1.30"
+$PIP install "tensorboard>=2.4.1"
+$PIP install "thop>=0.1.1"
+$PIP install "protobuf<=3.20.1"
+$PIP install "setuptools>=65.5.1"
 
 # log env info
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
-pip freeze >> "$LOG_FILE"
-
-# deactivate conda env
-conda deactivate
+$PIP freeze >> "$LOG_FILE"
 
 # log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`

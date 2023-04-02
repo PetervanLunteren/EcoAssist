@@ -1,97 +1,60 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 20 feb 2023 (latest edit)
+@REM ### Peter van Lunteren, 2 Apr 2023 (latest edit)
 
-@REM # set echo settings
+@REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM # set admin rights if not already in use (thanks user399109)
-@REM check for permissions
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-@REM if error flag set, we do not have admin
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
-    goto UACPrompt
-) else ( goto gotAdmin )
+@REM set variables
+set LOCATION_ECOASSIST_FILES=%homedrive%%homepath%\EcoAssist_files
+set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
+set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
+set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
+set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
+set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
+set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
+set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
 
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-    set params = %*:"=""
-    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 0 >> "%temp%\getadmin.vbs"
+@REM change directory
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
 
-    "%temp%\getadmin.vbs"
-    del "%temp%\getadmin.vbs"
-    exit /B
-
-:gotAdmin
-    pushd "%CD%"
-    CD /D "%~dp0"
-
-@REM # set path voor ecoassist root dir and add to PATH
-set LOCATION_ECOASSIST_FILES=%ProgramFiles%\EcoAssist_files
-set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
-
-@REM # set log file and delete the last one
+@REM set log file and delete the last one
 set LOG_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\session_log.txt
 if exist "%LOG_FILE%" del /F "%LOG_FILE%"
 
-@REM # log the start of the session
+@REM log the start of the session
 set START_DATE=%date% %time%
 echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
-@REM # change directory
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." >> "%LOG_FILE%" & PAUSE>nul & EXIT )
+@REM add path to git to PATH
+set PATH="%GIT_DIRECTORY%\cmd";%PATH%
 
-@REM # locate git
-git --version && set git_installed_1="Yes" || set git_installed_1="No"
-git --version && git --version | wtee -a "%LOG_FILE%" || echo "git --version (1) failed." | wtee -a "%LOG_FILE%"
-echo Is git installed ^(1^)^? !git_installed_1! | wtee -a "%LOG_FILE%"
-if !git_installed_1!=="No" (
-    if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_2.txt" (
-        set PATH_TO_GIT_INSTALLATION_TXT_FILE="%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_2.txt"
-        ) else (
-        set PATH_TO_GIT_INSTALLATION_TXT_FILE="%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\list_with_git_installations_1.txt"
-        )
-    for /F "tokens=*" %%A in ('type !PATH_TO_GIT_INSTALLATION_TXT_FILE!') do (
-        set str=%%A
-        @REM # remove the file part of path so that it is a directory
-        set str=!str:git.exe=!
-        echo Found path to git here: !str!
-        set PATH=!PATH!;!str!
-        echo "Added !str! to PATH!" | wtee -a "%LOG_FILE%"
-        echo !PATH! | wtee -a "%LOG_FILE%"
-    )
-)
-
-@REM # locate conda
-set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
-FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_ANACONDA=%%F)
-echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_ANACONDA%" >> "%LOG_FILE%"
-
-@REM # activate anaconda so that we can use it in a batch script
-call "%PATH_TO_ANACONDA%\Scripts\activate.bat" "%PATH_TO_ANACONDA%"
+@REM activate anaconda
+set PATH="%CONDA_DIRECTORY%\Scripts";%PATH%
+call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 echo Anaconda activated >> "%LOG_FILE%"
 
-@REM # activate environment
-call conda activate ecoassistcondaenv
+@REM activate environment
+call conda activate %ECOASSISTCONDAENV%
 echo conda environment activated >> "%LOG_FILE%"
 call conda info --envs >> "%LOG_FILE%"
 
-@REM # add gits to PYTHONPATH
+@REM add gits to PYTHONPATH
 set PYTHONPATH=%LOCATION_ECOASSIST_FILES%;%LOCATION_ECOASSIST_FILES%\cameratraps;%LOCATION_ECOASSIST_FILES%\ai4eutils;%LOCATION_ECOASSIST_FILES%\yolov5;%LOCATION_ECOASSIST_FILES%\EcoAssist;%PYTHONPATH%
 echo PYTHONPATH : %PYTHONPATH% >> "%LOG_FILE%"
 
-@REM # add python exe to beginning of PATH
-set PATH=%PATH_TO_PYTHON%;%PATH%
+@REM add python.exe to beginning of PATH
+set PATH=%ECOASSISTCONDAENV%;%PATH%
 echo PATH : %PATH% >> "%LOG_FILE%"
 
-@REM # check python version
+@REM check python version
 python -V >> "%LOG_FILE%"
+where python >> "%LOG_FILE%"
 
-@REM # run script
+@REM run script
 echo Opening EcoAssist now... >> "%LOG_FILE%"
 python EcoAssist\EcoAssist_GUI.py 2>&1 >> "%LOG_FILE%"
 
-@REM # timestamp the end of session
+@REM timestamp the end of session
 set END_DATE=%date% %time%
 echo EcoAssist session ended at %END_DATE% >> "%LOG_FILE%"

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open labelImg from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 26 September 2022 (latest edit)
+### Peter van Lunteren, 2 Apr 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
   echo "This is an OSX computer..."
   if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-    echo "   ...with an M1 processor."
-    PLATFORM="M1 Mac"
+    echo "   ...with an Apple Silicon processor."
+    PLATFORM="Apple Silicon Mac"
   else
     echo "   ...with an Intel processor."
     PLATFORM="Intel Mac"
@@ -19,39 +19,30 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
 fi
 
 # set location var
-if [ "$PLATFORM" = "M1 Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
 elif [ "$PLATFORM" = "Linux" ]; then
   LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
 fi
 
-# locate conda.sh on local machine, source it and add to PATH
-PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-echo "Path to conda as imported from $PATH_TO_CONDA_INSTALLATION_TXT_FILE is: $PATH_TO_CONDA"
-PATH2CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-echo "Path to conda.sh: $PATH2CONDA_SH"
-# shellcheck source=src/conda.sh
-source "$PATH2CONDA_SH"
+# set variables
+CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
+ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
+PIP="${ECOASSISTCONDAENV}/bin/pip"
+HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
 
-# activate conda env and add paths
-conda activate ecoassistcondaenv
+# add paths
 export PYTHONPATH="$PYTHONPATH:$LOCATION_ECOASSIST_FILES"
-export PATH="$PATH_TO_CONDA/envs/ecoassistcondaenv/lib/python3.8/site-packages:$PATH"
-
-# locate brew installed packages and add to PATH
-PATH_TO_BREW_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_brew_installation.txt
-if [ "$PLATFORM" = "M1 Mac" ] ; then
-  PATH_TO_BREW=`cat $PATH_TO_BREW_INSTALLATION_TXT_FILE`
-  echo "Path to brew as imported from $PATH_TO_BREW_INSTALLATION_TXT_FILE is: $PATH_TO_BREW"
-  export PATH="$PATH_TO_BREW/bin:$PATH"
+export PATH="$CONDA_DIR/envs/ecoassistcondaenv/lib/python3.8/site-packages:$PATH"
+if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
+  export PATH="$HOMEBREW_DIR/bin:$PATH"
 fi
 
 # open labelImg with arguments given by EcoAssist_GUI.py
 cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory to labelImg. Command could not be run. Did you change the name or folder structure since installing labelImg?"; exit 1; }
 pyrcc5 -o libs/resources.py resources.qrc
 echo "python3 labelImg.py '${1}' '${2}' '${1}'"
-if [ "$PLATFORM" = "M1 Mac" ] ; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   arch -arm64 python3 labelImg.py "${1}" "${2}" "${1}"
 else
   python3 labelImg.py "${1}" "${2}" "${1}"
