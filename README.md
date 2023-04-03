@@ -49,7 +49,7 @@ To sum up:
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/teaser_tinamou.JPG" width=45% height="auto" /> 
 </p>
 
-Camera trap images taken from [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
+Camera trap images taken from the [Missouri camera trap database](https://lila.science/datasets/missouricameratraps) and the [WCS Camera Traps dataset](https://lila.science/datasets/wcscameratraps).
 
 ## Users
 Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
