@@ -32,8 +32,12 @@ I've written this application in my free evenings and would really appreciate it
 * Open-source, free and will always remain free
 
 ## Extra information for ecologists
-EcoAssist comes with the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. It does not identify the animals, it just finds them. Unfortunately, there is no model that can identify all species on earth. If you want a species classifier for your specific ecosystem or project, you'll have to train it yourself. In EcoAssist you can easily transfer knowledge from MegaDetector to your own species classifier to save you tremendous amounts of data and time.
-* Use <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> to tag animals and filter out the empties
+EcoAssist comes with the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. That means that you can deploy MegaDetector to find the images or videos which contain an animal, and filter out the empties. There's also a possibility to process the images in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/).
+
+Unfortunately, MegaDetector does not identify the animals, it just finds them. There is no model that can identify all species on earth. If you want a species classifier for your specific ecosystem or project, you'll have to train it yourself. In EcoAssist you can easily transfer knowledge from MegaDetector to your own species classifier to save you tremendous amounts of data and time.
+
+To sum up:
+* Use <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> to tag animals and filter out the empty images/videos
 * Create input files for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * Easily create your own species classifier by transfer-learning from MegaDetector
 
