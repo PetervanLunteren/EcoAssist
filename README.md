@@ -42,11 +42,11 @@ To sum up:
 * Easily create your own species classifier by transfer-learning from MegaDetector
 
 ## Teasers
-<p float="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_1.jpg" width=45% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_2.jpg" width=45% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_3.jpg" width=45% height="auto" /> 
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/example_4.jpg" width=45% height="auto" /> 
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/teaser_animal.jpg" width=45% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/teaser_red_fox.JPG" width=45% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/teaser_ocelot.JPG" width=45% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/teaser_tinamou.JPG" width=45% height="auto" /> 
 </p>
 
 Camera trap images taken from [Missouri camera trap database](https://lila.science/datasets/missouricameratraps). Photo of street taken from [pixabay](https://pixabay.com/photos/dog-classics-stray-pup-team-6135495/).
