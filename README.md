@@ -17,19 +17,18 @@ I've written this application in my free evenings and would really appreciate it
 </p>
 
 ## Main features
-* Train a custom model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
-* Deploy your model on images or videos
-* Easily install all dependencies with one-click
-* Annotate your data using the open-source [labelImg](https://github.com/heartexlabs/labelImg) software
+* Runs on Windows, Mac, and Linux (no admin rights required)
+* Train using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
+* Deploy on images or videos
+* Annotate using the [labelImg](https://github.com/heartexlabs/labelImg) software
 * Post-process your data to
   * separate
   * visualise
   * crop
   * label
-  * export
-* Runs on Windows, Mac, and Linux
-* No admin rights required
-* GPU acceleration for NVIDIA and Apple silicon MPS
+  * export to .csv
+* Easily install all dependencies with one-click
+* GPU acceleration for NVIDIA and Apple silicon
 * Open-source, free and will always remain free
 
 ## Extra information for ecologists
@@ -59,10 +58,10 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 2. [Download](#download)
 3. [Update](#update)
 4. [GPU support](#gpu-support)
-5. [Custom model support](#custom-model-support)
-6. [Citation](#citation)
-7. [How to uninstall EcoAssist](#how-to-uninstall-ecoassist)
-8. [Code contributors](#code-contributors)
+5. [EcoAssist citation](#ecoassist-citation)
+6. [MegaDetector citation](#megadetector-citation)
+6. [How to uninstall EcoAssist](#how-to-uninstall-ecoassist)
+7. [Code contributors](#code-contributors)
 
 ## Requirements
 There are no hard system requirements for EcoAssist since it is largely hardware agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8GB of RAM, but preferably 16 or 32GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#how-to-uninstall-ecoassist) EcoAssist is as simple as deleting a folder.
@@ -105,19 +104,9 @@ EcoAssist will automatically run on GPU if available. The appropriate `CUDAtoolk
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Training_on_GPU.png" width=90% height="auto" >
 </p>
 
-## Custom model support
-EcoAssist can run custom `yolov5` models if they are retrained from the MegaDetector model using transfer learning. For example, if you find that MegaDetector is not great at recognising a certain species as "animal", you can retrain the model and add some labelled data of the cases you want it to improve on. You can also expand on the three default classes ("animal", "person" and "vehicle") and train the model to detect custom classes (e.g. "species A" and "species B"). Want to know how to train your own model? See [this tutorial](https://www.kaggle.com/code/evmans/train-megadetector-tutorial) created by [ehallein](https://github.com/ehallein).
-
-## Citation
-If you use EcoAssist in your research, don't forget to cite the engine behind EcoAssist ([MegaDetector](https://github.com/microsoft/CameraTraps/blob/main/megadetector.md)) and the EcoAssist software itself.
+## EcoAssist citation
+If you used EcoAssist in your research, please use the following citation.
 ```BibTeX
-@article{beery2019efficient,
-  title     = {Efficient Pipeline for Camera Trap Image Review},
-  author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
-  journal   = {arXiv preprint arXiv:1907.06772},
-  year      = {2019}
-}
-
 @software{van_Lunteren_EcoAssist_2022,
   title     = {{EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model}},
   author    = {van Lunteren, Peter},
@@ -125,6 +114,17 @@ If you use EcoAssist in your research, don't forget to cite the engine behind Ec
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.7223363},
   url       = {https://github.com/PetervanLunteren/EcoAssist}
+}
+```
+
+## MegaDetector citation
+If you used the MegaDetector model to analyse images or retrain your model, please use the following citation.
+```BibTex
+@article{beery2019efficient,
+  title     = {Efficient Pipeline for Camera Trap Image Review},
+  author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
+  journal   = {arXiv preprint arXiv:1907.06772},
+  year      = {2019}
 }
 ```
 
