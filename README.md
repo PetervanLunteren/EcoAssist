@@ -98,10 +98,11 @@ bash $HOME/Downloads/install.command
 To update to the latest version, you'll have to repeat the [download](#download) procedure. It will replace all the old files and packages with the new ones. It's all automatic, you don't have to do anything.
 
 ## GPU support
-EcoAssist will automatically run on Windows and Linux if compatible `CUDA` GPU is available with a recently installed `NVIDIA` driver. See [this page](https://github.com/petargyurov/megadetector-gui/blob/master/GPU_SUPPORT.md) prepared by [Petar Gyurov](https://github.com/petargyurov) for more information. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux, so no further action is required. However, this software is not included for Mac users, since `NVIDIA` GPU's are not available on Macs. Mac users with other compatible GPU can install the proper software for their GPU into the `ecoassistcondaenv` conda environment. It should then automatically run on GPU. The progress window will display whether EcoAssist is running on CPU or GPU.
+EcoAssist will automatically run on GPU if available. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux. If you have `NVIDIA` GPU available but it doesn't recognise it, make sure you have a [recent driver](https://www.nvidia.com/en-us/geforce/drivers/) installed, then reboot. An `MPS`-compatible version of `pytorch` is included in the installation for Apple silicon users. But please note that applying machine learning on Apple silicon processors is still under beta version. That means that you might run into errors when trying to run on GPU. My experience is that deploying a model runs smoothly on GPU, but training still throws errors. Training on CPU will of course be still avaialble. The progress window and console output will display whether EcoAssist is running on CPU or GPU. 
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=40% height="auto" >
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=50% height="auto" >
+  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Training_on_GPU.png" width=90% height="auto" >
 </p>
 
 ## Custom model support
