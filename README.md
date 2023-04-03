@@ -30,6 +30,7 @@ I've written this application in my free evenings and would really appreciate it
 * Runs on Windows, Mac, and Linux
 * No admin rights required
 * GPU acceleration for NVIDIA and Apple silicon MPS
+* Open-source, free and will always remain free
 
 ## Extra information for ecologists
 EcoAssist comes with the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model pre-loaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. It does not identify the animals - it just finds them. There is no model that can identify all species on earth. If you want a species classifier for your specific ecosystem or project, you'll have to train it yourself. In EcoAssist you can easily transfer knowledge from MegaDetector to your own species classifier to save you tremendous amounts of data and time.
@@ -54,21 +55,25 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 </p>
 
 ## Quick links
-1. [Download](#download)
-2. [Update](#update)
-3. [GPU support](#gpu-support)
-4. [Custom model support](#custom-model-support)
-5. [Citation](#citation)
-6. [How to uninstall EcoAssist](#how-to-uninstall-ecoassist)
-7. [Code contributors](#code-contributors)
+1. [Requirements](#requirements)
+2. [Download](#download)
+3. [Update](#update)
+4. [GPU support](#gpu-support)
+5. [Custom model support](#custom-model-support)
+6. [Citation](#citation)
+7. [How to uninstall EcoAssist](#how-to-uninstall-ecoassist)
+8. [Code contributors](#code-contributors)
+
+## Requirements
+There are no hard system requirements for EcoAssist since it is largely hardware agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8GB of RAM, but preferably 16 or 32GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#how-to-uninstall-ecoassist) EcoAssist is as simple as deleting a folder.
 
 ## Download
-EcoAssist will install quite a lot of dependencies (python packages, git repositories, conda distribution, etc.), so don't panic if the installation takes 10-20 minutes (depending on your internet connection and RAM) and generates lots of textual feedback as it does so. Please note that some anti-virus, VPN or other protection software enabled during the installation might interfere. If you're having trouble, please disable this protection software during the  installation.
+EcoAssist will install quite a lot of dependencies, so don't panic if the installation takes 10-20 minutes and generates lots of textual feedback as it does so. Please note that anti-virus, VPN or other protection software might interefere with the installation. If you're having trouble, please disable this protection software for the duration of the installation.
 
-EcoAssist needs [Anaconda](https://www.anaconda.com/products/individual), [Git](https://git-scm.com/) and a bunch of other open-source software to run properly. The installation files linked in the steps below will check if these software packages are already present on your computer, and install them if needed. Since EcoAssist will install quite a lot of Python stuff, don't panic if the installation takes 10-20 minutes (depending on your internet connection and RAM) and generates lots of textual feedback as it does so. Somewhere during the installation, there will be a message saying that you need to update anaconda (`Please update conda by running $ conda update -n base -c defaults conda`). That is just Anaconda saying there is a new version available. You can ignore that. Futhermore, some anti-virus, VPN or other protection software enabled during the EcoAssist installation might block the download of some files. If you're having trouble, please disable this protection software during the EcoAssist installation.
+Opening EcoAssist for the first time will take a bit longer than usual due to script compiling. Have patience, all subsequent times will be better.
 
 ### Windows installation
-1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter. If you don't have admin rights, it will prompt you for an admin password because it needs access to the `C:\` drive. Don't have an admin password? See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/Windows_no_admin_install.md) to install it without admin privileges. [Git](https://gitforwindows.org/) and [Anaconda](https://www.anaconda.com/products/individual) will be installed via graphical installers if it's not already installed. If you don't understand all the options prompted during these installations - the default options are just fine.
+1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
 2. When the installation is finished, there will be a shortcut file in the same folder as your installation file (so probably `Downloads`). You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 ### Mac installation
@@ -77,8 +82,8 @@ EcoAssist needs [Anaconda](https://www.anaconda.com/products/individual), [Git](
 chmod 755 $HOME/Downloads/install.command
 bash $HOME/Downloads/install.command
 ```
-2. If you're a M1/M2 user, go for a nice walk outside because this may take about 30 minutes to complete. Some of the software packages are not yet adopted to the M1/M2 processor. There is a workaround, but it takes some time. In order to make it work on M1/M2 computers, the guys at MegaDetector had to re-build the models with *slightly* different results. The bounding boxes appear to be the same to around two decimal places in both location and confidence, which is good, but not *exactly* the same. Please keep in mind that this is an unvalidated version of MegaDetector, and they don't exactly know how it compares to the validated version since it is much less tested.
-3. When the installation is done, you'll find a `EcoAssist.command` file in your `Applications` folder. The app will open when double-clicked. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+2. If you're an Apple silicon user (M1/M2), go for a nice walk because this may take about 30 minutes to complete. Some of the software packages are not yet adopted to the Apple silicon processor. There is a workaround, but it takes some time. In order to make MegaDetector work on Apple silicon computers, the guys at [AI for Earth](https://www.microsoft.com/en-us/ai/ai-for-earth) had to re-build the model with *slightly* different results. The bounding boxes appear to be the same to around two decimal places in both location and confidence, which is good, but not *exactly* the same. Please keep in mind that this is an unvalidated version of MegaDetector, and they don't exactly know how it compares to the validated version since it is much less tested.
+4. When the installation is done, you'll find a `EcoAssist.command` file in your `Applications` folder. The app will open when double-clicked. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
 
 ### Linux installation
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.command).
