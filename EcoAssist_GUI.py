@@ -141,10 +141,10 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         file = image['file']
         detections_list = image['detections']
         n_detections = len(detections_list)
-        max_detection_conf = image['max_detection_conf']
         progress_postprocess_progbar['value'] += 100 / n_images
 
-        # init lists
+        # init vars
+        max_detection_conf = 0.0
         unique_labels = []
         bbox_info = []
         csv_detectons = []
@@ -163,6 +163,10 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
             # get confidence
             conf = detection["conf"]
+
+            # write max conf
+            if conf > max_detection_conf:
+                max_detection_conf = conf
 
             # if above user specified thresh
             if conf >= thresh:
