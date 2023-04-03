@@ -5,7 +5,7 @@
 </p>
 
 ## Introduction
-EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the people at <a href="https://ultralytics.com/">Ultralytics</a>, it is possible to train a model to locate objects of interest in images and videos. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Annotate, train, and deploy your models without a single line of code.
+EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the people at <a href="https://ultralytics.com/">Ultralytics</a>, it's possible to create models which can locate objects of your interest in images. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface with a one-click install, which makes it easy for everybody. Annotate, train, and deploy your models without a single line of code.
 
 I initially created EcoAssist with the aim of assisting ecological projects (hence the name), but it will handle any kind of object. If you’re not an ecologist and not interested in animals, you’ll just have to input images of your object of interest (blood cells, trafic signs, plant diseases - whatever you want) and ignore the references to the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model. The rest will be exactly the same.
 
