@@ -9,4 +9,6 @@
 
 ![](https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png)
 
+<img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/logo_large.png" alt="Untitled" />
+
 ### EcoAssist is an application designed to make life easier for people who want to work with object detection models. See its [GitHub page](https://github.com/PetervanLunteren/EcoAssist/blob/main/README.md) for more information.
