@@ -31,15 +31,10 @@ I've written this application in my free evenings and would really appreciate it
 * GPU acceleration for NVIDIA and Apple Silicon
 * Open-source, free and will always remain free
 
-## Extra information for ecologists
+## Extra features for ecologists
 EcoAssist comes with the <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. That means that you can deploy MegaDetector to find the images or videos which contain an animal, and filter out the empties. There's also a possibility to further process the images in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/).
 
 Unfortunately, MegaDetector does not identify the animals, it just finds them. There is no model that can identify all species on earth. If you want a species classifier for your specific ecosystem or project, you'll have to train it yourself. In EcoAssist you can easily transfer knowledge from MegaDetector to your own species classifier to save you tremendous amounts of data and time.
-
-To sum up:
-* Use <a href="https://github.com/microsoft/CameraTraps/blob/main/megadetector.md">MegaDetector</a> to tag animals and filter out the empty images/videos
-* Create input files for further processing in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
-* Easily create your own species classifier by transfer-learning from MegaDetector
 
 ## Teasers
 <p align="center">
@@ -100,14 +95,14 @@ bash $HOME/Downloads/install.command
 To update to the latest version, you'll have to repeat the [download](#download) procedure. It will replace all the old files and packages with the new ones. It's all automatic, you don't have to do anything.
 
 ## GPU support
-EcoAssist will automatically run on GPU if available. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux. If you have `NVIDIA` GPU available but it doesn't recognise it, make sure you have a [recent driver](https://www.nvidia.com/en-us/geforce/drivers/) installed, then reboot. An `MPS` compatible version of `Pytorch` is included in the installation for Apple Silicon users. Please note that applying machine learning on Apple Silicon GPU's is still under beta version. That means that you might run into errors when trying to run on GPU. My experience is that deployment runs smoothly on GPU, but training throws errors. Training on CPU will of course still work. The progress window and console output will display whether EcoAssist is running on CPU or GPU. 
+EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux. If you have NVIDIA GPU available but it doesn't recognise it, make sure you have a [recent driver](https://www.nvidia.com/en-us/geforce/drivers/) installed, then reboot. An MPS compatible version of `Pytorch` is included in the installation for Apple Silicon users. Please note that applying machine learning on Apple Silicon GPU's is still under beta version. That means that you might run into errors when trying to run on GPU. My experience is that deployment runs smoothly on GPU, but training throws errors. Training on CPU will of course still work. The progress window and console output will display whether EcoAssist is running on CPU or GPU. 
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/progress_window.png" width=50% height="auto" >
   <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/Training_on_GPU.png" width=90% height="auto" >
 </p>
 
-## Citations
+## Cite
 #### EcoAssist citation
 If you used EcoAssist in your research, please use the following citation.
 ```BibTeX
