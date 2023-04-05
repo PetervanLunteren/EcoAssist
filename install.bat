@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 2 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 5 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -23,7 +23,7 @@ set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
 set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
 
-@REM delete previous installation of EcoAssist if present so that it can update
+@REM delete previous installation of EcoAssist v4 or higher
 if exist "%LOCATION_ECOASSIST_FILES%" (
     rd /q /s "%LOCATION_ECOASSIST_FILES%"
     echo Removed "%LOCATION_ECOASSIST_FILES%"
@@ -62,6 +62,31 @@ if %OS_BITS%==64 echo This is an 64-bit operating system. | wtee -a "%LOG_FILE%"
 
 @REM log system information
 systeminfo | wtee -a "%LOG_FILE%"
+
+@REM check if user is updating from v3 or lower (different location of EcoAssist_files)
+set EA_OLD_DIR=%ProgramFiles%\EcoAssist_files
+if exist "%EA_OLD_DIR%" (
+    echo Updating from EcoAssist v3 or lower | wtee -a "%LOG_FILE%"
+
+    @REM locate conda which was used for the install of v3 or lower
+    set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%EA_OLD_DIR%\EcoAssist\logfiles\path_to_conda_installation.txt
+    FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_ANACONDA=%%F)
+    echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_ANACONDA%" >> "%LOG_FILE%"
+
+    @REM activate this anaconda
+    call %PATH_TO_ANACONDA%\Scripts\activate.bat %PATH_TO_ANACONDA%
+
+    @REM remove old ecoassistcondaenv
+    echo conda envs before deleting old ecoassistcondaenv >> "%LOG_FILE%"
+    call conda info --envs >> "%LOG_FILE%"
+    call conda env remove -n ecoassistcondaenv
+    echo conda envs after deleting old ecoassistcondaenv >> "%LOG_FILE%"
+    call conda info --envs >> "%LOG_FILE%"
+
+    @REM remove old files
+    rd /q /s "%EA_OLD_DIR%"
+    echo Removed files from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
+)
 
 @REM install git for windows
 echo Downloading git for windows now | wtee -a "%LOG_FILE%"
@@ -194,7 +219,6 @@ set PATH="%CONDA_DIRECTORY%\Scripts";%PATH%
 call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 
 @REM create conda env and install packages required for MegaDetector
-call conda env remove -p %ECOASSISTCONDAENV%
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
 call conda env create --name ecoassistcondaenv --file environment-detector.yml
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
@@ -231,6 +255,3 @@ if exist "%LOCATION_ECOASSIST_FILES%\installation_log.txt" ( move /Y "%LOCATION_
 
 @REM end process
 echo THE INSTALLATION IS DONE^^! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.lnk file in the same folder as this installation file ^(so probably Downloads^).
-
-@REM close window with any key
-PAUSE>nul
