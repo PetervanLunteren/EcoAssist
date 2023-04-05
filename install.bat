@@ -86,6 +86,8 @@ if exist "%EA_OLD_DIR%" (
     @REM remove old files
     rd /q /s "%EA_OLD_DIR%"
     echo Removed files from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
+) else (
+    echo Dir %EA_OLD_DIR% not present. No old files to remove. | wtee -a "%LOG_FILE%"
 )
 
 @REM install git for windows
