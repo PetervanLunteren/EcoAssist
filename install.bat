@@ -217,13 +217,11 @@ if %OS_BITS%==64 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com
 echo Installing local version of miniconda... It will not interfere with any other existing versions of conda. This may take some time... | wtee -a "%LOG_FILE%"
 start /wait "" miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%CONDA_DIRECTORY%
 if exist miniconda.exe del /F miniconda.exe
-set PATH="%CONDA_DIRECTORY%\Scripts";%PATH%
+set PATH="%CONDA_DIRECTORY%";"%CONDA_DIRECTORY%\Scripts";%PATH%
 call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 
 @REM create conda env and install packages required for MegaDetector
-cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
-call conda env create --name ecoassistcondaenv --file environment-detector.yml
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+call conda env create --name ecoassistcondaenv --file "%LOCATION_ECOASSIST_FILES%\cameratraps\environment-detector.yml"
 call activate %ECOASSISTCONDAENV%
 
 @REM install additional packages for labelImg
