@@ -80,7 +80,7 @@ if exist "%EA_OLD_DIR%" (
     call conda env remove -n ecoassistcondaenv
     echo conda envs after deleting old ecoassistcondaenv >> "%LOG_FILE%"
     call conda info --envs >> "%LOG_FILE%"
-    echo Removed conda environment from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
+    echo Removed conda environment from v3 or lower | wtee -a "%LOG_FILE%"
 
     @REM remove old files
     rd /q /s "%EA_OLD_DIR%"
