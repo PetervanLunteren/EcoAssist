@@ -68,13 +68,11 @@ set EA_OLD_DIR=%ProgramFiles%\EcoAssist_files
 if exist "%EA_OLD_DIR%" (
     echo Updating from EcoAssist v3 or lower | wtee -a "%LOG_FILE%"
 
-    @REM locate conda which was used for the install of v3 or lower
+    @REM locate conda which was used for the install of v3 or lower and activate
     set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%EA_OLD_DIR%\EcoAssist\logfiles\path_to_conda_installation.txt
-    FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_ANACONDA=%%F)
-    echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_ANACONDA%" >> "%LOG_FILE%"
-
-    @REM activate this anaconda
-    call %PATH_TO_ANACONDA%\Scripts\activate.bat %PATH_TO_ANACONDA%
+    FOR /F "tokens=* USEBACKQ" %%F IN (`type "!PATH_TO_CONDA_INSTALLATION_TXT_FILE!"`) DO ( SET PATH_TO_ANACONDA=%%F)
+    echo Path to conda as imported from "!PATH_TO_CONDA_INSTALLATION_TXT_FILE!" is: "!PATH_TO_ANACONDA!" | wtee -a "%LOG_FILE%"
+    call !PATH_TO_ANACONDA!\Scripts\activate.bat !PATH_TO_ANACONDA!
 
     @REM remove old ecoassistcondaenv
     echo conda envs before deleting old ecoassistcondaenv >> "%LOG_FILE%"
@@ -82,10 +80,11 @@ if exist "%EA_OLD_DIR%" (
     call conda env remove -n ecoassistcondaenv
     echo conda envs after deleting old ecoassistcondaenv >> "%LOG_FILE%"
     call conda info --envs >> "%LOG_FILE%"
+    echo Removed conda environment from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
 
     @REM remove old files
     rd /q /s "%EA_OLD_DIR%"
-    echo Removed files from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
+    echo Removed EcoAssist_files from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir %EA_OLD_DIR% not present. No old files to remove. | wtee -a "%LOG_FILE%"
 )
