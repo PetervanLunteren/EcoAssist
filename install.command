@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 2 Apr 2023 (latest edit)
+### Peter van Lunteren, 10 Apr 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -39,6 +39,24 @@ CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
 ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
 PIP="${ECOASSISTCONDAENV}/bin/pip"
 HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
+
+# remove the old ecoassistcondaenv
+PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
+if [ -f "$PATH_TO_CONDA_INSTALLATION_TXT_FILE" ]; then
+  # intel macs and linux have a txt file with the conda path
+  PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
+  PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
+  echo "PATH_TO_CONDA_INSTALLATION_TXT_FILE exists: $PATH_TO_CONDA_INSTALLATION_TXT_FILE"
+  echo "Path to conda is: $PATH_TO_CONDA"
+  echo "Path to conda.sh: $PATH_TO_CONDA_SH"
+  source "$PATH_TO_CONDA_SH"
+  conda env remove -n ecoassistcondaenv
+elif [ -d "$HOME/miniforge3/envs/ecoassistcondaenv" ]; then
+  # apple silicons have it installed in their home dir
+  echo "ecoassistcondaenv exists in $HOME/miniforge3/envs/ecoassistcondaenv"
+  source $HOME/miniforge3/bin/activate
+  conda env remove -p $HOME/miniforge3/envs/ecoassistcondaenv
+fi
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES
