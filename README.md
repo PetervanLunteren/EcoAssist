@@ -62,10 +62,10 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 7. [Code contributors](#code-contributors)
 
 ## Requirements
-There are no hard system requirements for EcoAssist since it is largely hardware-agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8 GB of RAM, but preferably 16 or 32 GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#how-to-uninstall-ecoassist) EcoAssist is as simple as deleting a folder.
+There are no hard system requirements for EcoAssist since it is largely hardware-agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8 GB of RAM, but preferably 16 or 32 GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#uninstall) EcoAssist is as simple as deleting a folder.
 
 ## Download
-EcoAssist will install quite a lot of dependencies, so don't panic if the installation takes 10-20 minutes and generates lots of textual feedback as it does so. Please note that antivirus, VPN or other protection software might interfere with the installation. If you're having trouble, please disable this protection software for the duration of the installation.
+EcoAssist will install quite a lot of dependencies, so don't panic if the installation takes 10-20 minutes and generates lots of textual feedback as it does so. Please note that some antivirus, VPN or other protection software might interfere with the installation. If you're having trouble, please disable this protection software for the duration of the installation.
 
 Opening EcoAssist for the first time will take a bit longer than usual due to script compiling. Have patience, all subsequent times will be better.
 
