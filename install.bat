@@ -1,20 +1,62 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 5 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 13 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM switch to homedrive in case user executes this script from different drive
-echo Install script is located on drive: '%~d0'
-%homedrive%
-echo The home drive is: '%CD:~0,2%'
+@REM find a suitable location
+if exist "%homedrive%%homepath%" (
+    @REM set to homedrive if set
+    echo Homedrive is set. 
+    set ECOASSIST_DRIVE=%homedrive%
+    set ECOASSIST_PREFIX=%homedrive%%homepath%
+) else (
+    @REM check other drives
+    echo Homedrive is not set. Checking permission for drives.
+    FOR %%b in (A: B: C: D: E: F: G: H: I: J: K: L: M: N: O: P: Q: R: S: T: U: V: W: X: Y: Z:) do (
+        echo Checking "%%b"...
+        if exist "%%b" (
+            echo Drive "%%b" exists.
+
+            @REM check user permission
+            echo Checking permission for drive "%%b".
+            FOR %%c in ("%username%" "Everyone") do (
+                echo Checking permission for %%c
+                FOR /F "USEBACKQ tokens=2 delims=:" %%F IN (`ICACLS "%%b" ^| FIND %%c`) DO (
+                    set perm_str=%%F
+                    echo ICACLS permission of %%c for drive "%%b" is !perm_str!
+                    set adj_perm_str=!perm_str:F=!
+
+                    @REM check access
+                    if not x!perm_str!==x!adj_perm_str! (
+                        @REM set prefix if full access
+                        set ECOASSIST_DRIVE=%%b
+                        set ECOASSIST_PREFIX=%%b
+                        goto exit_permission_loop
+                    )
+                )         
+            )
+        )
+    )
+)
+
+@REM if no suitable location has been found
+echo "Could not find a suitable install location. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit
+:exit_permission_loop
+
+@REM switch to install drive in case user executes this script from different drive
+set SCRIPT_DRIVE=%~d0
+echo Install script is located on drive: '%SCRIPT_DRIVE%'
+echo EcoAssist will be installed on drive: '%ECOASSIST_DRIVE%'
+%ECOASSIST_DRIVE%
+echo Changed drive to: '%CD:~0,2%'
 
 @REM timestamp the start of installation
 set START_DATE=%date%%time%
 
 @REM set variables
-set LOCATION_ECOASSIST_FILES=%homedrive%%homepath%\EcoAssist_files
+set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
 set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
 set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
 set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
@@ -37,7 +79,7 @@ if not exist "%LOCATION_ECOASSIST_FILES%" (
 )
 
 @REM change directory
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 
 @REM install wtee to log information
 curl -OL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/wintee/wtee.exe
@@ -101,7 +143,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
     echo Dir EcoAssist already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/PetervanLunteren/EcoAssist.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
@@ -123,10 +165,10 @@ echo oLink.IconLocation ^= "%LOCATION_ECOASSIST_FILES%\EcoAssist\imgs\logo_small
 echo oLink.Save >> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
 
 @REM execute this .vbs file to create a shortcut with the EcoAssist logo
-%~d0 @REM change current drive back to the drive where this script is located
+%SCRIPT_DRIVE% @REM switch to script drive
 echo "Executing CreateShortcut.vbs now..." | wtee -a "%LOG_FILE%"
 cscript "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\CreateShortcut.vbs"
-%homedrive% @REM back to homedrive
+%ECOASSIST_DRIVE% @REM back to installation drive
 echo "Created EcoAssist.lnk" | wtee -a "%LOG_FILE%"
 
 @REM clone cameratraps git if not present
@@ -134,11 +176,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     echo Dir cameratraps already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/Microsoft/cameratraps
-    cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% checkout 6223b48b520abd6ad7fe868ea16ea58f75003595
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
 )
@@ -148,11 +190,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
     echo Dir ai4eutils already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/Microsoft/ai4eutils
-    cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
 )
@@ -162,7 +204,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     echo Dir yolov5 already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/ultralytics/yolov5.git
     @REM checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM check the size of the folder
@@ -174,11 +216,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\labelImg\" (
     echo Dir labelImg already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir labelImg does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/tzutalin/labelImg.git
-    cd "%LOCATION_ECOASSIST_FILES%\labelImg" || ( echo "Could not change directory to labelImg. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%\labelImg" || ( echo "Could not change directory to labelImg. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     %GIT_PYTHON_GIT_EXECUTABLE% checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\labelImg" | wtee -a "%LOG_FILE%"
 )
@@ -189,9 +231,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5a.0.0.pt" (
 ) else (
     echo "File md_v5a.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
     if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
@@ -202,9 +244,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 ) else (
     echo "File md_v5b.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
     if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & PAUSE>nul & EXIT )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
@@ -256,4 +298,4 @@ if exist "%LOCATION_ECOASSIST_FILES%\installation_log.txt" ( move /Y "%LOCATION_
 echo THE INSTALLATION IS DONE^^! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.lnk file in the same folder as this installation file ^(so probably Downloads^).
 
 @REM keep console open after finishing
-cmd /k
+cmd /k & exit
