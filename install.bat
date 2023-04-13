@@ -11,7 +11,7 @@ if exist "%homedrive%%homepath%" (
     echo Homedrive is set. 
     set ECOASSIST_DRIVE=%homedrive%
     set ECOASSIST_PREFIX=%homedrive%%homepath%
-    goto exit_permission_loop
+    goto skip_early_exit
 ) else (
     @REM check other drives
     echo Homedrive is not set. Checking permission for drives.
@@ -34,7 +34,7 @@ if exist "%homedrive%%homepath%" (
                         @REM set prefix if full access
                         set ECOASSIST_DRIVE=%%b
                         set ECOASSIST_PREFIX=%%b
-                        goto exit_permission_loop
+                        goto skip_early_exit
                     )
                 )         
             )
@@ -44,7 +44,7 @@ if exist "%homedrive%%homepath%" (
 
 @REM if no suitable location has been found
 echo "Could not find a suitable install location. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit
-:exit_permission_loop
+:skip_early_exit
 
 @REM switch to install drive in case user executes this script from different drive
 set SCRIPT_DRIVE=%~d0
