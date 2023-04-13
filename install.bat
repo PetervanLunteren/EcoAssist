@@ -11,6 +11,7 @@ if exist "%homedrive%%homepath%" (
     echo Homedrive is set. 
     set ECOASSIST_DRIVE=%homedrive%
     set ECOASSIST_PREFIX=%homedrive%%homepath%
+    goto exit_permission_loop
 ) else (
     @REM check other drives
     echo Homedrive is not set. Checking permission for drives.
