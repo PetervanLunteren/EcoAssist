@@ -74,7 +74,7 @@ if exist "%LOCATION_ECOASSIST_FILES%" (
 
 @REM make dir
 if not exist "%LOCATION_ECOASSIST_FILES%" (
-    mkdir "%LOCATION_ECOASSIST_FILES%"
+    mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     attrib +h "%LOCATION_ECOASSIST_FILES%"
     echo Created empty dir "%LOCATION_ECOASSIST_FILES%"
 )
