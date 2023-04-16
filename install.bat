@@ -74,13 +74,13 @@ if exist "%LOCATION_ECOASSIST_FILES%" (
 
 @REM make dir
 if not exist "%LOCATION_ECOASSIST_FILES%" (
-    mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
     attrib +h "%LOCATION_ECOASSIST_FILES%"
     echo Created empty dir "%LOCATION_ECOASSIST_FILES%"
 )
 
 @REM change directory
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." & cmd /k & exit )
 
 @REM install wtee to log information
 curl -OL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/wintee/wtee.exe
