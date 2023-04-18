@@ -137,6 +137,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         if cancel_var:
             break
         
+        # check for failure
+        if "failure" in image:
+            mb.showwarning("Warning", f"FILE: '{image['file']}'\n\nFAILURE: '{image['failure']}'\n\nThis file will be skipped.")
+            continue
+        
         # get image info
         file = image['file']
         detections_list = image['detections']
