@@ -107,7 +107,7 @@ EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. Th
 If you used EcoAssist in your research, please use the following citation.
 ```BibTeX
 @software{van_Lunteren_EcoAssist_2022,
-  title     = {{EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model}},
+  title     = {{EcoAssist: A no-code platform to train and deploy YOLOv5 object detection and the MegaDetector model}},
   author    = {van Lunteren, Peter},
   year      = {2022},
   publisher = {Zenodo},
