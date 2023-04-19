@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 10 Apr 2023 (latest edit)
+### Peter van Lunteren, 19 Apr 2023 (Evan Hallein, latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -113,7 +113,8 @@ echo ""  2>&1 | tee -a "$LOG_FILE"
 # install command line tools if needed (thanks BaseZen of StackOverflow)
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   os=$(sw_vers -productVersion | awk -F. '{print $1 "." $2}')
-  if softwareupdate --history | grep --silent "Command Line Tools.*${os}"; then
+  #removed os version check for command line tools as --history prints following now: "Command Line Tools for Xcode   14.3   01/04/2023, 09:36:08"
+  if softwareupdate --history | grep --silent "Command Line Tools"; then
       echo 'Command-line tools already installed.' 2>&1 | tee -a "$LOG_FILE"
   else
       echo 'Installing Command-line tools...' 2>&1 | tee -a "$LOG_FILE"
