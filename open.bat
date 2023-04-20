@@ -5,24 +5,14 @@
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM check location of EcoAssist
-if exist "%homedrive%%homepath%\EcoAssist_files" (
+@REM set location
+if defined CUSTOM_ECOASSIST_LOCATION (
+    set ECOASSIST_DRIVE=%CUSTOM_ECOASSIST_LOCATION:~0,2%
+    set ECOASSIST_PREFIX=%CUSTOM_ECOASSIST_LOCATION%
+) else (
     set ECOASSIST_DRIVE=%homedrive%
     set ECOASSIST_PREFIX=%homedrive%%homepath%
-    goto skip_early_exit
-) else (
-    FOR %%b in (A: B: C: D: E: F: G: H: I: J: K: L: M: N: O: P: Q: R: S: T: U: V: W: X: Y: Z:) do (
-        if exist "%%b\EcoAssist_files" (
-            set ECOASSIST_DRIVE=%%b
-            set ECOASSIST_PREFIX=%%b
-            goto skip_early_exit
-        )
-    )
 )
-
-@REM if EcoAssist_files can't be found
-echo "Could not find EcoAssist_files. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit
-:skip_early_exit
 
 @REM set variables
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files

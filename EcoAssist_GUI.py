@@ -155,7 +155,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         csv_detectons = []
         csv_files = []
 
-        # open image
+        # open files
         if vis or crp or yol or csv:
             if data_type == "img":
                 im_to_vis = cv2.imread(os.path.join(src_dir, file))
@@ -202,6 +202,12 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
                     # store in list
                     bbox_info.append([label, conf, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
+
+        # close files
+        if vis or crp or yol or csv:
+            cv2.destroyAllWindows()
+            if data_type == "img":
+                im_to_crp.close()
 
         # separate files
         if sep:

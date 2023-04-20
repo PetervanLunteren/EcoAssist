@@ -5,46 +5,16 @@
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM find a suitable location
-if exist "%homedrive%%homepath%" (
-    @REM set to homedrive if set
-    echo Homedrive is set. 
+@REM set install location
+if defined CUSTOM_ECOASSIST_LOCATION (
+    echo CUSTOM_ECOASSIST_LOCATION is set: %CUSTOM_ECOASSIST_LOCATION%
+    set ECOASSIST_DRIVE=%CUSTOM_ECOASSIST_LOCATION:~0,2%
+    set ECOASSIST_PREFIX=%CUSTOM_ECOASSIST_LOCATION%
+) else (
+    echo CUSTOM_ECOASSIST_LOCATION is not set. Installing in default location: %homedrive%%homepath%
     set ECOASSIST_DRIVE=%homedrive%
     set ECOASSIST_PREFIX=%homedrive%%homepath%
-    goto skip_early_exit
-) else (
-    @REM check other drives
-    echo Homedrive is not set. Checking permission for drives.
-    FOR %%b in (A: B: C: D: E: F: G: H: I: J: K: L: M: N: O: P: Q: R: S: T: U: V: W: X: Y: Z:) do (
-        echo Checking "%%b"...
-        if exist "%%b" (
-            echo Drive "%%b" exists.
-
-            @REM check user permission
-            echo Checking permission for drive "%%b".
-            FOR %%c in ("%username%" "Everyone") do (
-                echo Checking permission for %%c
-                FOR /F "USEBACKQ tokens=2 delims=:" %%F IN (`ICACLS "%%b" ^| FIND %%c`) DO (
-                    set perm_str=%%F
-                    echo ICACLS permission of %%c for drive "%%b" is !perm_str!
-                    set adj_perm_str=!perm_str:F=!
-
-                    @REM check access
-                    if not x!perm_str!==x!adj_perm_str! (
-                        @REM set prefix if full access
-                        set ECOASSIST_DRIVE=%%b
-                        set ECOASSIST_PREFIX=%%b
-                        goto skip_early_exit
-                    )
-                )         
-            )
-        )
-    )
 )
-
-@REM if no suitable location has been found
-echo "Could not find a suitable install location. Copy-paste this output or take a screenshot and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit
-:skip_early_exit
 
 @REM switch to install drive in case user executes this script from different drive
 set SCRIPT_DRIVE=%~d0
@@ -132,12 +102,18 @@ if exist "%EA_OLD_DIR%" (
     echo Dir %EA_OLD_DIR% not present. No old files to remove. | wtee -a "%LOG_FILE%"
 )
 
-@REM install git for windows
-echo Downloading git for windows now | wtee -a "%LOG_FILE%"
-curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-%OS_BITS%-bit.exe
-echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
-start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%GIT_DIRECTORY%" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
-if exist git_for_windows.exe del git_for_windows.exe
+@REM # install git if not already installed
+git --version && set git_installed="Yes" || set git_installed="No"
+git --version && git --version | wtee -a "%LOG_FILE%" || echo git --version failed | wtee -a "%LOG_FILE%"
+if !git_installed!=="No" (
+    echo Downloading git for windows now | wtee -a "%LOG_FILE%"
+    curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-%OS_BITS%-bit.exe
+    echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
+    start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%GIT_DIRECTORY%" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
+    if exist git_for_windows.exe del git_for_windows.exe
+) else (
+    echo git is already installed and functioning | wtee -a "%LOG_FILE%"
+)
 
 @REM clone EcoAssist git if not present
 if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
