@@ -18,10 +18,9 @@ set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
-git --version && set git_installed=True || set git_installed=False
 
 @REM set git executable
-if !git_installed!==False ( goto skip_git_exe )
+git --version || goto skip_git_exe
 for /f %%i in ('where git') do set GIT_DIRECTORY=%%i
 set GIT_DIRECTORY=%GIT_DIRECTORY:\cmd\git.exe=%
 :skip_git_exe

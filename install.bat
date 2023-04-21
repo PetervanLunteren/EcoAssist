@@ -52,14 +52,6 @@ set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
-git --version && set git_installed=True || set git_installed=False
-
-@REM set git executable
-if !git_installed!==False (
-    set EA_GIT_EXE=%GIT_DIRECTORY%\cmd\git.exe
-) else (
-    set EA_GIT_EXE=git
-)
 
 @REM delete previous installation of EcoAssist v4 or higher
 if exist "%LOCATION_ECOASSIST_FILES%" (
@@ -128,14 +120,17 @@ if exist "%EA_OLD_DIR%" (
 )
 
 @REM install git if not already installed
+git --version && set git_installed=True || set git_installed=False
 if !git_installed!==False (
     echo Downloading git for windows now | wtee -a "%LOG_FILE%"
     curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-%OS_BITS%-bit.exe
     echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
     start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%GIT_DIRECTORY%" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
     if exist git_for_windows.exe del git_for_windows.exe
+    set EA_GIT_EXE=%GIT_DIRECTORY%\cmd\git.exe
 ) else (
     echo git is already installed and functioning | wtee -a "%LOG_FILE%"
+    set EA_GIT_EXE=git
 )
 
 @REM clone EcoAssist git if not present
