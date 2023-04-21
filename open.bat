@@ -22,7 +22,8 @@ set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
-set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
+git --version && set git_installed=True || set git_installed=False
+if !git_installed!==False ( set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe )
 
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )

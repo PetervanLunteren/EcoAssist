@@ -34,7 +34,8 @@ set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
-set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
+git --version && set git_installed=True || set git_installed=False
+if !git_installed!==False ( set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe )
 
 @REM delete previous installation of EcoAssist v4 or higher
 if exist "%LOCATION_ECOASSIST_FILES%" (
@@ -102,10 +103,8 @@ if exist "%EA_OLD_DIR%" (
     echo Dir %EA_OLD_DIR% not present. No old files to remove. | wtee -a "%LOG_FILE%"
 )
 
-@REM # install git if not already installed
-git --version && set git_installed="Yes" || set git_installed="No"
-git --version && git --version | wtee -a "%LOG_FILE%" || echo git --version failed | wtee -a "%LOG_FILE%"
-if !git_installed!=="No" (
+@REM install git if not already installed
+if !git_installed!==False (
     echo Downloading git for windows now | wtee -a "%LOG_FILE%"
     curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-%OS_BITS%-bit.exe
     echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
