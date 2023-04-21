@@ -35,7 +35,12 @@ set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
 git --version && set git_installed=True || set git_installed=False
-if !git_installed!==False ( set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe )
+if !git_installed!==False (
+    set EA_GIT_EXE=%GIT_DIRECTORY%\cmd\git.exe
+    set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
+) else (
+    set EA_GIT_EXE=git
+)
 
 @REM delete previous installation of EcoAssist v4 or higher
 if exist "%LOCATION_ECOASSIST_FILES%" (
@@ -120,7 +125,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/PetervanLunteren/EcoAssist.git
+    %EA_GIT_EXE% clone https://github.com/PetervanLunteren/EcoAssist.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
@@ -153,9 +158,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
 ) else (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/Microsoft/cameratraps
+    %EA_GIT_EXE% clone https://github.com/Microsoft/cameratraps
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% checkout 6223b48b520abd6ad7fe868ea16ea58f75003595
+    %EA_GIT_EXE% checkout 6223b48b520abd6ad7fe868ea16ea58f75003595
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
@@ -167,9 +172,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
 ) else (
     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/Microsoft/ai4eutils
+    %EA_GIT_EXE% clone https://github.com/Microsoft/ai4eutils
     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
+    %EA_GIT_EXE% checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
@@ -181,7 +186,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
 ) else (
     echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/ultralytics/yolov5.git
+    %EA_GIT_EXE% clone https://github.com/ultralytics/yolov5.git
     @REM checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
@@ -193,9 +198,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\labelImg\" (
 ) else (
     echo Dir labelImg does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% clone https://github.com/tzutalin/labelImg.git
+    %EA_GIT_EXE% clone https://github.com/tzutalin/labelImg.git
     cd "%LOCATION_ECOASSIST_FILES%\labelImg" || ( echo "Could not change directory to labelImg. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    %GIT_PYTHON_GIT_EXECUTABLE% checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
+    %EA_GIT_EXE% checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Please send an email to contact@pvanlunteren.com for assistance. Press any key to close this window." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\labelImg" | wtee -a "%LOG_FILE%"
