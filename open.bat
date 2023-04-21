@@ -21,8 +21,9 @@ set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
 git --version && set git_installed=True || set git_installed=False
 
 @REM set git executable
-if !git_installed!==True ( goto skip_git_exe )
-set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
+if !git_installed!==False ( goto skip_git_exe )
+for /f %%i in ('where git') do set GIT_DIRECTORY=%%i
+set GIT_DIRECTORY=%GIT_DIRECTORY:\cmd\git.exe=%
 :skip_git_exe
 
 @REM change directory
