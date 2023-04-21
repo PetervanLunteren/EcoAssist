@@ -971,8 +971,8 @@ def start_deploy():
     if var_use_checkpnts.get() and not var_checkpoint_freq.get().isdecimal():
         if mb.askyesno("Invalid value",
                         "You either entered an invalid value for the checkpoint frequency, or none at all. You can only "
-                        "enter numberic characters.\n\nDo you want to proceed with the default value 100?"):
-            var_checkpoint_freq.set("100")
+                        "enter numberic characters.\n\nDo you want to proceed with the default value 500?"):
+            var_checkpoint_freq.set("500")
             ent_checkpoint_freq.config(fg='black')
         else:
             return
@@ -2375,7 +2375,7 @@ lbl_checkpoint_freq.grid(row=row_checkpoint_freq, sticky='nesw')
 var_checkpoint_freq = StringVar()
 ent_checkpoint_freq = tk.Entry(img_frame, textvariable=var_checkpoint_freq, fg='grey', state=NORMAL, width=1)
 ent_checkpoint_freq.grid(row=row_checkpoint_freq, column=1, sticky='nesw', padx=5)
-ent_checkpoint_freq.insert(0, "E.g.: 100")
+ent_checkpoint_freq.insert(0, "E.g.: 500")
 ent_checkpoint_freq.bind("<FocusIn>", checkpoint_freq_focus_in)
 ent_checkpoint_freq.config(state=DISABLED)
 
@@ -2685,7 +2685,7 @@ row_lbl_test_prop = 1
 lbl_test_prop = Label(adv_params, text=lbl_test_prop_txt, width=1, anchor="w")
 lbl_test_prop.grid(row=row_lbl_test_prop, sticky='nesw', pady=2)
 var_test_prop = DoubleVar()
-var_test_prop.set(0.1)
+var_test_prop.set(0.2)
 scl_test_prop = Scale(adv_params, from_=0.000000001, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_test_prop, showvalue=0, width=10, length=1) # not 0 because display needs two digits
 scl_test_prop.grid(row=row_lbl_test_prop, column=1, sticky='ew', padx=10)
 dsp_test_prop = Label(adv_params, textvariable=var_test_prop)
