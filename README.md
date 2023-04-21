@@ -72,7 +72,8 @@ Opening EcoAssist for the first time will take a bit longer than usual due to sc
 #### Windows installation
 1. If you don't have admin rights, you'll need to manually install git before you can install EcoAssist. See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/no_admin_install.md) to find out how.
 2. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
-3. When the installation is finished, there will be a shortcut file in the same folder as your installation file (so probably `Downloads`). You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
+3. You will be prompted if you'd like to change the default location. This can be handy if you want to install it for all users, for example.
+4. When the installation is finished, there will be a shortcut file in the same folder as your installation file (so probably `Downloads`). You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 #### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/install.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work, you can change the file permissions by opening a new terminal window and copy-pasting the following commands.
