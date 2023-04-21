@@ -1,9 +1,27 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 13 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 21 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
+
+@REM ask user input
+echo By default, EcoAssist will be installed in your userfolder (%homedrive%%homepath%) to avoid requiring admin rights. Do you want to install it somewhere else?
+set /p INPUT=Enter [Y]es or [N]o: 
+If /I "%INPUT%"=="Y" goto set_custom_location
+If /I "%INPUT%"=="y" goto set_custom_location
+If /I "%INPUT%"=="Ye" goto set_custom_location
+If /I "%INPUT%"=="ye" goto set_custom_location
+If /I "%INPUT%"=="Yes" goto set_custom_location
+If /I "%INPUT%"=="yes" goto set_custom_location
+goto skip_custom_location
+
+@REM ask location and remove trailing \ and quotation marks
+:set_custom_location
+set /p CUSTOM_ECOASSIST_LOCATION=Set path (for example C:\some_folder): 
+set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:"=%
+IF %CUSTOM_ECOASSIST_LOCATION:~-1%==\ SET CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:~0,-1%
+:skip_custom_location
 
 @REM set install location
 if defined CUSTOM_ECOASSIST_LOCATION (

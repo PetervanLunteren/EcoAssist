@@ -1,18 +1,14 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 13 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 21 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM set location
-if defined CUSTOM_ECOASSIST_LOCATION (
-    set ECOASSIST_DRIVE=%CUSTOM_ECOASSIST_LOCATION:~0,2%
-    set ECOASSIST_PREFIX=%CUSTOM_ECOASSIST_LOCATION%
-) else (
-    set ECOASSIST_DRIVE=%homedrive%
-    set ECOASSIST_PREFIX=%homedrive%%homepath%
-)
+@REM find location
+set ECOASSIST_DRIVE=%~d0
+set ECOASSIST_PREFIX=%~dp0
+set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\EcoAssist_files\EcoAssist\=%
 
 @REM set variables
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
