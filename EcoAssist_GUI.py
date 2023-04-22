@@ -1,5 +1,5 @@
 # Non-code GUI platform for training and deploying object detection models.
-# Written by Peter van Lunteren, 2 Apr 2023 (latest edit)
+# Written by Peter van Lunteren, 23 Apr 2023 (latest edit)
 
 # import packages like a christmas tree
 import os
@@ -159,7 +159,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         if vis or crp or yol or csv:
             if data_type == "img":
                 im_to_vis = cv2.imread(os.path.join(src_dir, file))
-                im_to_crp = Image.open(os.path.join(src_dir, file))
+                im_to_crop_path = os.path.join(src_dir, file)
             else:
                 vid = cv2.VideoCapture(os.path.join(src_dir, file))
 
@@ -203,12 +203,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     # store in list
                     bbox_info.append([label, conf, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
 
-        # close files
-        if vis or crp or yol or csv:
-            cv2.destroyAllWindows()
-            if data_type == "img":
-                im_to_crp.close()
-
         # separate files
         if sep:
             if n_detections == 0:
@@ -250,7 +244,9 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         if crp and len(bbox_info) > 0:
             counter = 1
             for bbox in bbox_info:
+                im_to_crp = Image.open(im_to_crop_path)
                 crp_im = im_to_crp.crop((bbox[2:6]))
+                im_to_crp.close()
                 filename, file_extension = os.path.splitext(file)
                 im_path = os.path.join(dst_dir, filename + '_crop' + str(counter) + '_' + bbox[0] + file_extension)
                 Path(os.path.dirname(im_path)).mkdir(parents=True, exist_ok=True)
