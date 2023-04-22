@@ -27,7 +27,6 @@ I've written this application in my free evenings and would really appreciate it
   * crop
   * label
   * export to .csv
-* Install all dependencies with a single click
 * GPU acceleration for NVIDIA and Apple Silicon
 * Open-source, free and will always remain free
 
