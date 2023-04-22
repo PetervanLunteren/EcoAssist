@@ -10,9 +10,9 @@ Go to [gitforwindows.org](https://gitforwindows.org/) and install git using the 
 I'm not sure why, but you might still get prompted to enter an admin password. Just click "No" and the installation will start anyway.
 
 <p float="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/install-git-1.png" width=33% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/install-git-2.png" width=33% height="auto" />
-  <img src="https://github.com/PetervanLunteren/EcoAssist/blob/main/imgs/install-git-3.png" width=33% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/install-git-1.png" width=33% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/install-git-2.png" width=33% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/install-git-3.png" width=33% height="auto" />
 </p>
 
 ### Step 2: Check if it worked
