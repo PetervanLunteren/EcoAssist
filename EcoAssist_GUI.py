@@ -2524,7 +2524,7 @@ chb_yol_files = Checkbutton(trd_step, variable=var_yol_files, command=toggle_sep
 chb_yol_files.grid(row=row_yol_files, column=1, sticky='nesw', padx=5)
 
 # create csv files
-lbl_csv_txt = "Export results in csv files"
+lbl_csv_txt = "Export results to csv files"
 row_csv = 6
 lbl_csv = Label(trd_step, text=lbl_csv_txt, width=1, anchor="w")
 lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
