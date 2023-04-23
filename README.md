@@ -56,9 +56,10 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 2. [Download](#download)
 3. [Update](#update)
 4. [GPU support](#gpu-support)
-5. [Cite](#cite)
-6. [Uninstall](#uninstall)
-7. [Code contributors](#code-contributors)
+5. [Bugs](#bugs)
+6. [Cite](#cite)
+7. [Uninstall](#uninstall)
+8. [Code contributors](#code-contributors)
 
 ## Requirements
 There are no hard system requirements for EcoAssist since it is largely hardware-agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8 GB of RAM, but preferably 16 or 32 GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#uninstall) EcoAssist is as simple as deleting a folder.
@@ -102,6 +103,9 @@ EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. Th
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/progress_window.png" width=50% height="auto" >
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Training_on_GPU.png" width=90% height="auto" >
 </p>
+
+## Bugs
+If you encounter any bugs, please raise an issue or [send me an email](mailto:petervanlunteren@hotmail.com).
 
 ## Cite
 #### EcoAssist citation
