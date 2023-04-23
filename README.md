@@ -54,12 +54,13 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 ## Quick links
 1. [Requirements](#requirements)
 2. [Download](#download)
-3. [Update](#update)
-4. [GPU support](#gpu-support)
-5. [Bugs](#bugs)
-6. [Cite](#cite)
-7. [Uninstall](#uninstall)
-8. [Code contributors](#code-contributors)
+3. [Test your installation](#test-your-installation)
+4. [Update](#update)
+5. [GPU support](#gpu-support)
+6. [Bugs](#bugs)
+7. [Cite](#cite)
+8. [Uninstall](#uninstall)
+9. [Code contributors](#code-contributors)
 
 ## Requirements
 There are no hard system requirements for EcoAssist since it is largely hardware-agnostic, but please note that machine learning can ask quite a lot from your computer in terms of processing power. I would recommend at least 8 GB of RAM, but preferably 16 or 32 GB. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big bonus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#uninstall) EcoAssist is as simple as deleting a folder.
@@ -92,6 +93,17 @@ chmod 755 $HOME/Downloads/install.command
 bash $HOME/Downloads/install.command
 ```
 3. During the installation, a file called `EcoAssist` will be created on your desktop. The app will open when double-clicked. You are free to move this file to a more convenient location.
+
+## Test your installation
+You can quickly verify its functionality by opening EcoAssist at the 'Deploy' tab and choosing a local copy of [this](https://drive.google.com/uc?export=download&id=1nE8d25yUvfvNWXjNFuThi-FeeDIxpLYZ) (unzipped) folder at step 1. Check 'Process all images in the folder specified' and hit the 'Deploy model' button. When completed, select the same folder as 'Destination folder', enable 'Export results to csv files' and click the 'Post-process files' button. If all went well, there should be a file called `results_files.csv` with the following content.
+
+| absolute_path | relative_path | data_type | n_detections | max_confidence |
+| :--- | :--- | :--- | :--- | :--- |
+| /.../test-images  | empty.jpg  | img | 0 | 0.0 |
+| /.../test-images  | person.jpg  | img | 2 | 0.875 |
+| /.../test-images  | mutiple_categories.jpg  | img | 2 | 0.899 |
+| /.../test-images  | animal.jpg  | img | 1 | 0.844 |
+| /.../test-images  | vehicle.jpg  | img | 1 | 0.936 |
 
 ## Update
 To update to the latest version, you'll have to repeat the [download](#download) procedure. If you specified to download it on the same location (so both on the default location, or both on the same custom location), it will replace all the old files and packages with the new ones. It's all automatic, you don't have to do anything.
