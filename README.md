@@ -95,6 +95,10 @@ bash $HOME/Downloads/install.command
 3. During the installation, a file called `EcoAssist` will be created on your desktop. The app will open when double-clicked. You are free to move this file to a more convenient location.
 
 ## Test your installation
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/test-installation.png" width=90% height="auto" >
+</p>
+
 You can quickly verify its functionality by opening EcoAssist at the 'Deploy' tab and choosing a local copy of [this](https://drive.google.com/uc?export=download&id=1nE8d25yUvfvNWXjNFuThi-FeeDIxpLYZ) (unzipped) folder at step 1. Check 'Process all images in the folder specified' and hit the 'Deploy model' button. When completed, select the same folder as 'Destination folder', enable 'Export results to csv files' and click the 'Post-process files' button. If all went well, there should be a file called `results_files.csv` with the following content. 
 
 | absolute_path | relative_path | data_type | n_detections | max_confidence |
