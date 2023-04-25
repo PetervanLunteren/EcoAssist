@@ -73,7 +73,7 @@ Opening EcoAssist for the first time will take a bit longer than usual due to sc
 #### Windows installation
 1. If you don't have admin rights, you'll need to manually install git before you can install EcoAssist. See [these instructions](https://github.com/PetervanLunteren/EcoAssist/blob/main/no_admin_install.md) to find out how. You can skip this step if you do have admin rights, but make sure you execute the install file as admin (right-click > "run as administrator").
 2. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
-3. You will be prompted if you'd like to change the default location. This can be handy if you want to install it for all users, for example. If you don't know what to do, just go with the default and type no. 
+3. You will be prompted if you'd like to change the default location. This can be handy if you want to install it for all users, for example. If you don't know what to do, just go with the default and type 'no'. 
 4. When the installation is finished, there will be a shortcut file in the same folder as your installation file (so probably `Downloads`). You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 #### Mac installation
@@ -99,7 +99,15 @@ bash $HOME/Downloads/install.command
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/test-installation.png" width=90% height="auto" >
 </p>
 
-You can quickly verify its functionality by opening EcoAssist at the 'Deploy' tab and choosing a local copy of [this](https://drive.google.com/uc?export=download&id=1nE8d25yUvfvNWXjNFuThi-FeeDIxpLYZ) (unzipped) folder at step 1. Check 'Process all images in the folder specified' and hit the 'Deploy model' button. When completed, select `test-images` again as 'Destination folder', enable 'Export results to csv files' and click the 'Post-process files' button. If all went well, there should be a file called `results_files.csv` with the following content. 
+You can quickly verify its functionality by following the steps below.
+1. Choose a local copy of [this](https://drive.google.com/uc?export=download&id=1nE8d25yUvfvNWXjNFuThi-FeeDIxpLYZ) (unzipped) folder at step 1
+2. Check 'Process all images in the folder specified' 
+3. Click the 'Deploy model' button and wait for the prcess to complete
+4. Select the `test-images` folder again as 'Destination folder'
+5. Check 'Export results to csv files'
+6. Click the 'Post-process files' button
+
+If all went well, there should be a file called `results_files.csv` with the following content. 
 
 | absolute_path | relative_path | data_type | n_detections | max_confidence |
 | :--- | :--- | :--- | :--- | :--- |
