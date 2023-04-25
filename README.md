@@ -100,7 +100,7 @@ bash $HOME/Downloads/install.command
 </p>
 
 You can quickly verify its functionality by following the steps below.
-1. Choose a local copy of [this](https://drive.google.com/uc?export=download&id=1HqLFn7g9EWpdsRwsgErDneC2Cn9D6ek4) (unzipped) folder at step 1
+1. Choose a local copy of [this](https://drive.google.com/uc?export=download&id=1PCDcVuxeTtQzx5hBiQt7uXmPGCcNo3er) (unzipped) folder at step 1
 2. Check 'Process all images in the folder specified' 
 3. Click the 'Deploy model' button and wait for the prcess to complete
 4. Select the `test-images` folder again as 'Destination folder'
