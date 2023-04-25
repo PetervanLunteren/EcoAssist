@@ -2,6 +2,7 @@
 title: 'EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models'
 tags:
   - Python
+  - artificial intelligence
   - machine learning
   - deep learning
   - object detection
@@ -27,12 +28,11 @@ Given the unprecedented global decline of animal diversity [@ceballos], conserva
 
 One such example is the MegaDetector model [@beery]. This model is able to drastically reduce the workload by facilitating the removal of empty camera trap images. Although the model does not identify the species, it offers a simplification of the annotation process for users wanting to train their own project-specific species classifier by providing bounding box coordinates. Still, the only way to interact with the model is exclusively through Python code and command-line interfaces. Users without a programming background might find it difficult to implement this software. These users, thus, might miss out on valuable and open-source techniques without GUIs such as `EcoAssist` - which are designed to overcome this limitation.
 
-Besides `EcoAssist` there are three other GUIs able to deploy the MegaDetector model (i.e., [@evans; @gyurov; @mcwilliam]). However, none of these packages offer features to annotate and train custom models, nor do they accept the deployment of custom models. Furthermore, @gyurov and @mcwilliam do not offer functionality on systems other than Microsoft Windows. 
+Besides `EcoAssist` there are three other GUIs able to deploy the MegaDetector model (i.e., @evans; @gyurov; @mcwilliam). However, none of these packages offer features to annotate and train custom models, nor do they accept the deployment of custom models. Furthermore, @gyurov and @mcwilliam do not offer functionality on systems other than Microsoft Windows. 
 
 # Generic platform
-Although `EcoAssist` was originally designed for ecologists working with camera trap imagery, it evolved to be a more generic platform to be used by any researcher wanting to work with object detection models. All features are available with any kind of object, which makes it interesting for many academic disciplines. The package has proved its ease of use and ability to efficiently analyze large datasets and is currently used by dozens of research institutions worldwide. Its user-friendly design, simplicity, and support will likely extract further scientific interest.
+Although `EcoAssist` was originally designed for ecologists working with camera trap imagery, it evolved to be a more generic platform to be used by any researcher wanting to work with object detection models. All features are available with any kind of object, which makes it an interesting tool for many academic disciplines. The package has proved its ease of use and ability to efficiently analyze large datasets and is currently used by dozens of research institutions worldwide. Its user-friendly design, simplicity, and support will likely extract further scientific interest.
 
-# Figures
 ![The annotation (top left), training (top right), deployment (bottom left), and documentation window (bottom right).\label{fig:1}](fig1.png)
 
 # References
