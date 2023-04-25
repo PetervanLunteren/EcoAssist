@@ -38,6 +38,7 @@ echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
 @REM add path to git to PATH
 set PATH="%GIT_DIRECTORY%\cmd";%PATH%
+set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
 
 @REM activate anaconda
 set PATH="%CONDA_DIRECTORY%\Scripts";%PATH%
@@ -54,7 +55,7 @@ set PYTHONPATH=%LOCATION_ECOASSIST_FILES%;%LOCATION_ECOASSIST_FILES%\cameratraps
 echo PYTHONPATH : %PYTHONPATH% >> "%LOG_FILE%"
 
 @REM add python.exe and site packages to PATH
-set PATH=%ECOASSISTCONDAENV%;%PATH_TO_CONDA%\envs\ecoassistcondaenv\lib\python3.8\site-packages;%PATH%
+set PATH=%ECOASSISTCONDAENV%;%PATH%
 echo PATH : %PATH% >> "%LOG_FILE%"
 
 @REM check python version
