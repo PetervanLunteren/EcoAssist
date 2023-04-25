@@ -47,7 +47,7 @@ set START_DATE=%date%%time%
 
 @REM set variables
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
-set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
+set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
 set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
@@ -254,7 +254,7 @@ if %OS_BITS%==64 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com
 echo Installing local version of miniconda... It will not interfere with any other existing versions of conda. This may take some time... | wtee -a "%LOG_FILE%"
 start /wait "" miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%CONDA_DIRECTORY%
 if exist miniconda.exe del /F miniconda.exe
-set PATH="%CONDA_DIRECTORY%";"%CONDA_DIRECTORY%\Scripts";%PATH%
+set PATH=%CONDA_DIRECTORY%;%CONDA_DIRECTORY%\Scripts;%PATH%
 call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 
 @REM create conda env and install packages required for MegaDetector

@@ -12,7 +12,7 @@ set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\EcoAssist_files\EcoAssist\=%
 
 @REM set variables
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
-set PATH=%PATH%;"%LOCATION_ECOASSIST_FILES%"
+set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
 set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
@@ -37,11 +37,11 @@ set START_DATE=%date% %time%
 echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
 @REM add path to git to PATH
-set PATH="%GIT_DIRECTORY%\cmd";%PATH%
+set PATH=%GIT_DIRECTORY%\cmd;%PATH%
 set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
 
 @REM activate anaconda
-set PATH="%CONDA_DIRECTORY%\Scripts";%PATH%
+set PATH=%CONDA_DIRECTORY%\Scripts;%PATH%
 call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 echo Anaconda activated >> "%LOG_FILE%"
 
