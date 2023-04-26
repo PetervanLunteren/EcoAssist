@@ -124,7 +124,7 @@ if exist "%EA_OLD_DIR%" (
 git --version && set git_installed=True || set git_installed=False
 if !git_installed!==False (
     echo Downloading git for windows now | wtee -a "%LOG_FILE%"
-    curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.38.0.windows.1/Git-2.38.0-%OS_BITS%-bit.exe
+    curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.35.1.windows.2/Git-2.35.1.2-%OS_BITS%-bit.exe
     echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
     start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%GIT_DIRECTORY%" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
     if exist git_for_windows.exe del git_for_windows.exe
