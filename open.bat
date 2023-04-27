@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 21 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 28 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -9,6 +9,34 @@ echo off
 set ECOASSIST_DRIVE=%~d0
 set ECOASSIST_PREFIX=%~dp0
 set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\EcoAssist_files\EcoAssist\=%
+
+@REM check if installed in program files
+if "%ECOASSIST_PREFIX%"=="%ProgramFiles%" (
+    goto check_permissions
+) else (
+    goto skip_permissions
+)
+
+@REM check for admin rights and prompt for password if needed
+:check_permissions
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+    echo Requesting administrative privileges...
+    goto UACPrompt
+) else ( goto gotAdmin )
+:UACPrompt
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+    set params = %*:"=""
+    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
+    exit /B
+:gotAdmin
+    pushd "%CD%"
+    CD /D "%~dp0"
+
+@REM begin opening EcoAssist
+:skip_permissions
 
 @REM set variables
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
@@ -46,7 +74,7 @@ call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 echo Anaconda activated >> "%LOG_FILE%"
 
 @REM activate environment
-call conda activate %ECOASSISTCONDAENV%
+call conda activate "%ECOASSISTCONDAENV%"
 echo conda environment activated >> "%LOG_FILE%"
 call conda info --envs >> "%LOG_FILE%"
 

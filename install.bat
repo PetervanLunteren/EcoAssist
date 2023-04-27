@@ -1,46 +1,98 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 21 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 28 Apr 2023 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
-@REM ask user input
-echo By default, EcoAssist will be installed in your userfolder (%homedrive%%homepath%) to avoid requiring admin rights. Do you want to install it somewhere else?
-set /p INPUT=Enter [Y]es or [N]o: 
-If /I "%INPUT%"=="Y" goto set_custom_location
-If /I "%INPUT%"=="y" goto set_custom_location
-If /I "%INPUT%"=="Ye" goto set_custom_location
-If /I "%INPUT%"=="ye" goto set_custom_location
-If /I "%INPUT%"=="Yes" goto set_custom_location
-If /I "%INPUT%"=="yes" goto set_custom_location
-goto skip_custom_location
-
-@REM ask location and remove trailing \ and quotation marks
-:set_custom_location
-set /p CUSTOM_ECOASSIST_LOCATION=Set path (for example C:\some_folder): 
-set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:"=%
-set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:'=%
-IF %CUSTOM_ECOASSIST_LOCATION:~-1%==\ SET CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:~0,-1%
-:skip_custom_location
-
-@REM set install location
-if defined CUSTOM_ECOASSIST_LOCATION (
-    echo CUSTOM_ECOASSIST_LOCATION is set: %CUSTOM_ECOASSIST_LOCATION%
-    set ECOASSIST_DRIVE=%CUSTOM_ECOASSIST_LOCATION:~0,2%
-    set ECOASSIST_PREFIX=%CUSTOM_ECOASSIST_LOCATION%
+@REM check admin rights
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+    @REM user currently has no admin rights
+    echo It seems like you don't have admin rights. Do you want to proceed to install for all users and enter an admin password, or install EcoAssist only for you ^(no admin rights required^)? Please keep in mind that ^if you install EcoAssist as admin, you'll need to have admin rights every ^time you open EcoAssist.
+    :start_input_one
+    set /p INPUT_ONE=Enter [O]nly me or [P]roceed as admin: 
+    If /I "!INPUT_ONE!"=="O" ( goto only_me_install )
+    If /I "!INPUT_ONE!"=="o" ( goto only_me_install )
+    If /I "!INPUT_ONE!"=="P" ( goto proceed_as_admin )
+    If /I "!INPUT_ONE!"=="p" ( goto proceed_as_admin )
+    If /I "!INPUT_ONE!"=="exit" ( echo Exiting install... & cmd /k & exit )
+    echo Invalid input. Type O, P, or exit.
+    goto start_input_one
 ) else (
-    echo CUSTOM_ECOASSIST_LOCATION is not set. Installing in default location: %homedrive%%homepath%
-    set ECOASSIST_DRIVE=%homedrive%
-    set ECOASSIST_PREFIX=%homedrive%%homepath%
+    @REM user does has admin rights
+    goto all_users_install
 )
+
+@REM install in userfolder
+:only_me_install
+    @REM check if git is installed
+    git --version && set git_installed=True || set git_installed=False
+    if !git_installed!==False (
+        echo Git is not installed on your computer. In order to install EcoAssist without admin rights, git must already be installed. Follow these instructions:
+        echo https://github.com/PetervanLunteren/EcoAssist/blob/main/no_admin_install.md
+        cmd /k & exit
+    )
+
+    @REM check if userfolder is accessible
+    if exist "%homedrive%%homepath%" (
+        echo Proceeding to install in userfolder without admin rights...
+        set ECOASSIST_PREFIX=%homedrive%%homepath%
+        set ECOASSIST_DRIVE=%homedrive%
+    ) else (
+        echo Your userfolder is not accessible. Would you like to install EcoAssist on a custom location?
+        :start_input_two
+        set /p INPUT_two=Enter [Y]es or [N]o: 
+        If /I "!INPUT_two!"=="Y" ( goto custom_install )
+        If /I "!INPUT_two!"=="y" ( goto custom_install )
+        If /I "!INPUT_two!"=="N" ( echo Exiting install... & cmd /k & exit )
+        If /I "!INPUT_two!"=="n" ( echo Exiting install... & cmd /k & exit )
+        echo Invalid input. Type Y or N.
+        goto start_input_two
+    )
+    goto begin_install
+
+@REM install on custom location
+:custom_install
+    set /p CUSTOM_ECOASSIST_LOCATION=Set path (for example C:\some_folder): 
+    set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:"=%
+    set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:'=%
+    IF %CUSTOM_ECOASSIST_LOCATION:~-1%==\ SET CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:~0,-1%
+    echo Custom location is defined as: %CUSTOM_ECOASSIST_LOCATION%
+    set ECOASSIST_PREFIX=%CUSTOM_ECOASSIST_LOCATION%
+    set ECOASSIST_DRIVE=%CUSTOM_ECOASSIST_LOCATION:~0,2%
+    goto begin_install
+
+@REM prompt the user for admin rights
+:proceed_as_admin
+    echo Requesting administrative privileges...
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+    set params = %*:"=""
+    echo UAC.ShellExecute "cmd.exe", "/c %~s0 %params%", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
+    exit /B
+    goto all_users_install
+
+@REM user has admin rights
+:all_users_install
+    echo Proceeding with administrative privileges...
+    pushd "%CD%"
+    CD /D "%~dp0"
+    set ECOASSIST_PREFIX=%ProgramFiles%
+    set ECOASSIST_DRIVE=%ProgramFiles:~0,2%
+    goto begin_install
+
+@REM begin installation
+:begin_install
+echo Proceeding to install...
 
 @REM switch to install drive in case user executes this script from different drive
 set SCRIPT_DRIVE=%~d0
-echo Install script is located on drive: '%SCRIPT_DRIVE%'
-echo EcoAssist will be installed on drive: '%ECOASSIST_DRIVE%'
+echo Install script is located on drive:    '%SCRIPT_DRIVE%'
+echo EcoAssist will be installed on drive:  '%ECOASSIST_DRIVE%'
 %ECOASSIST_DRIVE%
-echo Changed drive to: '%CD:~0,2%'
+echo Changed drive to:                      '%CD:~0,2%'
 
 @REM timestamp the start of installation
 set START_DATE=%date%%time%
@@ -53,6 +105,24 @@ set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
 set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
 set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
 set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
+
+@REM echo paths
+echo drive:     %ECOASSIST_DRIVE%
+echo prefix:    %ECOASSIST_PREFIX%
+echo location:  %LOCATION_ECOASSIST_FILES%
+
+@REM delete anaconda environment if updating from version 3 or lower
+set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%ProgramFiles%\EcoAssist_files\EcoAssist\logfiles\path_to_conda_installation.txt
+if exist "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" (
+    echo PATH_TO_CONDA_INSTALLATION_TXT_FILE present: "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"
+    FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_ANACONDA=%%F)
+    echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "!PATH_TO_ANACONDA!"
+    call !PATH_TO_ANACONDA!\Scripts\activate.bat !PATH_TO_ANACONDA!
+    call conda info --envs
+    call conda env remove -n ecoassistcondaenv
+    call conda info --envs
+    echo Removed conda environment from v3 or lower
+)
 
 @REM delete previous installation of EcoAssist v4 or higher
 if exist "%LOCATION_ECOASSIST_FILES%" (
@@ -93,32 +163,6 @@ if %OS_BITS%==64 echo This is an 64-bit operating system. | wtee -a "%LOG_FILE%"
 
 @REM log system information
 systeminfo | wtee -a "%LOG_FILE%"
-
-@REM check if user is updating from v3 or lower (different location of EcoAssist_files)
-set EA_OLD_DIR=%ProgramFiles%\EcoAssist_files
-if exist "%EA_OLD_DIR%" (
-    echo Updating from EcoAssist v3 or lower | wtee -a "%LOG_FILE%"
-
-    @REM locate conda which was used for the install of v3 or lower and activate
-    set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%EA_OLD_DIR%\EcoAssist\logfiles\path_to_conda_installation.txt
-    FOR /F "tokens=* USEBACKQ" %%F IN (`type "!PATH_TO_CONDA_INSTALLATION_TXT_FILE!"`) DO ( SET PATH_TO_ANACONDA=%%F)
-    echo Path to conda as imported from "!PATH_TO_CONDA_INSTALLATION_TXT_FILE!" is: "!PATH_TO_ANACONDA!" | wtee -a "%LOG_FILE%"
-    call !PATH_TO_ANACONDA!\Scripts\activate.bat !PATH_TO_ANACONDA!
-
-    @REM remove old ecoassistcondaenv
-    echo conda envs before deleting old ecoassistcondaenv >> "%LOG_FILE%"
-    call conda info --envs >> "%LOG_FILE%"
-    call conda env remove -n ecoassistcondaenv
-    echo conda envs after deleting old ecoassistcondaenv >> "%LOG_FILE%"
-    call conda info --envs >> "%LOG_FILE%"
-    echo Removed conda environment from v3 or lower | wtee -a "%LOG_FILE%"
-
-    @REM remove old files
-    rd /q /s "%EA_OLD_DIR%"
-    echo Removed EcoAssist_files from v3 or lower "%EA_OLD_DIR%" | wtee -a "%LOG_FILE%"
-) else (
-    echo Dir %EA_OLD_DIR% not present. No old files to remove. | wtee -a "%LOG_FILE%"
-)
 
 @REM install git if not already installed
 git --version && set git_installed=True || set git_installed=False
@@ -259,7 +303,7 @@ call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
 
 @REM create conda env and install packages required for MegaDetector
 call conda env create --name ecoassistcondaenv --file "%LOCATION_ECOASSIST_FILES%\cameratraps\environment-detector.yml"
-call activate %ECOASSISTCONDAENV%
+call activate "%ECOASSISTCONDAENV%"
 
 @REM install additional packages for labelImg
 "%PIP%" install pyqt5==5.15.2 lxml
