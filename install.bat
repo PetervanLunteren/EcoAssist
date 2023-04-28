@@ -124,10 +124,21 @@ if exist "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" (
     echo Removed conda environment from v3 or lower
 )
 
-@REM delete previous installation of EcoAssist v4 or higher
-if exist "%LOCATION_ECOASSIST_FILES%" (
-    rd /q /s "%LOCATION_ECOASSIST_FILES%"
-    echo Removed "%LOCATION_ECOASSIST_FILES%"
+@REM delete EcoAssist installs
+set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
+if exist "%NO_ADMIN_INSTALL%" (
+    rd /q /s "%NO_ADMIN_INSTALL%"
+    echo Removed "%NO_ADMIN_INSTALL%"
+)
+set ADMIN_INSTALL=%ProgramFiles%\EcoAssist_files
+if exist "%ADMIN_INSTALL%" (
+    rd /q /s "%ADMIN_INSTALL%"
+    echo Removed "%ADMIN_INSTALL%"
+)
+set CURRENT_INSTALL=%LOCATION_ECOASSIST_FILES%
+if exist "%CURRENT_INSTALL%" (
+    rd /q /s "%CURRENT_INSTALL%"
+    echo Removed "%CURRENT_INSTALL%"
 )
 
 @REM make dir
@@ -157,7 +168,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\installation_log.txt" (
 echo Installation started at %START_DATE% | wtee -a "%LOG_FILE%"
 
 @REM check if OS is 32 or 64 bit and set variable
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS_BITS=32 || set OS_BITS=64
+if exist "%PROGRAMFILES(X86)%" ( set OS_BITS=64 ) ELSE ( set OS_BITS=32 )
 if %OS_BITS%==32 echo This is an 32-bit operating system. | wtee -a "%LOG_FILE%"
 if %OS_BITS%==64 echo This is an 64-bit operating system. | wtee -a "%LOG_FILE%"
 
