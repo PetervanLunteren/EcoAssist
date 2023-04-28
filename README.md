@@ -158,11 +158,11 @@ If you used the MegaDetector model to analyse images or retrain your model, plea
 ## Uninstall
 All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it.
 ```r
-# windows - admin rights
+# windows (admin rights - all users)
 ─── 📁Program Files
     └── 📁EcoAssist_files
 
-# windows - no admin rights
+# windows (no admin rights - one user)
 ─── 📁Users
     └── 📁<username>
         └── 📁EcoAssist_files
