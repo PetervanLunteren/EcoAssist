@@ -167,7 +167,7 @@ if [ -d "$CAM" ]; then
   echo "Dir ${CAM} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/Microsoft/cameratraps 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/ecologize/cameratraps 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 6223b48b520abd6ad7fe868ea16ea58f75003595 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -219,7 +219,7 @@ else
   if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
     curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
   else
-    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
+    curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
 fi
 
@@ -232,7 +232,7 @@ else
   if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
     curl --keepalive -L -o md_v5b.0.0.pt https://lila.science/public/md_rebuild/md_v5b.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
   else
-    curl --keepalive -OL https://github.com/microsoft/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
+    curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
   fi
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }

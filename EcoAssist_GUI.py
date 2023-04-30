@@ -1,5 +1,5 @@
 # Non-code GUI platform for training and deploying object detection models.
-# Written by Peter van Lunteren, 23 Apr 2023 (latest edit)
+# Written by Peter van Lunteren, 30 Apr 2023 (latest edit)
 
 # import packages like a christmas tree
 import os
@@ -2951,7 +2951,7 @@ help_text.insert(END, "Here, you can indicate the yolov5 model that you want to 
                 "trap imagery. It does not identify the animals; it just finds them. Version A and B differ only in their training data. Each model can outperform the "
                 "other slightly, depending on your data. Try them both and see which one works best for you. If you really don't have a clue, just stick with the default"
                 " 'MegaDetector 5a'. More info about MegaDetector models ")
-help_text.insert(INSERT, "here", hyperlink1.add(partial(webbrowser.open, "https://github.com/microsoft/CameraTraps/blob/main/megadetector.md#megadetector-v50-20220615")))
+help_text.insert(INSERT, "here", hyperlink1.add(partial(webbrowser.open, "https://github.com/ecologize/CameraTraps/blob/main/megadetector.md#megadetector-v50-20220615")))
 help_text.insert(END, ".\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
