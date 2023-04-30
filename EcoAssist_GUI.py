@@ -119,17 +119,19 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     # initialise the csv files
     if csv:
         # for files
-        csv_for_files = os.path.join(dst_dir, f"results_files.csv")
-        if not os.path.isfile(csv_for_files):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
-            df.to_csv(csv_for_files, encoding='utf-8', index=False)
+        csv_for_files = os.path.join(dst_dir, "results_files.csv")
+        if os.path.exists(csv_for_files):
+            os.remove(csv_for_files)
+        df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
+        df.to_csv(csv_for_files, encoding='utf-8', index=False)
         
         # for detections
-        csv_for_detections = os.path.join(dst_dir, f"results_detections.csv")
-        if not os.path.isfile(csv_for_detections):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
-            df.to_csv(csv_for_detections, encoding='utf-8', index=False)
-    
+        csv_for_detections = os.path.join(dst_dir, "results_detections.csv")
+        if os.path.exists(csv_for_detections):
+            os.remove(csv_for_detections)
+        df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
+        df.to_csv(csv_for_detections, encoding='utf-8', index=False)
+
     # loop through images
     for image in data['images']:
 
@@ -216,7 +218,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 else:
                     file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
         
-        # collect info for csv files
+        # collect info to append to csv files
         if csv:
             # file info
             row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf]])
@@ -269,6 +271,15 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         progress_postprocess_stats['text'] = create_postprocess_lbl(elapsed_time_sep, time_left_sep, command="running")
         nloop += 1
         root.update()
+
+    # create summary csv
+    if csv:
+        csv_for_summary = os.path.join(dst_dir, "results_summary.csv")
+        if os.path.exists(csv_for_summary):
+            os.remove(csv_for_summary)
+        det_info = pd.DataFrame(pd.read_csv(csv_for_detections))
+        summary = pd.DataFrame(det_info.groupby(['label', 'data_type']).size().sort_values(ascending=False).reset_index(name='n_detections'))
+        summary.to_csv(csv_for_summary, encoding='utf-8', mode='w', index=False, header=True)
 
     # remove cancel button
     btn_cancel.grid_remove()
@@ -667,9 +678,6 @@ def start_training():
             # continue process for unix OS
             if os.name != 'nt':
                 p.send_signal(signal.SIGCONT)
-    
-    # let user know when it's done
-    send_to_output_window(f"TRAINING IS DONE! Results are saved to {results_dir}.")
 
     # set button states
     cancel_training_bool.set(False)
