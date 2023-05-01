@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 28 Apr 2023 (latest edit)
+@REM ### Peter van Lunteren, 2 May 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -42,11 +42,11 @@ if '%errorlevel%' NEQ '0' (
     ) else (
         echo Your userfolder is not accessible. Would you like to install EcoAssist on a custom location?
         :start_input_two
-        set /p INPUT_two=Enter [Y]es or [N]o: 
-        If /I "!INPUT_two!"=="Y" ( goto custom_install )
-        If /I "!INPUT_two!"=="y" ( goto custom_install )
-        If /I "!INPUT_two!"=="N" ( echo Exiting install... & cmd /k & exit )
-        If /I "!INPUT_two!"=="n" ( echo Exiting install... & cmd /k & exit )
+        set /p INPUT_TWO=Enter [Y]es or [N]o: 
+        If /I "!INPUT_TWO!"=="Y" ( goto custom_install )
+        If /I "!INPUT_TWO!"=="y" ( goto custom_install )
+        If /I "!INPUT_TWO!"=="N" ( echo Exiting install... & cmd /k & exit )
+        If /I "!INPUT_TWO!"=="n" ( echo Exiting install... & cmd /k & exit )
         echo Invalid input. Type Y or N.
         goto start_input_two
     )
@@ -54,7 +54,7 @@ if '%errorlevel%' NEQ '0' (
 
 @REM install on custom location
 :custom_install
-    set /p CUSTOM_ECOASSIST_LOCATION=Set path (for example C:\some_folder): 
+    set /p CUSTOM_ECOASSIST_LOCATION=Set path ^(for example C:\some_folder^): 
     set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:"=%
     set CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:'=%
     IF %CUSTOM_ECOASSIST_LOCATION:~-1%==\ SET CUSTOM_ECOASSIST_LOCATION=%CUSTOM_ECOASSIST_LOCATION:~0,-1%
@@ -74,7 +74,7 @@ if '%errorlevel%' NEQ '0' (
     exit /B
     goto all_users_install
 
-@REM user has admin rights
+@REM if user has admin rights
 :all_users_install
     echo Proceeding with administrative privileges...
     pushd "%CD%"
@@ -97,19 +97,14 @@ echo Changed drive to:                      '%CD:~0,2%'
 @REM timestamp the start of installation
 set START_DATE=%date%%time%
 
-@REM set variables
+@REM set EcoAssist_files
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
-set CONDA_DIRECTORY=%LOCATION_ECOASSIST_FILES%\miniconda
-set ECOASSISTCONDAENV=%CONDA_DIRECTORY%\envs\ecoassistcondaenv
-set PIP=%ECOASSISTCONDAENV%\Scripts\pip3
-set HOMEBREW_DIR=%LOCATION_ECOASSIST_FILES%\homebrew
-set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
 
 @REM echo paths
-echo drive:     %ECOASSIST_DRIVE%
-echo prefix:    %ECOASSIST_PREFIX%
-echo location:  %LOCATION_ECOASSIST_FILES%
+echo drive:                                  '%ECOASSIST_DRIVE%'
+echo prefix:                                 '%ECOASSIST_PREFIX%'
+echo location:                               '%LOCATION_ECOASSIST_FILES%'
 
 @REM delete anaconda environment if updating from version 3 or lower
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%ProgramFiles%\EcoAssist_files\EcoAssist\logfiles\path_to_conda_installation.txt
@@ -117,14 +112,13 @@ if exist "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" (
     echo PATH_TO_CONDA_INSTALLATION_TXT_FILE present: "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"
     FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_ANACONDA=%%F)
     echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "!PATH_TO_ANACONDA!"
-    call !PATH_TO_ANACONDA!\Scripts\activate.bat !PATH_TO_ANACONDA!
+    call "!PATH_TO_ANACONDA!\Scripts\activate.bat" "!PATH_TO_ANACONDA!"
     call conda info --envs
     call conda env remove -n ecoassistcondaenv
     call conda info --envs
-    echo Removed conda environment from v3 or lower
 )
 
-@REM delete EcoAssist installs
+@REM delete previous EcoAssist installs
 set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
 if exist "%NO_ADMIN_INSTALL%" (
     rd /q /s "%NO_ADMIN_INSTALL%"
@@ -151,9 +145,10 @@ if not exist "%LOCATION_ECOASSIST_FILES%" (
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
 
-@REM install wtee to log information
+@REM install and test wtee
 curl -OL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/wintee/wtee.exe
-wtee -v || ( echo "Looks like something is blocking downloads... This is probably due to the settings of your device. Try again with your antivirus, VPN, proxy or any other protection software disabled. Email contact@pvanlunteren.com if you need any further assistance." & cmd /k & exit )
+echo hello world | wtee -a hello-world.txt || ( echo "Looks like something is blocking downloads... This is probably due to the settings of your device. Try again with your antivirus, VPN, proxy or any other protection software disabled. Email contact@pvanlunteren.com if you need any further assistance." & cmd /k & exit )
+if exist hello-world.txt del /F hello-world.txt
 
 @REM check if log file already exists, otherwise create empty log file
 if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\installation_log.txt" (
@@ -169,7 +164,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\installation_log.txt" (
 echo Installation started at %START_DATE% | wtee -a "%LOG_FILE%"
 
 @REM check if OS is 32 or 64 bit and set variable
-if exist "%PROGRAMFILES(X86)%" ( set OS_BITS=64 ) ELSE ( set OS_BITS=32 )
+if exist "%PROGRAMFILES(X86)%" (
+    set OS_BITS=64
+) else (
+    set OS_BITS=32
+)
 if %OS_BITS%==32 echo This is an 32-bit operating system. | wtee -a "%LOG_FILE%"
 if %OS_BITS%==64 echo This is an 64-bit operating system. | wtee -a "%LOG_FILE%"
 
@@ -182,9 +181,9 @@ if !git_installed!==False (
     echo Downloading git for windows now | wtee -a "%LOG_FILE%"
     curl -L -o git_for_windows.exe https://github.com/git-for-windows/git/releases/download/v2.35.1.windows.2/Git-2.35.1.2-%OS_BITS%-bit.exe
     echo Installing local version of git for windows... It will not interfere with any other existing versions of git. This may take some time... | wtee -a "%LOG_FILE%"
-    start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%GIT_DIRECTORY%" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
+    start /wait "" git_for_windows.exe /VERYSILENT /NORESTART /DIR="%LOCATION_ECOASSIST_FILES%\git4windows" /SUPPRESSMSGBOXES /NOCANCEL /CURRENTUSER /NOICONS /o:PathOption=BashOnly
     if exist git_for_windows.exe del git_for_windows.exe
-    set EA_GIT_EXE=%GIT_DIRECTORY%\cmd\git.exe
+    set EA_GIT_EXE=%LOCATION_ECOASSIST_FILES%\git4windows\cmd\git.exe
 ) else (
     echo git is already installed and functioning | wtee -a "%LOG_FILE%"
     set EA_GIT_EXE=git
@@ -196,7 +195,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! clone https://github.com/PetervanLunteren/EcoAssist.git
+    "!EA_GIT_EXE!" clone https://github.com/PetervanLunteren/EcoAssist.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
@@ -229,9 +228,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
 ) else (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! clone https://github.com/ecologize/cameratraps
+    "!EA_GIT_EXE!" clone https://github.com/ecologize/cameratraps
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! checkout 6223b48b520abd6ad7fe868ea16ea58f75003595
+    "!EA_GIT_EXE!" checkout 6223b48b520abd6ad7fe868ea16ea58f75003595
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
@@ -243,9 +242,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
 ) else (
     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! clone https://github.com/Microsoft/ai4eutils
+    "!EA_GIT_EXE!" clone https://github.com/Microsoft/ai4eutils
     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
+    "!EA_GIT_EXE!" checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
@@ -257,7 +256,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
 ) else (
     echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! clone https://github.com/ultralytics/yolov5.git
+    "!EA_GIT_EXE!" clone https://github.com/ultralytics/yolov5.git
     @REM checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
@@ -269,9 +268,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\labelImg\" (
 ) else (
     echo Dir labelImg does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! clone https://github.com/tzutalin/labelImg.git
+    "!EA_GIT_EXE!" clone https://github.com/tzutalin/labelImg.git
     cd "%LOCATION_ECOASSIST_FILES%\labelImg" || ( echo "Could not change directory to labelImg. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    !EA_GIT_EXE! checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
+    "!EA_GIT_EXE!" checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\labelImg" | wtee -a "%LOG_FILE%"
@@ -303,38 +302,86 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
 
-@REM install miniconda
-echo Downloading miniconda... | wtee -a "%LOG_FILE%"
-if %OS_BITS%==32 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86.exe)
-if %OS_BITS%==64 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe)
-echo Installing local version of miniconda... It will not interfere with any other existing versions of conda. This may take some time... | wtee -a "%LOG_FILE%"
-start /wait "" miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%CONDA_DIRECTORY%
-if exist miniconda.exe del /F miniconda.exe
-set PATH=%CONDA_DIRECTORY%;%CONDA_DIRECTORY%\Scripts;%PATH%
-call "%CONDA_DIRECTORY%\Scripts\activate.bat" "%CONDA_DIRECTORY%"
+@REM install miniconda if not already installed
+call conda --version && set conda_installed=True || set conda_installed=False
+if !conda_installed!==False (
+    echo Conda command not yet working. Downloading miniconda now... | wtee -a "%LOG_FILE%"
+    if %OS_BITS%==32 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86.exe)
+    if %OS_BITS%==64 (curl --keepalive -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe)
+    echo Installing local version of miniconda... It will not interfere with any other existing versions of conda. This may take some time... | wtee -a "%LOG_FILE%"
+    start /wait "" miniconda.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=%LOCATION_ECOASSIST_FILES%\miniconda
+    if exist miniconda.exe del /F miniconda.exe
+    set PATH=%LOCATION_ECOASSIST_FILES%\miniconda;%LOCATION_ECOASSIST_FILES%\miniconda\Scripts;%PATH%
+    call "%LOCATION_ECOASSIST_FILES%\miniconda\Scripts\activate.bat" "%LOCATION_ECOASSIST_FILES%\miniconda"
+) else (
+    echo conda is already installed and functioning | wtee -a "%LOG_FILE%"
+    call conda env remove -n ecoassistcondaenv
+)
 
 @REM create conda env and install packages required for MegaDetector
+:create_conda_env
 call conda env create --name ecoassistcondaenv --file "%LOCATION_ECOASSIST_FILES%\cameratraps\environment-detector.yml"
-call activate "%ECOASSISTCONDAENV%"
+call activate ecoassistcondaenv
+
+@REM check if conda env was created
+if "%CONDA_DEFAULT_ENV%"=="ecoassistcondaenv" (
+    echo ecoassistcondaenv has been succesfully created | wtee -a "%LOG_FILE%"
+) else (
+    @REM give the user the option to manually install anaconda
+    echo ------------------
+    echo EcoAssist needs a conda distribution, such as Anaconda, to import software packages and create a virtual environment.
+    echo The atempt to automatically install a conda distribution failed.
+    echo You can still proceed with the installation, but you'll have to install Anaconda via the graphical installer instead.
+    echo This script will install and open the right graphical installer automatically for you.
+    echo If you don't know what all the options are and what they mean, the default options are just fine.
+    echo Make sure you save the path of the install location somewhere, as you'll need to tell EcoAssist where it can find Anaconda in the next step.
+    echo You can skip this step if you already have a conda distribution and just want to enter its path.
+    set /p INPUT_THREE=Do you want to [I]nstall or [S]kip? 
+
+    If /I "!INPUT_THREE!"=="I" ( 
+        if %OS_BITS%==32 (
+            curl --keepalive -OL https://repo.anaconda.com/archive/Anaconda3-2021.11-Windows-x86.exe
+            Anaconda3-2021.11-Windows-x86.exe
+            if exist Anaconda3-2021.11-Windows-x86.exe del /F Anaconda3-2021.11-Windows-x86.exe
+        )
+        if %OS_BITS%==64 (
+            curl --keepalive -OL https://repo.anaconda.com/archive/Anaconda3-2021.11-Windows-x86_64.exe
+            Anaconda3-2021.11-Windows-x86_64.exe
+            if exist Anaconda3-2021.11-Windows-x86_64.exe del /F Anaconda3-2021.11-Windows-x86_64.exe
+        )
+    )
+
+    @REM ask for install location
+    echo Enter the Anaconda install location below ^(case sensitive^)
+    set /p PATH_TO_MANUAL_ANACONDA_INSTALLATION=Set path ^(for example C:\ProgramData\Anaconda3^): 
+    set PATH_TO_MANUAL_ANACONDA_INSTALLATION=!PATH_TO_MANUAL_ANACONDA_INSTALLATION:"=!
+    set PATH_TO_MANUAL_ANACONDA_INSTALLATION=!PATH_TO_MANUAL_ANACONDA_INSTALLATION:'=!
+    IF !PATH_TO_MANUAL_ANACONDA_INSTALLATION:~-1!==\ SET PATH_TO_MANUAL_ANACONDA_INSTALLATION=!PATH_TO_MANUAL_ANACONDA_INSTALLATION:~0,-1!
+    echo Path to anaconda is defined as: !PATH_TO_MANUAL_ANACONDA_INSTALLATION!
+    echo !PATH_TO_MANUAL_ANACONDA_INSTALLATION!> "%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt"
+    call "!PATH_TO_MANUAL_ANACONDA_INSTALLATION!\Scripts\activate.bat" "!PATH_TO_MANUAL_ANACONDA_INSTALLATION!"
+    call conda env remove -n ecoassistcondaenv
+    goto create_conda_env
+)
 
 @REM install additional packages for labelImg
-"%PIP%" install pyqt5==5.15.2 lxml
+pip3 install pyqt5==5.15.2 lxml
 
 @REM install additional packages for EcoAssist
-"%PIP%" install bounding_box
+pip3 install bounding_box
 
 @REM install additional packages for yolov5
-"%PIP%" install GitPython==3.1.30
-"%PIP%" install tensorboard==2.4.1
-"%PIP%" install thop==0.1.1.post2209072238
-"%PIP%" install protobuf==3.20.1
-"%PIP%" install setuptools==65.5.1
-"%PIP%" install numpy==1.23.4
+pip3 install GitPython==3.1.30
+pip3 install tensorboard==2.4.1
+pip3 install thop==0.1.1.post2209072238
+pip3 install protobuf==3.20.1
+pip3 install setuptools==65.5.1
+pip3 install numpy==1.23.4
 
 @REM log env info
 call conda info --envs >> "%LOG_FILE%"
 call conda list >> "%LOG_FILE%"
-"%PIP%" freeze >> "%LOG_FILE%"
+pip3 freeze >> "%LOG_FILE%"
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
