@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 2 May 2023 (latest edit)
+@REM ### Peter van Lunteren, 3 May 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -42,14 +42,19 @@ if '%errorlevel%' NEQ '0' (
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
-@REM set automatical git install as default
-set GIT_DIRECTORY=%LOCATION_ECOASSIST_FILES%\git4windows
+@REM fetch conda install path and set cmds
+set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
+FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
+echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 
-@REM and change if git is already working
-git --version || goto skip_git_exe
-for /f %%i in ('where git') do set GIT_DIRECTORY=%%i
-set GIT_DIRECTORY=%GIT_DIRECTORY:\cmd\git.exe=%
-:skip_git_exe
+@REM fetch git install path and set cmds
+set PATH_TO_GIT_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_git_installation.txt
+FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_GIT_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_GIT_INSTALLATION=%%F)
+echo Path to git as imported from "%PATH_TO_GIT_INSTALLATION_TXT_FILE%" is: "%PATH_TO_GIT_INSTALLATION%"
+set PATH=%PATH_TO_GIT_INSTALLATION%\cmd;%PATH%
+set GIT_PYTHON_GIT_EXECUTABLE=%PATH_TO_GIT_INSTALLATION%\cmd\git.exe
 
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
@@ -62,34 +67,8 @@ if exist "%LOG_FILE%" del /F "%LOG_FILE%"
 set START_DATE=%date% %time%
 echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
-@REM add path to git to PATH
-set PATH=%GIT_DIRECTORY%\cmd;%PATH%
-set GIT_PYTHON_GIT_EXECUTABLE=%GIT_DIRECTORY%\cmd\git.exe
-
-@REM check if user used a manual anaconda install
-set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
-if exist "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" (
-    echo user used a manual anaconda install >> "%LOG_FILE%"
-    FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET CONDA_DIRECTORY=%%F)
-    echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "!CONDA_DIRECTORY!" >> "%LOG_FILE%"
-    set PATH=!CONDA_DIRECTORY!\Scripts;%PATH%
-    call "!CONDA_DIRECTORY!\Scripts\activate.bat" "!CONDA_DIRECTORY!"
-)
-
-@REM activate conda if not active yet
-call conda --version && set conda_installed=True || set conda_installed=False
-if %conda_installed%==False (
-    echo conda not yet working >> "%LOG_FILE%"
-    echo trying automatic miniconda install >> "%LOG_FILE%"
-    set PATH=%LOCATION_ECOASSIST_FILES%\miniconda\Scripts;%PATH%
-    call "%LOCATION_ECOASSIST_FILES%\miniconda\Scripts\activate.bat" "%LOCATION_ECOASSIST_FILES%\miniconda"
-) else (
-    echo conda is functioning >> "%LOG_FILE%"
-)
-
 @REM activate environment
 call conda activate ecoassistcondaenv
-echo conda environment activated >> "%LOG_FILE%"
 call conda info --envs >> "%LOG_FILE%"
 
 @REM add gits to PYTHONPATH
