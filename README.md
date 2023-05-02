@@ -63,7 +63,7 @@ Here is a map of the users which have let me know that they're using EcoAssist. 
 9. [Code contributors](#code-contributors)
 
 ## Requirements
-Except a minimum of 8 GB RAM, there are no hard system requirements for EcoAssist since it is largely hardware-agnostic. However, please note that machine learning can ask quite a lot from your computer in terms of processing power. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big plus. If you don’t know whether your computer can handle EcoAssist, I would recommend to just try it out - [uninstalling](#uninstall) EcoAssist is as simple as deleting a folder.
+Except a minimum of 8 GB RAM, there are no hard system requirements for EcoAssist since it is largely hardware-agnostic. However, please note that machine learning can ask quite a lot from your computer in terms of processing power. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models, while deploying models can take ages. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big plus.
 
 ## Download
 EcoAssist will install quite a lot of dependencies, so don't panic if the installation takes 10-20 minutes and generates lots of textual feedback as it does so. Please note that some antivirus, VPN, proxy servers or other protection software might interfere with the installation. If you're having trouble, please disable this protection software for the duration of the installation.
@@ -71,9 +71,11 @@ EcoAssist will install quite a lot of dependencies, so don't panic if the instal
 Opening EcoAssist for the first time will take a bit longer than usual due to script compiling. Have patience, all subsequent times will be better.
 
 #### Windows installation
-1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
-2. If you've executed it with admin rights, it will be installed for all users. If you don't have admin rights, you will be prompted if you'd still like to  enter an admin password, or proceed with the non-admin install - which will make EcoAssist available for your user only. 
-3. When the installation is finished, there will be a shortcut file in your `Downloads` folder. You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
+1. EcoAssist requires the software packages Git and Anaconda to be installed on your device. You can install them at [gitforwindows.org](https://gitforwindows.org/) and [anaconda.com](https://www.anaconda.com/). During the installations you can leave all options as the default. Just take note of the destination folders (e.g., `C:\ProgramData\anaconda3` and `C:\Program Files\Git`). You'll have to specify these paths later on.
+2. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
+3. If you've executed it with admin rights, it will be installed for all users. If you don't have admin rights, you will be prompted if you'd still like to enter an admin password, or proceed with the non-admin install - which will make EcoAssist available for your user only.
+4. Enter the paths to the Git and Anaconda folders when prompted.
+5. When the installation is finished, there will be a shortcut file in your `Downloads` folder. You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 #### Mac installation
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/install.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work, you can change the file permissions by opening a new terminal window and copy-pasting the following commands.
@@ -158,11 +160,11 @@ If you used the MegaDetector model to analyse images or retrain your model, plea
 ## Uninstall
 All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it.
 ```r
-# windows (admin rights - all users)
+# windows (all users)
 ─── 📁Program Files
     └── 📁EcoAssist_files
 
-# windows (no admin rights - one user)
+# windows (single user)
 ─── 📁Users
     └── 📁<username>
         └── 📁EcoAssist_files
