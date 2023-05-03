@@ -143,6 +143,7 @@ set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
 echo Path to conda is defined as:           '%PATH_TO_CONDA_INSTALLATION%'
 if not exist "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" ( echo '%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat' does not exist. Enter a path to a valid conda installation. & goto set_conda_install )
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts\;%PATH%
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
@@ -296,7 +297,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 
 @REM create conda env and install packages for MegaDetector
 call conda env remove -n ecoassistcondaenv
-call conda env create --name ecoassistcondaenv --file "%LOCATION_ECOASSIST_FILES%\cameratraps\environment-detector.yml"
+cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+call conda env create --name ecoassistcondaenv --file environment-detector.yml
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call activate ecoassistcondaenv
 
 @REM install additional packages for labelImg
