@@ -9,6 +9,7 @@ echo off
 set ECOASSIST_DRIVE=%~d0
 set ECOASSIST_PREFIX=%~dp0
 set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\EcoAssist_files\EcoAssist\=%
+set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\ECOASS~1\ECOASS~1\=%
 
 @REM check if installed in program files
 if "%ECOASSIST_PREFIX%"=="%ProgramFiles%" (
