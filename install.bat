@@ -310,20 +310,21 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
 
+echo 100 | wtee -a "%LOG_FILE%"
 @REM create conda env and install packages for MegaDetector
-echo 101
+echo 101 | wtee -a "%LOG_FILE%"
 call conda clean --all
-echo 102
+echo 102 | wtee -a "%LOG_FILE%"
 call conda env remove -n ecoassistcondaenv
-echo 11
+echo 11 | wtee -a "%LOG_FILE%"
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-echo 12
+echo 12 | wtee -a "%LOG_FILE%"
 call conda env create --name ecoassistcondaenv --file environment-detector.yml
-echo 13
+echo 13 | wtee -a "%LOG_FILE%"
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-echo 14
+echo 14 | wtee -a "%LOG_FILE%"
 call activate ecoassistcondaenv
-echo 15
+echo 15 | wtee -a "%LOG_FILE%"
 
 @REM install additional packages for labelImg
 "%EA_PIP_EXE%" install pyqt5==5.15.2 lxml
