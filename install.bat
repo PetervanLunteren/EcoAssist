@@ -143,10 +143,25 @@ set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
 echo Path to conda is defined as:           '%PATH_TO_CONDA_INSTALLATION%'
 if not exist "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" ( echo '%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat' does not exist. Enter a path to a valid conda installation. & goto set_conda_install )
-set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts\;%PATH%
+echo 1
+set PATH=%PATH_TO_CONDA_INSTALLATION%;%PATH%
+echo 2
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
+echo 3
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Library\bin;%PATH%
+echo 4
+echo:
+echo PATH: %PATH%
+echo:
+echo 5
+source "%PATH_TO_CONDA_INSTALLATION%\etc\profile.d\conda.sh"
+echo 6
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
+echo 7
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
+echo 8
 set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
+echo 9
 
 
 @REM set git cmds
@@ -296,11 +311,17 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 )
 
 @REM create conda env and install packages for MegaDetector
+echo 10
 call conda env remove -n ecoassistcondaenv
+echo 11
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+echo 12
 call conda env create --name ecoassistcondaenv --file environment-detector.yml
+echo 13
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+echo 14
 call activate ecoassistcondaenv
+echo 15
 
 @REM install additional packages for labelImg
 "%EA_PIP_EXE%" install pyqt5==5.15.2 lxml
