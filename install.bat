@@ -154,7 +154,6 @@ echo:
 echo PATH: %PATH%
 echo:
 echo 5
-source "%PATH_TO_CONDA_INSTALLATION%\etc\profile.d\conda.sh"
 echo 6
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
 echo 7
