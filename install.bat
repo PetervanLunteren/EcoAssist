@@ -311,7 +311,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 
 echo 100 | wtee -a "%LOG_FILE%"
 @REM create conda env and install packages for MegaDetector
-echo 101 | wtee -a "%LOG_FILE%"
+echo Checking for corrupted files in conda env | wtee -a "%LOG_FILE%"
 call conda clean --all -y
 echo 102 | wtee -a "%LOG_FILE%"
 call conda env remove -n ecoassistcondaenv
