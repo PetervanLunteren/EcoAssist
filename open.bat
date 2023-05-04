@@ -77,6 +77,10 @@ call conda info --envs >> "%LOG_FILE%"
 set PYTHONPATH=%LOCATION_ECOASSIST_FILES%;%LOCATION_ECOASSIST_FILES%\cameratraps;%LOCATION_ECOASSIST_FILES%\ai4eutils;%LOCATION_ECOASSIST_FILES%\yolov5;%LOCATION_ECOASSIST_FILES%\EcoAssist;%LOCATION_ECOASSIST_FILES%\labelImg;%PYTHONPATH%
 echo PYTHONPATH : %PYTHONPATH% >> "%LOG_FILE%"
 
+@REM add python.exe and site packages to PATH
+set PATH=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv;%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\lib\python3.8\site-packages;%PATH%
+echo PATH : %PATH% >> "%LOG_FILE%"
+
 @REM check python version
 python -V >> "%LOG_FILE%"
 where python >> "%LOG_FILE%"
