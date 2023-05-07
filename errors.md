@@ -1,6 +1,6 @@
 *-- This document is work in progress --*
 
-Below you can find some common error messages and their potential solutions. If you can't figure it out yourself, raise an error in this repoistory or [email me](mailto:petervanlunteren@hotmail.com) the [logfiles](https://github.com/PetervanLunteren/EcoAssist/new/main#how-to-create-and-find-the-logfiles) and a detailed explenation of what's going on. 
+Below you can find some common error messages and their potential solutions. If you can't figure it out yourself, raise an error in this repoistory or [email me](mailto:petervanlunteren@hotmail.com) the logfiles and a detailed explenation of what's going on. 
 
 ### How to create and find the logfiles?
 * Recreate the error in EcoAssist.
