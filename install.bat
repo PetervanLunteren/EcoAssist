@@ -134,7 +134,7 @@ if not exist "%LOCATION_ECOASSIST_FILES%" (
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
 
-@REM set conda cmds
+@REM set conda and pip paths
 :set_conda_install
 echo:
 set /p PATH_TO_CONDA_INSTALLATION=Enter path to conda installation ^(for example C:\ProgramData\anaconda3^): 
@@ -143,25 +143,8 @@ set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
 echo Path to conda is defined as:           '%PATH_TO_CONDA_INSTALLATION%'
 if not exist "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" ( echo '%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat' does not exist. Enter a path to a valid conda installation. & goto set_conda_install )
-echo 1
-set PATH=%PATH_TO_CONDA_INSTALLATION%;%PATH%
-echo 2
-set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
-echo 3
-set PATH=%PATH_TO_CONDA_INSTALLATION%\Library\bin;%PATH%
-echo 4
-echo:
-echo PATH: %PATH%
-echo:
-echo 5
-echo 6
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
-echo 7
-call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-echo 8
 set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
-echo 9
-
 
 @REM set git cmds
 :set_git_install
@@ -309,21 +292,26 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
 
-echo 100 | wtee -a "%LOG_FILE%"
+@REM add conda to path if not already present
+conda -h && set conda_in_path="Yes" || set conda_in_path="No"
+echo PATH before: %PATH% | wtee -a "%LOG_FILE%"
+if !conda_in_path!=="No" (
+    echo conda command not yet in path | wtee -a "%LOG_FILE%"
+    set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;!PATH!
+) else (
+    echo conda command in path already | wtee -a "%LOG_FILE%"
+)
+echo PATH after: %PATH% | wtee -a "%LOG_FILE%"
+
 @REM create conda env and install packages for MegaDetector
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 echo Checking for corrupted files in conda env | wtee -a "%LOG_FILE%"
 call conda clean --all -y
-echo 102 | wtee -a "%LOG_FILE%"
 call conda env remove -n ecoassistcondaenv
-echo 11 | wtee -a "%LOG_FILE%"
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-echo 12 | wtee -a "%LOG_FILE%"
 call conda env create --name ecoassistcondaenv --file environment-detector.yml
-echo 13 | wtee -a "%LOG_FILE%"
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-echo 14 | wtee -a "%LOG_FILE%"
 call activate ecoassistcondaenv
-echo 15 | wtee -a "%LOG_FILE%"
 
 @REM install additional packages for labelImg
 "%EA_PIP_EXE%" install pyqt5==5.15.2 lxml
