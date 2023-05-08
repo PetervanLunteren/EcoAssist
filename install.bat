@@ -293,7 +293,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 )
 
 @REM add conda to path if not already present
-conda -h && set conda_in_path="Yes" || set conda_in_path="No"
+call conda -h && set conda_in_path="Yes" || set conda_in_path="No"
 echo PATH before: %PATH% | wtee -a "%LOG_FILE%"
 if !conda_in_path!=="No" (
     echo conda command not yet in path | wtee -a "%LOG_FILE%"
