@@ -298,6 +298,7 @@ echo PATH before: %PATH% | wtee -a "%LOG_FILE%"
 if !conda_in_path!=="No" (
     echo conda command not yet in path | wtee -a "%LOG_FILE%"
     set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;!PATH!
+    set PATH=!PATH!;"%PATH_TO_CONDA_INSTALLATION%\Scripts\"
 ) else (
     echo conda command in path already | wtee -a "%LOG_FILE%"
 )
