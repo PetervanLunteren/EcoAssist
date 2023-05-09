@@ -293,6 +293,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 )
 
 @REM create conda env and install packages for MegaDetector
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 echo Checking for corrupted files in conda env | wtee -a "%LOG_FILE%"
 call conda clean --all -y
