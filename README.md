@@ -133,8 +133,8 @@ EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. Th
 If you encounter any bugs, please raise an issue in this repository or [send me an email](mailto:petervanlunteren@hotmail.com).
 
 ## Cite
+Please use the following citations if you used EcoAssist in your research.
 #### EcoAssist citation
-If you used EcoAssist in your research.
 ```BibTeX
 @software{van_Lunteren_EcoAssist_2022,
   title     = {{EcoAssist: A no-code platform to train and deploy YOLOv5 object detection and the MegaDetector model}},
@@ -157,7 +157,7 @@ If you used the MegaDetector model to analyse images or retrain your model.
 }
 ```
 
-#### Ultralitics citation
+#### Ultralytics citation
 If you trained or retrained a model.
 ```Bibtex
 @software{Jocher_YOLOv5_2020,
