@@ -134,7 +134,7 @@ If you encounter any bugs, please raise an issue in this repository or [send me 
 
 ## Cite
 #### EcoAssist citation
-If you used EcoAssist in your research, please use the following citation.
+If you used EcoAssist in your research.
 ```BibTeX
 @software{van_Lunteren_EcoAssist_2022,
   title     = {{EcoAssist: A no-code platform to train and deploy YOLOv5 object detection and the MegaDetector model}},
@@ -147,13 +147,26 @@ If you used EcoAssist in your research, please use the following citation.
 ```
 
 #### MegaDetector citation
-If you used the MegaDetector model to analyse images or retrain your model, please use the following citation.
+If you used the MegaDetector model to analyse images or retrain your model.
 ```BibTex
-@article{beery2019efficient,
+@article{Beery_Efficient_2019,
   title     = {Efficient Pipeline for Camera Trap Image Review},
   author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
   journal   = {arXiv preprint arXiv:1907.06772},
   year      = {2019}
+}
+```
+
+#### Ultralitics citation
+If you trained or retrained a model.
+```Bibtex
+@software{Jocher_YOLOv5_2020,
+  title = {{YOLOv5 by Ultralytics}},
+  author = {Jocher, Glenn},
+  year = {2020},
+  doi = {10.5281/zenodo.3908559},
+  url = {https://github.com/ultralytics/yolov5},
+  license = {AGPL-3.0}
 }
 ```
 
