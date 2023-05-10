@@ -1136,8 +1136,8 @@ def extract_label_map_from_model(model_file):
     # import module from cameratraps dir
     from cameratraps.detection.pytorch_detector import PTDetector
             
-    # load model
-    detector = PTDetector(model_file)
+    # load model, but only on CPU to avoid have it stay in GPU memory as not needed during detection (probably should be deleted if not needed)
+    detector = PTDetector(model_file,True)
     
     # log
     print(f"detector: {detector}")
