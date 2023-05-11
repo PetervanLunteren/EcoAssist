@@ -35,8 +35,13 @@ if '%errorlevel%' NEQ '0' (
     if exist "%homedrive%%homepath%" (
         echo:
         echo Proceeding to install in userfolder...
-        set ECOASSIST_PREFIX=%homedrive%%homepath%
-        set ECOASSIST_DRIVE=%homedrive%
+        if "%homepath%"=="\" (
+            set ECOASSIST_PREFIX=%homedrive%
+            set ECOASSIST_DRIVE=%homedrive%
+        ) else (
+            set ECOASSIST_PREFIX=%homedrive%%homepath%
+            set ECOASSIST_DRIVE=%homedrive%
+        )
     ) else (
         echo:
         echo Your userfolder is not accessible. Would you like to install EcoAssist on a custom location?
