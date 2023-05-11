@@ -295,8 +295,6 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-echo Checking for corrupted files in conda env | wtee -a "%LOG_FILE%"
-call conda clean --all -y
 call conda env remove -n ecoassistcondaenv
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call conda env create --name ecoassistcondaenv --file environment-detector.yml
