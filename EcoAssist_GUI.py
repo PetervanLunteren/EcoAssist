@@ -1169,17 +1169,14 @@ def extract_label_map_from_model(model_file):
     # import module from cameratraps dir
     from cameratraps.detection.pytorch_detector import PTDetector
             
-    # load model, but only on CPU to avoid have it stay in GPU memory as not needed during detection (probably should be deleted if not needed)
-    detector = PTDetector(model_file,True)
-    
-    # log
-    print(f"detector: {detector}")
+    # load model
+    label_map_detector = PTDetector(model_file, force_cpu = True)
     
     # fetch classes
     try:
         CUSTOM_DETECTOR_LABEL_MAP = {}
-        for id in detector.model.names:
-            CUSTOM_DETECTOR_LABEL_MAP[id] = detector.model.names[id]
+        for id in label_map_detector.model.names:
+            CUSTOM_DETECTOR_LABEL_MAP[id] = label_map_detector.model.names[id]
     except Exception as error:
         # log error
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
@@ -1190,6 +1187,9 @@ def extract_label_map_from_model(model_file):
                              ".\n\nWill try to proceed and produce the output json file, but post-processing"
                              " features of EcoAssist will not work.",
                      detail=traceback.format_exc())
+    
+    # delete and free up memory
+    del label_map_detector
     
     # log
     print(f"Label map: {CUSTOM_DETECTOR_LABEL_MAP})\n")
