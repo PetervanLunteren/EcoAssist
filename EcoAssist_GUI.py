@@ -83,15 +83,8 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
     # create list with colours for visualisation
     if vis:
-        colors = ["fuchsia", "blue", "orange", "yellow", "green", "red"]
-        length_diff = len(colors) - len(label_map)
-        if length_diff > 0:
-            # first 6 classes get default colors
-            colors = colors[:length_diff]
-        if length_diff < 0:
-            # all classes after that get random color
-            for i in range(abs(length_diff)):
-                colors.append('#%06X' % randint(0, 0xFFFFFF))
+        colors = ["fuchsia", "blue", "orange", "yellow", "green", "red", "aqua", "navy", "teal", "olive", "lime", "maroon", "purple"]
+        colors = colors * 30 # colors for 390 classes
     
     # make sure json has relative paths
     json_paths_converted = False
@@ -120,19 +113,19 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     if csv:
         # for files
         csv_for_files = os.path.join(dst_dir, "results_files.csv")
-        if os.path.exists(csv_for_files):
-            os.remove(csv_for_files)
-        df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
-        df.to_csv(csv_for_files, encoding='utf-8', index=False)
+        if not os.path.isfile(csv_for_files):
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
+            df.to_csv(csv_for_files, encoding='utf-8', index=False)
         
         # for detections
         csv_for_detections = os.path.join(dst_dir, "results_detections.csv")
-        if os.path.exists(csv_for_detections):
-            os.remove(csv_for_detections)
-        df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
-        df.to_csv(csv_for_detections, encoding='utf-8', index=False)
+        if not os.path.isfile(csv_for_detections):
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
+            df.to_csv(csv_for_detections, encoding='utf-8', index=False)
 
     # loop through images
+    failure_warning_shown = False
+    failure_warning_log = os.path.join(dst_dir, "failure_warning_log.txt")
     for image in data['images']:
 
         # cancel process if required
@@ -141,7 +134,17 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         
         # check for failure
         if "failure" in image:
-            mb.showwarning("Warning", f"FILE: '{image['file']}'\n\nFAILURE: '{image['failure']}'\n\nThis file will be skipped.")
+            if not failure_warning_shown:
+                mb.showwarning("Warning", f"One or more files failed to be analysed by the model (e.g., corrupt files) and will be skipped by "
+                                          f"post-processing features. See\n\n'{failure_warning_log}'\n\nfor more info.")
+                failure_warning_shown = True
+            
+            # write warnings to log file
+            with open(failure_warning_log, 'a+') as f:
+                f.write(f"File '{image['file']}' was skipped by post processing features because '{image['failure']}'\n")
+            f.close()
+
+            # skip this iteration
             continue
         
         # get image info
@@ -236,7 +239,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         if vis and len(bbox_info) > 0:
             for bbox in bbox_info:
                 vis_label = f"{bbox[0]} {bbox[1]}"
-                color = colors[int(inverted_label_map[bbox[0]])-1]
+                color = colors[int(inverted_label_map[bbox[0]])]
                 bb.add(im_to_vis, *bbox[2:6], vis_label, color)
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
@@ -262,7 +265,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             Path(os.path.dirname(annot_file)).mkdir(parents=True, exist_ok=True)
             with open(annot_file, 'w') as f:
                 for bbox in bbox_info:
-                    class_id = int(inverted_label_map[bbox[0]])-1
+                    # correct for the non-0-index-starting default label map of MD
+                    if inverted_label_map == {'animal': '1', 'person': '2', 'vehicle': '3'}:
+                        class_id = int(inverted_label_map[bbox[0]])-1
+                    else:
+                        class_id = int(inverted_label_map[bbox[0]])
                     f.write(f"{class_id} {bbox[8]} {bbox[9]} {bbox[10]} {bbox[11]}\n")
 
         # calculate stats
@@ -332,10 +339,17 @@ def start_postprocess():
         return
 
     # warn user if the original files will be overwritten with visualized files
-    if dst_dir == src_dir and vis and not sep:
+    if os.path.normpath(dst_dir) == os.path.normpath(src_dir) and vis and not sep:
         if not mb.askyesno("Original images will be overwritten", 
                       f"WARNING! The visualized images will be placed in the folder with the original data: '{src_dir}'. By doing this, you will overwrite the original images"
-                      " with the visualized ones. Are you sure you want to continue?"):
+                      " with the visualized ones. Visualizing is permanent and cannot be undone. Are you sure you want to continue?"):
+            return
+    
+    # warn user if images will be moved and visualized
+    if sep and file_placement == 1 and vis:
+        if not mb.askyesno("Original images will be overwritten", 
+                      f"WARNING! You specified to visualize the original images. Visualizing is permanent and cannot be undone. If you don't want to visualize the original "
+                      f"images, please select 'Copy' as '{lbl_file_placement_txt}'. Are you sure you want to continue with the current settings?"):
             return
 
     # open new window with progress bar and stats
@@ -797,6 +811,15 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
         
         # extract classes
         label_map = extract_label_map_from_model(model_file)
+
+        # write labelmap to separate json
+        json_object = json.dumps(label_map, indent=1)
+        native_model_classes_json_file = os.path.join(chosen_folder, "native_model_classes.json")
+        with open(native_model_classes_json_file, "w") as outfile:
+            outfile.write(json_object)
+        
+        # add argument to command call
+        selected_options.append("--class_mapping_filename=" + native_model_classes_json_file)
             
     # create commands for Windows
     if os.name == 'nt':
@@ -856,6 +879,8 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
 
     
     # read output and direct to tkinter
+    model_error_shown = False
+    model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
     for line in p.stdout:
         print(line, end='')
         
@@ -874,7 +899,15 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
                             " fix the issue.")
             return
         if "Exception:" in line:
-            mb.showerror("Error", "Model error:\n\n" + line)
+            if not model_error_shown:
+                mb.showerror("Error", f"There are one or more model errors. See \n\n'{model_error_log}' \n\nfor more information.")
+                model_error_shown = True
+
+            # write errors to log file
+            with open(model_error_log, 'a+') as f:
+                f.write(f"{line}\n")
+            f.close()
+
         if "Warning:" in line and not '%' in line[0:4]:
             if not "could not determine MegaDetector version" in line and not "no metadata for unknown detector version" in line:
                 mb.showerror("Warning", "Model warning:\n\n" + line)
@@ -1146,7 +1179,7 @@ def extract_label_map_from_model(model_file):
     try:
         CUSTOM_DETECTOR_LABEL_MAP = {}
         for id in detector.model.names:
-            CUSTOM_DETECTOR_LABEL_MAP[id+1] = detector.model.names[id]
+            CUSTOM_DETECTOR_LABEL_MAP[id] = detector.model.names[id]
     except Exception as error:
         # log error
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
@@ -1168,11 +1201,7 @@ def extract_label_map_from_model(model_file):
 def fetch_label_map_from_json(path_to_json):
     with open(path_to_json, "r") as json_file:
         data = json.load(json_file)
-    custom_model = data['info']['ecoassist_metadata']['custom_model']
-    if custom_model:
-        label_map = data['info']['ecoassist_metadata']['custom_model_info']['label_map']
-    else:
-        label_map = data['detection_categories']
+    label_map = data['detection_categories']
     return label_map
 
 # check if json paths are relative or absolute
@@ -3071,7 +3100,7 @@ help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.e
 # visualize files
 help_text.insert(END, f"{lbl_vis_files_txt}\n")
 help_text.insert(END, "This functionality draws boxes around the detections and prints their confidence values. This can be useful to visually check the results."
-                 " Videos can't be visualized using this tool.\n\n")
+                 " Videos can't be visualized using this tool. Please be aware that this action is permanent and cannot be undone. Be wary when using this on original images.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
