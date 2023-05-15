@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
-title: "EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model."
+title: "EcoAssist: A no-code platform to train and deploy YOLOv5 object detection models"
 authors:
   - given-names: Peter
     family-names: van Lunteren
@@ -17,4 +17,6 @@ keywords:
   - MegaDetector
   - Cameratraps
   - Conservation
+  - Object detection
+  - Machine learning
 license: MIT
