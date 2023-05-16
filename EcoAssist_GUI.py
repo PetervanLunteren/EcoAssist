@@ -571,13 +571,13 @@ def start_training():
             command_args.append(f"--workers={var_n_workers.get()}")
 
         # image size
-        if no_user_input(var_img_size) == False:
-            if not var_img_size.get().isdecimal():
+        if no_user_input(var_image_size_for_training) == False:
+            if not var_image_size_for_training.get().isdecimal():
                 invalid_value_warning("image size")
                 set_buttons_to_idle()
                 return
             else:
-                command_args.append(f"--img={var_img_size.get()}")
+                command_args.append(f"--img={var_image_size_for_training.get()}")
         elif var_learning_model.get() == dpd_learning_model_options[0] or var_learning_model.get() == dpd_learning_model_options[1]:
             # megadetector models
             command_args.append(f"--img=1280")
@@ -909,7 +909,9 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
             f.close()
 
         if "Warning:" in line and not '%' in line[0:4]:
-            if not "could not determine MegaDetector version" in line and not "no metadata for unknown detector version" in line:
+            if not "could not determine MegaDetector version" in line \
+                and not "no metadata for unknown detector version" in line \
+                and not "using user-supplied image size" in line:
                 mb.showerror("Warning", "Model warning:\n\n" + line)
         
         # get process stats and send them to tkinter
@@ -1005,6 +1007,13 @@ def start_deploy():
         return
     
     # check if checkpoint entry is valid
+    if var_use_custom_img_size_for_deploy.get() and not var_image_size_for_deploy.get().isdecimal():
+        mb.showerror("Invalid value",
+                    "You either entered an invalid value for the image size, or none at all. You can only "
+                    "enter numberic characters.")
+        return
+
+    # check if checkpoint entry is valid
     if var_use_checkpnts.get() and not var_checkpoint_freq.get().isdecimal():
         if mb.askyesno("Invalid value",
                         "You either entered an invalid value for the checkpoint frequency, or none at all. You can only "
@@ -1035,6 +1044,8 @@ def start_deploy():
         additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
     if var_cont_checkpnt.get():
         additional_img_options.append("--resume_from_checkpoint=" + loc_chkpnt_file)
+    if var_use_custom_img_size_for_deploy.get():
+        additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
 
     # create command for the video process to be passed on to process_video.py
     additional_vid_options = []
@@ -1909,6 +1920,15 @@ def remove_md_thresh():
     scl_md_thresh.grid_remove()
     dsp_md_thresh.grid_remove()
 
+# toggle image size entry box
+def toggle_image_size_for_deploy():
+    if var_use_custom_img_size_for_deploy.get():
+        lbl_image_size_for_deploy.grid(row=row_image_size_for_deploy, sticky='nesw', pady=2)
+        ent_image_size_for_deploy.grid(row=row_image_size_for_deploy, column=1, sticky='nesw', padx=5)
+    else:
+        lbl_image_size_for_deploy.grid_remove()
+        ent_image_size_for_deploy.grid_remove()
+
 # toggle separation subframe
 def toggle_sep_frame():
     if var_separate_files.get():
@@ -2065,6 +2085,15 @@ def toggle_n_evolutions():
         ent_n_generations.grid_forget()
 
 # functions to delete the grey text in the entry boxes for the...
+# ... image size fro deploy
+image_size_for_deploy_init = True
+def image_size_for_deploy_focus_in(_):
+    global image_size_for_deploy_init
+    if image_size_for_deploy_init:
+        ent_image_size_for_deploy.delete(0, tk.END)
+        ent_image_size_for_deploy.config(fg='black')
+    image_size_for_deploy_init = False
+
 # ... checkpoint frequency
 checkpoint_freq_init = True
 def checkpoint_freq_focus_in(_):
@@ -2138,13 +2167,13 @@ def n_generations_focus_in(_):
     n_generations_init = False
 
 # ... image size
-img_size_init = True
-def img_size_focus_in(_):
-    global img_size_init
-    if img_size_init:
-        ent_img_size.delete(0, tk.END)
-        ent_img_size.config(fg='black')
-    img_size_init = False
+image_size_for_training_init = True
+def image_size_for_training_focus_in(_):
+    global image_size_for_training_init
+    if image_size_for_training_init:
+        ent_image_size_for_training.delete(0, tk.END)
+        ent_image_size_for_training.config(fg='black')
+    image_size_for_training_init = False
 
 # ... annotation classes
 annot_classes_init = True
@@ -2361,9 +2390,29 @@ scl_md_thresh = Scale(snd_step, from_=0.005, to=1, resolution=0.005, orient=HORI
 dsp_md_thresh = Label(snd_step, textvariable=var_md_thresh)
 dsp_md_thresh.config(fg="darkred")
 
+# use custom image size
+lbl_use_custom_img_size_for_deploy_txt = "Use custom image size"
+row_use_custom_img_size_for_deploy = 4
+lbl_use_custom_img_size_for_deploy = Label(snd_step, text=lbl_use_custom_img_size_for_deploy_txt, width=1, anchor="w")
+lbl_use_custom_img_size_for_deploy.grid(row=row_use_custom_img_size_for_deploy, sticky='nesw', pady=2)
+var_use_custom_img_size_for_deploy = BooleanVar()
+var_use_custom_img_size_for_deploy.set(False)
+chb_use_custom_img_size_for_deploy = Checkbutton(snd_step, variable=var_use_custom_img_size_for_deploy, command=toggle_image_size_for_deploy, anchor="w")
+chb_use_custom_img_size_for_deploy.grid(row=row_use_custom_img_size_for_deploy, column=1, sticky='nesw', padx=5)
+
+# specify custom image size (not grid by default)
+lbl_image_size_for_deploy_txt = "Image size"
+row_image_size_for_deploy = 5
+lbl_image_size_for_deploy = Label(snd_step, text=" ↳ " + lbl_image_size_for_deploy_txt, width=1, anchor="w")
+var_image_size_for_deploy = StringVar()
+ent_image_size_for_deploy = tk.Entry(snd_step, textvariable=var_image_size_for_deploy, fg='grey', state=NORMAL, width=1)
+ent_image_size_for_deploy.insert(0, "E.g.: 640")
+ent_image_size_for_deploy.bind("<FocusIn>", image_size_for_deploy_focus_in)
+ent_image_size_for_deploy.config(state=DISABLED)
+
 # use absolute paths
 lbl_abs_paths_txt = "Use absolute paths in output file"
-row_abs_path = 4
+row_abs_path = 6
 lbl_abs_paths = Label(snd_step, text=lbl_abs_paths_txt, width=1, anchor="w")
 lbl_abs_paths.grid(row=row_abs_path, sticky='nesw', pady=2)
 var_abs_paths = BooleanVar()
@@ -2373,7 +2422,7 @@ chb_abs_paths.grid(row=row_abs_path, column=1, sticky='nesw', padx=5)
 
 # process images
 lbl_process_img_txt = "Process all images in the folder specified"
-row_process_img = 5
+row_process_img = 7
 lbl_process_img = Label(snd_step, text=lbl_process_img_txt, width=1, anchor="w")
 lbl_process_img.grid(row=row_process_img, sticky='nesw', pady=2)
 var_process_img = BooleanVar()
@@ -2383,7 +2432,7 @@ chb_process_img.grid(row=row_process_img, column=1, sticky='nesw', padx=5)
 
 ## image option frame (dsiabled by default)
 img_frame_txt = "Image options"
-img_frame_row = 6
+img_frame_row = 8
 img_frame = LabelFrame(snd_step, text=" ↳ " + img_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 img_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 img_frame.grid(row=img_frame_row, column=0, columnspan=2, sticky = 'ew')
@@ -2424,7 +2473,7 @@ chb_cont_checkpnt.grid(row=row_cont_checkpnt, column=1, sticky='nesw', padx=5)
 
 # process videos
 lbl_process_vid_txt = "Process all videos in the folder specified"
-row_process_vid = 7
+row_process_vid = 9
 lbl_process_vid = Label(snd_step, text=lbl_process_vid_txt, width=1, anchor="w")
 lbl_process_vid.grid(row=row_process_vid, sticky='nesw', pady=2)
 var_process_vid = BooleanVar()
@@ -2434,7 +2483,7 @@ chb_process_vid.grid(row=row_process_vid, column=1, sticky='nesw', padx=5)
 
 ## video option frame (disabled by default)
 vid_frame_txt = "Video options"
-vid_frame_row = 8
+vid_frame_row = 10
 vid_frame = LabelFrame(snd_step, text=" ↳ " + vid_frame_txt + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 vid_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 vid_frame.grid(row=vid_frame_row, column=0, columnspan=2, sticky='ew')
@@ -2464,7 +2513,7 @@ ent_nth_frame.bind("<FocusIn>", nth_frame_focus_in)
 ent_nth_frame.config(state=DISABLED)
 
 # button start deploy
-row_btn_start_deploy = 9
+row_btn_start_deploy = 11
 btn_start_deploy = Button(snd_step, text="Deploy model", command=start_deploy)
 btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='ew')
 
@@ -2761,15 +2810,15 @@ ent_n_workers.insert(0, "E.g.: 2")
 ent_n_workers.bind("<FocusIn>", n_workers_focus_in)
 
 # image size
-lbl_img_size_txt = "Image size"
-row_img_size = 5
-lbl_img_size = tk.Label(adv_params, text=lbl_img_size_txt + " (leave blank for auto selection)", pady=2, width=1, anchor="w")
-lbl_img_size.grid(row=row_img_size, sticky='nesw')
-var_img_size = StringVar()
-ent_img_size = tk.Entry(adv_params, textvariable=var_img_size, fg='grey', width=1)
-ent_img_size.grid(row=row_img_size, column=1, sticky='nesw', padx=5)
-ent_img_size.insert(0, "E.g.: 1280")
-ent_img_size.bind("<FocusIn>", img_size_focus_in)
+lbl_image_size_for_training_txt = "Image size"
+row_image_size_for_training = 5
+lbl_image_size_for_training = tk.Label(adv_params, text=lbl_image_size_for_training_txt + " (leave blank for auto selection)", pady=2, width=1, anchor="w")
+lbl_image_size_for_training.grid(row=row_image_size_for_training, sticky='nesw')
+var_image_size_for_training = StringVar()
+ent_image_size_for_training = tk.Entry(adv_params, textvariable=var_image_size_for_training, fg='grey', width=1)
+ent_image_size_for_training.grid(row=row_image_size_for_training, column=1, sticky='nesw', padx=5)
+ent_image_size_for_training.insert(0, "E.g.: 1280")
+ent_image_size_for_training.bind("<FocusIn>", image_size_for_training_focus_in)
 
 # cache images
 lbl_cache_imgs_txt = "Cache images for faster training"
@@ -2941,6 +2990,7 @@ for frame in [fst_step, snd_step, img_frame, vid_frame, trd_step, sep_frame, req
 
 # ... but not for the hidden rows
 snd_step.grid_rowconfigure(row_md_thresh, minsize=0) # model tresh
+snd_step.grid_rowconfigure(row_image_size_for_deploy, minsize=0) # image size for deploy
 req_params.grid_rowconfigure(row_model_architecture, minsize=0) # model architecture
 adv_params.grid_rowconfigure(row_n_freeze_layers, minsize=0) # n frozen layers
 adv_params.grid_rowconfigure(row_n_generations, minsize=0) # n generations
@@ -3009,6 +3059,15 @@ help_text.insert(END, "This option will exclude detections from the output file.
                  " you're doing. If you, because for some reason, want an extra-small output file, you would typically use a threshold of 0.01 or 0.05. To adjust the "
                  "threshold value, you can drag the slider or press either sides next to the slider for a 0.005 reduction or increment. Confidence values are within the "
                  "[0.005, 1] interval.\n\n")
+help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+# exclude detections
+help_text.insert(END, f"{lbl_use_custom_img_size_for_deploy_txt} / {lbl_image_size_for_deploy_txt}\n")
+help_text.insert(END, "EcoAssist will resize the images before they get processed. EcoAssist will by default resize the images to 1280 pixels. "
+                "Deploying a model with a lower image size will reduce the processing time, but also the detection accuracy. Best results are obtained if you use the"
+                " same image size as the model was trained on. If you trained a model in EcoAssist using the default image size, you should set this value to 640 for "
+                "the YOLOv5 models. Use the deafult for the MegaDetector models.\n\n")
 help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -3257,7 +3316,7 @@ help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end")
 help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
 # image size
-help_text.insert(END, f"{lbl_img_size_txt}\n")
+help_text.insert(END, f"{lbl_image_size_for_training_txt}\n")
 help_text.insert(END, "Larger image sizes usually lead to better results, but take longer to process. Training on smaller images will cost less computing power. An image"
                  " that is twice as large will have 4 times as many pixels to learn from. Resizing images is therefore a crucial part of object detection. Best results are"
                  " obtained if the same image size is used as the original model you are retraining. Therefore, if you leave the image size entry box empty, EcoAssist will"
