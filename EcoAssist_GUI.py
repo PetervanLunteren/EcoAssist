@@ -1693,7 +1693,7 @@ def set_learning_model(self):
     elif choice == dpd_learning_model_options[5]:
         var_learning_model_path.set(os.path.join(pretrained_models, "yolov5l.pt"))
     elif choice == dpd_learning_model_options[6]:
-        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5xl.pt"))
+        var_learning_model_path.set(os.path.join(pretrained_models, "yolov5x.pt"))
     elif choice == dpd_learning_model_options[8]:
         var_learning_model_path.set("")
 
