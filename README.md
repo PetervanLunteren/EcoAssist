@@ -46,10 +46,13 @@ Unfortunately, MegaDetector does not identify the animals, it just finds them. T
 Camera trap images taken from the [Missouri camera trap database](https://lila.science/datasets/missouricameratraps) and the [WCS Camera Traps dataset](https://lila.science/datasets/wcscameratraps).
 
 ## Users
-Here is a map of the users which have let me know that they're using EcoAssist. Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/cummulative_users.png" width=60% height="auto" />
+</p>
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
+Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
 
 ## Quick links
 1. [Requirements](#requirements)
