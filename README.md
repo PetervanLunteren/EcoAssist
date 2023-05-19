@@ -22,13 +22,16 @@ I've written this application in my free evenings and would really appreciate it
 * Deploy your model on images or videos
 * Annotate your data using the [labelImg](https://github.com/heartexlabs/labelImg) software
 * GPU acceleration for NVIDIA and Apple Silicon
-* Open-source, free and will always remain free
 * Post-process your data to
   * separate
   * visualise
   * crop
   * label
   * export to .csv
+
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/overview.png" width=100% height="auto" />
+</p>
 
 ## Extra features for ecologists
 EcoAssist comes with the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. That means that you can deploy MegaDetector to find the images or videos which contain an animal, and filter out the empties. There's also a possibility to further process the images in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/).
