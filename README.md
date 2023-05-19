@@ -17,6 +17,10 @@ I've written this application in my free evenings and would really appreciate it
 </p>
 
 ## Main features
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/overview.png" width=100% height="auto" />
+</p>
+
 * Runs on Windows, Mac, and Linux (no admin rights required)
 * Train your model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
 * Deploy your model on images or videos
@@ -28,10 +32,6 @@ I've written this application in my free evenings and would really appreciate it
   * crop
   * label
   * export to .csv
-
-<p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/overview.png" width=100% height="auto" />
-</p>
 
 ## Extra features for ecologists
 EcoAssist comes with the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. That means that you can deploy MegaDetector to find the images or videos which contain an animal, and filter out the empties. There's also a possibility to further process the images in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/).
