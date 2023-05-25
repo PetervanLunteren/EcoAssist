@@ -5,7 +5,8 @@ Below you can find some common error messages and their potential solutions. If 
 ### How to create and find the logfiles?
 * Recreate the error in EcoAssist.
 * Close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last.
-* Navigate to `EcoAssist_files\EcoAssist\logfiles\`. You can find the location of `EcoAssist_files` [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). 
+* Navigate to your `EcoAssist_files` folder. It's location is OS dependant, you can find its location [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). 
+* Navigate to `...\EcoAssist_files\EcoAssist\logfiles\`. 
   * `installation_log.txt` will give you information about the installation.
   * `session_log.txt` writes logs during runtime on Windows.
   * `stdout.txt` and `stderr.txt` write logs during runtime on Mac and Linux. 
