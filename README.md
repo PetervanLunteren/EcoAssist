@@ -80,10 +80,12 @@ EcoAssist will install quite a lot of dependencies, so don't panic if the instal
 Opening EcoAssist for the first time will take a bit longer than usual due to script compiling. Have patience, all subsequent times will be better.
 
 #### Windows installation
-1. EcoAssist requires the software packages Git and Anaconda to be installed on your device. You can install them at [gitforwindows.org](https://gitforwindows.org/) and [anaconda.com](https://www.anaconda.com/). During the installations you can leave all options as the default. Just take note of the destination folders (e.g., `C:\ProgramData\anaconda3` and `C:\Program Files\Git`). You'll have to specify these paths later on.
-2. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
+1. EcoAssist requires Git and a conda distribution to be installed on your device. See below for instructions on how to install them. During installation, you can leave all parameters at their default values. Just keep track of the destination directories (for example, `C:\Program Files\Git` and `C:\ProgramData\miniforge3`). You'll have to specify these paths later on.
+    * You can install Git from [gitforwindows.org](https://gitforwindows.org/). 
+    * EcoAssist will work with Anaconda, Miniconda or Miniforge. Miniforge is recommended, however if you already have Anaconda or Miniconda installed, that would suffice. To install Miniforge, simply download and execute the [Miniforge installer](https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe). If you see a "Windows protected your PC" warning, you may need to click "More info" and "run anyway".
+2. Download the [EcoAssist installation file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
 3. If you've executed it with admin rights, it will be installed for all users. If you don't have admin rights, you will be prompted if you'd still like to enter an admin password, or proceed with the non-admin install - which will make EcoAssist available for your user only.
-4. Enter the paths to the Git and Anaconda folders when prompted.
+4. Enter the paths to the Git and Anaconda folders when prompted, or just drag and drop the folders into the console window. 
 5. When the installation is finished, there will be a shortcut file in your `Downloads` folder. You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
 
 #### Mac installation
