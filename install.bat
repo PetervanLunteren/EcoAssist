@@ -142,7 +142,7 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssi
 @REM set conda and pip paths
 :set_conda_install
 echo:
-set /p PATH_TO_CONDA_INSTALLATION=Enter path to conda installation ^(for example C:\ProgramData\anaconda3^): 
+set /p PATH_TO_CONDA_INSTALLATION=Enter path to conda installation ^(for example C:\ProgramData\Miniforge3^): 
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:"=%
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
