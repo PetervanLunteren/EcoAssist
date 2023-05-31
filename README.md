@@ -23,6 +23,7 @@ I've written this application in my free evenings and would really appreciate it
 </p>
 
 * Runs on Windows, Mac, and Linux (no admin rights required)
+* English :gb: & Español :es:
 * Train your model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
 * Deploy your model on images or videos
 * Annotate your data using the [labelImg](https://github.com/heartexlabs/labelImg) software
