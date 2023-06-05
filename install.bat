@@ -140,9 +140,11 @@ if not exist "%LOCATION_ECOASSIST_FILES%" (
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
 
 @REM set conda and pip paths
+where conda /q  && (for /f "tokens=*" %%a in ('where conda') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
 :set_conda_install
 echo:
 set /p PATH_TO_CONDA_INSTALLATION=Enter path to conda installation ^(for example C:\ProgramData\Miniforge3^): 
+:check_conda_install
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:"=%
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
@@ -152,9 +154,11 @@ echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_ins
 set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
 
 @REM set git cmds
+where git /q  && (for /f "tokens=*" %%a in ('where git') do (for %%b in ("%%~dpa\.") do set PATH_TO_GIT_INSTALLATION=%%~dpb)) && goto check_git_install
 :set_git_install
 echo:
 set /p PATH_TO_GIT_INSTALLATION=Enter path to git installation ^(for example C:\Program Files\Git^): 
+:check_git_install
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:"=%
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:'=%
 IF %PATH_TO_GIT_INSTALLATION:~-1%==\ SET PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:~0,-1%
