@@ -207,8 +207,8 @@ All files are located in one folder, called `EcoAssist_files`. You can uninstall
 
 
 ## Code contributors
-<a href="https://github.com/PetervanLunteren/EcoAssist/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=PetervanLunteren/EcoAssist" />
+<a href="https://github.com/petervanlunteren/EcoAssist/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=petervanlunteren/EcoAssist" />
 </a>
 
 ###
