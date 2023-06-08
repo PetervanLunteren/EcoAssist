@@ -12,7 +12,7 @@ I initially created EcoAssist with the aim of assisting ecological projects (hen
 
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
-*Coming soon: step-by-step tutorial on how to train and use custom models in EcoAssist*
+*Coming soon: step-by-step tutorial on how to train custom models in EcoAssist. Send me [an e-mail](mailto:petervanlunteren@hotmail.com) if you'd already like to receive the draft version.*
 
 ## Demo
 <p align="center">
