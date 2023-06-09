@@ -113,8 +113,10 @@ echo ""  2>&1 | tee -a "$LOG_FILE"
 # install command line tools if needed (thanks BaseZen of StackOverflow)
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   os=$(sw_vers -productVersion | awk -F. '{print $1 "." $2}')
-  #removed os version check for command line tools as --history prints following now: "Command Line Tools for Xcode   14.3   01/04/2023, 09:36:08"
-  if softwareupdate --history | grep --silent "Command Line Tools"; then
+  xcode_installed=$(xcode-select -p 1>/dev/null;echo $?)
+  # removed os version check for command line tools as --history prints following now: "Command Line Tools for Xcode   14.3   01/04/2023, 09:36:08"
+  # if softwareupdate --history | grep --silent "Command Line Tools"; then # this is the old condition. There were problems with this one
+  if [ "$xcode_installed" = "0" ]; then # new way of checking if command line tools is installed. Hopefully this will work on newer os versions. No possibility to check.
       echo 'Command-line tools already installed.' 2>&1 | tee -a "$LOG_FILE"
   else
       echo 'Installing Command-line tools...' 2>&1 | tee -a "$LOG_FILE"
