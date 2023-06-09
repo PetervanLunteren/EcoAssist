@@ -14,16 +14,34 @@ I've written this application in my free evenings and would really appreciate it
 
 *Coming soon: step-by-step tutorial on how to train custom models in EcoAssist. Send me [an e-mail](mailto:petervanlunteren@hotmail.com) if you'd already like to receive the draft version.*
 
+## Quick links
+1. [Demo](#demo)
+2. [Overview](#overview)
+3. [Main features](#main-features)
+4. [Extra features for ecologists](#extra-features-for-ecologists)
+5. [Teasers](#teasers)
+6. [Users](#users)
+7. [Requirements](#requirements)
+8. [Download](#download)
+9. [Test your installation](#test-your-installation)
+10. [Update](#update)
+11. [GPU support](#gpu-support)
+12. [Bugs](#bugs)
+13. [Cite](#cite)
+14. [Uninstall](#uninstall)
+15. [Code contributors](#code-contributors)
+
 ## Demo
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/demo.gif" width=60% height="auto" />
 </p>
 
-## Main features
+## Overview
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/overview.png" width=100% height="auto" />
 </p>
 
+## Main features
 * Runs on Windows, Mac, and Linux (no admin rights required)
 * English :gb: & Español :es:
 * Train your model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
@@ -61,17 +79,6 @@ Camera trap images taken from the [Missouri camera trap database](https://lila.s
 </p>
 
 Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
-
-## Quick links
-1. [Requirements](#requirements)
-2. [Download](#download)
-3. [Test your installation](#test-your-installation)
-4. [Update](#update)
-5. [GPU support](#gpu-support)
-6. [Bugs](#bugs)
-7. [Cite](#cite)
-8. [Uninstall](#uninstall)
-9. [Code contributors](#code-contributors)
 
 ## Requirements
 Except a minimum of 8 GB RAM, there are no hard system requirements for EcoAssist since it is largely hardware-agnostic. However, please note that machine learning can ask quite a lot from your computer in terms of processing power. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models, while deploying models can take ages. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big plus.
