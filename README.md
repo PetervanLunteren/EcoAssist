@@ -12,8 +12,6 @@ I initially created EcoAssist with the aim of assisting ecological projects (hen
 
 I've written this application in my free evenings and would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
 
-*Coming soon: step-by-step tutorial on how to train custom models in EcoAssist. Send me [an e-mail](mailto:petervanlunteren@hotmail.com) if you'd already like to receive the draft version.*
-
 ## Quick links
 1. [Demo](#demo)
 2. [Overview](#overview)
@@ -21,15 +19,16 @@ I've written this application in my free evenings and would really appreciate it
 4. [Extra features for ecologists](#extra-features-for-ecologists)
 5. [Teasers](#teasers)
 6. [Users](#users)
-7. [Requirements](#requirements)
-8. [Download](#download)
-9. [Test your installation](#test-your-installation)
-10. [Update](#update)
-11. [GPU support](#gpu-support)
-12. [Bugs](#bugs)
-13. [Cite](#cite)
-14. [Uninstall](#uninstall)
-15. [Code contributors](#code-contributors)
+7. [Tutorial](#tutorial)
+8. [Requirements](#requirements)
+9. [Download](#download)
+10. [Test your installation](#test-your-installation)
+11. [Update](#update)
+12. [GPU support](#gpu-support)
+13. [Bugs](#bugs)
+14. [Cite](#cite)
+15. [Uninstall](#uninstall)
+16. [Code contributors](#code-contributors)
 
 ## Demo
 <p align="center">
@@ -79,6 +78,9 @@ Camera trap images taken from the [Missouri camera trap database](https://lila.s
 </p>
 
 Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
+
+## Tutorial
+I've written a detailed tutorial on Medium that provides a step-by-step guide on annotating, training, evaluating, deploying, and postprocessing data with EcoAssist. You can find it [here](https://medium.com/@contact_95326/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-fb99ce5b930e). 
 
 ## Requirements
 Except a minimum of 8 GB RAM, there are no hard system requirements for EcoAssist since it is largely hardware-agnostic. However, please note that machine learning can ask quite a lot from your computer in terms of processing power. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models, while deploying models can take ages. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big plus.
