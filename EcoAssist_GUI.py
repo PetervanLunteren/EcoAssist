@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 29 May 2023
+# Latest edit by Peter van Lunteren on 20 Jun 2023
 
 # import packages like a christmas tree
 import os
@@ -1659,6 +1659,9 @@ def set_language(to_lang):
         es_widget.config(highlightbackground="black", relief="sunken")
         lang = 1
 
+    # update tutorial text
+    lbl_tutorial.config(text=lbl_tutorial_txt[lang])
+
     # update tab texts
     tabControl.tab(deploy_tab, text=deploy_tab_text[lang])
     tabControl.tab(train_tab, text=train_tab_text[lang])
@@ -2591,6 +2594,13 @@ es_flag = es_flag.resize((30, 20), Image.Resampling.LANCZOS)
 es_flag = ImageTk.PhotoImage(es_flag)
 es_widget = tk.Button(root, image=es_flag, bg="white", highlightthickness=1, highlightbackground="white", relief="raised", command=lambda: set_language("es"))
 es_widget.grid(column=0, row=1, sticky='e', pady=(0, 2), padx=(3, 43))
+
+# link to tutorial
+lbl_tutorial_txt = ['Click here for a step-by-step tutorial on how to use EcoAssist.',
+                    'Haga clic aquí para ver un tutorial paso a paso sobre cómo usar EcoAssist (en inglés).']
+lbl_tutorial = Label(master=root, text=lbl_tutorial_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, 13, "underline"))
+lbl_tutorial.grid(row=1, sticky='ns', pady=2, padx=3)
+lbl_tutorial.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://medium.com/@contact_95326/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-fb99ce5b930e"))
 
 # deploy tab
 deploy_tab = ttk.Frame(tabControl)
