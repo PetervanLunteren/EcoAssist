@@ -1,5 +1,11 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7223363.svg)](https://doi.org/10.5281/zenodo.7223363)
 [![status](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e/status.svg)](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e)
+[![Project Status: Active The project has reached a stable, usable state
+and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+![GitHub](https://img.shields.io/github/license/PetervanLunteren/EcoAssist)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7223363.svg)](https://doi.org/10.5281/zenodo.7223363)
+![GitHub last
+commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/logo_large.png" width=60% height="auto" />
