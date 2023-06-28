@@ -17,10 +17,12 @@ import signal
 import shutil
 import platform
 import datetime
+import PIL.Image
 import traceback
 import subprocess
 import webbrowser
 import numpy as np
+import PIL.ExifTags
 import pandas as pd
 import tkinter as tk
 from tkinter import *
@@ -146,13 +148,18 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # for files
         csv_for_files = os.path.join(dst_dir, "results_files.csv")
         if not os.path.isfile(csv_for_files):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence"])
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence",
+                                               'datetime', 'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value',
+                                               'aperture_value', 'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
             df.to_csv(csv_for_files, encoding='utf-8', index=False)
         
         # for detections
         csv_for_detections = os.path.join(dst_dir, "results_detections.csv")
         if not os.path.isfile(csv_for_detections):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left", "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width"])
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left",
+                                               "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width", 'datetime',
+                                               'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value', 'aperture_value',
+                                               'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
             df.to_csv(csv_for_detections, encoding='utf-8', index=False)
 
     # loop through images
@@ -201,6 +208,28 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 im_to_crop_path = os.path.join(src_dir, file)
             else:
                 vid = cv2.VideoCapture(os.path.join(src_dir, file))
+
+            # try to read exif data
+            if csv:
+                try:
+                    img_for_exif = PIL.Image.open(os.path.join(src_dir, file))
+                    exif_data = {
+                        PIL.ExifTags.TAGS[k]: v
+                        for k, v in img_for_exif._getexif().items()
+                        if k in PIL.ExifTags.TAGS
+                    }
+                except:
+                    exif_data = None
+
+                # check if datetime values can be found
+                exif_params = []
+                for param in ['DateTime', 'DateTimeOriginal', 'DateTimeDigitized', 'Make', 'ShutterSpeedValue', 'ApertureValue', 'ExposureBiasValue', 'MaxApertureValue', 'GPSInfo']:
+                    try:
+                        param_value = str(exif_data[param])
+                    except:
+                        param_value = "NA"
+                    exif_params.append(param_value)
+                DateTime, DateTimeOriginal, DateTimeDigitized, Make, ShutterSpeedValue, ApertureValue, ExposureBiasValue, MaxApertureValue, GPSInfo = exif_params
 
         # loop through detections
         for detection in image['detections']:
@@ -258,13 +287,13 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # collect info to append to csv files
         if csv:
             # file info
-            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf]])
+            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf, *exif_params]])
             row.to_csv(csv_for_files, encoding='utf-8', mode='a', index=False, header=False)
 
             # detections info
             rows = []
             for bbox in bbox_info:
-                row = [src_dir, file, data_type, *bbox[:8]]
+                row = [src_dir, file, data_type, *bbox[:8], *exif_params]
                 rows.append(row)
             rows = pd.DataFrame(rows)
             rows.to_csv(csv_for_detections, encoding='utf-8', mode='a', index=False, header=False)
@@ -3018,7 +3047,7 @@ rad_label_placement_copy = Radiobutton(annot_create_frame, text=["Move", "Mover"
 rad_label_placement_copy.grid(row=row_label_placement, column=1, sticky='e', padx=5)
 
 # create csv files
-lbl_csv_txt = ["Export results to .csv files", "Exportar resultados a archivos .csv"]
+lbl_csv_txt = ["Export results to .csv and retrieve metadata", "Exportar a .csv y recuperar los metadatos"]
 row_csv = 7
 lbl_csv = Label(trd_step, text=lbl_csv_txt[lang], width=1, anchor="w")
 lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
@@ -3706,10 +3735,10 @@ def write_help_tab():
 
     # export csv files
     help_text.insert(END, f"{lbl_csv_txt[lang]}\n")
-    help_text.insert(END, ["This will translate the output files of step 2 into csv files. Can be opened in spreadsheet applications such as Excel and Numbers and imported"
-                    " for further processing in R, Python, etc.\n\n",
-                    "Esto convertirá los archivos de salida del paso 2 en archivos csv. Pueden abrirse en aplicaciones de hojas de cálculo como Excel y Numbers e importarse"
-                    " para su posterior procesamiento en R, Python, etc.\n\n"][lang])
+    help_text.insert(END, ["This will translate the output files of step 2 into csv files and try to retrieve image metadata like date, settings, and GPS. Can be opened in "
+                           "spreadsheet applications such as Excel and Numbers and imported for further processing in R, Python, etc.\n\n",
+                    "Esto convertirá los archivos de salida del paso 2 en archivos csv e intentará recuperar los metadatos de las imágenes, como la fecha, configuraciones "
+                    "y GPS. Pueden abrirse en aplicaciones de hojas de cálculo como Excel y Numbers e importarse para su posterior procesamiento en R, Python, etc.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
