@@ -1737,6 +1737,8 @@ def set_language(to_lang):
     annot_create_frame.config(text=" ↳ " + annot_create_frame_txt[lang] + " ")
     lbl_uniquify.config(text="     " + lbl_uniquify_txt[lang])
     lbl_label_placement.config(text="        ↳ " + lbl_label_placement_txt[lang])
+    rad_label_placement_move.config(text=["Copy", "Copiar"][lang])
+    rad_label_placement_copy.config(text=["Move", "Mover"][lang])
     lbl_csv.config(text=lbl_csv_txt[lang])
     lbl_thresh.config(text=lbl_thresh_txt[lang])
     btn_start_postprocess.config(text=btn_start_postprocess_txt[lang])
@@ -3685,11 +3687,12 @@ def write_help_tab():
 
     # combine files and create unique names
     help_text.insert(END, f"{lbl_uniquify_txt[lang]}\n")
-    help_text.insert(END, ["This feature will create unique filenames for your images and their associated annotation files. This is particularly handy when you want to "
-                           "create training data, since for training all files must be in one folder. This way the files will be unique and you won't have replacement problems "
-                           "when adding the files to your existing training data.\n\n", "Esta función creará nombres de archivo únicos para tus imágenes y sus archivos de "
-                           "anotación asociados. Esto es especialmente útil cuando deseas crear datos de entrenamiento, ya que para el entrenamiento todos los archivos deben "
-                           "estar en una sola carpeta. De esta manera, los archivos serán únicos y no tendrás problemas de reemplazo al agregar los archivos a tus datos de "
+    help_text.insert(END, ["This feature will create unique filenames for the images containing a detection and their associated annotation files. Empty images will not be "
+                           "processed with this feature. This is particularly handy when you want to create training data, since for training all files must be in one folder."
+                           " This way the files will be unique and you won't have replacement problems when adding the files to your existing training data.\n\n", "Esta función"
+                           " creará nombres de archivo únicos para las imágenes que contengan una detección y sus archivos de anotación asociados. Las imágenes vacías no serán"
+                           " procesadas con esta función. Esto es especialmente útil cuando deseas crear datos de entrenamiento, ya que para el entrenamiento todos los archivos"
+                           " deben estar en una carpeta. De esta manera, los archivos serán únicos y no tendrás problemas de reemplazo al agregar los archivos a tus datos de "
                            "entrenamiento existentes.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
