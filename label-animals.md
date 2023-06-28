@@ -28,7 +28,7 @@ If you want to train your own species classifier and need to label animals, the 
 </p>
 
 7. Choose a 'Destination folder' at 'Step 3'.
-8. Tick 'Separate files into subdirectories' and 'Create annotations in YOLO format'.
+8. Tick 'Separate files into subdirectories' and 'Create annotations in YOLO format'. Do not enable the feature 'Combine files and create unique names', as this will interfere with the folder separation process. 
 9. Adjust the threshold if desired or just use the default value.
 10. Click 'Post-process files'. When the process has completed, you should have a subfolder called 'animal' containing images of animals and their label files. 
 
