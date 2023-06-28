@@ -161,7 +161,7 @@ EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. Th
 </p>
 
 ## Bugs
-If you encounter any bugs, please raise an issue in this repository or [send me an email](mailto:petervanlunteren@hotmail.com).
+If you encounter any bugs, please [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues) in this repository or [send me an email](mailto:petervanlunteren@hotmail.com).
 
 ## Cite
 Please use the following citations if you used EcoAssist in your research.
