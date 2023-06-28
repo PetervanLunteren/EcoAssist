@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 20 Jun 2023
+# Latest edit by Peter van Lunteren on 28 Jun 2023
 
 # import packages like a christmas tree
 import os
@@ -71,7 +71,7 @@ of_txt = ["of", "de"]
 ##########################################
 
 # post-process files
-def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type):
+def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
@@ -91,6 +91,8 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     global cancel_var
     start_time = time.time()
     nloop = 1
+    timestamp = str(datetime.date.today()) + str(datetime.datetime.now().strftime("%H%M%S"))
+    timestamp = timestamp.replace('-', '')
 
     # warn user
     if data_type == "vid":
@@ -99,6 +101,13 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                                               ["visualizing, cropping or annotating", "visualizando, recortando o anotando"][lang],
                                               ["visualization, cropping, and annotation", "visualización, recorte y anotación"][lang])
             vis, crp, yol = [False] * 3
+
+    # early exit if user specifies file movement twice (i.e., folder separation and creating folder structure with unique filenames)
+    if yol and uniquify and sep:
+        mb.showerror(error_txt[lang], ["It's not possible to separate folders and create unique filenames at the same time. If you want that, run the post-processing"
+                                       " twice.", "No es posible separar las carpetas y crear nombres de archivo únicos al mismo tiempo. Si deseas lograr eso, ejecuta "
+                                       "el procesamiento posterior dos veces."][lang])
+        return
 
     # fetch label map
     label_map = fetch_label_map_from_json(recognition_file)
@@ -286,7 +295,23 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # create yolo annotations
         if yol and len(bbox_info) > 0:
             filename, file_extension = os.path.splitext(file)
-            annot_file = os.path.join(dst_dir, filename + ".txt")
+
+            # uniquify
+            if uniquify:
+                # create unique filenames
+                filename_dst = f"{timestamp}-{'-'.join([x for x in file.split(os.sep) if x != ''])}"
+                annot_file = os.path.join(dst_dir, os.path.splitext(filename_dst)[0] + ".txt")
+                
+                # move files
+                src = os.path.join(src_dir, file)
+                dst = os.path.join(dst_dir, filename_dst)     
+                if label_placement == 1: # move
+                    shutil.move(src, dst)
+                elif label_placement == 2: # copy
+                    shutil.copy2(src, dst)
+            else:
+                annot_file = os.path.join(dst_dir, filename + ".txt")
+            
             Path(os.path.dirname(annot_file)).mkdir(parents=True, exist_ok=True)
             with open(annot_file, 'w') as f:
                 for bbox in bbox_info:
@@ -344,6 +369,8 @@ def start_postprocess():
     crp = var_crp_files.get()
     yol = var_yol_files.get()
     csv = var_csv.get()
+    uniquify = var_uniquify.get()
+    label_placement = var_label_placement.get()
 
     # check which json files are present
     img_json = False
@@ -425,11 +452,11 @@ def start_postprocess():
     try:
         # postprocess images
         if img_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type = "img")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type = "img")
 
         # postprocess videos
         if vid_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, data_type = "vid")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type = "vid")
         
         # complete
         complete_frame(trd_step)
@@ -1707,6 +1734,9 @@ def set_language(to_lang):
     lbl_vis_files.config(text=lbl_vis_files_txt[lang])
     lbl_crp_files.config(text=lbl_crp_files_txt[lang])
     lbl_yol_files.config(text=lbl_yol_files_txt[lang])
+    annot_create_frame.config(text=" ↳ " + annot_create_frame_txt[lang] + " ")
+    lbl_uniquify.config(text="     " + lbl_uniquify_txt[lang])
+    lbl_label_placement.config(text="        ↳ " + lbl_label_placement_txt[lang])
     lbl_csv.config(text=lbl_csv_txt[lang])
     lbl_thresh.config(text=lbl_thresh_txt[lang])
     btn_start_postprocess.config(text=btn_start_postprocess_txt[lang])
@@ -2215,6 +2245,16 @@ def toggle_sep_frame():
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
 
+# toggle annotation creation subframe
+def toggle_annot_create_frame():
+    if var_yol_files.get():
+        enable_widgets(annot_create_frame)
+        annot_create_frame.configure(fg='black')
+        toggle_label_placement()
+    else:
+        disable_widgets(annot_create_frame)
+        annot_create_frame.configure(fg='grey80')
+
 # toggle image subframe
 def toggle_img_frame():
     if var_process_img.get():
@@ -2286,6 +2326,8 @@ def enable_frame(frame):
         # trd_step only
         toggle_sep_frame()
         sep_frame.configure(relief = 'solid')
+        toggle_annot_create_frame()
+        annot_create_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
 def uncomplete_frame(frame):
@@ -2320,6 +2362,9 @@ def disable_frame(frame):
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
         sep_frame.configure(relief = 'flat')
+        disable_widgets(annot_create_frame)
+        annot_create_frame.configure(fg='grey80')
+        annot_create_frame.configure(relief = 'flat')
     
 # check if checkpoint is present and set checkbox accordingly
 def disable_chb_cont_checkpnt():
@@ -2340,6 +2385,17 @@ def toggle_checkpoint_freq():
     else:
         lbl_checkpoint_freq.config(state=DISABLED)
         ent_checkpoint_freq.config(state=DISABLED)
+
+# toggle state of label placement method
+def toggle_label_placement():
+    if var_uniquify.get():
+        lbl_label_placement.config(state=NORMAL)
+        rad_label_placement_move.config(state=NORMAL)
+        rad_label_placement_copy.config(state=NORMAL)
+    else:
+        lbl_label_placement.config(state=DISABLED)
+        rad_label_placement_move.config(state=DISABLED)
+        rad_label_placement_copy.config(state=DISABLED)
 
 # toggle state of nth frame
 def toggle_nth_frame():
@@ -2876,7 +2932,7 @@ sep_frame.grid(row=sep_frame_row, column=0, columnspan=2, sticky = 'ew')
 sep_frame.columnconfigure(0, weight=1, minsize=label_width)
 sep_frame.columnconfigure(1, weight=1, minsize=widget_width)
 
-# # method of file placement
+# method of file placement
 lbl_file_placement_txt = ["Method of file placement", "Método de desplazamiento de archivo"]
 row_file_placement = 0
 lbl_file_placement = Label(sep_frame, text="     " + lbl_file_placement_txt[lang], pady=2, width=1, anchor="w")
@@ -2905,7 +2961,7 @@ lbl_vis_files = Label(trd_step, text=lbl_vis_files_txt[lang], width=1, anchor="w
 lbl_vis_files.grid(row=row_vis_files, sticky='nesw', pady=2)
 var_vis_files = BooleanVar()
 var_vis_files.set(False)
-chb_vis_files = Checkbutton(trd_step, variable=var_vis_files, command=toggle_sep_frame, anchor="w")
+chb_vis_files = Checkbutton(trd_step, variable=var_vis_files, anchor="w")
 chb_vis_files.grid(row=row_vis_files, column=1, sticky='nesw', padx=5)
 
 ## crop images
@@ -2915,32 +2971,63 @@ lbl_crp_files = Label(trd_step, text=lbl_crp_files_txt[lang], width=1, anchor="w
 lbl_crp_files.grid(row=row_crp_files, sticky='nesw', pady=2)
 var_crp_files = BooleanVar()
 var_crp_files.set(False)
-chb_crp_files = Checkbutton(trd_step, variable=var_crp_files, command=toggle_sep_frame, anchor="w")
+chb_crp_files = Checkbutton(trd_step, variable=var_crp_files, anchor="w")
 chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
 
 # annotate images
-lbl_yol_files_txt = ["Create annotations in YOLO format", "Crear anotaciones en formato YOLO"]
+lbl_yol_files_txt = ["Create annotations for training purposes", "Crear anotaciones con fines de entrenamiento"]
 row_yol_files = 5
 lbl_yol_files = Label(trd_step, text=lbl_yol_files_txt[lang], width=1, anchor="w")
 lbl_yol_files.grid(row=row_yol_files, sticky='nesw', pady=2)
 var_yol_files = BooleanVar()
 var_yol_files.set(False)
-chb_yol_files = Checkbutton(trd_step, variable=var_yol_files, command=toggle_sep_frame, anchor="w")
+chb_yol_files = Checkbutton(trd_step, variable=var_yol_files, command=toggle_annot_create_frame, anchor="w")
 chb_yol_files.grid(row=row_yol_files, column=1, sticky='nesw', padx=5)
+
+## subframe for the annotation creation options
+annot_create_frame_txt = ["Annotation options", "Opciones de anotación"]
+annot_create_frame_row = 6
+annot_create_frame = LabelFrame(trd_step, text=" ↳ " + annot_create_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
+annot_create_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
+annot_create_frame.grid(row=annot_create_frame_row, column=0, columnspan=2, sticky = 'ew')
+annot_create_frame.columnconfigure(0, weight=1, minsize=label_width)
+annot_create_frame.columnconfigure(1, weight=1, minsize=widget_width)
+
+# uniquify filenames and combine files in one folder
+lbl_uniquify_txt = ["Combine files and create unique names", "Combinar archivos y crear nombres únicos"]
+row_uniquify = 0
+lbl_uniquify = Label(annot_create_frame, text="     " + lbl_uniquify_txt[lang], width=1, anchor="w")
+lbl_uniquify.grid(row=row_uniquify, sticky='nesw', pady=2)
+var_uniquify = BooleanVar()
+var_uniquify.set(False)
+chb_uniquify = Checkbutton(annot_create_frame, variable=var_uniquify, command=toggle_label_placement, anchor="w")
+chb_uniquify.grid(row=row_uniquify, column=1, sticky='nesw', padx=5)
+
+# method of file placement
+lbl_label_placement_txt = ["Method of file placement", "Método de desplazamiento de archivo"]
+row_label_placement = 1
+lbl_label_placement = Label(annot_create_frame, text="        ↳ " + lbl_label_placement_txt[lang], pady=2, state=DISABLED, width=1, anchor="w")
+lbl_label_placement.grid(row=row_label_placement, sticky='nesw')
+var_label_placement = IntVar()
+var_label_placement.set(2)
+rad_label_placement_move = Radiobutton(annot_create_frame, text=["Copy", "Copiar"][lang], variable=var_label_placement, value=2)
+rad_label_placement_move.grid(row=row_label_placement, column=1, sticky='w', padx=5)
+rad_label_placement_copy = Radiobutton(annot_create_frame, text=["Move", "Mover"][lang], variable=var_label_placement, value=1)
+rad_label_placement_copy.grid(row=row_label_placement, column=1, sticky='e', padx=5)
 
 # create csv files
 lbl_csv_txt = ["Export results to .csv files", "Exportar resultados a archivos .csv"]
-row_csv = 6
+row_csv = 7
 lbl_csv = Label(trd_step, text=lbl_csv_txt[lang], width=1, anchor="w")
 lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
 var_csv = BooleanVar()
 var_csv.set(False)
-chb_csv = Checkbutton(trd_step, variable=var_csv, command=toggle_sep_frame, anchor="w")
+chb_csv = Checkbutton(trd_step, variable=var_csv, anchor="w")
 chb_csv.grid(row=row_csv, column=1, sticky='nesw', padx=5)
 
 # threshold
 lbl_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_lbl_thresh = 7
+row_lbl_thresh = 8
 lbl_thresh = Label(trd_step, text=lbl_thresh_txt[lang], width=1, anchor="w")
 lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
 var_thresh = DoubleVar()
@@ -2953,7 +3040,7 @@ dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
 btn_start_postprocess_txt = ["Post-process files", "Post-procesar archivos"]
-row_start_postprocess = 8
+row_start_postprocess = 9
 btn_start_postprocess = Button(trd_step, text=btn_start_postprocess_txt[lang], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
@@ -3343,7 +3430,7 @@ btn_start_annot = Button(annotate_tab, text=btn_start_annot_txt[lang], command=s
 btn_start_annot.pack()
 
 # set minsize for all rows inside labelframes...
-for frame in [fst_step, snd_step, img_frame, vid_frame, trd_step, sep_frame, req_params, adv_params, annot_frame]:
+for frame in [fst_step, snd_step, img_frame, vid_frame, trd_step, sep_frame, annot_create_frame, req_params, adv_params, annot_frame]:
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
@@ -3593,6 +3680,24 @@ def write_help_tab():
                     " lo hace creando archivos de texto individuales para cada imagen que contienen sus detecciones, y un archivo de texto que contiene todas las clases. "
                     "Si estas anotaciones se encuentran en la misma carpeta que las imágenes, podrá revisarlas y ajustarlas visualmente mediante la pestaña Anotar. No "
                     "aplicable a los vídeos.\n\n"][lang])
+    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+    # combine files and create unique names
+    help_text.insert(END, f"{lbl_uniquify_txt[lang]}\n")
+    help_text.insert(END, ["This feature will create unique filenames for your images and their associated annotation files. This is particularly handy when you want to "
+                           "create training data, since for training all files must be in one folder. This way the files will be unique and you won't have replacement problems "
+                           "when adding the files to your existing training data.\n\n", "Esta función creará nombres de archivo únicos para tus imágenes y sus archivos de "
+                           "anotación asociados. Esto es especialmente útil cuando deseas crear datos de entrenamiento, ya que para el entrenamiento todos los archivos deben "
+                           "estar en una sola carpeta. De esta manera, los archivos serán únicos y no tendrás problemas de reemplazo al agregar los archivos a tus datos de "
+                           "entrenamiento existentes.\n\n"][lang])
+    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+    # method of file placement
+    help_text.insert(END, f"{lbl_label_placement_txt[lang]}\n")
+    help_text.insert(END, ["Here you can choose whether to move the files into subdirectories, or copy them so that the originals remain untouched.\n\n",
+                           "Aquí puedes elegir si quieres mover los archivos a subdirectorios o copiarlos de forma que los originales permanezcan intactos.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
