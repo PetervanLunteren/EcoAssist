@@ -229,7 +229,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     except:
                         param_value = "NA"
                     exif_params.append(param_value)
-                DateTime, DateTimeOriginal, DateTimeDigitized, Make, ShutterSpeedValue, ApertureValue, ExposureBiasValue, MaxApertureValue, GPSInfo = exif_params
 
         # loop through detections
         for detection in image['detections']:
