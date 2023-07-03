@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 28 Jun 2023
+# Latest edit by Evan Hallein on 3 Jul 2023
 
 # import packages like a christmas tree
 import os
@@ -17,7 +17,6 @@ import signal
 import shutil
 import platform
 import datetime
-import PIL.Image
 import traceback
 import subprocess
 import webbrowser
@@ -206,6 +205,14 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             if data_type == "img":
                 im_to_vis = cv2.imread(os.path.join(src_dir, file))
                 im_to_crop_path = os.path.join(src_dir, file)
+                 # load old image and extract EXIF
+                origImage = Image.open(os.path.join(src_dir, file))
+                try:
+                    exif = origImage.info['exif']
+                except:
+                    exif = None
+
+                origImage.close()
             else:
                 vid = cv2.VideoCapture(os.path.join(src_dir, file))
 
@@ -220,6 +227,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     }
                 except:
                     exif_data = None
+                img_for_exif.close()
 
                 # check if datetime values can be found
                 exif_params = []
@@ -306,12 +314,21 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(im, im_to_vis)
+            # load new image and save exif
+            if (exif != None):
+                image_new = Image.open(im)
+                image_new.save(im, exif=exif)
+                image_new.close()
         
         # crop images
         if crp and len(bbox_info) > 0:
             counter = 1
             for bbox in bbox_info:
-                im_to_crp = Image.open(im_to_crop_path)
+                # if files have been moved
+                if sep:
+                    im_to_crp = Image.open(os.path.join(dst_dir,file))                    
+                else:
+                    im_to_crp = Image.open(im_to_crop_path)
                 crp_im = im_to_crp.crop((bbox[2:6]))
                 im_to_crp.close()
                 filename, file_extension = os.path.splitext(file)
@@ -319,6 +336,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 Path(os.path.dirname(im_path)).mkdir(parents=True, exist_ok=True)
                 crp_im.save(im_path)
                 counter += 1
+                 # load new image and save exif
+                if (exif != None):
+                    image_new = Image.open(im_path)
+                    image_new.save(im_path, exif=exif)
+                    image_new.close()
 
         # create yolo annotations
         if yol and len(bbox_info) > 0:
