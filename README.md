@@ -48,6 +48,7 @@ I've written this application in my free evenings and would really appreciate it
 
 ## Main features
 * Runs on Windows, Mac, and Linux (no admin rights required)
+* After installation completely offline
 * English :gb: & Español :es:
 * Train your model using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
 * Deploy your model on images or videos
