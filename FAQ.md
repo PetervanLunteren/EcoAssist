@@ -1,6 +1,10 @@
-<head>
-  <meta name="google-site-verification" content="e3pjuBzSKEpVE4ec45Um-xPLb2t-p2hWdyXdNoI5VNo" />
-</head>
+<html>
+  <head>
+    <meta name="google-site-verification" content="e3pjuBzSKEpVE4ec45Um-xPLb2t-p2hWdyXdNoI5VNo" />
+  </head>
+<body>
+</body>
+</html>
 
 # Frequently asked questions
 On this page I answer some frequently asked questions regarding training object detection models using the YOLOv5 architecture. It corresponds with [this Medium post on Towards AI](https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03).
