@@ -14,9 +14,14 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 ## Introduction
 EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the people at <a href="https://ultralytics.com/">Ultralytics</a>, it's possible to create models which can locate objects of your interest in images. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface which makes it easy for everybody. Annotate, train, and deploy your models without a single line of code.
 
-I initially created EcoAssist with the aim of assisting ecological projects (hence the name), but it will handle any kind of object. If you’re not an ecologist and not interested in animals, you’ll just have to input images of your object of interest (blood cells, traffic signs, plant diseases - whatever you want) and ignore the references to the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model. The rest will be exactly the same.
+[<img align="right" alt="alt_text" width="30%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
-I've written this application in my free evenings and would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
+EcoAssist was initially created with the aim of assisting ecological projects (hence the name), but it will handle any kind of object. If you’re not an ecologist and not interested in animals, you’ll just have to input images of your object of interest (blood cells, traffic signs, plant diseases - whatever you want) and ignore the references to the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model. The rest will be exactly the same.
+
+I would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
+
+This software is created in collaboration with [Smart Parks](https://www.smartparks.org/).
+
 
 ## Quick links
 1. [Demo](#demo)
