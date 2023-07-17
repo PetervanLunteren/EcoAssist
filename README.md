@@ -56,9 +56,9 @@ This software is created in collaboration with [Smart Parks](https://www.smartpa
 * No admin rights required
 * After installation completely offline
 * English :gb: & Español :es:
-* Train using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
-* Deploy on images or videos
-* Annotate using the [labelImg](https://github.com/heartexlabs/labelImg) software
+* Train models using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
+* Deploy models on images or videos
+* Annotate images using the [labelImg](https://github.com/heartexlabs/labelImg) software
 * GPU acceleration for NVIDIA and Apple Silicon
 * Post-process your data to
   * separate
