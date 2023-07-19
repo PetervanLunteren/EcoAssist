@@ -154,7 +154,7 @@ If all went well, there should be a file called `results_files.csv` with the fol
 | /.../test-images  | vehicle.jpg  | img | 1 | 0.936 |
 
 ## Update
-To update to the latest version, you'll have to repeat the [download](#download) procedure. It will replace all the old files and packages with the new ones. It's all automatic, you don't have to do anything.
+To update to the latest version, you'll have to repeat the [download](#download) procedure. It will replace all the old EcoAssist files with the new ones. It's all automatic, you don't have to do anything. Don't worry, it won't touch your conda distribution or your Git installation. Just the `ecoassistcondaenv` environment. 
 
 ## GPU support
 EcoAssist will automatically run on NVIDIA or Apple Silicon GPU if available. The appropriate `CUDAtoolkit` and `cuDNN` software is already included in the EcoAssist installation for Windows and Linux. If you have NVIDIA GPU available but it doesn't recognise it, make sure you have a [recent driver](https://www.nvidia.com/en-us/geforce/drivers/) installed, then reboot. An MPS compatible version of `Pytorch` is included in the installation for Apple Silicon users. Please note that applying machine learning on Apple Silicon GPU's is still under beta version. That means that you might run into errors when trying to run on GPU. My experience is that deployment runs smoothly on GPU, but training throws errors. Training on CPU will of course still work. The progress window and console output will display whether EcoAssist is running on CPU or GPU. 
