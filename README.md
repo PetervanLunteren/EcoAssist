@@ -11,35 +11,37 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/logo_large.png" width=60% height="auto" />
 </p>
 
-## Introduction
-EcoAssist is an application designed to make life easier for people who want to work with object detection models. Thanks to the people at <a href="https://ultralytics.com/">Ultralytics</a>, it's possible to create models which can locate objects of your interest in images. The only problem is that you need to know a bit of coding before you can use it. That is where EcoAssist comes in handy. It's a no-code interface which makes it easy for everybody. Annotate, train, and deploy your models without a single line of code.
+<h1 align="center">Simplifying camera trap image analysis for ecologists</h1>
 
-[<img align="right" alt="alt_text" width="30%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
+EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
-EcoAssist was initially created with the aim of assisting ecological projects (hence the name), but it will handle any kind of object. If you’re not an ecologist and not interested in animals, you’ll just have to input images of your object of interest (blood cells, traffic signs, plant diseases - whatever you want) and ignore the references to the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model. The rest will be exactly the same.
+After a year of development during my free time, I have joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to create a robust toolkit for camera trap image analysis to be used by ecologists worldwide. You can support this initiative by contributing through the sponsorship button below. Please help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
 
-I would really appreciate it if people would let me know when it's used, and what for. You can contact me at [petervanlunteren@hotmail.com](mailto:petervanlunteren@hotmail.com). Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date.
+[<img align="right" alt="alt_text" width="19%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
-This software is created in collaboration with [Smart Parks](https://www.smartparks.org/).
-
+Our current focus is:
+* Implementing a human-in-the-loop feature for result verification.
+* Improving the annotation process to make it more robust.
+* Testing the setup with a real-world use-case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
+* Set up personalized assistance to support ecologists in effectively using EcoAssist for their projects.
+* Exploring the possibility of providing optimized hardware support.
 
 ## Quick links
 1. [Demo](#demo)
 2. [Overview](#overview)
 3. [Main features](#main-features)
-4. [Extra features for ecologists](#extra-features-for-ecologists)
-5. [Teasers](#teasers)
-6. [Users](#users)
-7. [Tutorial](#tutorial)
-8. [Requirements](#requirements)
-9. [Download](#download)
-10. [Test your installation](#test-your-installation)
-11. [Update](#update)
-12. [GPU support](#gpu-support)
-13. [Bugs](#bugs)
-14. [Cite](#cite)
-15. [Uninstall](#uninstall)
-16. [Code contributors](#code-contributors)
+4. [Teasers](#teasers)
+5. [Users](#users)
+6. [Tutorial](#tutorial)
+7. [Requirements](#requirements)
+8. [Download](#download)
+9. [Test your installation](#test-your-installation)
+10. [Update](#update)
+11. [GPU support](#gpu-support)
+12. [Bugs](#bugs)
+13. [Cite](#cite)
+14. [Uninstall](#uninstall)
+15. [Code contributors](#code-contributors)
 
 ## Demo
 <p align="center">
@@ -55,10 +57,12 @@ This software is created in collaboration with [Smart Parks](https://www.smartpa
 * Runs on Windows, Mac, and Linux
 * No admin rights required
 * After installation completely offline
+* Use [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) to filter out empty images or videos
+* Integration with [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/)
 * English :gb: & Español :es:
-* Train models using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture  
+* Train models using the [YOLOv5](https://github.com/ultralytics/yolov5) architecture
 * Deploy models on images or videos
-* Annotate images using the [labelImg](https://github.com/heartexlabs/labelImg) software
+* Built in function to annotate images based on [labelImg](https://github.com/heartexlabs/labelImg)
 * GPU acceleration for NVIDIA and Apple Silicon
 * Post-process your data to
   * separate
@@ -66,11 +70,6 @@ This software is created in collaboration with [Smart Parks](https://www.smartpa
   * crop
   * label
   * export to .csv
-
-## Extra features for ecologists
-EcoAssist comes with the <a href="https://github.com/ecologize/CameraTraps/blob/main/megadetector.md">MegaDetector</a> model preloaded. This model is trained to find animals, people, and vehicles in camera trap images - and does this really well. That means that you can deploy MegaDetector to find the images or videos which contain an animal, and filter out the empties. There's also a possibility to further process the images in [Timelapse](https://saul.cpsc.ucalgary.ca/timelapse/).
-
-Unfortunately, MegaDetector does not identify the animals, it just finds them. There is no model that can identify all species on earth. If you want a species classifier for your specific ecosystem or project, you'll have to train it yourself. In EcoAssist you can easily transfer knowledge from MegaDetector to your own species classifier to save you tremendous amounts of data and time.
 
 ## Teasers
 <p align="center">
@@ -206,7 +205,7 @@ If you trained or retrained a model.
 ```
 
 ## Uninstall
-All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it.
+All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it. If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
 ```r
 # windows (all users)
 ─── 📁Program Files
