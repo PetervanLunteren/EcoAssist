@@ -15,9 +15,9 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
-After a year of development during my free time, I have joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to create a robust toolkit for camera trap image analysis to be used by ecologists worldwide. You can support this initiative by contributing through the sponsorship button below. Please help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
+[<img align="right" alt="alt_text" width="25%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
-[<img align="right" alt="alt_text" width="19%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
+After a year of development during my free time, I have joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to create a robust toolkit for camera trap image analysis to be used by ecologists worldwide. You can support this initiative by contributing through the sponsorship button below. Please help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
 
 Our current focus is:
 * Implementing a human-in-the-loop feature for result verification.
