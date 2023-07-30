@@ -207,22 +207,22 @@ If you trained or retrained a model.
 ```
 
 ## Uninstall
-All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it. If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
+All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
 ```r
-# windows (all users)
+# Windows (all users)
 ─── 📁Program Files
     └── 📁EcoAssist_files
 
-# windows (single user)
+# Windows (single user)
 ─── 📁Users
     └── 📁<username>
         └── 📁EcoAssist_files
 
-# mac
+# macOS
 ─── 📁Applications
     └── 📁.EcoAssist_files
 
-# linux
+# Linux
 ─── 📁home
     └── 📁<username>
         └── 📁.EcoAssist_files
