@@ -241,7 +241,7 @@ This is an open-source project, so please feel free to fork this repo and submit
 Thank you for your contributions!
 
 ## Similar software
-As far as I know, there are three other software packages capable of deploying the `MegaDetector` model. These packages are all set up slightly different and have different features. If you, for whatever reason, wish to learn more about these packages, see the links below.
+As far as I know, there are three other software packages capable of deploying the `MegaDetector` model. These packages are all set up slightly different and have different features.
 * [CamTrap Detector](https://github.com/bencevans/camtrap-detector)
 * [MegaDetector GUI](https://github.com/petargyurov/megadetector-gui)
 * [Megadetector-Interface](https://github.com/NaomiMcWilliam/Megadetector-Interface)
