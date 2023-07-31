@@ -44,6 +44,7 @@ You can help me by letting me know about any improvements, bugs, or new features
 13. [Cite](#cite)
 14. [Uninstall](#uninstall)
 15. [Code contributors](#code-contributors)
+16. [Similar software](#similar-software)
 
 ## Demo
 <p align="center">
@@ -236,3 +237,9 @@ All files are located in one folder, called `EcoAssist_files`. You can uninstall
 
 ###
 Please feel free to fork this repo and submit fixes, improvements or add new features.
+
+## Similar software
+As far as I know, there are three other software packages capable of deploying the `MegaDetector` model. These packages are all set up slightly different and have different features. If you, for whatever reason, wish to learn more about these packages, see the links below.
+* [CamTrap Detector](https://github.com/bencevans/camtrap-detector)
+* [MegaDetector GUI](https://github.com/petargyurov/megadetector-gui)
+* [Megadetector-Interface](https://github.com/NaomiMcWilliam/Megadetector-Interface)
