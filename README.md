@@ -43,7 +43,7 @@ You can help me by letting me know about any improvements, bugs, or new features
 12. [Bugs](#bugs)
 13. [Cite](#cite)
 14. [Uninstall](#uninstall)
-15. [Code contributors](#code-contributors)
+15. [Contributors](#contributors)
 16. [Similar software](#similar-software)
 
 ## Demo
@@ -230,13 +230,15 @@ All files are located in one folder, called `EcoAssist_files`. You can uninstall
 ```
 
 
-## Code contributors
+## Contributors
+This is an open-source project, so please feel free to fork this repo and submit fixes, improvements or add new features. For more information, see the [contribution guidelines](https://github.com/PetervanLunteren/EcoAssist/blob/main/CONTRIBUTING.md). 
+
 <a href="https://github.com/petervanlunteren/EcoAssist/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=petervanlunteren/EcoAssist" />
 </a>
 
 ###
-Please feel free to fork this repo and submit fixes, improvements or add new features.
+Thank you for your contributions!
 
 ## Similar software
 As far as I know, there are three other software packages capable of deploying the `MegaDetector` model. These packages are all set up slightly different and have different features. If you, for whatever reason, wish to learn more about these packages, see the links below.
