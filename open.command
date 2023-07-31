@@ -40,6 +40,9 @@ START_DATE=`date`
 echo "Starting at: $START_DATE"
 echo ""
 
+# set environment variable to ensure that the Python environment's CUDA environment is being used instead of the system CUDA environment (see https://github.com/PetervanLunteren/EcoAssist/issues/16)
+export LD_LIBRARY_PATH=''
+
 # log system information
 UNAME_A=`uname -a`
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
