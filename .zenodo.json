@@ -1,0 +1,15 @@
+{
+    "creators": [
+        {
+            "orcid": "0000-0001-5488-4225",
+            "affiliation": "Independent Researcher, The Netherlands",
+            "name": "van Lunteren, Peter"
+        }
+    ],
+
+    "license": "MIT-lisence",
+
+    "title": "EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models",
+
+    "keywords": ["python", "machine-learning", "conservation", "object-detection", "ecology", "annotation-tool", "megadetector", "yolov5", "cameratraps"]
+}
