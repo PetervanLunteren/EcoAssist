@@ -7,6 +7,14 @@
         }
     ],
 
+    "related_identifiers": [
+        {
+            "scheme": "doi",
+            "identifier": "10.21105/joss.05581",
+            "resource_type": "publication-article"
+        }
+    ],
+    
     "license": "MIT-lisence",
 
     "title": "EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models",
