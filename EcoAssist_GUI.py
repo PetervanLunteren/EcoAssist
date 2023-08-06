@@ -4088,7 +4088,7 @@ def write_about_tab():
     about_text.insert(END, ["EcoAssist citation\n", "Citar EcoAssist\n"][lang])
     about_text.insert(END, ["If you used EcoAssist in your research, please use the following citation.\n",
                             "Si ha utilizado EcoAssist en su investigación, utilice la siguiente cita.\n"][lang])
-    about_text.insert(END, "- van Lunteren, P. (2022). EcoAssist: An application for detecting animals in camera trap images using the MegaDetector model. [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.7223363\n\n")
+    about_text.insert(END, "- van Lunteren, P. (2023). EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models. Journal of Open Source Software, 8(88), 5581. https://doi.org/10.21105/joss.05581\n\n")
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
