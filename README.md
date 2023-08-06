@@ -173,13 +173,17 @@ If you encounter any bugs, please [raise an issue](https://github.com/PetervanLu
 Please use the following citations if you used EcoAssist in your research.
 #### EcoAssist citation
 ```BibTeX
-@software{van_Lunteren_EcoAssist_2022,
-  title     = {{EcoAssist: A no-code platform to train and deploy YOLOv5 object detection and the MegaDetector model}},
-  author    = {van Lunteren, Peter},
-  year      = {2022},
-  publisher = {Zenodo},
-  doi       = {10.5281/zenodo.7223363},
-  url       = {https://github.com/PetervanLunteren/EcoAssist}
+@article{van_Lunteren_EcoAssist_2023,
+  author = {van Lunteren, Peter},
+  doi = {10.21105/joss.05581},
+  journal = {Journal of Open Source Software},
+  month = aug,
+  number = {88},
+  pages = {5581},
+  title = {{EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models}},
+  url = {https://joss.theoj.org/papers/10.21105/joss.05581},
+  volume = {8},
+  year = {2023}
 }
 ```
 
