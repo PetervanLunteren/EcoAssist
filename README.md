@@ -90,7 +90,7 @@ Camera trap images taken from the [Missouri camera trap database](https://lila.s
 Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
 
 ## Current focus
-Together with Smart Parks, I'm working on expanding the software. Our current focus is:
+Together with [Smart Parks](https://www.smartparks.org/), I'm working on expanding the software. Our current focus is:
 * Implementing a human-in-the-loop feature for result verification.
 * Improving the annotation process to make it more robust.
 * Testing the setup with a real-world use-case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
