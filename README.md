@@ -17,7 +17,7 @@ EcoAssist is an open-source application designed to streamline the work of ecolo
 
 [<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
-Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a real-world use-case for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
+Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a real-world use case for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
 
 You can also help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
 
@@ -93,7 +93,7 @@ Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@h
 Together with [Smart Parks](https://www.smartparks.org/), I'm working on expanding the software. Our current focus is:
 * Implementing a human-in-the-loop feature for result verification.
 * Improving the annotation process to make it more robust.
-* Testing the setup with a real-world use-case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
+* Testing the setup with a real-world use case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
 * Set up personalized assistance to support ecologists in effectively using EcoAssist for their projects.
 * Exploring the possibility of providing optimized hardware support.
 
