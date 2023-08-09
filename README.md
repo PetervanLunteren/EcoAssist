@@ -15,18 +15,11 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
-[<img align="right" alt="alt_text" width="25%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
+[<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
-Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to create a robust toolkit for camera trap image analysis to be used by ecologists worldwide.
-<!--- You can support this initiative by contributing through the sponsorship button below. --->
-Our current focus is:
-* Implementing a human-in-the-loop feature for result verification.
-* Improving the annotation process to make it more robust.
-* Testing the setup with a real-world use-case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
-* Set up personalized assistance to support ecologists in effectively using EcoAssist for their projects.
-* Exploring the possibility of providing optimized hardware support.
+Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a real-world use-case for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
 
-You can help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
+You can also help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
 
 ## Quick links
 1. [Demo](#demo)
@@ -34,17 +27,19 @@ You can help me by letting me know about any improvements, bugs, or new features
 3. [Main features](#main-features)
 4. [Teasers](#teasers)
 5. [Users](#users)
-6. [Tutorial](#tutorial)
-7. [Requirements](#requirements)
-8. [Download](#download)
-9. [Test your installation](#test-your-installation)
-10. [Update](#update)
-11. [GPU support](#gpu-support)
-12. [Bugs](#bugs)
-13. [Cite](#cite)
-14. [Uninstall](#uninstall)
-15. [Contributors](#contributors)
-16. [Similar software](#similar-software)
+6. [Current focus](#current-focus)
+7. [Sponsor](#sponsor)
+8. [Tutorial](#tutorial)
+9. [Requirements](#requirements)
+10. [Download](#download)
+11. [Test your installation](#test-your-installation)
+12. [Update](#update)
+13. [GPU support](#gpu-support)
+14. [Bugs](#bugs)
+15. [Cite](#cite)
+16. [Uninstall](#uninstall)
+17. [Contributors](#contributors)
+18. [Similar software](#similar-software)
 
 ## Demo
 <p align="center">
@@ -93,6 +88,21 @@ Camera trap images taken from the [Missouri camera trap database](https://lila.s
 </p>
 
 Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
+
+## Current focus
+Together with Smart Parks, I'm working on expanding the software. Our current focus is:
+* Implementing a human-in-the-loop feature for result verification.
+* Improving the annotation process to make it more robust.
+* Testing the setup with a real-world use-case for [the Desert Lion Conservation](https://www.desertlion.info/) project.
+* Set up personalized assistance to support ecologists in effectively using EcoAssist for their projects.
+* Exploring the possibility of providing optimized hardware support.
+
+Do you think we are missing something? [Let me know](mailto:petervanlunteren@hotmail.com)!
+
+## Sponsor
+You can sponsor the development of this initiative via the sponsor button below. By contributing, you directly support the development of the platform. Your support will enable me to invest more time and expand outreach to reach more conservationists in need. Thank you!
+
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/PetervanLunteren)
 
 ## Tutorial
 I've written a detailed tutorial on Medium that provides a step-by-step guide on annotating, training, evaluating, deploying, and postprocessing data with EcoAssist. You can find it [here](https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03). 
