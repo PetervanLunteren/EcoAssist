@@ -193,7 +193,7 @@ If you encounter any bugs, please [raise an issue](https://github.com/PetervanLu
 Please use the following citations if you used EcoAssist in your research.
 
 <details>
-<summary><b>EcoAssist</b></summary>
+<summary>EcoAssist</summary>
 <br>
 
 [Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
@@ -214,7 +214,7 @@ Please use the following citations if you used EcoAssist in your research.
 </details>
 
 <details>
-<summary><b>MegaDetector</b></summary>
+<summary>MegaDetector</summary>
 <br>
 
 [Link to paper](https://arxiv.org/abs/1907.06772)
@@ -229,7 +229,7 @@ Please use the following citations if you used EcoAssist in your research.
 </details>
 
 <details>
-<summary><b>Ultralytics</b></summary>
+<summary>Ultralytics</summary>
 <br>
 
 If you used the training function.
@@ -249,7 +249,7 @@ If you used the training function.
 All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
 
 <details>
-<summary><b>Location on Windows</b></summary>
+<summary>Location on Windows</summary>
 <br>
   
 ```r
@@ -265,7 +265,7 @@ All files are located in one folder, called `EcoAssist_files`. You can uninstall
 </details>
 
 <details>
-<summary><b>Location on macOS</b></summary>
+<summary>Location on macOS</summary>
 <br>
   
 ```r
@@ -275,7 +275,7 @@ All files are located in one folder, called `EcoAssist_files`. You can uninstall
 </details>
 
 <details>
-<summary><b>Location on Linux</b></summary>
+<summary>Location on Linux</summary>
 <br>
   
 ```r
