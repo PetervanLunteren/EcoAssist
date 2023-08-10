@@ -113,7 +113,10 @@ EcoAssist will install quite a lot of dependencies, so don't panic if the instal
 
 Opening EcoAssist for the first time will take a bit longer than usual due to script compiling. Have patience, all subsequent times will be better.
 
-#### Windows installation
+<details>
+<summary><b>Windows</b></summary>
+<br>
+  
 1. EcoAssist requires Git and a conda distribution to be installed on your device. See below for instructions on how to install them. During installation, you can leave all parameters at their default values. Just keep track of the destination directories (for example, `C:\Program Files\Git` and `C:\ProgramData\miniforge3`). You might have to specify these paths later on.
     * You can install Git from [gitforwindows.org](https://gitforwindows.org/). 
     * EcoAssist will work with Anaconda, Miniconda or Miniforge. Miniforge is recommended, however, Anaconda or Miniconda will suffice if you already have that installed. To install Miniforge, simply download and execute the [Miniforge installer](https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe). If you see a "Windows protected your PC" warning, you may need to click "More info" and "run anyway".
@@ -121,8 +124,12 @@ Opening EcoAssist for the first time will take a bit longer than usual due to sc
 3. If you've executed it with admin rights, it will be installed for all users. If you don't have admin rights, you will be prompted if you'd still like to enter an admin password, or proceed with the non-admin install - which will make EcoAssist available for your user only.
 4. EcoAssist will try to locate your Git and conda distribution. If it fails to find them automatically, you'll have to enter the paths to the installations from step 1 when prompted, or just drag and drop the installation folders into the console window.
 5. When the installation is finished, there will be a shortcut file in your `Downloads` folder. You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
+</details>
 
-#### Mac installation
+<details>
+<summary><b>macOS</b></summary>
+<br>
+  
 1. Download and open [this file](https://PetervanLunteren.github.io/EcoAssist/install.command). Some computers can be quite reluctant when having to open command files downloaded from the internet. You can circumvent trust issues by opening it with right-click > open > open. If that still doesn't work, you can change the file permissions by opening a new terminal window and copy-pasting the following commands.
 ```bash
 chmod 755 $HOME/Downloads/install.command
@@ -130,8 +137,12 @@ bash $HOME/Downloads/install.command
 ```
 2. If you're an Apple Silicon user (M1/M2), go for a nice walk because this may take about 30 minutes to complete. Some of the software packages are not yet adopted to the Apple Silicon processor. There is a workaround, but it takes some time. In order to make MegaDetector work on Apple Silicon computers, the guys at [Ecologize](http://ecologize.org/) had to re-build the model with *slightly* different results. The bounding boxes appear to be the same to around two decimal places in both location and confidence, which is good, but not *exactly* the same. Please keep in mind that this is an unvalidated version of MegaDetector, and they don't exactly know how it compares to the validated version since it is much less tested.
 4. When the installation is done, you'll find a `EcoAssist.command` file in your `Applications` folder. The app will open when double-clicked. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+</details>
 
-#### Linux installation
+<details>
+<summary><b>Linux</b></summary>
+<br>
+  
 1. Download [this file](https://PetervanLunteren.github.io/EcoAssist/install.command).
 2. Change the permission of the file and execute it by running the following commands in a new terminal window. If you don't have root privileges, you might be prompted for a password to install `libxcb-xinerama0`. This package is required for the labelImg software on some Linux versions. If you don't know the `sudo` password, you can skip this by pressing Ctrl+D when you are prompted for the password. EcoAssist will still work fine without it, but you might have problems with the labelImg software. The rest of the installation can be done without root privileges.
 ```bash
@@ -139,6 +150,7 @@ chmod 755 $HOME/Downloads/install.command
 bash $HOME/Downloads/install.command
 ```
 3. During the installation, a file called `EcoAssist` will be created on your desktop. The app will open when double-clicked. You are free to move this file to a more convenient location.
+</details>
 
 ## Test your installation
 <p align="center">
@@ -179,7 +191,12 @@ If you encounter any bugs, please [raise an issue](https://github.com/PetervanLu
 
 ## Cite
 Please use the following citations if you used EcoAssist in your research.
-#### EcoAssist citation
+
+<details>
+<summary><b>EcoAssist</b></summary>
+<br>
+
+[Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
 ```BibTeX
 @article{van_Lunteren_EcoAssist_2023,
   author = {van Lunteren, Peter},
@@ -194,10 +211,14 @@ Please use the following citations if you used EcoAssist in your research.
   year = {2023}
 }
 ```
+</details>
 
-#### MegaDetector citation
-If you used the MegaDetector model to analyse images or retrain your model.
-```BibTex
+<details>
+<summary><b>MegaDetector</b></summary>
+<br>
+
+[Link to paper](https://arxiv.org/abs/1907.06772)
+```BibTeX
 @article{Beery_Efficient_2019,
   title     = {Efficient Pipeline for Camera Trap Image Review},
   author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
@@ -205,9 +226,13 @@ If you used the MegaDetector model to analyse images or retrain your model.
   year      = {2019}
 }
 ```
+</details>
 
-#### Ultralytics citation
-If you trained or retrained a model.
+<details>
+<summary><b>Ultralytics</b></summary>
+<br>
+
+If you used the training function.
 ```Bibtex
 @software{Jocher_YOLOv5_2020,
   title = {{YOLOv5 by Ultralytics}},
@@ -218,29 +243,47 @@ If you trained or retrained a model.
   license = {AGPL-3.0}
 }
 ```
+</details>
 
 ## Uninstall
 All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
+
+<details>
+<summary><b>Location on Windows</b></summary>
+<br>
+  
 ```r
-# Windows (all users)
+# All users
 ─── 📁Program Files
     └── 📁EcoAssist_files
 
-# Windows (single user)
+# Single user
 ─── 📁Users
     └── 📁<username>
         └── 📁EcoAssist_files
+```
+</details>
 
-# macOS
+<details>
+<summary><b>Location on macOS</b></summary>
+<br>
+  
+```r
 ─── 📁Applications
     └── 📁.EcoAssist_files
+```
+</details>
 
-# Linux
+<details>
+<summary><b>Location on Linux</b></summary>
+<br>
+  
+```r
 ─── 📁home
     └── 📁<username>
         └── 📁.EcoAssist_files
 ```
-
+</details>
 
 ## Contributors
 This is an open-source project, so please feel free to fork this repo and submit fixes, improvements or add new features. For more information, see the [contribution guidelines](https://github.com/PetervanLunteren/EcoAssist/blob/main/CONTRIBUTING.md). 
