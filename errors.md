@@ -6,11 +6,51 @@ Below you can find some common error messages and their potential solutions. If 
 If there is an error during runtime, it is important to give the program the opportunity to write out its logs. First thing you'll need to do is recreate the error in EcoAssist. After that, close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last. If there is an error during the installation or opening, you don't have to worry about this - in that case the logfiles are automatically created. 
  
 ## How to find logfiles?
-* Navigate to your `EcoAssist_files` folder. It's location is OS dependent, you can find its location [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). 
+* Navigate to your `EcoAssist_files` folder. It's location is OS dependent, you can find its location [here](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#where-to-find-the-ecoassist-installation-files). 
 * Navigate to `...\EcoAssist_files\EcoAssist\logfiles\`. 
   * `installation_log.txt` will give you information about the installation.
   * `session_log.txt` writes logs during runtime on Windows.
   * `stdout.txt` and `stderr.txt` write logs during runtime on Mac and Linux.
+
+## Where to find the EcoAssist installation files?
+All files are located in one folder, called `EcoAssist_files`. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)).
+
+<details>
+<summary>Location on Windows</summary>
+<br>
+  
+```r
+# All users
+─── 📁Program Files
+    └── 📁EcoAssist_files
+
+# Single user
+─── 📁Users
+    └── 📁<username>
+        └── 📁EcoAssist_files
+```
+</details>
+
+<details>
+<summary>Location on macOS</summary>
+<br>
+  
+```r
+─── 📁Applications
+    └── 📁.EcoAssist_files
+```
+</details>
+
+<details>
+<summary>Location on Linux</summary>
+<br>
+  
+```r
+─── 📁home
+    └── 📁<username>
+        └── 📁.EcoAssist_files
+```
+</details>
 
 ## `Local variable 'elapsed time' referenced before assignment`
 This error message can be thrown when trying to deploy a model. It basically means that the model outputs some unexpected text. First of all, try if the model deploys succesfully over the test images supplied [here](https://github.com/PetervanLunteren/EcoAssist#test-your-installation). Check if your preloaded models are correctly downloaded. Sometimes protection software prevent the download of the actual model files. There should be two files named `md_v5a.0.0.pt` and `md_v5b.0.0.pt` in `\EcoAssist_files\pretrained_models\`. You can find the location of the EcoAssist_files [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). If that isn't the problem, the logfiles should point you in the right direction.
