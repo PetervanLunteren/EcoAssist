@@ -13,9 +13,7 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 <h2 align="center">Simplifying camera trap image analysis for ecologists</h2>
 
-EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
-
-[<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
+EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts. [<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
 Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a real-world use case for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
 
