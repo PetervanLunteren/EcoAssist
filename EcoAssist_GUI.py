@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Evan Hallein on 3 Jul 2023
+# Latest edit by Peter van Lunteren on 30 Aug 2023
 
 # import packages like a christmas tree
 import os
@@ -1736,8 +1736,8 @@ def set_language(to_lang):
         es_widget.config(highlightbackground="black", relief="sunken")
         lang = 1
 
-    # update tutorial text
-    lbl_tutorial.config(text=lbl_tutorial_txt[lang])
+    # update addax text
+    lbl_addax.config(text=lbl_addax_txt[lang])
 
     # update tab texts
     tabControl.tab(deploy_tab, text=deploy_tab_text[lang])
@@ -2703,12 +2703,13 @@ es_flag = ImageTk.PhotoImage(es_flag)
 es_widget = tk.Button(root, image=es_flag, bg="white", highlightthickness=1, highlightbackground="white", relief="raised", command=lambda: set_language("es"))
 es_widget.grid(column=0, row=1, sticky='e', pady=(0, 2), padx=(3, 43))
 
-# link to tutorial
-lbl_tutorial_txt = ['Click here for a step-by-step tutorial on how to use EcoAssist.',
-                    'Haga clic aquí para ver un tutorial paso a paso sobre cómo usar EcoAssist (en inglés).']
-lbl_tutorial = Label(master=root, text=lbl_tutorial_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, 13, "underline"))
-lbl_tutorial.grid(row=1, sticky='ns', pady=2, padx=3)
-lbl_tutorial.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03"))
+# link to addax 
+lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
+                    '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
+
+lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
+lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
+lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
 
 # deploy tab
 deploy_tab = ttk.Frame(tabControl)
@@ -3522,6 +3523,19 @@ def write_help_tab():
     help_text.insert(INSERT, ["GitHub page", "la página de GitHub"][lang], hyperlink1.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist/issues")))
     help_text.insert(END, ".\n\n")
     help_text.tag_add('intro', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+    # tutorials
+    help_text.insert(END, ["TUTORIAL\n", "TUTORIAL\n"][lang])
+    help_text.tag_add('tab', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1   
+
+    # step-by-step
+    help_text.insert(END, ["Step-by-step\n", "Paso-a-paso\n"][lang])
+    help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.insert(END, ['Click ', 'Haga clic '][lang])
+    help_text.insert(INSERT, ["here", "aquí"][lang], hyperlink1.add(partial(webbrowser.open, "https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03")))
+    help_text.insert(END, [' for a step-by-step tutorial on how to use EcoAssist.\n\n',
+                           ' para ver un tutorial paso a paso sobre cómo usar EcoAssist (en inglés).\n\n'][lang])
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2 
 
     # deploy tab
     help_text.insert(END, ["DEPLOY TAB\n", "PESTAÑA DESPLIEGUE\n"][lang])
