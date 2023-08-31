@@ -15,7 +15,7 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
-The [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) model is preloaded. This model can find out which images contain an animal and filter out the empties. Unfortunately, MegaDetector does not identify the animals, it just finds them. If you want a model that can identify species for your specific ecosystem or project, you'll have to train it yourself. Or outsource it and let [Addax Data Science](https://addaxdatascience.com/) handle it.
+The [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) model is preloaded. This model can find out which images contain an animal and filter out the empties. Unfortunately, MegaDetector does not identify the animals, it just finds them. If you want a model that can identify species for your specific ecosystem or project, you'll have to train it yourself. Or outsource it to [Addax Data Science](https://addaxdatascience.com/).
 
 [<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
 
