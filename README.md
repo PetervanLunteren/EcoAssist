@@ -107,7 +107,7 @@ You can sponsor the development of this initiative via the sponsor button below.
 [![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/PetervanLunteren)
 
 ## Tutorial
-I've written a detailed tutorial on Medium that provides a step-by-step guide on annotating, training, evaluating, deploying, and postprocessing data with EcoAssist. You can find it [here](https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03). 
+I've written a detailed tutorial on Medium that provides a step-by-step guide on annotating, training, evaluating, deploying, and postprocessing data with EcoAssist. You can find it [here](https://medium.com/towards-artificial-intelligence/train-and-deploy-custom-object-detection-models-without-a-single-line-of-code-a65e58b57b03). With EcoAssist I tried to make training a model as easy as possible. However, for an acruate model, some machine learning expertise will still be beneficial. If you want to outsource it, you can hire me via my company [Addax Data Science](https://addaxdatascience.com/) to train a custom model for you. 
 
 ## Requirements
 Except a minimum of 8 GB RAM, there are no hard system requirements for EcoAssist since it is largely hardware-agnostic. However, please note that machine learning can ask quite a lot from your computer in terms of processing power. Although it will run on an old laptop only designed for text editing, it’s probably not going to train any accurate models, while deploying models can take ages. Generally speaking, the faster the machine, the more reliable the results. GPU acceleration is a big plus.
