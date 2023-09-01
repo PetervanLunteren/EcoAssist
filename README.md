@@ -86,7 +86,7 @@ Camera trap images taken from the [Missouri camera trap database](https://lila.s
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/cummulative_users.png" width=60% height="auto" />
 </p>
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/users.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/users.jpg" width=60% height="auto" />
 </p>
 
 Are you also a user and not on this map? [Let me know](mailto:petervanlunteren@hotmail.com)!
