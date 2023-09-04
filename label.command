@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-### OSX and Linux commands to open labelImg from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 2 Apr 2023 (latest edit)
+### OSX and Linux commands to open Human-in-the-loop from EcoAssist https://github.com/PetervanLunteren/EcoAssist
+### Peter van Lunteren, 28 Aug 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -38,12 +38,12 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   export PATH="$HOMEBREW_DIR/bin:$PATH"
 fi
 
-# open labelImg with arguments given by EcoAssist_GUI.py
-cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory to labelImg. Command could not be run. Did you change the name or folder structure since installing labelImg?"; exit 1; }
+# open Human-in-the-loop with arguments given by EcoAssist_GUI.py
+cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory to Human-in-the-loop. Command could not be run."; exit 1; }
 pyrcc5 -o libs/resources.py resources.qrc
-echo "python3 labelImg.py '${1}' '${2}' '${1}'"
+echo "python3 labelImg.py '${1}' '${2}'"
 if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
-  arch -arm64 python3 labelImg.py "${1}" "${2}" "${1}"
+  arch -arm64 python3 labelImg.py "${1}" "${2}"
 else
-  python3 labelImg.py "${1}" "${2}" "${1}"
+  python3 labelImg.py "${1}" "${2}"
 fi

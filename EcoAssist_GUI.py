@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 30 Aug 2023
+# Latest edit by Peter van Lunteren on 4 Sept 2023
 
 # import packages like a christmas tree
 import os
@@ -15,6 +15,7 @@ import torch
 import random
 import signal
 import shutil
+import pickle
 import platform
 import datetime
 import traceback
@@ -28,14 +29,17 @@ from tkinter import *
 from pathlib import Path
 from random import randint
 from functools import partial
+import matplotlib.pyplot as plt
 from subprocess import Popen, PIPE
 import xml.etree.cElementTree as ET
 from PIL import ImageTk, Image, ImageFilter
 from bounding_box import bounding_box as bb
+from RangeSlider.RangeSlider import RangeSliderH
 from tkinter import filedialog, ttk, messagebox as mb
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set global variables
-version = "4.0"
+version = "4.1"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # insert pythonpath
@@ -52,9 +56,9 @@ lang = 0
 step_txt = ['Step', 'Paso']
 browse_txt = ['Browse', 'Examinar']
 cancel_txt = ["Cancel", "Cancelar"]
-change_folder_txt = ['Change folder', 'Cambiar carpeta']
+change_folder_txt = ['Change folder', '¿Cambiar carpeta']
 view_results_txt = ['View results', 'Ver resultados']
-again_txt = ['Again?', 'Otra vez?']
+again_txt = ['Again?', '¿Otra vez?']
 eg_txt = ['E.g.', 'Ejem.']
 new_project_txt = ["<new project>", "<nuevo proyecto>"]
 warning_txt = ["Warning", "Advertencia"]
@@ -72,7 +76,7 @@ of_txt = ["of", "de"]
 ##########################################
 
 # post-process files
-def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type):
+def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
@@ -88,27 +92,25 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         progress_postprocess_progbar = vid_progress_postprocess_progbar
         progress_postprocess_stats = vid_progress_postprocess_stats
 
+    # check if user is not in the middle of an annotation session
+    if data_type == "img" and get_hitl_var_in_json(recognition_file) == "in-progress":
+        if not mb.askyesno("Verification session in progress", f"Your verification session is not yet done. You can finish the session "
+                                                               f"by clicking 'Continue' at '{lbl_hitl_main_txt[lang]}', or just continue to post-process "
+                                                               "with the results as they are now.\n\nDo you want to continue to post-process?"):
+            return
+
     # init vars
     global cancel_var
     start_time = time.time()
     nloop = 1
-    timestamp = str(datetime.date.today()) + str(datetime.datetime.now().strftime("%H%M%S"))
-    timestamp = timestamp.replace('-', '')
 
     # warn user
     if data_type == "vid":
-        if vis or crp or yol:
-            check_json_presence_and_warn_user(["visualize, crop or annotate", "visualizar, recortar o anotar"][lang],
-                                              ["visualizing, cropping or annotating", "visualizando, recortando o anotando"][lang],
-                                              ["visualization, cropping, and annotation", "visualización, recorte y anotación"][lang])
-            vis, crp, yol = [False] * 3
-
-    # early exit if user specifies file movement twice (i.e., folder separation and creating folder structure with unique filenames)
-    if yol and uniquify and sep:
-        mb.showerror(error_txt[lang], ["It's not possible to separate folders and create unique filenames at the same time. If you want that, run the post-processing"
-                                       " twice.", "No es posible separar las carpetas y crear nombres de archivo únicos al mismo tiempo. Si deseas lograr eso, ejecuta "
-                                       "el procesamiento posterior dos veces."][lang])
-        return
+        if vis or crp:
+            check_json_presence_and_warn_user(["visualize or crop", "visualizar 0 recortar"][lang],
+                                              ["visualizing or cropping", "visualizando o recortando"][lang],
+                                              ["visualization and cropping", "visualización y recorte"][lang])
+            vis, crp = [False] * 2
 
     # fetch label map
     label_map = fetch_label_map_from_json(recognition_file)
@@ -129,13 +131,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     cancel_var = False
     btn_cancel = Button(progress_postprocess_frame, text=cancel_txt[lang], command=cancel)
     btn_cancel.grid(row=9, column=0, columnspan=2)
-
-    # create classes.txt
-    if yol:
-        classes_txt = os.path.join(dst_dir, "classes.txt")
-        with open(classes_txt, 'w') as f:
-            for key in label_map:
-                f.write(f"{label_map[key]}\n")
     
     # open json file
     with open(recognition_file) as image_recognition_file_content:
@@ -147,7 +142,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # for files
         csv_for_files = os.path.join(dst_dir, "results_files.csv")
         if not os.path.isfile(csv_for_files):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence",
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence", "human_verified",
                                                'datetime', 'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value',
                                                'aperture_value', 'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
             df.to_csv(csv_for_files, encoding='utf-8', index=False)
@@ -155,7 +150,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # for detections
         csv_for_detections = os.path.join(dst_dir, "results_detections.csv")
         if not os.path.isfile(csv_for_detections):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "bbox_left",
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "human_verified", "bbox_left",
                                                "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width", 'datetime',
                                                'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value', 'aperture_value',
                                                'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
@@ -193,6 +188,12 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         n_detections = len(detections_list)
         progress_postprocess_progbar['value'] += 100 / n_images
 
+        # check if it has been manually verified
+        manually_checked = False
+        if 'manually_checked' in image:
+            if image['manually_checked']:
+                manually_checked = True
+
         # init vars
         max_detection_conf = 0.0
         unique_labels = []
@@ -201,7 +202,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         csv_files = []
 
         # open files
-        if vis or crp or yol or csv:
+        if vis or crp or csv:
             if data_type == "img":
                 im_to_vis = cv2.imread(os.path.join(src_dir, file))
                 im_to_crop_path = os.path.join(src_dir, file)
@@ -245,11 +246,17 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             conf = detection["conf"]
 
             # write max conf
-            if conf > max_detection_conf:
+            if manually_checked:
+                max_detection_conf = "NA"
+            elif conf > max_detection_conf:
                 max_detection_conf = conf
 
             # if above user specified thresh
             if conf >= thresh:
+
+                # change conf to string for verified images
+                if manually_checked:
+                    conf = "NA"
 
                 # get detection info
                 category = detection["category"]
@@ -259,7 +266,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     unique_labels = sorted(list(set(unique_labels)))
 
                 # get bbox info
-                if vis or crp or yol or csv:
+                if vis or crp or csv:
                     if data_type == "img":
                         height, width = im_to_vis.shape[:2]
                     else:
@@ -276,31 +283,31 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     bottom = int(round(h_box * height)) + top
 
                     # store in list
-                    bbox_info.append([label, conf, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
+                    bbox_info.append([label, conf, manually_checked, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
 
         # separate files
         if sep:
             if n_detections == 0:
-                file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
             else:
                 if len(unique_labels) > 1:
                     labels_str = "_".join(unique_labels)
-                    file = move_files(file, labels_str, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                    file = move_files(file, labels_str, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
                 elif len(unique_labels) == 0:
-                    file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                    file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
                 else:
-                    file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir)
+                    file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
         
         # collect info to append to csv files
         if csv:
             # file info
-            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf, *exif_params]])
+            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf, manually_checked, *exif_params]])
             row.to_csv(csv_for_files, encoding='utf-8', mode='a', index=False, header=False)
 
             # detections info
             rows = []
             for bbox in bbox_info:
-                row = [src_dir, file, data_type, *bbox[:8], *exif_params]
+                row = [src_dir, file, data_type, *bbox[:9], *exif_params]
                 rows.append(row)
             rows = pd.DataFrame(rows)
             rows.to_csv(csv_for_detections, encoding='utf-8', mode='a', index=False, header=False)
@@ -308,9 +315,12 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # visualize images
         if vis and len(bbox_info) > 0:
             for bbox in bbox_info:
-                vis_label = f"{bbox[0]} {bbox[1]}"
+                if manually_checked:
+                    vis_label = f"{bbox[0]} (verified)"
+                else:
+                    vis_label = f"{bbox[0]} {bbox[1]}"
                 color = colors[int(inverted_label_map[bbox[0]])]
-                bb.add(im_to_vis, *bbox[2:6], vis_label, color)
+                bb.add(im_to_vis, *bbox[3:7], vis_label, color)
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(im, im_to_vis)
@@ -329,7 +339,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     im_to_crp = Image.open(os.path.join(dst_dir,file))                    
                 else:
                     im_to_crp = Image.open(im_to_crop_path)
-                crp_im = im_to_crp.crop((bbox[2:6]))
+                crp_im = im_to_crp.crop((bbox[3:7]))
                 im_to_crp.close()
                 filename, file_extension = os.path.splitext(file)
                 im_path = os.path.join(dst_dir, filename + '_crop' + str(counter) + '_' + bbox[0] + file_extension)
@@ -341,36 +351,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     image_new = Image.open(im_path)
                     image_new.save(im_path, exif=exif)
                     image_new.close()
-
-        # create yolo annotations
-        if yol and len(bbox_info) > 0:
-            filename, file_extension = os.path.splitext(file)
-
-            # uniquify
-            if uniquify:
-                # create unique filenames
-                filename_dst = f"{timestamp}-{'-'.join([x for x in file.split(os.sep) if x != ''])}"
-                annot_file = os.path.join(dst_dir, os.path.splitext(filename_dst)[0] + ".txt")
-                
-                # move files
-                src = os.path.join(src_dir, file)
-                dst = os.path.join(dst_dir, filename_dst)     
-                if label_placement == 1: # move
-                    shutil.move(src, dst)
-                elif label_placement == 2: # copy
-                    shutil.copy2(src, dst)
-            else:
-                annot_file = os.path.join(dst_dir, filename + ".txt")
-            
-            Path(os.path.dirname(annot_file)).mkdir(parents=True, exist_ok=True)
-            with open(annot_file, 'w') as f:
-                for bbox in bbox_info:
-                    # correct for the non-0-index-starting default label map of MD
-                    if inverted_label_map == {'animal': '1', 'person': '2', 'vehicle': '3'}:
-                        class_id = int(inverted_label_map[bbox[0]])-1
-                    else:
-                        class_id = int(inverted_label_map[bbox[0]])
-                    f.write(f"{class_id} {bbox[8]} {bbox[9]} {bbox[10]} {bbox[11]}\n")
 
         # calculate stats
         elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
@@ -417,10 +397,7 @@ def start_postprocess():
     sep_conf = var_sep_conf.get()
     vis = var_vis_files.get()
     crp = var_crp_files.get()
-    yol = var_yol_files.get()
     csv = var_csv.get()
-    uniquify = var_uniquify.get()
-    label_placement = var_label_placement.get()
 
     # check which json files are present
     img_json = False
@@ -502,14 +479,14 @@ def start_postprocess():
     try:
         # postprocess images
         if img_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type = "img")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type = "img")
 
         # postprocess videos
         if vid_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, yol, csv, uniquify, label_placement, data_type = "vid")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type = "vid")
         
         # complete
-        complete_frame(trd_step)
+        complete_frame(fth_step)
 
         # close progress window
         pp_process_window.destroy()
@@ -530,6 +507,9 @@ def start_postprocess():
 def prepare_data_for_training(data_folder, prop_to_test, prop_to_val):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # convert pascal voc to yolo
+    pascal_voc_to_yolo(data_folder)
 
     # get list of all images in dir
     data_folder = os.path.normpath(data_folder)
@@ -728,7 +708,8 @@ def start_training():
             invalid_value_warning("project name", numeric = False)
             set_buttons_to_idle()
             return
-        command_args.append(f"--project={var_project_name.get()}")
+        project_name = var_project_name.get()
+        command_args.append(f"--project={project_name}")
             
         # name of the run
         if no_user_input(var_run_name) == False:
@@ -806,38 +787,136 @@ def start_training():
             if os.name != 'nt':
                 p.send_signal(signal.SIGCONT)
 
+    # remove temporary files
+    clean_training_dir(data_dir)
+    print("\nTraining has finished.")
+
     # set button states
     cancel_training_bool.set(False)
     set_buttons_to_idle()
 
-# create required files and open the LabelImg software
-def start_annotation():
+# open human-in-the-loop verification windows
+def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, label_map):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # set vars
-    images_dir = var_annot_dir.get()
-    classes_txt = os.path.join(images_dir, "classes.txt")
-
-    # check if images dir is valid
-    if images_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(images_dir):
-        mb.showerror(error_txt[lang], message=["Please specify a directory with images to annotate.",
-                                               "Por favor, especifique una carpeta con imágenes para anotar."][lang])
+    # check if file list exists
+    if not os.path.isfile(file_list_txt):
+        mb.showerror(["No images to verify", "No hay imágenes para verificar"][lang],
+                     ["There are no images to verify with the selected criteria. Use the 'Update counts' button to see how many "
+                     "images you need to verify with the selected criteria.", "No hay imágenes para verificar con los criterios "
+                     "seleccionados. Utilice el botón 'Actualizar recuentos' para ver cuántas imágenes necesita verificar con "
+                     "los criterios seleccionados."][lang])
         return
 
-    # check if user specified classes
-    if not os.path.isfile(classes_txt) and no_user_input(var_annot_classes):
-        invalid_value_warning("classes", numeric = False)
+    # check number of images to verify
+    total_n_files = 0
+    with open(file_list_txt) as f:
+        for line in f:
+            total_n_files += 1
+        f.close()
+    if total_n_files == 0:
+        mb.showerror(["No images to verify", "No hay imágenes para verificar"][lang],
+                     ["There are no images to verify with the selected criteria. Use the 'Update counts' button to see how many "
+                     "images you need to verify with the selected criteria.", "No hay imágenes para verificar con los criterios "
+                     "seleccionados. Utilice el botón 'Actualizar recuentos' para ver cuántas imágenes necesita verificar con "
+                     "los criterios seleccionados."][lang])
         return
 
-    # create classes.txt if required
-    if not os.path.isfile(classes_txt):
-        classes_list = ent_annot_classes.get().split(",")
-        classes_list = [s.strip() for s in classes_list]
-        with open(classes_txt, 'w') as fp:
-            for elem in classes_list:
-                fp.write(f"{elem}\n")
+    # track hitl progress in json
+    change_hitl_var_in_json(recognition_file, "in-progress")
 
+    # read label map from json
+    label_map = fetch_label_map_from_json(recognition_file)
+    inverted_label_map = {v: k for k, v in label_map.items()}
+
+    # close settings window if open
+    try:
+        hitl_settings_window.withdraw()
+    except NameError:
+        print("hitl_settings_window not defined -> nothing to withdraw()")
+        
+    # init window
+    hitl_progress_window = Toplevel(root)
+    hitl_progress_window.title(["Manual check overview", "Verificación manual"][lang])
+    hitl_progress_window.geometry()
+
+    # logo
+    logo = tk.Label(hitl_progress_window, image=grey_bg_logo)
+    logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
+
+    # explenation frame
+    hitl_explenation_frame = LabelFrame(hitl_progress_window, text=[" Explanation ", " Explicación "][lang],
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+    hitl_explenation_frame.configure(font=(text_font, 15, "bold"))
+    hitl_explenation_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
+    hitl_explenation_frame.columnconfigure(0, weight=3, minsize=115)
+    hitl_explenation_frame.columnconfigure(1, weight=1, minsize=115)
+
+    # explenation text
+    text_hitl_explenation_frame = Text(master=hitl_explenation_frame, wrap=WORD, width=1, height=15 * explanation_text_box_height_factor) 
+    text_hitl_explenation_frame.grid(column=0, row=0, columnspan=5, padx=5, pady=5, sticky='ew')
+    text_hitl_explenation_frame.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=10, lmargin2=10)
+    text_hitl_explenation_frame.insert(END, ["This is where you do the actual verification. You'll have to make sure that all objects in all images are correctly "
+                                            "labeled. That also includes classes that you did not select but are on the image by chance. If an image is verified, "
+                                            "you'll have to let EcoAssist know by pressing the space bar. If all images are verified and up-to-date, you can close "
+                                            "the window. EcoAssist will prompt you for the final step. You can also close the window and continue at a later moment.", 
+                                            "Deberá asegurarse de que todos los objetos en todas las imágenes estén "
+                                            "etiquetados correctamente. Eso también incluye clases que no seleccionaste pero que están en la imagen por casualidad. "
+                                            "Si se verifica una imagen, deberá informar a EcoAssist presionando la barra espaciadora. Si todas las imágenes están "
+                                            "verificadas y actualizadas, puede cerrar la ventana. EcoAssist le indicará el paso final. También puedes cerrar la "
+                                            "ventana y continuar en otro momento."][lang])
+    text_hitl_explenation_frame.tag_add('explanation', '1.0', '1.end')
+
+    # shortcuts frame
+    hitl_shortcuts_frame = LabelFrame(hitl_progress_window, text=[" Shortcuts ", " Atajos "][lang],
+                                        pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+    hitl_shortcuts_frame.configure(font=(text_font, 15, "bold"))
+    hitl_shortcuts_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
+    hitl_shortcuts_frame.columnconfigure(0, weight=3, minsize=115)
+    hitl_shortcuts_frame.columnconfigure(1, weight=1, minsize=115)
+
+    # shortcuts label
+    shortcut_labels = [["Next image:", "Previous image:", "Create box:", "Delete box:", "Verify and save image:"],
+                       ["Imagen siguiente:", "Imagen anterior:", "Crear cuadro:", "Eliminar cuadro:", "Verificar y guardar imagen:"]][lang]
+    shortcut_values = ["d", "a", "w", "del", ["space", "espacio"][lang]]
+    for i in range(len(shortcut_labels)):
+        ttk.Label(master=hitl_shortcuts_frame, text=shortcut_labels[i]).grid(column=0, row=i, columnspan=1, sticky='w')
+        ttk.Label(master=hitl_shortcuts_frame, text=shortcut_values[i]).grid(column=1, row=i, columnspan=1, sticky='e')
+
+    # numbers frame
+    hitl_stats_frame = LabelFrame(hitl_progress_window, text=[" Progress ", " Progreso "][lang],
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+    hitl_stats_frame.configure(font=(text_font, 15, "bold"))
+    hitl_stats_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
+    hitl_stats_frame.columnconfigure(0, weight=3, minsize=115)
+    hitl_stats_frame.columnconfigure(1, weight=1, minsize=115)
+
+    # progress bar 
+    hitl_progbar = ttk.Progressbar(master=hitl_stats_frame, orient='horizontal', mode='determinate', length=280)
+    hitl_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
+
+    # percentage done
+    lbl_hitl_stats_percentage = ttk.Label(master=hitl_stats_frame, text=["Percentage done:", "Porcentaje realizado:"][lang])
+    lbl_hitl_stats_percentage.grid(column=0, row=1, columnspan=1, sticky='w')
+    value_hitl_stats_percentage = ttk.Label(master=hitl_stats_frame, text="")
+    value_hitl_stats_percentage.grid(column=1, row=1, columnspan=1, sticky='e')
+
+    # total n images to verify
+    lbl_hitl_stats_verified = ttk.Label(master=hitl_stats_frame, text=["Files verified:", "Archivos verificados:"][lang])
+    lbl_hitl_stats_verified.grid(column=0, row=2, columnspan=1, sticky='w')
+    value_hitl_stats_verified = ttk.Label(master=hitl_stats_frame, text="")
+    value_hitl_stats_verified.grid(column=1, row=2, columnspan=1, sticky='e')
+
+    # total n images to verify
+    lbl_hitl_save_status = ttk.Label(master=hitl_stats_frame, text=["Status:", "Estado:"][lang])
+    lbl_hitl_save_status.grid(column=0, row=3, columnspan=1, sticky='w')
+    value_hitl_save_status = ttk.Label(master=hitl_stats_frame, text="")
+    value_hitl_save_status.grid(column=1, row=3, columnspan=1, sticky='e')
+
+    # show  window
+    hitl_progress_window.update_idletasks()
+    
     # locate open script
     if os.name == 'nt':
         labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "label.bat")
@@ -847,8 +926,8 @@ def start_annotation():
     # create command
     command_args = []
     command_args.append(labelImg_script)
-    command_args.append(images_dir)
-    command_args.append(classes_txt)
+    command_args.append(class_list_txt)
+    command_args.append(file_list_txt)
 
     # adjust command for unix OS
     if os.name != 'nt':
@@ -859,22 +938,541 @@ def start_annotation():
 
     # run command
     p = Popen(command_args,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                # stdout=subprocess.PIPE,
+                # stderr=subprocess.STDOUT,
                 bufsize=1,
                 shell=True,
                 universal_newlines=True)
-    for line in p.stdout:
-        # log stdout and stderr
-        print(line, end='')
+
+    # create temp-file for the first iteration
+    temp_file = TemporaryTextFile(os.path.normpath(os.path.join(var_choose_folder.get(), "temp-folder", "_gosave.txt")), "First iteration.")
+    temp_file.create()
+
+    # calculate metrics while annotating
+    while p.poll() is None:
+
+        # show window
+        hitl_progress_window.update()
         
-        # report traceback when error
-        if line.startswith("Traceback "): 
-            mb.showerror(["Error opening labelImg", "Error al abrir labelImg"][lang],
-            message=["An error occured while opening the annotation software labelImg. Please send an email to petervanlunteren@hotmail.com"
-                    " to resolve this bug.",
-                    "Se ha producido un error al abrir el software de anotación labelImg. Por favor, envíe un correo electrónico a "
-                    "petervanlunteren@hotmail.com para resolver este error."][lang])
+        # labelImg writes a temp-file to notify ecoassist
+        if temp_file.exists():
+
+            # give labelImg some time to save its xml file
+            time.sleep(0.1)
+
+            # set save status
+            value_hitl_save_status.config(text = ["saving...", "guardando..."][lang])
+            hitl_progress_window.update_idletasks()
+
+            # loop trough file list and read xml files
+            n_verified_files = 0
+            with open(file_list_txt) as f:
+                for line in f:
+                    annotation = return_xml_path(line.rstrip())
+                    if check_verification_status_and_update_json(xml_file = annotation, inverted_label_map = inverted_label_map, recognition_file = recognition_file, update_json = True):
+                        n_verified_files += 1
+                f.close()
+
+            # update labels
+            percentage = round((n_verified_files/total_n_files)*100)
+            hitl_progbar['value'] = percentage
+            value_hitl_stats_percentage.config(text = f"{percentage}%")
+            value_hitl_stats_verified.config(text = f"{n_verified_files}/{total_n_files}")
+
+            # remove temp file
+            temp_file.delete()
+        
+        # set save status
+        try:
+            value_hitl_save_status.config(text = ["up-to-date", "actualizado"][lang])
+            hitl_progress_window.update_idletasks()
+            hitl_progress_window.update()
+        
+        # python can throw a TclError if user closes the window because the widgets are destroyed - nothing to worry about
+        except Exception as error:
+            print("\nWhen closing the annotation window, there was an error:")
+            print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+
+        # we don't want the while loop to constantly run
+        time.sleep(0.2)
+
+    # close accompanying window
+    hitl_progress_window.withdraw()
+
+    # update frames of root
+    update_frame_states()
+
+    # check if the json has relative paths
+    if check_json_paths(recognition_file) == "relative":
+        json_paths_are_relative = True
+    else:
+        json_paths_are_relative = False
+
+    # open patience window
+    patience_dialog = PatienceDialog(total = n_verified_files + total_n_files, text = ["Checking results...", "Comprobando resultados"][lang])
+    patience_dialog.open()
+    current = 1
+
+    # check if there are still xmls not converted to json
+    with open(file_list_txt) as f:
+        for line in f:
+            annotation = return_xml_path(line.rstrip())
+            check_verification_status_and_update_json(xml_file = annotation, inverted_label_map = inverted_label_map, recognition_file = recognition_file, update_json = True)
+            patience_dialog.update_progress(current = current, percentage = True)
+            current += 1
+        f.close()
+
+    # open json
+    with open(recognition_file, "r") as image_recognition_file_content:
+        data = json.load(image_recognition_file_content)
+
+    # check if there are images that the user first verified and then un-verified
+    for image in data['images']:
+        image_path = image['file']
+        if json_paths_are_relative:
+            image_path = os.path.join(os.path.dirname(recognition_file), image_path)
+        if 'manually_checked' in image:
+
+            # image has been manually checked in json
+            if image['manually_checked']:
+                patience_dialog.update_progress(current = current, percentage = True)
+                current += 1
+
+                # but not anymore in xml
+                xml_path = return_xml_path(image_path)
+                if os.path.isfile(xml_path):
+                    if not check_verification_status_and_update_json(xml_file = return_xml_path(image_path),
+                                                                    inverted_label_map = inverted_label_map,
+                                                                    recognition_file = recognition_file,
+                                                                    update_json = False):
+                        # set check flag in json
+                        image['manually_checked'] = False
+
+                        # reset confidence from 1.0 to arbitrary value 
+                        for detection in image['detections']:
+                            detection['conf'] = 0.7
+    
+    # write json
+    image_recognition_file_content.close()
+    with open(recognition_file, "w") as json_file:
+        json.dump(data, json_file, indent=1)
+    image_recognition_file_content.close()
+    patience_dialog.close()
+    
+    # finalise things if all images are verified
+    if n_verified_files == total_n_files:
+        if mb.askyesno(title=["Are you done?", "¿Ya terminaste?"][lang],
+                       message=["All images are verified and the 'image_recognition_file.json' is up-to-date.\n\nDo you want to close this "
+                                "verification session and proceed to the final step?", "Todas las imágenes están verificadas y "
+                                "'image_recognition_file.json' está actualizado.\n\n¿Quieres cerrar esta sesión de verificación"
+                                " y continuar con el paso final?"][lang]):
+            # close window
+            hitl_progress_window.withdraw()
+
+            # get plot from xml files
+            fig = produce_graph(file_list_txt = file_list_txt)
+
+            # init window
+            hitl_final_window = Toplevel(root)
+            hitl_final_window.title("Overview")
+            hitl_final_window.geometry()
+
+            # add plot
+            chart_type = FigureCanvasTkAgg(fig, hitl_final_window)
+            chart_type.get_tk_widget().grid(row = 0, column = 0)
+
+            # button frame
+            hitl_final_actions_frame = LabelFrame(hitl_final_window, text=[" Do you want to export these verified images as training data? ",
+                                                                           " ¿Quieres exportar estas imágenes verificadas como datos de entrenamiento? "][lang],
+                                                                           pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', labelanchor = 'n')
+            hitl_final_actions_frame.configure(font=(text_font, 15, "bold"))
+            hitl_final_actions_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
+            hitl_final_actions_frame.columnconfigure(0, weight=1, minsize=115)
+            hitl_final_actions_frame.columnconfigure(1, weight=1, minsize=115)
+
+            # buttons
+            btn_hitl_final_export_y = Button(master=hitl_final_actions_frame, text=["Yes - choose folder and create training data",
+                                                                                    "Sí - elija la carpeta y crear datos de entrenamiento"][lang], 
+                                    width=1, command = lambda: [uniquify_and_move_img_and_xml_from_filelist(file_list_txt = file_list_txt, recognition_file = recognition_file, hitl_final_window = hitl_final_window),
+                                                                update_frame_states()])
+            btn_hitl_final_export_y.grid(row=0, column=0, rowspan=1, sticky='nesw', padx=5)
+
+            btn_hitl_final_export_n = Button(master=hitl_final_actions_frame, text=["No - go back to the main EcoAssist window",
+                                                                                    "No - regrese a la ventana principal de EcoAssist"][lang], 
+                                    width=1, command = lambda: [delete_temp_folder(file_list_txt),
+                                                                hitl_final_window.withdraw(),
+                                                                change_hitl_var_in_json(recognition_file, "done"),
+                                                                update_frame_states()])
+            btn_hitl_final_export_n.grid(row=0, column=1, rowspan=1, sticky='nesw', padx=5)
+
+# get the images and xmls from annotation session and store them with unique filename
+def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file, hitl_final_window):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # choose destination
+    dst_dir = filedialog.askdirectory()
+
+    # ask to move or copy
+    window = TextButtonWindow(["Method of file placement", "Método de colocación de archivos"][lang],
+                              [f"Do you want to copy or move the images to\n'{dst_dir}'?",
+                              f"¿Quieres copiar o mover las imágenes a\n'{dst_dir}'?"][lang],
+                              [["Move", "Mover"][lang], ["Copy", "Copiar"][lang], ["Cancel", "Cancelar"][lang]])
+    user_input = window.run()
+    if user_input == "Cancel" or user_input == "Cancelar":
+        return
+    else:
+        if user_input == "Move" or user_input == "Mover":
+            copy_or_move = "Move"
+        if user_input == "Copy" or user_input == "Copiar":
+            copy_or_move = "Copy"
+
+    # init vars
+    timestamp = str(datetime.date.today()) + str(datetime.datetime.now().strftime("%H%M%S"))
+    timestamp = timestamp.replace('-', '')
+    src_dir = os.path.normpath(var_choose_folder.get())
+    
+    # loop through the images
+    with open(file_list_txt) as f:
+
+        # count total number of images without loading to memory
+        n_imgs = 0
+        for i in f:
+            n_imgs += 1
+        
+        # reset file index
+        f.seek(0)
+
+        # open patience window
+        patience_dialog = PatienceDialog(total = n_imgs, text = ["Writing files...", "Escribir archivos..."][lang])
+        patience_dialog.open()
+        current = 1
+
+        # loop
+        for img in f:
+
+            # get relative path
+            img = os.path.relpath(img.rstrip(), src_dir)
+
+            # uniquify image
+            img_filename_dst = f"{timestamp}-{'-'.join([x for x in img.split(os.sep) if x != ''])}"
+            src_img = os.path.join(src_dir, img)
+            dst_img = os.path.join(dst_dir, img_filename_dst)
+            if copy_or_move == "Move":
+                shutil.move(src_img, dst_img)
+            elif copy_or_move == "Copy":
+                shutil.copy2(src_img, dst_img)
+
+            # uniquify annotation
+            ann_filename_dst = os.path.splitext(img_filename_dst)[0] + ".xml"
+            src_ann = return_xml_path(os.path.join(src_dir, img))
+            dst_ann = os.path.join(dst_dir, ann_filename_dst)
+            shutil.move(src_ann, dst_ann)
+
+            # update dialog
+            patience_dialog.update_progress(current)
+            current += 1
+        f.close()
+    
+    # finalize
+    patience_dialog.close()
+    delete_temp_folder(file_list_txt)
+    hitl_final_window.destroy()
+    change_hitl_var_in_json(recognition_file, "done")
+
+# check if the user is already in progress of verifying, otherwise start new session
+def start_or_continue_hitl():
+
+    # early exit if only video json
+    selected_dir = var_choose_folder.get()
+    path_to_image_json = os.path.join(selected_dir, "image_recognition_file.json")
+    check_json_presence_and_warn_user(["verify", "verificar"][lang],
+                                      ["verifying", "verificando"][lang],
+                                      ["verification", "verificación"][lang])
+    if not os.path.isfile(path_to_image_json):
+        return
+
+    # check hitl status
+    status = get_hitl_var_in_json(path_to_image_json)
+
+    # start first session
+    if status == "never-started":
+        # open window to select criteria
+        open_hitl_settings_window()
+    
+    # continue previous session
+    elif status == "in-progress":
+
+        # read selection criteria from last time
+        annotation_arguments_pkl = os.path.join(selected_dir, 'temp-folder', 'annotation_information.pkl')
+        with open(annotation_arguments_pkl, 'rb') as fp:
+            annotation_arguments = pickle.load(fp)
+            fp.close()
+        
+        # update class_txt_file from json in case user added classes last time
+        class_list_txt = annotation_arguments['class_list_txt']
+        label_map = fetch_label_map_from_json(os.path.join(var_choose_folder.get(), 'image_recognition_file.json'))
+        if os.path.isfile(class_list_txt):
+            os.remove(class_list_txt)
+        with open(class_list_txt, 'a') as f:
+            for k, v in label_map.items():
+                f.write(f"{v}\n")
+            f.close()
+
+        # ask user 
+        if not mb.askyesno(["Verification session in progress", "Sesión de verificación en curso"][lang],
+                            ["Do you want to continue with the previous verification session? If you press 'No', you will start a new session.", 
+                            "¿Quieres continuar con la sesión de verificación anterior? Si presiona 'No', iniciará una nueva sesión."][lang]):
+            delete_temp_folder(annotation_arguments['file_list_txt'])
+            change_hitl_var_in_json(path_to_image_json, "never-started") # if user closes window, it can start fresh next time
+            open_hitl_settings_window()
+
+        # start human in the loop process and skip selection window
+        else:
+            try:
+                open_annotation_windows(recognition_file = annotation_arguments['recognition_file'],
+                                        class_list_txt = annotation_arguments['class_list_txt'],
+                                        file_list_txt = annotation_arguments['file_list_txt'],
+                                        label_map = annotation_arguments['label_map'])
+            except Exception as error:
+                # log error
+                print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+                
+                # show error
+                mb.showerror(title=error_txt[lang],
+                            message=["An error has occurred", "Ha ocurrido un error"][lang] + " (EcoAssist v" + version + "): '" + str(error) + "'.",
+                            detail=traceback.format_exc())
+    
+    # start new session
+    elif status == "done":
+        if mb.askyesno(["Previous session is done", "Sesión anterior terminada."][lang], ["It seems like you have completed the previous manual "
+                        "verification session. Do you want to start a new session?", "Parece que has completado la sesión de verificación manual "
+                        "anterior. ¿Quieres iniciar una nueva sesión?"][lang]):
+            open_hitl_settings_window()
+
+# convert the pascal voc annotations to yolo so that training can start
+def pascal_voc_to_yolo(folder_path):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # begin with a clean slate
+    clean_training_dir(folder_path)
+
+    # keep track of the files written
+    yolo_written_file = os.path.join(folder_path, "yolo-files-written.txt")
+    if os.path.exists(yolo_written_file):
+        os.remove(yolo_written_file)
+
+    # loop trough xml files
+    send_to_output_window("\nConverting PASCAL VOC to YOLO annotation files...")
+    classes_list = []
+    counts = {'background' : 0, 'images': 0}
+    classes_counts = {}
+    index_d = 0
+    with open(yolo_written_file, 'w') as yolo_written:
+        for file in os.listdir(folder_path):
+            
+            # init vars
+            is_background = None
+            file_name, file_ext = os.path.splitext(file)
+
+            # for all images
+            if file_ext in ['.jpg', '.jpeg', '.gif', '.png']:
+                counts['images'] += 1
+
+                # an image without an xml is a background
+                if not os.path.isfile(os.path.join(folder_path, f"{file_name}.xml")):
+                    is_background = True
+
+            #  loop through xmls
+            if file.endswith('.xml'): 
+                xml_path = os.path.join(folder_path, file)
+                yolo_txt_path = os.path.join(folder_path, f"{file_name}.txt")
+                tree = ET.parse(xml_path)
+                root = tree.getroot()
+                size = root.find('size')
+                w = int(size.find('width').text)
+                h = int(size.find('height').text)
+                with open(yolo_txt_path, 'w') as yolo_file:
+                    yolo_written.write(yolo_txt_path + '\n')
+
+                    # show progress per 1000 files
+                    if index_d % 1000 == 0:
+                        send_to_output_window(f"   currently at number {index_d}...")
+                    index_d += 1
+
+                    # a xml without any objects is also a background
+                    is_background = True
+                    for obj in root.findall('object'):
+                        is_background = False
+                        class_name = obj.find('name').text
+
+                        # check if it is a known class
+                        if class_name not in classes_list:
+                            classes_list.append(class_name)
+
+                        # keep count
+                        if class_name in classes_counts:
+                            classes_counts[class_name] += 1
+                        else:
+                            classes_counts[class_name] = 1
+                        
+                        # fetch and convert
+                        class_id = classes_list.index(class_name)
+                        bbox = obj.find('bndbox')
+                        x_min = float(bbox.find('xmin').text)
+                        y_min = float(bbox.find('ymin').text)
+                        x_max = float(bbox.find('xmax').text)
+                        y_max = float(bbox.find('ymax').text)
+                        b = (float(bbox.find('xmin').text), float(bbox.find('xmax').text), float(bbox.find('ymin').text), float(bbox.find('ymax').text))
+                        bbox = convert_bbox_pascal_to_yolo((w,h), b)
+
+                        # write
+                        yolo_line = str(class_id) + " " + " ".join([str(round(a, 6)) for a in bbox]) + '\n'
+                        yolo_file.write(yolo_line)
+            
+            # count background
+            if is_background == True:
+                counts['background'] += 1
+        
+    # show progres
+    send_to_output_window(f"   currently at number {index_d}...")
+    send_to_output_window(f"   done!")
+
+    # create classes.txt
+    classes_txt = os.path.join(folder_path, "classes.txt")
+    if os.path.isfile(classes_txt):
+        os.remove(classes_txt)
+    with open(classes_txt, 'w') as fp:
+        for elem in classes_list:
+            fp.write(f"{elem}\n")
+    
+    # count instances
+    total_instances = 0
+    for key, value in classes_counts.items():
+        total_instances += value
+
+    # show counts and proportions
+    send_to_output_window("\nThe dataset constists of:")
+    for key, value in classes_counts.items():
+        send_to_output_window(f"   {value} instances of class {key} ({round(value / total_instances * 100, 1)}% of total n instances)")
+    if counts['background'] == 0:
+        send_to_output_window(f"   {counts['background']} background images (0.0% of total n images)")
+    else:
+        send_to_output_window(f"   {counts['background']} background images ({round(counts['background'] / counts['images'] * 100, 1)}% of total n images)")
+
+# open xml and check if the data is already in the json
+def check_verification_status_and_update_json(xml_file, inverted_label_map, recognition_file = "", update_json = True): 
+    # import xml
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    # read verification status of file
+    try:
+        verification_status = True if root.attrib['verified'] == 'yes' else False
+    except:
+        verification_status = False
+    
+    # read json update status
+    try:
+        json_update_status = True if root.attrib['json_updated'] == 'yes' else False
+    except:
+        json_update_status = False
+
+    # convert to COCO
+    if update_json and verification_status and not json_update_status: 
+
+        # file
+        path = root.findtext('path')
+
+        # image info
+        size = root.find('size')
+        im_width = int(size.findtext('width'))
+        im_height = int(size.findtext('height'))
+
+        # detections
+        verified_detections = []
+        new_class = False
+        for obj in root.findall('object'):
+
+            # # category
+            name = obj.findtext('name')
+
+            # add key for new category
+            if name in inverted_label_map:
+                new_class = False
+            else:
+                new_class = True
+                highest_index = 0
+                for key, value in inverted_label_map.items():
+                    value = int(value)
+                    if value > highest_index:
+                        highest_index = value
+                inverted_label_map[name] = str(highest_index + 1)
+            category = inverted_label_map[name]
+
+            # # bbox
+            # read box coordinates
+            bndbox = obj.find('bndbox')
+            xmin = int(float(bndbox.findtext('xmin')))
+            ymin = int(float(bndbox.findtext('ymin')))
+            xmax = int(float(bndbox.findtext('xmax')))
+            ymax = int(float(bndbox.findtext('ymax')))
+
+            # convert to COCO
+            w_box = round(abs(xmax - xmin) / im_width, 5)
+            h_box = round(abs(ymax - ymin) / im_height, 5)
+            xo = round(xmin / im_width, 5)
+            yo = round(ymin / im_height, 5)
+            bbox = [xo, yo, w_box, h_box]
+
+            # create detections
+            verified_detection = {'category' : category,
+                                  'conf' : 1.0,
+                                  'bbox' : bbox}
+            
+            # append detection
+            verified_detections.append(verified_detection)
+        
+        # create image
+        verified_image = {'file' : path,
+                          'detections' : verified_detections}
+        
+        # check if the json has relative paths
+        if check_json_paths(recognition_file) == "relative":
+            json_paths_are_relative = True
+        else:
+            json_paths_are_relative = False
+
+        # open json data
+        with open(recognition_file, "r") as image_recognition_file_content:
+            data = json.load(image_recognition_file_content)
+
+        # adjust
+        if new_class:
+            data['detection_categories'] = {v: k for k, v in inverted_label_map.items()}
+        for image in data['images']:
+            image_path = image['file']
+            if json_paths_are_relative:
+                image_path = os.path.normpath(os.path.join(os.path.dirname(recognition_file), image_path))
+            if image_path == verified_image['file']:
+                image['manually_checked'] = verification_status
+                if verification_status:
+                    image['detections'] = verified_image['detections']
+        image_recognition_file_content.close()
+
+        # write
+        with open(recognition_file, "w") as json_file:
+            json.dump(data, json_file, indent=1)
+        image_recognition_file_content.close()
+        
+        # add attribute to xml file so that we know we already updated this one
+        # if user saves a new xml file, the attribute disapears and is updated again
+        root.set('json_updated', 'yes')
+        indent(root)
+        tree.write(xml_file)
+
+    return verification_status
 
 # delpoy model and create json output files 
 def deploy_model(path_to_image_folder, selected_options, data_type):
@@ -997,21 +1595,22 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     # read output and direct to tkinter
     model_error_shown = False
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
+    model_warning_shown = False
+    model_warning_log = os.path.join(chosen_folder, "model_warning_log.txt")
     for line in p.stdout:
         print(line, end='')
         
         # catch model errors
         if line.startswith("No image files found"):
             mb.showerror(["No images found", "No se han encontrado imágenes"][lang],
-                        [f"There are no images found in '{chosen_folder}'. \n\nAre you sure you specified the correct folder? Or should you have"
-                        " selected the option 'Include subdirectories'?",
-                        f"No se han encontrado imágenes en '{chosen_folder}'. ¿Está seguro de haber especificado la carpeta correcta? ¿O debería "
-                        "haber seleccionado la opción 'Incluir subdirectorios'?"][lang])
+                        [f"There are no images found in '{chosen_folder}'. \n\nAre you sure you specified the correct folder?"
+                        f"If the files are in subdirectories, make sure you don't tick '{lbl_exclude_subs_txt}'.",
+                        f"No se han encontrado imágenes en '{chosen_folder}'. \n\n¿Está seguro de haber especificado la carpeta correcta?"][lang])
             return
         if line.startswith("No videos found"):
             mb.showerror(["No videos found", "No se han encontrado vídeos"][lang],
-                        line + ["\n\nAre you sure you specified the correct folder? Or should you have selected the option 'Include subdirectories'?",
-                                "\n\n¿Está seguro de haber especificado la carpeta correcta? ¿O debería haber seleccionado la opción 'Incluir subdirectorios'?"][lang])
+                        line + [f"\n\nAre you sure you specified the correct folder? If the files are in subdirectories, make sure you don't tick '{lbl_exclude_subs_txt}'.",
+                                "\n\n¿Está seguro de haber especificado la carpeta correcta?"][lang])
             return
         if line.startswith("No frames extracted"):
             mb.showerror(["Could not extract frames", "No se pueden extraer fotogramas"][lang],
@@ -1033,7 +1632,16 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
             if not "could not determine MegaDetector version" in line \
                 and not "no metadata for unknown detector version" in line \
                 and not "using user-supplied image size" in line:
-                mb.showerror(warning_txt[lang], ["Model warning:\n\n", "Advertencia de modelo:\n\n"][lang] + line)
+                if not model_warning_shown:
+                    mb.showerror(warning_txt[lang], ["Model warning:\n\n", "Advertencia de modelo:\n\n"][lang] + line)
+                    mb.showerror(error_txt[lang], [f"There are one or more model warnings. See\n\n'{model_warning_log}'\n\nfor more information.",
+                                                f"Hay uno o más advertencias de modelo. Consulte\n\n'{model_warning_log}'\n\npara obtener más información."][lang])
+                    model_warning_shown = True
+
+                # write warnings to log file
+                with open(model_warning_log, 'a+') as f:
+                    f.write(f"{line}\n")
+                f.close()
         
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
@@ -1255,9 +1863,881 @@ def start_deploy():
         # close window
         md_progress_window.destroy()
 
+# get data from file list and create graph
+def produce_graph(file_list_txt = None, dir = None):
+    
+    # if a list with images is specified
+    if file_list_txt:
+        count_dict = {}
+
+        # loop through the files
+        with open(file_list_txt) as f:
+            for line in f:
+
+                # open xml 
+                img = line.rstrip()
+                annotation = return_xml_path(img)
+                tree = ET.parse(annotation)
+                root = tree.getroot()
+
+                # loop through detections
+                for obj in root.findall('object'):
+
+                    # add detection to dict
+                    name = obj.findtext('name')
+                    if name not in count_dict:
+                        count_dict[name] = 0
+                    count_dict[name] += 1
+            f.close()
+
+        # create plot
+        classes = list(count_dict.keys())
+        counts = list(count_dict.values())
+        fig = plt.figure(figsize = (10, 5))
+        plt.bar(classes, counts, width = 0.4)
+        plt.ylabel(["No. of instances verified", "No de instancias verificadas"][lang])
+
+        # return results
+        return fig
+
+# remove the temporary files created by the training
+def clean_training_dir(folder_path):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # remove yolo annotation files
+    yolo_written_file = os.path.join(folder_path, "yolo-files-written.txt")
+    index = 0
+    if os.path.exists(yolo_written_file):
+        send_to_output_window("\nCleaning up temporary files...")
+        with open(yolo_written_file) as f:
+            for txt_file in [line.rstrip() for line in f]:
+                if index % 1000 == 0:
+                    send_to_output_window(f"   currently at number {index}...")
+                index += 1
+                os.remove(txt_file)
+        f.close()
+        os.remove(yolo_written_file)
+        send_to_output_window(f"   currently at number {index}...")
+        send_to_output_window(f"   done!")
+    else:
+        send_to_output_window("\nNo temporary files. Nothing to clean...")
+
+    # remove classes.txt
+    classes_txt = os.path.join(folder_path, "classes.txt")
+    if os.path.isfile(classes_txt):
+        os.remove(classes_txt)
+
+# create pascal voc annotation files from a list of detections
+def create_pascal_voc_annotation(image_path, annotation_list, human_verified):
+
+    # init vars
+    image_path = Path(image_path)
+    img = np.array(Image.open(image_path).convert('RGB'))
+    annotation = ET.Element('annotation')
+
+    # set verified flag if been verified in a previous session
+    if human_verified:
+        annotation.set('verified', 'yes')
+
+    ET.SubElement(annotation, 'folder').text = str(image_path.parent.name)
+    ET.SubElement(annotation, 'filename').text = str(image_path.name)
+    ET.SubElement(annotation, 'path').text = str(image_path)
+
+    source = ET.SubElement(annotation, 'source')
+    ET.SubElement(source, 'database').text = 'Unknown'
+
+    size = ET.SubElement(annotation, 'size')
+    ET.SubElement(size, 'width').text = str(img.shape[1])
+    ET.SubElement(size, 'height').text = str(img.shape[0])
+    ET.SubElement(size, 'depth').text = str(img.shape[2])
+
+    ET.SubElement(annotation, 'segmented').text = '0'
+
+    for annot in annotation_list:
+        tmp_annot = annot.split(',')
+        cords, label = tmp_annot[0:-2], tmp_annot[-1]
+        xmin, ymin, xmax, ymax = cords[0], cords[1], cords[4], cords[5] # left, top, right, bottom
+
+        object = ET.SubElement(annotation, 'object')
+        ET.SubElement(object, 'name').text = label
+        ET.SubElement(object, 'pose').text = 'Unspecified'
+        ET.SubElement(object, 'truncated').text = '0'
+        ET.SubElement(object, 'difficult').text = '0'
+
+        bndbox = ET.SubElement(object, 'bndbox')
+        ET.SubElement(bndbox, 'xmin').text = str(xmin)
+        ET.SubElement(bndbox, 'ymin').text = str(ymin)
+        ET.SubElement(bndbox, 'xmax').text = str(xmax)
+        ET.SubElement(bndbox, 'ymax').text = str(ymax)
+
+    indent(annotation)
+    tree = ET.ElementTree(annotation)
+    xml_file_name = return_xml_path(image_path)
+    Path(os.path.dirname(xml_file_name)).mkdir(parents=True, exist_ok=True)
+    tree.write(xml_file_name)
+
+# loop json and see which images and annotations fall in user-specified catgegory
+def select_detections(selection_dict, prepare_files):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # init vars
+    selected_dir = var_choose_folder.get()
+    recognition_file = os.path.join(selected_dir, 'image_recognition_file.json')
+    temp_folder = os.path.join(selected_dir, 'temp-folder')
+    Path(temp_folder).mkdir(parents=True, exist_ok=True)
+    file_list_txt = os.path.join(temp_folder, 'hitl_file_list.txt')
+    class_list_txt = os.path.join(temp_folder, 'hitl_class_list.txt')
+
+    # make sure json has relative paths
+    json_paths_converted = False
+    if check_json_paths(recognition_file) != "relative":
+        make_json_relative(recognition_file)
+        json_paths_converted = True
+
+    # list selection criteria
+    selected_categories = []
+    min_confs = []
+    max_confs = []
+    ann_min_confs_specific = {}
+    selected_files = {}
+    rad_ann_val = rad_ann_var.get()
+    ann_min_confs_generic = None
+
+    # class specific values
+    for key, values in selection_dict.items():
+        category = values['class']
+        chb_val = values['chb_var'].get()
+        min_conf = round(values['min_conf_var'].get(), 2)
+        max_conf = round(values['max_conf_var'].get(), 2)
+        ann_min_conf_specific = values['scl_ann_var_specific'].get()
+        ann_min_confs_generic = values['scl_ann_var_generic'].get()
+        ann_min_confs_specific[category] = ann_min_conf_specific
+        
+        # if class is selected
+        if chb_val:
+            selected_categories.append(category)
+            min_confs.append(min_conf)
+            max_confs.append(max_conf)
+            selected_files[category] = []
+
+    # remove old file list if present
+    if prepare_files:
+        if os.path.isfile(file_list_txt):
+            os.remove(file_list_txt)
+
+    # loop though images and list those which pass the criteria
+    img_and_detections_dict = {}
+    with open(recognition_file, "r") as image_recognition_file_content:
+        data = json.load(image_recognition_file_content)
+        label_map = fetch_label_map_from_json(recognition_file)
+        counter = 0
+
+        # check all images...
+        for image in data['images']:
+            image_path = os.path.join(selected_dir, image['file']) # make absolute path
+            annotations = []
+            image_already_added = False
+
+            # check if the image has already been human verified
+            try:
+                human_verified = image['manually_checked']
+            except:
+                human_verified = False
+            
+            # check all detections ...
+            for detection in image['detections']:
+                category_id = detection['category']
+                category = label_map[category_id]
+                conf = detection['conf']
+
+                # ... if they pass any of the criteria
+                for i in range(len(selected_categories)):
+                    if category == selected_categories[i] and conf >= min_confs[i] and conf <= max_confs[i]:
+                        
+                        # this image contains one or more detections which pass
+                        if not image_already_added:
+                            selected_files[selected_categories[i]].append(image_path)
+                            image_already_added = True
+
+                # prepare annotations
+                if prepare_files:
+                    display_annotation = False
+
+                    # if one annotation treshold for all classes is specified
+                    if rad_ann_val == 1 and conf >= ann_min_confs_generic:
+                        display_annotation = True
+                    
+                    # if class-specific annotation tresholds are specified
+                    elif rad_ann_val == 2 and conf >= ann_min_confs_specific[category]: 
+                        display_annotation = True
+
+                    # add this detection to the list
+                    if display_annotation:
+                        im = Image.open(image_path)
+                        width, height = im.size
+                        left = int(round(detection['bbox'][0] * width)) # xmin
+                        top = int(round(detection['bbox'][1] * height)) # ymin 
+                        right = int(round(detection['bbox'][2] * width)) + left # width
+                        bottom = int(round(detection['bbox'][3] * height)) + top # height
+                        list = [left, top, None, None, right, bottom, None, category]
+                        string = ','.join(map(str, list))
+                        annotations.append(string)
+                                
+            # create pascal voc annotation file for this image
+            if prepare_files:
+                img_and_detections_dict[image_path] = {"annotations": annotations, "human_verified": human_verified}
+
+    # update count widget
+    total_imgs = 0
+    class_index = 1
+    for category, files in selected_files.items():
+        label_map = fetch_label_map_from_json(recognition_file)
+        classes_list = [v for k, v in label_map.items()]
+        row = classes_list.index(category) + 2
+        frame = selection_dict[row]['frame']
+        lbl_n_img = selection_dict[row]['lbl_n_img']
+        chb_var = selection_dict[row]['chb_var'].get()
+        rad_var = selection_dict[row]['rad_var'].get()
+
+        # if user specified a precentage of total images
+        if chb_var and rad_var == 2:
+
+            # check if entry is valid
+            ent_per_var = selection_dict[row]['ent_per_var'].get()
+            try:
+                ent_per_var = float(ent_per_var)
+            except:
+                invalid_value_warning([f"percentage of images for class '{category}'", f"porcentaje de imágenes para la clase '{category}'"][lang])
+                return
+            if ent_per_var == "" or ent_per_var < 0 or ent_per_var > 100:
+                invalid_value_warning([f"percentage of images for class '{category}'", f"porcentaje de imágenes para la clase '{category}'"][lang])
+                return
+            
+            # randomly select percentage of images
+            total_n = len(files)
+            n_selected = int(total_n * (ent_per_var / 100))
+            random.shuffle(files)
+            files = files[:n_selected]
+
+        # user specified a max number of images
+        elif chb_var and rad_var == 3: 
+
+            # check if entry is valid
+            ent_amt_var = selection_dict[row]['ent_amt_var'].get()
+            try:
+                ent_amt_var = float(ent_amt_var)
+            except:
+                invalid_value_warning([f"number of images for class '{category}'", f"número de imágenes para la clase '{category}'"][lang])
+                return
+            if ent_amt_var == "":
+                invalid_value_warning([f"number of images for class '{category}'", f"número de imágenes para la clase '{category}'"][lang])
+                return
+
+            # randomly select specified number of images
+            total_n = len(files)
+            n_selected = int(ent_amt_var)
+            random.shuffle(files)
+            files = files[:n_selected]
+
+        # update label text 
+        n_imgs = len(files)
+        lbl_n_img.config(text = str(n_imgs))
+        total_imgs += n_imgs
+
+        # loop through the ultimately selected images and create files
+        if prepare_files and len(files) > 0:
+
+            # open patience window
+            patience_dialog = PatienceDialog(total = n_imgs, text = [f"Preparing files for {category}...", f"Preparando archivos para {category}..."][lang])
+            patience_dialog.open()
+            current = 1
+            
+            # human sort images per class
+            def atoi(text):
+                return int(text) if text.isdigit() else text
+            def natural_keys(text):
+                return [atoi(c) for c in re.split('(\d+)', text)]
+            files.sort(key=natural_keys)
+
+            for img in files:
+
+                # update patience window
+                patience_dialog.update_progress(current)
+                current += 1
+
+                # create text file with images
+                with open(file_list_txt, 'a') as f:
+                    f.write(f"{os.path.normpath(img)}\n")
+                    f.close()
+                
+                # # list annotaions 
+                annotation_path = return_xml_path(img)
+
+                # create xml file if not already present
+                if not os.path.isfile(annotation_path):
+                    create_pascal_voc_annotation(img, img_and_detections_dict[img]['annotations'], img_and_detections_dict[img]['human_verified'])
+
+            # close patience window
+            patience_dialog.close()      
+    
+
+    # update total number of images
+    lbl_n_total_imgs.config(text = [f"TOTAL: {total_imgs}", f"TOTAL: {total_imgs}"][lang])
+    
+    if prepare_files:
+
+        # create file with classes
+        with open(class_list_txt, 'a') as f:
+            for k, v in label_map.items():
+                f.write(f"{v}\n")
+            f.close()
+
+        # write arguments to file in case user quits and continues later
+        annotation_arguments = {"recognition_file" : recognition_file,
+                                "class_list_txt" : class_list_txt,
+                                "file_list_txt" : file_list_txt,
+                                "label_map" : label_map,
+                                "img_and_detections_dict" : img_and_detections_dict}
+
+        annotation_arguments_pkl = os.path.join(selected_dir, 'temp-folder', 'annotation_information.pkl')
+        with open(annotation_arguments_pkl, 'wb') as fp:
+            pickle.dump(annotation_arguments, fp)
+            fp.close()
+
+        # start human in the loop process
+        try:
+            open_annotation_windows(recognition_file = recognition_file,
+                                    class_list_txt = class_list_txt,
+                                    file_list_txt = file_list_txt,
+                                    label_map = label_map)
+        except Exception as error:
+            # log error
+            print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+            
+            # show error
+            mb.showerror(title=error_txt[lang],
+                        message=["An error has occurred", "Ha ocurrido un error"][lang] + " (EcoAssist v" + version + "): '" + str(error) + "'.",
+                        detail=traceback.format_exc())
+
+    
+    # change json paths back, if converted earlier
+    if json_paths_converted:
+        make_json_absolute(recognition_file)
+
+# open the human-in-the-loop settings window
+def open_hitl_settings_window():
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # set global vars
+    global selection_dict
+    global rad_ann_var
+    global hitl_ann_selection_frame
+    global hitl_settings_canvas
+    global hitl_settings_window
+    global lbl_n_total_imgs
+
+    # init vars
+    selected_dir = var_choose_folder.get()
+    recognition_file = os.path.join(selected_dir, 'image_recognition_file.json')
+
+    # init window
+    hitl_settings_window = Toplevel(root)
+    hitl_settings_window.title(["Verification selection settings", "Configuración de selección de verificación"][lang])
+    hitl_settings_window.geometry()
+
+    # set scrollable frame
+    hitl_settings_scroll_frame = Frame(hitl_settings_window)
+    hitl_settings_scroll_frame.pack(fill=BOTH, expand=1)
+
+    # set canvas
+    hitl_settings_canvas = Canvas(hitl_settings_scroll_frame)
+    hitl_settings_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+    # set scrollbar
+    hitl_settings_scrollbar = tk.Scrollbar(hitl_settings_scroll_frame, orient=VERTICAL, command=hitl_settings_canvas.yview)
+    hitl_settings_scrollbar.pack(side=RIGHT, fill=Y)
+
+    # enable scroll on mousewheel
+    def on_mousewheel(event):
+        if os.name == 'nt':
+            hitl_settings_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        else:
+            hitl_settings_canvas.yview_scroll(int(-1 * (event.delta / 2)), 'units')
+
+    # configure canvas and bind scroll events
+    hitl_settings_canvas.configure(yscrollcommand=hitl_settings_scrollbar.set)
+    hitl_settings_canvas.bind('<Configure>', lambda e: hitl_settings_canvas.configure(scrollregion=hitl_settings_canvas.bbox("all")))
+    hitl_settings_canvas.bind_all("<MouseWheel>", on_mousewheel)
+    hitl_settings_canvas.bind_all("<Button-4>", on_mousewheel) 
+    hitl_settings_canvas.bind_all("<Button-5>", on_mousewheel)
+
+    # set labelframe to fill with widgets
+    hitl_settings_main_frame = LabelFrame(hitl_settings_canvas)
+
+    # img selection frame
+    hitl_img_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Image selection criteria ", " Criterios de selección de imágenes "][lang],
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', labelanchor = 'n')
+    hitl_img_selection_frame.configure(font=(text_font, 15, "bold"))
+    hitl_img_selection_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
+    hitl_img_selection_frame.columnconfigure(0, weight=1, minsize=50)
+    hitl_img_selection_frame.columnconfigure(1, weight=1, minsize=200)
+    hitl_img_selection_frame.columnconfigure(2, weight=1, minsize=200)
+    hitl_img_selection_frame.columnconfigure(3, weight=1, minsize=200)
+    hitl_img_selection_frame.columnconfigure(4, weight=1, minsize=200)
+
+    # img explanation
+    text_hitl_img_selection_explanation = Text(master=hitl_img_selection_frame, wrap=WORD, width=1, height=12 * explanation_text_box_height_factor) 
+    text_hitl_img_selection_explanation.grid(column=0, row=0, columnspan=5, padx=5, pady=5, sticky='ew')
+    text_hitl_img_selection_explanation.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=10, lmargin2=10)
+    text_hitl_img_selection_explanation.insert(END, ["Here, you can specify which images you wish to review. If a detection aligns with the chosen criteria, the image will be "
+                                                    "chosen for the verification process. In the review process, you’ll need to make sure all detections in the image are correct. "
+                                                    "You have the option to select a subset of your images based on specific classes, confidence ranges, and selection methods. For "
+                                                    "instance, the default settings will enable you to verify images with detections that the model is medium-sure about (with"
+                                                    " confidences between 0.2 and 0.8). This means that you don’t review high-confidence detections of more than 0.8 confidence and "
+                                                    "avoid wasting time on low-confidence detections of less than 0.2. Feel free to adjust these settings to suit your data. To "
+                                                    "determine the number of images that will require verification based on the selected criteria, press the “Update counts” button "
+                                                    "below. If required, you can specify a selection method that will randomly choose a subset based on a percentage or an absolute "
+                                                    "number. Verification will adjust the results in the JSON file. This means that you can continue to use EcoAssist with verified "
+                                                    "results and post-process as usual.", "Aquí puede especificar qué imágenes desea revisar. Si una detección se alinea con los "
+                                                    "criterios elegidos, la imagen será elegida para el proceso de verificación. Tiene la opción de seleccionar un subconjunto de "
+                                                    "sus imágenes según clases específicas, rangos de confianza y métodos de selección. Por ejemplo, la configuración"
+                                                    " predeterminada le permitirá verificar imágenes con detecciones de las que el modelo está medio seguro "
+                                                    "(con confianzas entre 0,2 y 0,8). Esto significa que no revisa las detecciones de alta confianza con "
+                                                    "más de 0,8 de confianza y evita perder tiempo en detecciones de baja confianza de menos de 0,2. Siéntase"
+                                                    " libre de ajustar estas configuraciones para adaptarlas a sus datos. Para determinar la cantidad de imágenes "
+                                                    "que requerirán verificación según los criterios seleccionados, presione el botón 'Actualizar recuentos' a continuación. Si es "
+                                                    "necesario, puede especificar un método de selección que elegirá aleatoriamente un subconjunto en función de un porcentaje o un "
+                                                    "número absoluto. La verificación ajustará los resultados en el archivo JSON. Esto significa que puede continuar usando EcoAssist"
+                                                    " con resultados verificados y realizar el posprocesamiento como de costumbre."][lang])
+    text_hitl_img_selection_explanation.tag_add('explanation', '1.0', '1.end')
+
+    # img table headers
+    ttk.Label(master=hitl_img_selection_frame, text="").grid(column=0, row=1)
+    ttk.Label(master=hitl_img_selection_frame, text="Class", font=f'{text_font} 13 bold').grid(column=1, row=1)
+    ttk.Label(master=hitl_img_selection_frame, text="Confidence range", font=f'{text_font} 13 bold').grid(column=2, row=1)
+    ttk.Label(master=hitl_img_selection_frame, text="Selection method", font=f'{text_font} 13 bold').grid(column=3, row=1)
+    ttk.Label(master=hitl_img_selection_frame, text="Number of images", font=f'{text_font} 13 bold').grid(column=4, row=1)
+
+    # ann selection frame
+    hitl_ann_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Annotation selection criteria ", " Criterios de selección de anotaciones "][lang],
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', labelanchor = 'n')
+    hitl_ann_selection_frame.configure(font=(text_font, 15, "bold"))
+    hitl_ann_selection_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
+    hitl_ann_selection_frame.columnconfigure(0, weight=1, minsize=50)
+    hitl_ann_selection_frame.columnconfigure(1, weight=1, minsize=200)
+    hitl_ann_selection_frame.columnconfigure(2, weight=1, minsize=200)
+    hitl_ann_selection_frame.columnconfigure(3, weight=1, minsize=200)
+    hitl_ann_selection_frame.columnconfigure(4, weight=1, minsize=200)
+
+    # ann explanation
+    text_hitl_ann_selection_explanation = Text(master=hitl_ann_selection_frame, wrap=WORD, width=1, height=5 * explanation_text_box_height_factor) 
+    text_hitl_ann_selection_explanation.grid(column=0, row=0, columnspan=5, padx=5, pady=5, sticky='ew')
+    text_hitl_ann_selection_explanation.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=10, lmargin2=10)
+    text_hitl_ann_selection_explanation.insert(END, ["In the previous step, you selected which images to verify. In this frame, you can specify which annotations to display "
+                                              "on these images. During the verification process, all instances of all classes need to be labeled. That is why you want to display "
+                                              "all annotations above a reasonable confidence threshold. You can select generic or class-specific confidence thresholds. If you are"
+                                              " uncertain, just stick with the default value. A threshold of 0.2 is probably a conservative threshold for most projects.",
+                                              "En el paso anterior, seleccionó qué imágenes verificar. En este marco, puede especificar qué anotaciones mostrar en estas imágenes."
+                                              " Durante el proceso de verificación, se deben etiquetar todas las instancias de todas las clases. Es por eso que desea mostrar todas"
+                                              " las anotaciones por encima de un umbral de confianza razonable. Puede seleccionar umbrales de confianza genéricos o específicos de"
+                                              " clase. Si no está seguro, siga con el valor predeterminado. Un umbral de 0,2 es un umbral conservador para la mayoría"
+                                              " de los proyectos."][lang])
+    text_hitl_ann_selection_explanation.tag_add('explanation', '1.0', '1.end')
+
+    # ann same thresh
+    rad_ann_var = IntVar()
+    rad_ann_var.set(1)
+    rad_ann_same = Radiobutton(hitl_ann_selection_frame, text=["Same annotation confidence threshold for all classes",
+                                                               "Mismo umbral de confianza para todas las clases"][lang],
+                                variable=rad_ann_var, value=1, command=lambda: toggle_hitl_ann_selection(rad_ann_var, hitl_ann_selection_frame))
+    rad_ann_same.grid(row=1, column=1, columnspan=2, sticky='w')
+    frame_ann_same = LabelFrame(hitl_ann_selection_frame, text="", pady=2, padx=5, relief=RAISED)
+    frame_ann_same.grid(column=3, row=1, columnspan=2, sticky='ew')
+    frame_ann_same.columnconfigure(0, weight=1, minsize=200)
+    frame_ann_same.columnconfigure(1, weight=1, minsize=200)
+    lbl_ann_same = ttk.Label(master=frame_ann_same, text=["All classes", "Todas las clases"][lang])
+    lbl_ann_same.grid(row=0, column=0, sticky='w')
+    scl_ann_var_generic = DoubleVar()
+    scl_ann_var_generic.set(0.2)
+    scl_ann = Scale(frame_ann_same, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=scl_ann_var_generic, width=10, length=1, showvalue=0)
+    scl_ann.grid(row=0, column=1, sticky='we')
+    dsp_scl_ann = Label(frame_ann_same, textvariable=scl_ann_var_generic)
+    dsp_scl_ann.grid(row=0, column=0, sticky='e', padx=5)
+
+    # ann specific thresh
+    rad_ann_gene = Radiobutton(hitl_ann_selection_frame, text=["Class-specific annotation confidence thresholds",
+                                                               "Umbrales de confianza específicas de clase"][lang],
+                                variable=rad_ann_var, value=2, command=lambda: toggle_hitl_ann_selection(rad_ann_var, hitl_ann_selection_frame))
+    rad_ann_gene.grid(row=2, column=1, columnspan=2, sticky='w')
+
+    # create widgets and vars for each class
+    label_map = fetch_label_map_from_json(recognition_file)
+    selection_dict = {}
+    for i, [k, v] in enumerate(label_map.items()):
+        
+        # image selection frame
+        row = i + 2
+        frame = LabelFrame(hitl_img_selection_frame, text="", pady=2, padx=5, relief=RAISED)
+        frame.grid(column=0, row=1, columnspan=2, sticky='ew')
+        frame.columnconfigure(0, weight=1, minsize=50)
+        frame.columnconfigure(1, weight=1, minsize=200)
+        frame.columnconfigure(2, weight=1, minsize=200)
+        frame.columnconfigure(3, weight=1, minsize=200)
+        frame.columnconfigure(4, weight=1, minsize=200)
+        chb_var = BooleanVar()
+        chb_var.set(True)
+        chb = tk.Checkbutton(frame, variable=chb_var, command=lambda e=row:enable_selection_widgets(e))
+        lbl_class = ttk.Label(master=frame, text=v, state=NORMAL)
+        min_conf = DoubleVar(value = 0.2)
+        max_conf = DoubleVar(value = 0.8)
+        rsl = RangeSliderH(frame, [min_conf, max_conf], padX=11, digit_precision='.2f', bgColor = '#ececec', Width = 180)
+        rad_var = IntVar()
+        rad_var.set(1)
+        rad_all = Radiobutton(frame, text=["All images in range", "Todo dentro del rango"][lang],
+                                variable=rad_var, value=1, state=NORMAL, command=lambda e=row:enable_amt_per_ent(e))
+        rad_per = Radiobutton(frame, text=["Subset percentage", "Subconjunto %"][lang],
+                                variable=rad_var, value=2, state=NORMAL, command=lambda e=row:enable_amt_per_ent(e))
+        rad_amt = Radiobutton(frame, text=["Subset number", "Subconjunto no."][lang],
+                                variable=rad_var, value=3, state=NORMAL, command=lambda e=row:enable_amt_per_ent(e))
+        ent_per_var = StringVar()
+        ent_per = tk.Entry(frame, textvariable=ent_per_var, width=4, state=DISABLED)
+        ent_amt_var = StringVar()
+        ent_amt = tk.Entry(frame, textvariable=ent_amt_var, width=4, state=DISABLED)
+        lbl_n_img = ttk.Label(master=frame, text="0", state=NORMAL)
+
+        # annotation selection frame
+        frame_ann = LabelFrame(hitl_ann_selection_frame, text="", pady=2, padx=5, relief=SUNKEN)
+        frame_ann.grid(column=3, row=row, columnspan=2, sticky='ew')
+        frame_ann.columnconfigure(0, weight=1, minsize=200)
+        frame_ann.columnconfigure(1, weight=1, minsize=200)
+        lbl_ann_gene = ttk.Label(master=frame_ann, text=v, state = DISABLED)
+        lbl_ann_gene.grid(row=0, column=0, sticky='w')
+        scl_ann_var_specific = DoubleVar()
+        scl_ann_var_specific.set(0.20)
+        scl_ann_gene = Scale(frame_ann, from_=0, to=1, resolution=0.01, orient=HORIZONTAL, variable=scl_ann_var_specific, width=10, length=1, showvalue=0, state = DISABLED)
+        scl_ann_gene.grid(row=0, column=1, sticky='we')
+        dsp_scl_ann_gene = Label(frame_ann, textvariable=scl_ann_var_specific, state = DISABLED)
+        dsp_scl_ann_gene.grid(row=0, column=0, sticky='e', padx=5)
+        
+        # store info in a dictionary 
+        item = {'row': row,
+                'label_map_id': k,
+                'class': v,
+                'frame': frame,
+                'min_conf_var': min_conf,
+                'max_conf_var': max_conf,
+                'chb_var': chb_var,
+                'lbl_class': lbl_class,
+                'range_slider_widget': rsl,
+                'lbl_n_img': lbl_n_img,
+                'rad_all': rad_all,
+                'rad_per': rad_per,
+                'rad_amt': rad_amt,
+                'rad_var': rad_var,
+                'ent_per_var': ent_per_var,
+                'ent_per': ent_per,
+                'ent_amt_var': ent_amt_var,
+                'ent_amt': ent_amt,
+                'scl_ann_var_specific': scl_ann_var_specific,
+                'scl_ann_var_generic': scl_ann_var_generic}
+        selection_dict[row] = item
+
+        # place widgets
+        frame.grid(row = row, column = 0, columnspan = 5)
+        chb.grid(row = 1, column = 0)
+        lbl_class.grid(row = 1, column = 1)
+        rsl.grid(row = 0, rowspan= 3, column = 2)
+        rad_all.grid(row=0, column=3, sticky='w')
+        rad_per.grid(row=1, column=3, sticky='w')
+        ent_per.grid(row=1, column=3, sticky='e')
+        rad_amt.grid(row=2, column=3, sticky='w')
+        ent_amt.grid(row=2, column=3, sticky='e')
+        lbl_n_img.grid(row = 1, column = 4)
+        row_for_total_imgs_frame = row + 1
+
+        # set row minsize
+        set_minsize_rows(frame)
+
+        # update window
+        hitl_settings_window.update_idletasks()
+
+    # set minsize for rows
+    row_count = hitl_img_selection_frame.grid_size()[1]
+    for row in range(row_count):
+        hitl_img_selection_frame.grid_rowconfigure(row, minsize=minsize_rows)
+
+    # add row with total number of images to review
+    total_imgs_frame = LabelFrame(hitl_img_selection_frame, text="", pady=2, padx=5, relief=RAISED)
+    total_imgs_frame.columnconfigure(0, weight=1, minsize=50)
+    total_imgs_frame.columnconfigure(1, weight=1, minsize=200)
+    total_imgs_frame.columnconfigure(2, weight=1, minsize=200)
+    total_imgs_frame.columnconfigure(3, weight=1, minsize=200)
+    total_imgs_frame.columnconfigure(4, weight=1, minsize=200)
+    total_imgs_frame.grid(row = 5, column = 0, columnspan = 5)
+    lbl_n_total_imgs = ttk.Label(master=total_imgs_frame, text="TOTAL: 0", state=NORMAL)
+    lbl_n_total_imgs.grid(row = 1, column = 4)
+
+    # button frame
+    hitl_test_frame = LabelFrame(hitl_settings_main_frame, text=[" Actions ", " Acciones "][lang],
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', labelanchor = 'n')
+    hitl_test_frame.configure(font=(text_font, 15, "bold"))
+    hitl_test_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
+    hitl_test_frame.columnconfigure(0, weight=1, minsize=115)
+    hitl_test_frame.columnconfigure(1, weight=1, minsize=115)
+    hitl_test_frame.columnconfigure(2, weight=1, minsize=115)
+
+    # shorten texts for linux
+    if sys.platform == "linux" or sys.platform == "linux2":
+        btn_hitl_update_txt = ["Update counts", "La actualización cuenta"][lang]
+        btn_hitl_show_txt = ["Show / hide annotation", "Mostrar / ocultar anotaciones"][lang]
+        btn_hitl_start_txt = ["Start review process", "Iniciar proceso de revisión"][lang]
+    else:
+        btn_hitl_update_txt = ["Update counts", "La actualización cuenta"][lang]
+        btn_hitl_show_txt = ["Show / hide annotation selection criteria", "Mostrar / ocultar criterios de anotaciones"][lang]
+        btn_hitl_start_txt = ["Start review process with selected criteria", "Iniciar proceso de revisión"][lang]
+
+    # buttons
+    btn_hitl_update = Button(master=hitl_test_frame, text=btn_hitl_update_txt, width=1, command=lambda: select_detections(selection_dict = selection_dict, prepare_files = False))
+    btn_hitl_update.grid(row=0, column=0, rowspan=1, sticky='nesw', padx=5)
+
+    btn_hitl_show = Button(master=hitl_test_frame, text=btn_hitl_show_txt, width=1, command = toggle_hitl_ann_selection_frame, font=(text_font, second_level_frame_font_size))
+    btn_hitl_show.grid(row=0, column=1, rowspan=1, sticky='nesw', padx=5)
+
+    btn_hitl_start = Button(master=hitl_test_frame, text=btn_hitl_start_txt, width=1, command=lambda: select_detections(selection_dict = selection_dict, prepare_files = True), font=(text_font, second_level_frame_font_size))
+    btn_hitl_start.grid(row=0, column=2, rowspan=1, sticky='nesw', padx=5)
+    
+    # create scrollable canvas window
+    hitl_settings_canvas.create_window((0, 0), window=hitl_settings_main_frame, anchor="nw")
+
+    # hide annotation selection frame
+    toggle_hitl_ann_selection_frame(cmd = "hide")
+
+    # update counts after the window is created
+    select_detections(selection_dict = selection_dict, prepare_files = False)
+
+    # adjust window size to widgets
+    w = hitl_settings_main_frame.winfo_width() + 30
+    h = hitl_settings_main_frame.winfo_height() + 10
+    hitl_settings_window.geometry(f'{w}x{h}')
+
 ############################################
 ############# HELPER FUNCTIONS #############
 ############################################
+
+# show or hide widgets in the human-in-the-loop image selection frame
+def enable_selection_widgets(row):
+    global selection_dict
+    frame = selection_dict[row]['frame']
+    chb_var = selection_dict[row]['chb_var'].get()
+    lbl_class = selection_dict[row]['lbl_class']
+    rsl = selection_dict[row]['range_slider_widget']
+    rad_all = selection_dict[row]['rad_all']
+    rad_per = selection_dict[row]['rad_per']
+    rad_amt = selection_dict[row]['rad_amt']
+    ent_per = selection_dict[row]['ent_per']
+    ent_amt = selection_dict[row]['ent_amt']
+    lbl_n_img = selection_dict[row]['lbl_n_img']
+    if chb_var:
+        frame.config(relief = RAISED)
+        lbl_class.config(state = NORMAL)
+        rsl.grid(row = 0, rowspan= 3, column = 2)
+        rad_all.config(state = NORMAL)
+        rad_per.config(state = NORMAL)
+        rad_amt.config(state = NORMAL)
+        lbl_n_img.config(state = NORMAL)
+    else:
+        frame.config(relief = SUNKEN)
+        lbl_class.config(state = DISABLED)
+        rsl.grid_remove()
+        rad_all.config(state = DISABLED)
+        rad_per.config(state = DISABLED)
+        rad_amt.config(state = DISABLED)
+        lbl_n_img.config(state = DISABLED)
+
+# update counts of the subset functions of the human-in-the-loop image selection frame
+def enable_amt_per_ent(row):
+    global selection_dict
+    rad_var = selection_dict[row]['rad_var'].get()
+    ent_per = selection_dict[row]['ent_per']
+    ent_amt = selection_dict[row]['ent_amt']
+    if rad_var == 1:
+        ent_per.config(state = DISABLED)
+        ent_amt.config(state = DISABLED)      
+    if rad_var == 2:
+        ent_per.config(state = NORMAL)
+        ent_amt.config(state = DISABLED)
+    if rad_var == 3:
+        ent_per.config(state = DISABLED)
+        ent_amt.config(state = NORMAL)
+
+# enable or disable the options in the human-in-the-loop annotation selection frame
+def toggle_hitl_ann_selection(rad_ann_var, hitl_ann_selection_frame):
+    rad_ann_var = rad_ann_var.get()    
+    cols, rows = hitl_ann_selection_frame.grid_size()
+    if rad_ann_var == 1:
+        enable_ann_frame(1, hitl_ann_selection_frame)
+        for row in range(2, rows):
+            disable_ann_frame(row, hitl_ann_selection_frame)
+    elif rad_ann_var == 2:
+        disable_ann_frame(1, hitl_ann_selection_frame)
+        for row in range(2, rows):
+            enable_ann_frame(row, hitl_ann_selection_frame)
+
+# disable annotation frame
+def disable_ann_frame(row, hitl_ann_selection_frame):
+    labelframe = hitl_ann_selection_frame.grid_slaves(row=row, column=3)[0]
+    labelframe.config(relief=SUNKEN)
+    for widget in labelframe.winfo_children():
+        widget.config(state = DISABLED)
+
+# enable annotation frame
+def enable_ann_frame(row, hitl_ann_selection_frame):
+    labelframe = hitl_ann_selection_frame.grid_slaves(row=row, column=3)[0]
+    labelframe.config(relief=RAISED)
+    for widget in labelframe.winfo_children():
+        widget.config(state = NORMAL)
+
+# show hide the annotation selection frame in the human-in-the-loop settings window
+def toggle_hitl_ann_selection_frame(cmd = None):
+    is_vis = hitl_ann_selection_frame.grid_info()
+    if cmd == "hide":
+        hitl_ann_selection_frame.grid_remove()
+    else:
+        if is_vis != {}:
+            hitl_ann_selection_frame.grid_remove()
+        else:
+            hitl_ann_selection_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
+    hitl_settings_window.update()
+    hitl_settings_canvas.configure(scrollregion=hitl_settings_canvas.bbox("all"))
+
+# helper function to correctly indent pascal voc annotation files
+def indent(elem, level=0):
+    i = "\n" + level * "  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level + 1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+# convert pascal bbox to yolo
+def convert_bbox_pascal_to_yolo(size, box):
+    dw = 1./(size[0])
+    dh = 1./(size[1])
+    x = (box[0] + box[1])/2.0 - 1
+    y = (box[2] + box[3])/2.0 - 1 
+    w = box[1] - box[0]
+    h = box[3] - box[2]
+    x = x*dw
+    w = w*dw
+    y = y*dh
+    h = h*dh
+    return (x,y,w,h)
+
+# return xml path with temp-folder squeezed in
+def return_xml_path(img_path):
+    head_path = var_choose_folder.get()
+    tail_path = os.path.splitext(os.path.relpath(img_path, head_path))
+    temp_xml_path = os.path.join(head_path, "temp-folder", tail_path[0] + ".xml")
+    return os.path.normpath(temp_xml_path)
+
+# temporary file which labelImg writes to notify EcoAssist that it should convert xml to coco
+class TemporaryTextFile:
+    def __init__(self, path, content=None):
+        self.path = path
+        self.content = content
+
+    def create(self):
+        if not os.path.exists(self.path):
+            with open(self.path, 'w+') as file:
+                if self.content:
+                    file.write(self.content)
+
+    def delete(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
+
+    def exists(self):
+        return os.path.exists(self.path)
+
+# simple window to show progressbar
+class PatienceDialog:
+    def __init__(self, total, text):
+        self.root = tk.Tk()
+        self.root.title("Have patience")
+        self.total = total
+        self.text = text
+
+        self.label = tk.Label(self.root, text=text)
+        self.label.pack(pady=10)
+
+        self.progress = ttk.Progressbar(self.root, mode='determinate', length=200)
+        self.progress.pack(pady=10, padx = 10)
+
+        self.root.withdraw()
+
+    def open(self):
+        self.root.update()
+        self.root.deiconify()
+
+    def update_progress(self, current, percentage = False):
+        self.progress['value'] = (current / self.total) * 100
+        if percentage:
+            percentage_value = round((current/self.total)*100)
+            self.label.config(text = f"{self.text}\n{percentage_value}%")
+        else:
+            self.label.config(text = f"{self.text}\n{current} of {self.total}")
+        self.root.update()
+
+    def close(self):
+        self.root.withdraw()
+
+# class for simple question with buttons
+class TextButtonWindow:
+    def __init__(self, title, text, buttons):
+        self.root = tk.Tk()
+        self.root.title(title)
+        
+        self.text_label = tk.Label(self.root, text=text)
+        self.text_label.pack(padx=10, pady=10)
+        
+        self.selected_button = None
+        self.button_frame = tk.Frame(self.root)
+        self.button_frame.pack(padx=10, pady=10)
+        
+        for button_text in buttons:
+            button = tk.Button(self.button_frame, text=button_text, command=lambda btn=button_text: self._button_click(btn))
+            button.pack(side=tk.LEFT, padx=5)
+        
+    def _button_click(self, button_text):
+        self.selected_button = button_text
+        self.root.quit()
+        
+    def open(self):
+        self.root.mainloop()
+        
+    def close(self):
+        self.root.destroy()
+        
+    def run(self):
+        self.open()
+        self.root.destroy()
+        return self.selected_button
+
+# delete temp folder
+def delete_temp_folder(file_list_txt):
+    temp_folder = os.path.dirname(file_list_txt)
+    if os.path.isdir(temp_folder):
+        shutil.rmtree(temp_folder)
 
 # set button states to training
 def set_buttons_to_training():
@@ -1405,6 +2885,35 @@ def append_to_json(path_to_json, object_to_be_appended):
     with open(path_to_json, "w") as json_file:
         json.dump(data, json_file, indent=1)
 
+# change human-in-the-loop prgress variable
+def change_hitl_var_in_json(path_to_json, status):
+    # open
+    with open(path_to_json, "r") as json_file:
+        data = json.load(json_file)
+    
+    # adjust
+    data['info']["ecoassist_metadata"]["hitl_status"] = status
+
+    # write
+    with open(path_to_json, "w") as json_file:
+        json.dump(data, json_file, indent=1)
+
+# get human-in-the-loop prgress variable
+def get_hitl_var_in_json(path_to_json):
+    # open
+    with open(path_to_json, "r") as json_file:
+        data = json.load(json_file)
+        ecoassist_metadata = data['info']["ecoassist_metadata"]
+    
+    # get status
+    if "hitl_status" in ecoassist_metadata:
+        status = ecoassist_metadata["hitl_status"]
+    else:
+        status = "never-started"
+
+    # return
+    return status
+
 # show warning for video post-processing
 def check_json_presence_and_warn_user(infinitive, continuous, noun):
     # check json presence
@@ -1446,15 +2955,18 @@ conf_dirs = {0.0 : "conf_0.0",
              1.0 : "conf_0.9-1.0"}
 
 # move files into subdirectories
-def move_files(file, detection_type, var_file_placement, max_detection_conf, var_sep_conf, dst_root, src_dir):
+def move_files(file, detection_type, var_file_placement, max_detection_conf, var_sep_conf, dst_root, src_dir, manually_checked):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
     # squeeze in extra dir if sorting on confidence
     if var_sep_conf and detection_type != "empty":
         global conf_dirs
-        ceiled_confidence = math.ceil(max_detection_conf * 10) / 10.0
-        confidence_dir = conf_dirs[ceiled_confidence]
+        if manually_checked:
+            confidence_dir = "verified"
+        else:
+            ceiled_confidence = math.ceil(max_detection_conf * 10) / 10.0
+            confidence_dir = conf_dirs[ceiled_confidence]
         new_file = os.path.join(detection_type, confidence_dir, file)
     else:
         new_file = os.path.join(detection_type, file)
@@ -1475,7 +2987,7 @@ def move_files(file, detection_type, var_file_placement, max_detection_conf, var
     # return new relative file path
     return(new_file)
 
-# indent xml files so it is human readable (thanks to ade from stack overflow)
+# indent xml files so it is human readable
 def indent(elem, level=0):
     i = "\n" + level * "  "
     if len(elem):
@@ -1587,12 +3099,16 @@ def create_postprocess_lbl(elapsed_time="", time_left="", command=""):
         return ["Done!\n", "¡Hecho!\n"][lang]
 
 # browse directory
-def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky):
+def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky):    
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
     # choose directory
     chosen_dir = filedialog.askdirectory()
+
+    # early exit
+    if chosen_dir in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(chosen_dir):
+        return
 
     # set choice to variable
     var.set(chosen_dir)
@@ -1601,8 +3117,6 @@ def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky)
     dsp_chosen_dir = chosen_dir
     if len(dsp_chosen_dir) > cut_off_length:
         dsp_chosen_dir = "..." + dsp_chosen_dir[0 - cut_off_length + 3:]
-    if var == var_choose_folder:
-        dsp_chosen_dir = "  " + dsp_chosen_dir
     var_short.set(dsp_chosen_dir)
     dsp.grid(column=n_column, row=n_row, sticky=str_sticky)
 
@@ -1647,8 +3161,8 @@ def view_results(frame):
         if os.path.isfile(video_recognition_file):
             open_file_or_folder(video_recognition_file)
     
-    # open destination folder at step 3
-    if frame.cget('text').startswith(f' {step_txt[lang]} 3'):
+    # open destination folder at step 4
+    if frame.cget('text').startswith(f' {step_txt[lang]} 4'):
         open_file_or_folder(var_output_dir.get())
 
 # open file or folder
@@ -1742,12 +3256,12 @@ def set_language(to_lang):
     # update tab texts
     tabControl.tab(deploy_tab, text=deploy_tab_text[lang])
     tabControl.tab(train_tab, text=train_tab_text[lang])
-    tabControl.tab(annotate_tab, text=annotate_tab_text[lang])
     tabControl.tab(help_tab, text=help_tab_text[lang])
     tabControl.tab(about_tab, text=about_tab_text[lang])
 
     # update texts of deploy tab
     fst_step.config(text=" " + fst_step_txt[lang] + " ")
+    lbl_choose_folder.config(text=lbl_choose_folder_txt[lang])
     btn_choose_folder.config(text=browse_txt[lang])
     snd_step.config(text=" " + snd_step_txt[lang] + " ")
     lbl_model.config(text=lbl_model_txt[lang])
@@ -1772,6 +3286,9 @@ def set_language(to_lang):
     update_ent_text(ent_nth_frame, f"{eg_txt[lang]}: 10")
     btn_start_deploy.config(text=btn_start_deploy_txt[lang])
     trd_step.config(text=" " + trd_step_txt[lang] + " ")
+    lbl_hitl_main.config(text=lbl_hitl_main_txt[lang])
+    btn_hitl_main.config(text=["Start", "Iniciar"][lang])
+    fth_step.config(text=" " + fth_step_txt[lang] + " ")
     lbl_output_dir.config(text=lbl_output_dir_txt[lang])
     btn_output_dir.config(text=browse_txt[lang])
     lbl_separate_files.config(text=lbl_separate_files_txt[lang])
@@ -1782,15 +3299,10 @@ def set_language(to_lang):
     lbl_sep_conf.config(text="     " + lbl_sep_conf_txt[lang])
     lbl_vis_files.config(text=lbl_vis_files_txt[lang])
     lbl_crp_files.config(text=lbl_crp_files_txt[lang])
-    lbl_yol_files.config(text=lbl_yol_files_txt[lang])
-    annot_create_frame.config(text=" ↳ " + annot_create_frame_txt[lang] + " ")
-    lbl_uniquify.config(text="     " + lbl_uniquify_txt[lang])
-    lbl_label_placement.config(text="        ↳ " + lbl_label_placement_txt[lang])
-    rad_label_placement_move.config(text=["Copy", "Copiar"][lang])
-    rad_label_placement_copy.config(text=["Move", "Mover"][lang])
     lbl_csv.config(text=lbl_csv_txt[lang])
     lbl_thresh.config(text=lbl_thresh_txt[lang])
     btn_start_postprocess.config(text=btn_start_postprocess_txt[lang])
+
     
     # update texts of train tab
     req_params.config(text=" " + req_params_txt[lang] + " ")
@@ -1834,17 +3346,6 @@ def set_language(to_lang):
     train_output.config(text=" " + train_output_txt[lang] + " ")
     btn_cancel_training.config(text=btn_cancel_training_txt[lang])
 
-    # update texts of annotate tab
-    annotate_text.config(state=NORMAL)
-    annotate_text.delete('1.0', END)
-    write_annotate_tab()
-    annot_frame.config(text=annot_frame_txt[lang])
-    lbl_annot_dir.config(text=lbl_annot_dir_txt[lang])
-    btn_annot_dir.config(text=browse_txt[lang])
-    lbl_annot_classes.config(text=lbl_annot_classes_txt[lang])
-    update_ent_text(ent_annot_classes, f"{eg_txt[lang]}: {example_classes[lang]}")
-    btn_start_annot.config(text=btn_start_annot_txt[lang])
-
     # update texts of help tab
     help_text.config(state=NORMAL)
     help_text.delete('1.0', END)
@@ -1858,6 +3359,8 @@ def set_language(to_lang):
 # update frame states
 def update_frame_states():
     # check dir validity
+    if var_choose_folder.get() in ["", "/", "\\", ".", "~", ":"] or not os.path.isdir(var_choose_folder.get()):
+        return
     if var_choose_folder.get() not in ["", "/", "\\", ".", "~", ":"] and os.path.isdir(var_choose_folder.get()):
         complete_frame(fst_step)
     else:
@@ -1865,7 +3368,8 @@ def update_frame_states():
 
     # check json files
     img_json = False
-    if os.path.isfile(os.path.join(var_choose_folder.get(), "image_recognition_file.json")):
+    path_to_image_json = os.path.join(var_choose_folder.get(), "image_recognition_file.json")
+    if os.path.isfile(path_to_image_json):
         img_json = True
     vid_json = False
     if os.path.isfile(os.path.join(var_choose_folder.get(), "video_recognition_file.json")):
@@ -1874,20 +3378,24 @@ def update_frame_states():
     # check if dir is already processed
     if img_json or vid_json:
         complete_frame(snd_step)
-        enable_frame(trd_step)
+        enable_frame(fth_step)
     else:
         enable_frame(snd_step)
-        disable_frame(trd_step)
+        disable_frame(fth_step)
 
-# show entry box if classes.txt is not yet present
-def grid_annot_classes():
-    classes_txt = os.path.join(var_annot_dir.get(), "classes.txt")
-    if not os.path.isfile(classes_txt):
-        lbl_annot_classes.grid(row=row_annot_classes, sticky='nesw')
-        ent_annot_classes.grid(row=row_annot_classes, column=1, sticky='nesw', padx=5)
+    # check hitl status
+    if img_json:
+        status = get_hitl_var_in_json(path_to_image_json)
+        if status == "never-started":
+            enable_frame(trd_step)
+            btn_hitl_main.config(text = ["Start", "Iniciar"][lang])
+        elif status == "in-progress":
+            enable_frame(trd_step)
+            btn_hitl_main.config(text = ["Continue", "Continuar"][lang])
+        elif status == "done":
+            complete_frame(trd_step)
     else:
-        lbl_annot_classes.grid_remove()
-        ent_annot_classes.grid_remove()
+        disable_frame(trd_step)
 
 # set hyperparameter file variable based on user selection
 def set_hyper_file(self):
@@ -2296,16 +3804,6 @@ def toggle_sep_frame():
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
 
-# toggle annotation creation subframe
-def toggle_annot_create_frame():
-    if var_yol_files.get():
-        enable_widgets(annot_create_frame)
-        annot_create_frame.configure(fg='black')
-        toggle_label_placement()
-    else:
-        disable_widgets(annot_create_frame)
-        annot_create_frame.configure(fg='grey80')
-
 # toggle image subframe
 def toggle_img_frame():
     if var_process_img.get():
@@ -2330,68 +3828,87 @@ def toggle_vid_frame():
 def complete_frame(frame):
     global check_mark_one_row
     global check_mark_two_rows
+
+    # check which frame 
+    any_step = frame.cget('text').startswith(f' {step_txt[lang]}')
+    fst_step = frame.cget('text').startswith(f' {step_txt[lang]} 1')
+    snd_step = frame.cget('text').startswith(f' {step_txt[lang]} 2')
+    trd_step = frame.cget('text').startswith(f' {step_txt[lang]} 3')
+    fth_step = frame.cget('text').startswith(f' {step_txt[lang]} 4')
+
     # adjust frames
     frame.configure(relief = 'groove')
-    if frame.cget('text').startswith(f' {step_txt[lang]}'):
-        # all step frames
+    if any_step:
         frame.configure(fg='green3')
-    if frame.cget('text').startswith(f' {step_txt[lang]} 2'):
-        # snd_step
+    if snd_step:
         img_frame.configure(relief = 'groove')
         vid_frame.configure(relief = 'groove')
-    if frame.cget('text').startswith(f' {step_txt[lang]} 1'):
-        # fst_step
-        dsp_choose_folder.config(image=check_mark_one_row, compound='left')
-        btn_choose_folder.config(text=f"{change_folder_txt[lang]}?")
+
+    if trd_step or fst_step:
+        # add check mark
+        lbl_check_mark = Label(frame, image=check_mark_one_row)
+        lbl_check_mark.image = check_mark_one_row
+        lbl_check_mark.grid(row=0, column=0, rowspan=15, columnspan=2, sticky='nesw')
+        if trd_step:
+            btn_hitl_main.config(text=["New session?", "¿Nueva sesión?"][lang], state = NORMAL)
+            btn_hitl_main.lift()
+        if fst_step:
+            btn_choose_folder.config(text=f"{change_folder_txt[lang]}?", state = NORMAL)
+            btn_choose_folder.lift()
+            dsp_choose_folder.lift()
+    
     else:
         # the rest
-        if not frame.cget('text').startswith(f' {step_txt[lang]}'):
-            # sub frames of trd_step only
+        if not any_step:
+            # sub frames of fth_step only
             frame.configure(fg='green3')
+
         # add check mark
         lbl_check_mark = Label(frame, image=check_mark_two_rows)
         lbl_check_mark.image = check_mark_two_rows
         lbl_check_mark.grid(row=0, column=0, rowspan=15, columnspan=2, sticky='nesw')
+
         # add buttons
-        btn_view_results = Button(master=frame, text=view_results_txt[lang], height=1, width=10, command=lambda: view_results(frame))
-        btn_view_results.grid(row=0, column=1, sticky='e')
-        btn_uncomplete = Button(master=frame, text=again_txt[lang], height=1, width=10, command=lambda: enable_frame(frame))
-        btn_uncomplete.grid(row=1, column=1, sticky='e')
+        btn_view_results = Button(master=frame, text=view_results_txt[lang], width=1, command=lambda: view_results(frame))
+        btn_view_results.grid(row=0, column=1, sticky='nesw', padx = 5)
+        btn_uncomplete = Button(master=frame, text=again_txt[lang], width=1, command=lambda: enable_frame(frame))
+        btn_uncomplete.grid(row=1, column=1, sticky='nesw', padx = 5)
 
 # enable a frame
 def enable_frame(frame):
     uncomplete_frame(frame)
     enable_widgets(frame)
+
+    # check which frame 
+    any_step = frame.cget('text').startswith(f' {step_txt[lang]}')
+    fst_step = frame.cget('text').startswith(f' {step_txt[lang]} 1')
+    snd_step = frame.cget('text').startswith(f' {step_txt[lang]} 2')
+    trd_step = frame.cget('text').startswith(f' {step_txt[lang]} 3')
+    fth_step = frame.cget('text').startswith(f' {step_txt[lang]} 4')
+
     # all frames
     frame.configure(relief = 'solid')
-    if frame.cget('text').startswith(f' {step_txt[lang]}'):
-        # fst_step, snd_step and trd_step
+    if any_step:
         frame.configure(fg='darkblue')
-    if frame.cget('text').startswith(f' {step_txt[lang]} 2'):
-        # snd_step only
+    if snd_step:
         toggle_img_frame()
         img_frame.configure(relief = 'solid')
         toggle_vid_frame()
         vid_frame.configure(relief = 'solid')
-    if frame.cget('text').startswith(f' {step_txt[lang]} 3'):
-        # trd_step only
+    if fth_step:
         toggle_sep_frame()
         sep_frame.configure(relief = 'solid')
-        toggle_annot_create_frame()
-        annot_create_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
 def uncomplete_frame(frame):
     if not frame.cget('text').startswith(f' {step_txt[lang]}'):
-        # subframes in trd_step only
+        # subframes in fth_step only
         frame.configure(fg='black')
-    if not frame.cget('text').startswith(f' {step_txt[lang]} 1'):
-        # all except step 1
-        children = frame.winfo_children()
-        for child in children:
-            if child.winfo_class() == "Button" or child.winfo_class() == "Label":
-                if child.cget('text') == again_txt[lang] or child.cget('text') == view_results_txt[lang] or child.cget('image') != "":
-                    child.grid_remove()
+    children = frame.winfo_children()
+    for child in children:
+        if child.winfo_class() == "Button" or child.winfo_class() == "Label":
+            if child.cget('text') == again_txt[lang] or child.cget('text') == view_results_txt[lang] or child.cget('image') != "":
+                child.grid_remove()
 
 # disable a frame
 def disable_frame(frame):
@@ -2408,14 +3925,11 @@ def disable_frame(frame):
         disable_widgets(vid_frame)
         vid_frame.configure(fg='grey80')
         vid_frame.configure(relief = 'flat')
-    if frame.cget('text').startswith(f' {step_txt[lang]} 3'):
-        # trd_step only
+    if frame.cget('text').startswith(f' {step_txt[lang]} 4'):
+        # fth_step only
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
         sep_frame.configure(relief = 'flat')
-        disable_widgets(annot_create_frame)
-        annot_create_frame.configure(fg='grey80')
-        annot_create_frame.configure(relief = 'flat')
     
 # check if checkpoint is present and set checkbox accordingly
 def disable_chb_cont_checkpnt():
@@ -2596,16 +4110,18 @@ if os.name == "nt": # windows
     widget_width = 150
     frame_width = label_width + widget_width + 50
     minsize_rows = 28
+    explanation_text_box_height_factor = 0.8
 elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
     text_size_adjustment_factor = 0.7
-    first_level_frame_font_size = 15
-    second_level_frame_font_size = 13
+    first_level_frame_font_size = 13
+    second_level_frame_font_size = 10
     label_width = 330
     widget_width = 160
     frame_width = label_width + widget_width + 50
     minsize_rows = 28
+    explanation_text_box_height_factor = 1
 else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
@@ -2616,6 +4132,7 @@ else: # macOS
     widget_width = 150
     frame_width = label_width + widget_width + 50
     minsize_rows = 28
+    explanation_text_box_height_factor = 1
 
 # tkinter main window
 root = Tk()
@@ -2684,7 +4201,7 @@ ocelot_widget.grid(column=0, row=0, sticky='ens', pady=(3, 0), padx=(0, 3))
 
 # prepare check mark for later use
 check_mark = Image.open(os.path.join(EcoAssist_files, 'EcoAssist', 'imgs', 'check_mark.png'))
-check_mark_one_row = check_mark.resize((22, 22), Image.Resampling.LANCZOS)
+check_mark_one_row = check_mark.resize((20, 20), Image.Resampling.LANCZOS)
 check_mark_one_row = ImageTk.PhotoImage(check_mark_one_row)
 check_mark_two_rows = check_mark.resize((45, 45), Image.Resampling.LANCZOS)
 check_mark_two_rows = ImageTk.PhotoImage(check_mark_two_rows)
@@ -2725,13 +4242,6 @@ train_tab.columnconfigure(1, weight=1, minsize=frame_width)
 train_tab_text = ['Train', 'Entrenamiento']
 tabControl.add(train_tab, text=train_tab_text[lang])
 
-# annotate tab
-annotate_tab = ttk.Frame(tabControl)
-annotate_tab.columnconfigure(0, weight=1, minsize=frame_width)
-annotate_tab.columnconfigure(1, weight=1, minsize=frame_width)
-annotate_tab_text = ['Annotate', 'Anotar']
-tabControl.add(annotate_tab, text=annotate_tab_text[lang])
-
 # help tab
 help_tab = ttk.Frame(tabControl)
 help_tab_text = ['Help', 'Ayuda']
@@ -2747,19 +4257,25 @@ tabControl.grid()
 
 #### deploy tab
 ### first step
-fst_step_txt = ['Step 1: Choose folder to analyse', 'Paso 1: Elige Carpeta para analizar']
+fst_step_txt = ['Step 1: Select folder', 'Paso 1: Seleccione carpeta']
 row_fst_step = 1
 fst_step = LabelFrame(deploy_tab, text=" " + fst_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 fst_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
-fst_step.grid(column=0, row=row_fst_step, columnspan=2, sticky='ew')
+fst_step.grid(column=0, row=row_fst_step, columnspan=1, sticky='ew')
+fst_step.columnconfigure(0, weight=1, minsize=label_width)
+fst_step.columnconfigure(1, weight=1, minsize=widget_width)
 
 # choose folder
+lbl_choose_folder_txt = ["Source folder", "Carpeta de origen"]
 row_choose_folder = 0
+lbl_choose_folder = Label(master=fst_step, text=lbl_choose_folder_txt[lang], width=1, anchor="w")
+lbl_choose_folder.grid(row=row_choose_folder, sticky='nesw', pady=2)
 var_choose_folder = StringVar()
+var_choose_folder.set("")
 var_choose_folder_short = StringVar()
-dsp_choose_folder = Label(master=fst_step, textvariable=var_choose_folder_short)
-btn_choose_folder = Button(master=fst_step, text=browse_txt[lang], command=lambda: [browse_dir(var_choose_folder, var_choose_folder_short, dsp_choose_folder, 100, row_choose_folder, 1, 'w'), complete_frame(fst_step), update_frame_states()])
-btn_choose_folder.grid(row=row_choose_folder, column=0, sticky='w', padx=5)
+dsp_choose_folder = Label(master=fst_step, textvariable=var_choose_folder_short, fg='grey', padx = 5)
+btn_choose_folder = Button(master=fst_step, text=browse_txt[lang], width=1, command=lambda: [browse_dir(var_choose_folder, var_choose_folder_short, dsp_choose_folder, 25, row_choose_folder, 0, 'w'), update_frame_states()])
+btn_choose_folder.grid(row=row_choose_folder, column=1, sticky='nesw', padx=5)
 
 ### second step
 snd_step_txt = ['Step 2: Run model', 'Paso 2: Iniciar Modelo']
@@ -2943,41 +4459,62 @@ row_btn_start_deploy = 11
 btn_start_deploy = Button(snd_step, text=btn_start_deploy_txt[lang], command=start_deploy)
 btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='ew')
 
-### third step
-trd_step_txt = ["Step 3: Post-processing (optional)", "Paso 3: Post-Procesado (opcional)"]
-trd_step_row = 2
+### human-in-the-loop step
+trd_step_txt = ["Step 3: Annotation (optional)", "Paso 3: Anotación (opcional)"]
+trd_step_row = 1
 trd_step = LabelFrame(deploy_tab, text=" " + trd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 trd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 trd_step.grid(column=1, row=trd_step_row, sticky='nesw')
 trd_step.columnconfigure(0, weight=1, minsize=label_width)
 trd_step.columnconfigure(1, weight=1, minsize=widget_width)
 
+# human-in-the-loop 
+lbl_hitl_main_txt = ["Manually verify results", "Verificar manualmente los resultados"]
+row_hitl_main = 0
+lbl_hitl_main = Label(master=trd_step, text=lbl_hitl_main_txt[lang], width=1, anchor="w")
+lbl_hitl_main.grid(row=row_hitl_main, sticky='nesw', pady=2)
+var_hitl_main = StringVar()
+var_hitl_main.set("")
+var_hitl_main_short = StringVar()
+dsp_hitl_main = Label(master=trd_step, textvariable=var_hitl_main_short, fg='darkred')
+btn_hitl_main = Button(master=trd_step, text=["Start", "Iniciar"][lang], width=1, command = start_or_continue_hitl)
+btn_hitl_main.grid(row=row_hitl_main, column=1, sticky='nesw', padx=5)
+
+### third step
+fth_step_txt = ["Step 4: Post-processing (optional)", "Paso 4: Post-Procesado (opcional)"]
+fth_step_row = 2
+fth_step = LabelFrame(deploy_tab, text=" " + fth_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+fth_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
+fth_step.grid(column=1, row=fth_step_row, sticky='nesw')
+fth_step.columnconfigure(0, weight=1, minsize=label_width)
+fth_step.columnconfigure(1, weight=1, minsize=widget_width)
+
 # folder for results
 lbl_output_dir_txt = ["Destination folder", "Carpeta de destino"]
 row_output_dir = 0
-lbl_output_dir = Label(master=trd_step, text=lbl_output_dir_txt[lang], width=1, anchor="w")
+lbl_output_dir = Label(master=fth_step, text=lbl_output_dir_txt[lang], width=1, anchor="w")
 lbl_output_dir.grid(row=row_output_dir, sticky='nesw', pady=2)
 var_output_dir = StringVar()
 var_output_dir.set("")
 var_output_dir_short = StringVar()
-dsp_output_dir = Label(master=trd_step, textvariable=var_output_dir_short, fg='darkred')
-btn_output_dir = Button(master=trd_step, text=browse_txt[lang], width=1, command=lambda: browse_dir(var_output_dir, var_output_dir_short, dsp_output_dir, 25, row_output_dir, 0, 'e'))
+dsp_output_dir = Label(master=fth_step, textvariable=var_output_dir_short, fg='darkred')
+btn_output_dir = Button(master=fth_step, text=browse_txt[lang], width=1, command=lambda: browse_dir(var_output_dir, var_output_dir_short, dsp_output_dir, 25, row_output_dir, 0, 'e'))
 btn_output_dir.grid(row=row_output_dir, column=1, sticky='nesw', padx=5)
 
 # separate files
 lbl_separate_files_txt = ["Separate files into subdirectories", "Separar archivos en subcarpetas"]
 row_separate_files = 1
-lbl_separate_files = Label(trd_step, text=lbl_separate_files_txt[lang], width=1, anchor="w")
+lbl_separate_files = Label(fth_step, text=lbl_separate_files_txt[lang], width=1, anchor="w")
 lbl_separate_files.grid(row=row_separate_files, sticky='nesw', pady=2)
 var_separate_files = BooleanVar()
 var_separate_files.set(False)
-chb_separate_files = Checkbutton(trd_step, variable=var_separate_files, command=toggle_sep_frame, anchor="w")
+chb_separate_files = Checkbutton(fth_step, variable=var_separate_files, command=toggle_sep_frame, anchor="w")
 chb_separate_files.grid(row=row_separate_files, column=1, sticky='nesw', padx=5)
 
 ## separation frame
 sep_frame_txt = ["Separation options", "Opciones de separación"]
 sep_frame_row = 2
-sep_frame = LabelFrame(trd_step, text=" ↳ " + sep_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
+sep_frame = LabelFrame(fth_step, text=" ↳ " + sep_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 sep_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 sep_frame.grid(row=sep_frame_row, column=0, columnspan=2, sticky = 'ew')
 sep_frame.columnconfigure(0, weight=1, minsize=label_width)
@@ -3008,91 +4545,50 @@ chb_sep_conf.grid(row=row_sep_conf, column=1, sticky='nesw', padx=5)
 ## visualize images
 lbl_vis_files_txt = ["Draw bounding boxes and confidences", "Dibujar contornos y confianzas"]
 row_vis_files = 3
-lbl_vis_files = Label(trd_step, text=lbl_vis_files_txt[lang], width=1, anchor="w")
+lbl_vis_files = Label(fth_step, text=lbl_vis_files_txt[lang], width=1, anchor="w")
 lbl_vis_files.grid(row=row_vis_files, sticky='nesw', pady=2)
 var_vis_files = BooleanVar()
 var_vis_files.set(False)
-chb_vis_files = Checkbutton(trd_step, variable=var_vis_files, anchor="w")
+chb_vis_files = Checkbutton(fth_step, variable=var_vis_files, anchor="w")
 chb_vis_files.grid(row=row_vis_files, column=1, sticky='nesw', padx=5)
 
 ## crop images
 lbl_crp_files_txt = ["Crop detections", "Recortar detecciones"]
 row_crp_files = 4
-lbl_crp_files = Label(trd_step, text=lbl_crp_files_txt[lang], width=1, anchor="w")
+lbl_crp_files = Label(fth_step, text=lbl_crp_files_txt[lang], width=1, anchor="w")
 lbl_crp_files.grid(row=row_crp_files, sticky='nesw', pady=2)
 var_crp_files = BooleanVar()
 var_crp_files.set(False)
-chb_crp_files = Checkbutton(trd_step, variable=var_crp_files, anchor="w")
+chb_crp_files = Checkbutton(fth_step, variable=var_crp_files, anchor="w")
 chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
-
-# annotate images
-lbl_yol_files_txt = ["Create annotations for training purposes", "Crear anotaciones con fines de entrenamiento"]
-row_yol_files = 5
-lbl_yol_files = Label(trd_step, text=lbl_yol_files_txt[lang], width=1, anchor="w")
-lbl_yol_files.grid(row=row_yol_files, sticky='nesw', pady=2)
-var_yol_files = BooleanVar()
-var_yol_files.set(False)
-chb_yol_files = Checkbutton(trd_step, variable=var_yol_files, command=toggle_annot_create_frame, anchor="w")
-chb_yol_files.grid(row=row_yol_files, column=1, sticky='nesw', padx=5)
-
-## subframe for the annotation creation options
-annot_create_frame_txt = ["Annotation options", "Opciones de anotación"]
-annot_create_frame_row = 6
-annot_create_frame = LabelFrame(trd_step, text=" ↳ " + annot_create_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
-annot_create_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
-annot_create_frame.grid(row=annot_create_frame_row, column=0, columnspan=2, sticky = 'ew')
-annot_create_frame.columnconfigure(0, weight=1, minsize=label_width)
-annot_create_frame.columnconfigure(1, weight=1, minsize=widget_width)
-
-# uniquify filenames and combine files in one folder
-lbl_uniquify_txt = ["Combine files and create unique names", "Combinar archivos y crear nombres únicos"]
-row_uniquify = 0
-lbl_uniquify = Label(annot_create_frame, text="     " + lbl_uniquify_txt[lang], width=1, anchor="w")
-lbl_uniquify.grid(row=row_uniquify, sticky='nesw', pady=2)
-var_uniquify = BooleanVar()
-var_uniquify.set(False)
-chb_uniquify = Checkbutton(annot_create_frame, variable=var_uniquify, command=toggle_label_placement, anchor="w")
-chb_uniquify.grid(row=row_uniquify, column=1, sticky='nesw', padx=5)
-
-# method of file placement
-lbl_label_placement_txt = ["Method of file placement", "Método de desplazamiento de archivo"]
-row_label_placement = 1
-lbl_label_placement = Label(annot_create_frame, text="        ↳ " + lbl_label_placement_txt[lang], pady=2, state=DISABLED, width=1, anchor="w")
-lbl_label_placement.grid(row=row_label_placement, sticky='nesw')
-var_label_placement = IntVar()
-var_label_placement.set(2)
-rad_label_placement_move = Radiobutton(annot_create_frame, text=["Copy", "Copiar"][lang], variable=var_label_placement, value=2)
-rad_label_placement_move.grid(row=row_label_placement, column=1, sticky='w', padx=5)
-rad_label_placement_copy = Radiobutton(annot_create_frame, text=["Move", "Mover"][lang], variable=var_label_placement, value=1)
-rad_label_placement_copy.grid(row=row_label_placement, column=1, sticky='e', padx=5)
 
 # create csv files
 lbl_csv_txt = ["Export results to .csv and retrieve metadata", "Exportar a .csv y recuperar los metadatos"]
-row_csv = 7
-lbl_csv = Label(trd_step, text=lbl_csv_txt[lang], width=1, anchor="w")
+row_csv = 5
+lbl_csv = Label(fth_step, text=lbl_csv_txt[lang], width=1, anchor="w")
 lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
 var_csv = BooleanVar()
 var_csv.set(False)
-chb_csv = Checkbutton(trd_step, variable=var_csv, anchor="w")
+chb_csv = Checkbutton(fth_step, variable=var_csv, anchor="w")
 chb_csv.grid(row=row_csv, column=1, sticky='nesw', padx=5)
 
 # threshold
 lbl_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_lbl_thresh = 8
-lbl_thresh = Label(trd_step, text=lbl_thresh_txt[lang], width=1, anchor="w")
+row_lbl_thresh = 6
+lbl_thresh = Label(fth_step, text=lbl_thresh_txt[lang], width=1, anchor="w")
 lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
 var_thresh = DoubleVar()
 var_thresh.set(0.2)
-scl_thresh = Scale(trd_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_thresh, showvalue=0, width=10, length=1)
+scl_thresh = Scale(fth_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_thresh, showvalue=0, width=10, length=1)
 scl_thresh.grid(row=row_lbl_thresh, column=1, sticky='ew', padx=10)
-dsp_thresh = Label(trd_step, textvariable=var_thresh)
+dsp_thresh = Label(fth_step, textvariable=var_thresh)
 dsp_thresh.config(fg="darkred")
 dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
 btn_start_postprocess_txt = ["Post-process files", "Post-procesar archivos"]
-row_start_postprocess = 9
-btn_start_postprocess = Button(trd_step, text=btn_start_postprocess_txt[lang], command=start_postprocess)
+row_start_postprocess = 7
+btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
 #### train tab
@@ -3375,113 +4871,8 @@ btn_cancel_training = Button(train_tab, text=btn_cancel_training_txt[lang], comm
 btn_cancel_training.grid(row=row_cancel_training, column=1, sticky='ew')
 btn_cancel_training.config(state=DISABLED)
 
-#### annotate tab
-annotate_text = Text(annotate_tab, width=1, height=1, wrap=WORD) 
-annotate_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
-annotate_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=40, lmargin2=40)
-annotate_text.tag_config('bulletpoint', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=40, lmargin2=60)
-hyperlink3 = HyperlinkManager(annotate_text)
-
-# function to write text which can be called when user changes language settings
-def write_annotate_tab():
-    global annotate_text
-    line_number = 1 
-
-    # labelimg software
-    annotate_text.insert(END, ["LabelImg software\n", "LabelImg programa\n"][lang])
-    annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["Here you can annotate your images using the open-source annotation software ", "Aquí puedes anotar tus imágenes usando el software open-source "][lang])
-    annotate_text.insert(INSERT, "LabelImg", hyperlink3.add(partial(webbrowser.open, "https://github.com/tzutalin/labelImg")))
-    annotate_text.insert(END, [" created by Tzutalin. This application makes it easy to visually review annotations and adjust their labels, which are required to train your "
-                               "own object detection model.\n\n",
-                               " creado por Tzutalin. Esta aplicación hace fácil visualizar las anotaciones y ajustar sus etiquetas, que son requeridas para entrenar tu "
-                               "propio modelo de detección de objetos.\n\n"][lang])
-    annotate_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # steps
-    annotate_text.insert(END, ["Steps\n", "Pasos\n"][lang])
-    annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["1. Select a folder with images you would like to annotate using the 'Browse' button below.\n", 
-                               "1. Seleccione una carpeta con imágenes que desee anotar utilizando el botón 'Examinar'.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["2. If the classes are not yet defined in a file named 'classes.txt' inside this folder, you will be asked to fill in the classes you'd like to work with. "
-                               "Don't worry, you can always add more classes if you need to. Removing classes is difficult though, so choose wisely.\n",
-                               "2. Si las clases aún no están definidas en un archivo llamado 'classes.txt' dentro de esta carpeta, se te pedirá que rellenes las clases con las que te "
-                               "gustaría trabajar. No te preocupes, siempre puedes añadir más clases si lo necesitas. Eliminar clases es difícil, así que elige bien.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["3. Click the 'Start annotation' button to open the program. It will open the images (and annotation files, if present) specified in step 1.\n",
-                               "3. Haga clic en el botón 'Iniciar anotación' para abrir el programa. Se abrirán las imágenes (y los archivos de anotación, si los hay) especificados en el"
-                               " paso 1.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["4. Make sure LabelImg is set to save the annotations in 'YOLO' format. Right below the 'Save' button in the toolbar, check if 'YOLO' is set. If not, "
-                               "click the 'PascalVOC' or 'CreateML' button to switch to 'YOLO' format.\n",
-                               "4. Asegúrese de que LabelImg está configurado para guardar las anotaciones en formato 'YOLO'. Justo debajo del botón 'Guardar' de la barra de "
-                               "herramientas, compruebe si está configurado 'YOLO'. Si no es así, haga clic en el botón 'PascalVOC' o 'CreateML' para cambiar al formato 'YOLO'.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["5. See ", "5. Consulte "][lang])
-    annotate_text.insert(INSERT, ["this website", "este sitio web"][lang], hyperlink3.add(partial(webbrowser.open, "https://github.com/heartexlabs/labelImg#hotkeys")))
-    annotate_text.insert(END, [" for hotkeys and more information.\n\n", " para ver las teclas de acceso rápido y más información.\n\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # note
-    annotate_text.insert(END, ["Note\n", "Nota\n"][lang])
-    annotate_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["- After annotation, each image containing a detection will have a separate txt file with the annotation information. This txt file has the same file name "
-                               "as the image. That is how the software knows the two belong together. So, after annotation, you can't change the file names anymore.\n",
-                               "- Tras la anotación, cada imagen que contenga una detección tendrá un archivo txt independiente con la información de la anotación. Este archivo txt tiene "
-                               "el mismo nombre que la imagen. Así es como el programa sabe que las dos van juntas. Por lo tanto, después de la anotación, ya no se pueden cambiar los "
-                               "nombres de los archivos.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    annotate_text.insert(END, ["- A file named 'classes.txt' defines the list of class names that your YOLO label refers to. That means that you can't change the order, or remove classes."
-                               " However, adding an extra class to the end of the list is possible via LabelImg itself or by manually adding a class at the bottom of the list in a text "
-                               "editor. In the latter case, you'll have to restart the application for it to have effect.\n",
-                               "- Un archivo llamado 'classes.txt' define la lista de nombres de clases a las que se refiere su etiqueta YOLO. Esto significa que no puede cambiar el orden"
-                               " ni eliminar clases. Sin embargo, añadir una clase extra al final de la lista es posible a través del propio LabelImg o añadiendo manualmente una clase al "
-                               "final de la lista en un editor de texto. En este último caso, tendrá que reiniciar la aplicación para que tenga efecto.\n"][lang])
-    annotate_text.tag_add('bulletpoint', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # configure annotation text
-    annotate_text.pack(fill="both", expand=True)
-    annotate_text.configure(font=(text_font, 11, "bold"), state=DISABLED)
-write_annotate_tab()
-
-# frame
-annot_frame_txt = ["Required input", "Entradas necesarias"]
-row_annot_frame = 0
-annot_frame = LabelFrame(annotate_tab, text=" " + annot_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
-annot_frame.configure(font=(text_font, first_level_frame_font_size, "bold"))
-annot_frame.pack(fill="x", anchor = "s", expand=False)
-annot_frame.columnconfigure(0, weight=1, minsize=label_width*2)
-annot_frame.columnconfigure(1, weight=1, minsize=widget_width*2)
-
-# select folder
-lbl_annot_dir_txt = ["Select folder with images to annotate", "Seleccionar carpeta con imágenes a anotar"]
-row_annot_dir = 0
-lbl_annot_dir = Label(master=annot_frame, text=lbl_annot_dir_txt[lang], width=1, anchor="w")
-lbl_annot_dir.grid(row=row_annot_dir, sticky='nesw', pady=2)
-var_annot_dir = StringVar()
-var_annot_dir_short = StringVar()
-dsp_annot_dir = Label(master=annot_frame, textvariable=var_annot_dir_short, fg='darkred')
-btn_annot_dir = Button(master=annot_frame, text=browse_txt[lang], width=1, command=lambda: [browse_dir(var_annot_dir, var_annot_dir_short, dsp_annot_dir, 50, row_annot_dir, 0, 'e'), grid_annot_classes()])
-btn_annot_dir.grid(row=row_annot_dir, column=1, sticky='nesw', padx=5)
-
-# provide classes
-lbl_annot_classes_txt = ["Provide classes (separated by commas)", "Proporcionar clases (separadas por comas)"]
-row_annot_classes = 1
-lbl_annot_classes = tk.Label(annot_frame, text=lbl_annot_classes_txt[lang], pady=2, width=1, anchor="w")
-var_annot_classes = StringVar()
-ent_annot_classes = tk.Entry(annot_frame, width=1, textvariable=var_annot_classes, fg='grey')
-example_classes = ['dog, cat, cow, polar bear, rat', 'perro, gato, vaca, oso polar, rata']
-ent_annot_classes.insert(0, f"{eg_txt[lang]}: {example_classes[lang]}")
-ent_annot_classes.bind("<FocusIn>", annot_classes_focus_in)
-
-# button
-btn_start_annot_txt = ["Start annotation", "Comenzar anotación"]
-btn_start_annot = Button(annotate_tab, text=btn_start_annot_txt[lang], command=start_annotation)
-btn_start_annot.pack()
-
 # set minsize for all rows inside labelframes...
-for frame in [fst_step, snd_step, img_frame, vid_frame, trd_step, sep_frame, annot_create_frame, req_params, adv_params, annot_frame]:
+for frame in [fst_step, snd_step, img_frame, vid_frame, fth_step, sep_frame, req_params, adv_params]:
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
@@ -3677,6 +5068,32 @@ def write_help_tab():
     help_text.insert(END, f"{trd_step_txt[lang]}\n")
     help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
 
+    # human verification
+    help_text.insert(END, f"{lbl_hitl_main_txt[lang]}\n")
+    help_text.insert(END, ["This feature lets you verify the results of the model. You can use it to create training data or to double-check the results. When starting a new "
+                           "session, you will first be directed to a window where you can select which images you would like to verify. For instance, someone might be only "
+                           "interested in creating training data for 'class A' to unbalance his training dataset or only want to double-check detections with medium-sure "
+                           "confidences. After you have selected the images, you will be able to verify them. After having verified all selected images, you will be prompted"
+                           " if you want to create training data. If you do, the selected images and their associated annotation files will get a unique name and be either "
+                           "moved or copied to a folder of your choice. This is particularly handy when you want to create training data since, for training, all files must "
+                           "be in one folder. This way, the files will be unique, and you won't have replacement problems when adding the files to your existing training data. "
+                           "You can also skip the training data and just continue to post-process the verified results. Not applicable to videos.\n\n",
+                           "Esta característica le permite verificar los resultados del modelo. Puedes usarlo para crear datos de entrenamiento o para verificar los resultados. "
+                           "Al iniciar una nueva sesión, primero se le dirigirá a una ventana donde podrá seleccionar qué imágenes desea verificar. Por ejemplo, alguien podría "
+                           "estar interesado únicamente en crear datos de entrenamiento para la 'clase A' para desequilibrar su conjunto de datos de entrenamiento o simplemente "
+                           "querer verificar las detecciones con confianzas medias-seguras. Una vez que hayas seleccionado las imágenes, podrás verificarlas. Después de haber "
+                           "verificado todas las imágenes seleccionadas, se le preguntará si desea crear datos de entrenamiento. Si lo hace, las imágenes seleccionadas y sus "
+                           "archivos de anotaciones asociados obtendrán un nombre único y se moverán o copiarán a una carpeta de su elección. Esto es particularmente útil cuando"
+                           " desea crear datos de entrenamiento ya que, para el entrenamiento, todos los archivos deben estar en una carpeta. De esta manera, los archivos serán "
+                           "únicos y no tendrás problemas de reemplazo al agregar los archivos a tus datos de entrenamiento existentes. También puedes omitir los datos de "
+                           "entrenamiento y simplemente continuar con el posprocesamiento de los resultados verificados. No aplicable a vídeos.\n\n"][lang])
+    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+    # forth step
+    help_text.insert(END, f"{fth_step_txt[lang]}\n")
+    help_text.tag_add('frame', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+
     # destination folder
     help_text.insert(END, f"{lbl_output_dir_txt[lang]}\n")
     help_text.insert(END, ["Here you can browse for a folder in which the results of the post-processing features will be placed. If nothing is selected, the folder "
@@ -3735,37 +5152,6 @@ def write_help_tab():
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-    # create yolo annotations
-    help_text.insert(END, f"{lbl_yol_files_txt[lang]}\n")
-    help_text.insert(END, ["When training your own model using machine learning using the yolov5 software, the images need to be annotated in yolo format. This feature "
-                    "does that by creating individual text files for each image containing their detections, and one text file containing all the classes. If these "
-                    "annotations are in the same folder as the images, you can visually review and adjust them using the Annotate tab. Not applicable to videos.\n\n",
-                    "Para entrenar su propio modelo mediante aprendizaje automático con el software yolov5, es necesario anotar las imágenes en formato yolo. Esta función"
-                    " lo hace creando archivos de texto individuales para cada imagen que contienen sus detecciones, y un archivo de texto que contiene todas las clases. "
-                    "Si estas anotaciones se encuentran en la misma carpeta que las imágenes, podrá revisarlas y ajustarlas visualmente mediante la pestaña Anotar. No "
-                    "aplicable a los vídeos.\n\n"][lang])
-    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # combine files and create unique names
-    help_text.insert(END, f"{lbl_uniquify_txt[lang]}\n")
-    help_text.insert(END, ["This feature will create unique filenames for the images containing a detection and their associated annotation files. Empty images will not be "
-                           "processed with this feature. This is particularly handy when you want to create training data, since for training all files must be in one folder."
-                           " This way the files will be unique and you won't have replacement problems when adding the files to your existing training data.\n\n", "Esta función"
-                           " creará nombres de archivo únicos para las imágenes que contengan una detección y sus archivos de anotación asociados. Las imágenes vacías no serán"
-                           " procesadas con esta función. Esto es especialmente útil cuando deseas crear datos de entrenamiento, ya que para el entrenamiento todos los archivos"
-                           " deben estar en una carpeta. De esta manera, los archivos serán únicos y no tendrás problemas de reemplazo al agregar los archivos a tus datos de "
-                           "entrenamiento existentes.\n\n"][lang])
-    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # method of file placement
-    help_text.insert(END, f"{lbl_label_placement_txt[lang]}\n")
-    help_text.insert(END, ["Here you can choose whether to move the files into subdirectories, or copy them so that the originals remain untouched.\n\n",
-                           "Aquí puedes elegir si quieres mover los archivos a subdirectorios o copiarlos de forma que los originales permanezcan intactos.\n\n"][lang])
-    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
     # export csv files
     help_text.insert(END, f"{lbl_csv_txt[lang]}\n")
     help_text.insert(END, ["This will translate the output files of step 2 into csv files and try to retrieve image metadata like date, settings, and GPS. Can be opened in "
@@ -3780,14 +5166,14 @@ def write_help_tab():
     help_text.insert(END, ["Detections below this value will not be post-processed. To adjust the threshold value, you can drag the slider or press either sides next to "
                     "the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval. If you set the confidence threshold too high, "
                     "you will miss some detections. On the other hand, if you set the threshold too low, you will get false positives. When choosing a threshold for your "
-                    f"project, it is important to choose a threshold based on your own data. My advice is to first visualize your data ('{lbl_vis_files_txt}') with a low "
+                    f"project, it is important to choose a threshold based on your own data. My advice is to first visualize your data ('{lbl_vis_files_txt[lang]}') with a low "
                     "threshold to get a feeling of the confidence values in your data. This will show you how sure the model is about its detections and will give you an "
                     "insight into which threshold will work best for you. If you really don't know, 0.2 is probably a conservative threshold for most projects.\n\n",
                     "Las detecciones por debajo de este valor no se postprocesarán. Para ajustar el valor del umbral, puede arrastrar el control deslizante o pulsar "
                     "cualquiera de los lados junto al control deslizante para una reducción o incremento de 0,005. Los valores de confianza están dentro del intervalo "
                     "[0,005, 1]. Si ajusta el umbral de confianza demasiado alto, pasará por alto algunas detecciones. Por otro lado, si fija el umbral demasiado bajo, "
                     "obtendrá falsos positivos. Al elegir un umbral para su proyecto, es importante elegir un umbral basado en sus propios datos. Mi consejo es que primero"
-                    f" visualice sus datos ('{lbl_vis_files_txt}') con un umbral bajo para hacerse una idea de los valores de confianza de sus datos. Esto le mostrará lo "
+                    f" visualice sus datos ('{lbl_vis_files_txt[lang]}') con un umbral bajo para hacerse una idea de los valores de confianza de sus datos. Esto le mostrará lo "
                     "seguro que está el modelo sobre sus detecciones y le dará una idea de qué umbral funcionará mejor para usted. Si realmente no lo sabe, 0,2 es "
                     "probablemente un umbral conservador para la mayoría de los proyectos.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
@@ -3812,10 +5198,10 @@ def write_help_tab():
     help_text.insert(END, f"{lbl_annotated_data_txt[lang]}\n")
     help_text.insert(END, ["Browse the folder containing images and annotations in yolo format. All data should be in this folder, not in subfolders. EcoAssist will randomly partition"
                     " the data into a training, test and validation set (based on the proportions set by you). You can annotate your data using the 'Annotate' tab, or (if you"
-                    f" already have a model which can detect the objects of interest) the post-processing feature '{lbl_yol_files_txt[lang]}' in the 'Deploy' tab.\n\n",
+                    f" already have a model which can detect the objects of interest) the post-processing feature 'lbl_yol_files_txt[lang]' in the 'Deploy' tab.\n\n",
                     "Examine la carpeta que contiene las imágenes y anotaciones en formato YOLO. Todos los datos deben estar en esta carpeta, no en subcarpetas. EcoAssist dividirá "
                     "aleatoriamente los datos en un conjunto de entrenamiento, prueba y validación (basado en las proporciones establecidas por usted). Puede anotar sus imágenes "
-                    f"utilizando la pestaña 'Anotar', o (si ya tiene un modelo que puede detectar los objetos de interés) la función de post-procesamiento '{lbl_yol_files_txt[lang]}' en"
+                    f"utilizando la pestaña 'Anotar', o (si ya tiene un modelo que puede detectar los objetos de interés) la función de post-procesamiento 'lbl_yol_files_txt[lang]' en"
                     " la pestaña 'Desplegar'.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
@@ -4102,7 +5488,9 @@ def write_about_tab():
     about_text.insert(END, ["EcoAssist citation\n", "Citar EcoAssist\n"][lang])
     about_text.insert(END, ["If you used EcoAssist in your research, please use the following citation.\n",
                             "Si ha utilizado EcoAssist en su investigación, utilice la siguiente cita.\n"][lang])
-    about_text.insert(END, "- van Lunteren, P. (2023). EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models. Journal of Open Source Software, 8(88), 5581. https://doi.org/10.21105/joss.05581\n\n")
+    about_text.insert(END, "- van Lunteren, P. (2023). EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models. Journal of Open Source Software, 8(88), 5581. ")
+    about_text.insert(INSERT, "https://doi.org/10.21105/joss.05581", hyperlink.add(partial(webbrowser.open, "https://doi.org/10.21105/joss.05581")))
+    about_text.insert(END, ".\n\n")
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
@@ -4127,6 +5515,15 @@ def write_about_tab():
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
+    # development credits
+    about_text.insert(END, ["Development\n", "Desarrollo\n"][lang])
+    about_text.insert(END, ["EcoAssist is developed in collaboration with ",
+                            "EcoAssist se desarrolla en colaboración con "][lang])
+    about_text.insert(INSERT, "Smart Parks", hyperlink.add(partial(webbrowser.open, "https://www.smartparks.org/")))
+    about_text.insert(END, ".\n\n")
+    about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
+    about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
+
     # config about_text
     about_text.pack(fill="both", expand=True)
     about_text.configure(font=(text_font, 11, "bold"), state=DISABLED)
@@ -4135,10 +5532,12 @@ write_about_tab()
 
 # main function
 def main():
+
     # initialise start screen
     enable_frame(fst_step)
     disable_frame(snd_step)
     disable_frame(trd_step)
+    disable_frame(fth_step)
 
     # run
     root.mainloop()

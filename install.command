@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 19 Apr 2023 (Evan Hallein, latest edit)
+### Peter van Lunteren, 28 Aug 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -198,16 +198,14 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
-# clone labelImg git 
-LBL="labelImg"
-if [ -d "$LBL" ]; then
-  echo "Dir ${LBL} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+# clone Human-in-the-loop git 
+HIT="Human-in-the-loop"
+if [ -d "$HIT" ]; then
+  echo "Dir ${HIT} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
-  echo "Dir ${LBL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/tzutalin/labelImg.git 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  echo "Dir ${HIT} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git 2>&1 | tee -a "$LOG_FILE"
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # download the MDv5a model 
@@ -263,15 +261,15 @@ if [ "$PLATFORM" = "Linux" ]; then
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV
-  # requirements for labelImg
+  # requirements for Human-in-the-loop
   $PIP install pyqt5==5.15.2 lxml libxcb-xinerama0
-  echo "For the use of labelImg we need to install the libxcb-xinerama0 package (https://packages.ubuntu.com/bionic/libxcb-xinerama0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install libxcb-xinerama0. EcoAssist will still work fine without it but you might have problems with the labelImg software."
+  echo "For the use of Human-in-the-loop we need to install the libxcb-xinerama0 package (https://packages.ubuntu.com/bionic/libxcb-xinerama0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install libxcb-xinerama0. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
   { # first try without sudo
     apt install libxcb-xinerama0 
   } || { # otherwise with sudo
     sudo apt install libxcb-xinerama0 
     }
-  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Exiting installation." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Exiting installation." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   pyrcc5 -o libs/resources.py resources.qrc
   python3 -m pip install --pre --upgrade lxml
 
@@ -280,7 +278,7 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV
-  # requirements for labelImg
+  # requirements for Human-in-the-loop
   $PIP install pyqt5==5.15.2 lxml
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
@@ -300,16 +298,18 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew 2>&1 | tee -a "$LOG_FILE"
   export PATH="${HOMEBREW_DIR}/bin:$PATH"
+  BREW="${HOMEBREW_DIR}/bin/brew"
   
-  # further requirements for labelImg
-  arch -arm64 brew install pyqt@5
-  cd $LOCATION_ECOASSIST_FILES/labelImg || { echo "Could not change directory. Command could not be run. Please install labelImg manually: https://github.com/tzutalin/labelImg" 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  # further requirements for Human-in-the-loop
+  arch -arm64 $BREW install pyqt@5
+  cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   make qt5py3
   python3 -m pip install --pre --upgrade lxml
 fi
 
 # requirements for EcoAssist
 $PIP install bounding_box
+$PIP install RangeSlider
 
 # requirements for yolov5
 $PIP install "gitpython>=3.1.30"

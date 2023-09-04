@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 3 May 2023 (latest edit)
+@REM ### Peter van Lunteren, 28 Aug 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -261,18 +261,15 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     dir "%LOCATION_ECOASSIST_FILES%\yolov5" | wtee -a "%LOG_FILE%"
 )
 
-@REM clone labelImg git if not present
-if exist "%LOCATION_ECOASSIST_FILES%\labelImg\" (
-    echo Dir labelImg already exists! Skipping this step. | wtee -a "%LOG_FILE%"
+@REM clone Human-in-the-loop git if not present
+if exist "%LOCATION_ECOASSIST_FILES%\Human-in-the-loop\" (
+    echo Dir Human-in-the-loop already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
-    echo Dir labelImg does not exists! Clone repo... | wtee -a "%LOG_FILE%"
+    echo Dir Human-in-the-loop does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone https://github.com/tzutalin/labelImg.git
-    cd "%LOCATION_ECOASSIST_FILES%\labelImg" || ( echo "Could not change directory to labelImg. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 276f40f5e5bbf11e84cfa7844e0a6824caf93e11
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    "%EA_GIT_EXE%" clone --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git
     @REM check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\labelImg" | wtee -a "%LOG_FILE%"
+    dir "%LOCATION_ECOASSIST_FILES%\Human-in-the-loop" | wtee -a "%LOG_FILE%"
 )
 
 @REM download the md_v5a.0.0.pt model if not present
@@ -310,11 +307,12 @@ call conda env create --name ecoassistcondaenv --file environment-detector.yml
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call activate ecoassistcondaenv
 
-@REM install additional packages for labelImg
+@REM install additional packages for Human-in-the-loop
 "%EA_PIP_EXE%" install pyqt5==5.15.2 lxml
 
 @REM install additional packages for EcoAssist
 "%EA_PIP_EXE%" install bounding_box
+"%EA_PIP_EXE%" install RangeSlider
 
 @REM install additional packages for yolov5
 "%EA_PIP_EXE%" install GitPython==3.1.30
