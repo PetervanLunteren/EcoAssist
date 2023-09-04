@@ -2502,11 +2502,9 @@ def open_hitl_settings_window():
     # buttons
     btn_hitl_update = Button(master=hitl_test_frame, text=btn_hitl_update_txt, width=1, command=lambda: select_detections(selection_dict = selection_dict, prepare_files = False))
     btn_hitl_update.grid(row=0, column=0, rowspan=1, sticky='nesw', padx=5)
-
-    btn_hitl_show = Button(master=hitl_test_frame, text=btn_hitl_show_txt, width=1, command = toggle_hitl_ann_selection_frame, font=(text_font, second_level_frame_font_size))
+    btn_hitl_show = Button(master=hitl_test_frame, text=btn_hitl_show_txt, width=1, command = toggle_hitl_ann_selection_frame)
     btn_hitl_show.grid(row=0, column=1, rowspan=1, sticky='nesw', padx=5)
-
-    btn_hitl_start = Button(master=hitl_test_frame, text=btn_hitl_start_txt, width=1, command=lambda: select_detections(selection_dict = selection_dict, prepare_files = True), font=(text_font, second_level_frame_font_size))
+    btn_hitl_start = Button(master=hitl_test_frame, text=btn_hitl_start_txt, width=1, command=lambda: select_detections(selection_dict = selection_dict, prepare_files = True))
     btn_hitl_start.grid(row=0, column=2, rowspan=1, sticky='nesw', padx=5)
     
     # create scrollable canvas window
