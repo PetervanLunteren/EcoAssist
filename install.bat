@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 28 Aug 2023 (latest edit)
+@REM ### Peter van Lunteren, 8 Sept 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -116,55 +116,95 @@ echo Location:                              '%LOCATION_ECOASSIST_FILES%'
 set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
 if exist "%NO_ADMIN_INSTALL%" (
     rd /q /s "%NO_ADMIN_INSTALL%"
-    echo Removed                                '%NO_ADMIN_INSTALL%'
+    echo Removed:                               '%NO_ADMIN_INSTALL%'
 )
 set ADMIN_INSTALL=%ProgramFiles%\EcoAssist_files
 if exist "%ADMIN_INSTALL%" (
     rd /q /s "%ADMIN_INSTALL%"
-    echo Removed                                '%ADMIN_INSTALL%'
+    echo Removed:                               '%ADMIN_INSTALL%'
 )
 set CURRENT_INSTALL=%LOCATION_ECOASSIST_FILES%
 if exist "%CURRENT_INSTALL%" (
     rd /q /s "%CURRENT_INSTALL%"
-    echo Removed                                '%CURRENT_INSTALL%'
+    echo Removed:                               '%CURRENT_INSTALL%'
 )
 
 @REM make dir
 if not exist "%LOCATION_ECOASSIST_FILES%" (
     mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
     attrib +h "%LOCATION_ECOASSIST_FILES%"
-    echo Created empty dir                      '%LOCATION_ECOASSIST_FILES%'
+    echo Created empty dir:                     '%LOCATION_ECOASSIST_FILES%'
 )
 
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
 
-@REM set conda and pip paths
+@REM set conda cmds
+@REM check the default locations for a conda install
+for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
+    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%") do ( 
+        set CHECK_DIR=%%y\%%x\
+        set CHECK_DIR=!CHECK_DIR:"=!
+        echo Checking conda dir:                    '!CHECK_DIR!'
+        if exist !CHECK_DIR! (
+            set PATH_TO_CONDA_INSTALLATION=!CHECK_DIR!
+            echo Found conda dir:                       '!PATH_TO_CONDA_INSTALLATION!'
+            goto check_conda_install
+            )
+        ) 
+    )
+@REM check if conda or mamba is added to PATH
 where conda /q  && (for /f "tokens=*" %%a in ('where conda') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
+where mamba /q  && (for /f "tokens=*" %%a in ('where mamba') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
 :set_conda_install
 echo:
-set /p PATH_TO_CONDA_INSTALLATION=Enter path to conda installation ^(for example C:\ProgramData\Miniforge3^): 
+@REM ask user if not found
+set /p PATH_TO_CONDA_INSTALLATION=Unable to automatically find the folder containing your conda files. The EcoAssist instalation needs to know this path in order to proceed. The required folder is likely called 'miniforge3', 'mambaforge', 'miniconda3', 'anaconda3' and contains the subfolders 'condabin', 'conda-meta', 'DLLs', 'envs' and more. Please provide this path ^(or drag and drop^): 
 :check_conda_install
+@REM clean path
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:"=%
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
 echo Path to conda is defined as:           '%PATH_TO_CONDA_INSTALLATION%'
+@REM check dir validity
 if not exist "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" ( echo '%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat' does not exist. Enter a path to a valid conda installation. & goto set_conda_install )
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
+@REM check if mambaforge and set conda command accordingly
+for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
+if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
+@REM set pip path
 set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
 
 @REM set git cmds
+@REM check the default locations for a Git install
+for %%x in (Git, git) do ( 
+    for %%y in ("%ProgramFiles%", "%ProgramFiles(x86)%", "%ProgramData%", "%HOMEDRIVE%%HOMEPATH%") do ( 
+        set CHECK_DIR=%%y\%%x\
+        set CHECK_DIR=!CHECK_DIR:"=!
+        echo Checking Git dir:                      '!CHECK_DIR!'
+        if exist !CHECK_DIR! (
+            set PATH_TO_GIT_INSTALLATION=!CHECK_DIR!
+            echo Found Git dir:                         '!PATH_TO_GIT_INSTALLATION!'
+            goto check_git_install
+            )
+        )
+    )
+@REM check if Git is added to PATH
 where git /q  && (for /f "tokens=*" %%a in ('where git') do (for %%b in ("%%~dpa\.") do set PATH_TO_GIT_INSTALLATION=%%~dpb)) && goto check_git_install
 :set_git_install
 echo:
-set /p PATH_TO_GIT_INSTALLATION=Enter path to git installation ^(for example C:\Program Files\Git^): 
+@REM ask user if not found
+set /p PATH_TO_GIT_INSTALLATION=Unable to automatically find the folder containing your Git files. The EcoAssist instalation needs to know this path in order to proceed. The required folder is likely called 'Git' and contains the subfolders 'bin', 'cmd', 'etc', 'tmp', 'usr' and more. Please provide this path ^(or drag and drop^): 
 :check_git_install
+@REM clean path
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:"=%
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:'=%
 IF %PATH_TO_GIT_INSTALLATION:~-1%==\ SET PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:~0,-1%
 echo Path to git is defined as:             '%PATH_TO_GIT_INSTALLATION%'
+@REM check dir validity
 if not exist "%PATH_TO_GIT_INSTALLATION%\cmd\git.exe" ( echo '%PATH_TO_GIT_INSTALLATION%\cmd\git.exe' does not exist. Enter a path to a valid git installation. & goto set_git_install )
 echo %PATH_TO_GIT_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_git_installation.txt"
+@REM set git path
 set EA_GIT_EXE=%PATH_TO_GIT_INSTALLATION%\cmd\git.exe
 
 @REM install and test wtee
@@ -227,9 +267,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
 ) else (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone https://github.com/agentmorris/cameratraps.git
+    "%EA_GIT_EXE%" clone https://github.com/agentmorris/MegaDetector.git cameratraps
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout b4d30ed665f450435286e35f43b836f2ebe44c7e
+    "%EA_GIT_EXE%" checkout 4549e770cdfbc7e3d885df9cfaac572e9b5a934e
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
@@ -301,9 +341,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call conda env remove -n ecoassistcondaenv
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-call conda env create --name ecoassistcondaenv --file environment-detector.yml
+call %EA_CONDA_EXE% env create --name ecoassistcondaenv --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call activate ecoassistcondaenv
 
@@ -323,9 +363,9 @@ call activate ecoassistcondaenv
 "%EA_PIP_EXE%" install numpy==1.23.4
 
 @REM log env info
-call conda info --envs
-call conda info --envs >> "%LOG_FILE%"
-call conda list >> "%LOG_FILE%"
+call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
+call %EA_CONDA_EXE% list >> "%LOG_FILE%"
 "%EA_PIP_EXE%" freeze >> "%LOG_FILE%"
 
 @REM log folder structure
