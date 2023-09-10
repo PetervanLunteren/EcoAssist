@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 8 Sept 2023 (latest edit)
+@REM ### Peter van Lunteren, 10 Sept 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -89,9 +89,13 @@ echo PATH : %PATH% >> "%LOG_FILE%"
 python -V >> "%LOG_FILE%"
 where python >> "%LOG_FILE%"
 
-@REM run script
+@REM run script and check if executed in debug mode
 echo Opening EcoAssist now... >> "%LOG_FILE%"
-python EcoAssist\EcoAssist_GUI.py 2>&1 >> "%LOG_FILE%"
+if "%1" == "debug" (
+    python EcoAssist\EcoAssist_GUI.py
+    ) else (
+    python EcoAssist\EcoAssist_GUI.py 2>&1 >> "%LOG_FILE%"
+    )
 
 @REM timestamp the end of session
 set END_DATE=%date% %time%
