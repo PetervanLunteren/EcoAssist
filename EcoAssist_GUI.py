@@ -2985,22 +2985,6 @@ def move_files(file, detection_type, var_file_placement, max_detection_conf, var
     # return new relative file path
     return(new_file)
 
-# indent xml files so it is human readable
-def indent(elem, level=0):
-    i = "\n" + level * "  "
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = i + "  "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-        for elem in elem:
-            indent(elem, level + 1)
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = i
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = i
-
 # check if checkpoint file is present and assign global variable
 def check_checkpnt():
     global loc_chkpnt_file
