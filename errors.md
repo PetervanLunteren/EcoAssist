@@ -2,6 +2,13 @@
 
 Below you can find some common error messages and their potential solutions. If you can't figure it out yourself, raise an error in this repository or [email me](mailto:petervanlunteren@hotmail.com) the logfiles, a detailed explenation of what's going on and a way to recreate the error. 
 
+## How to run EcoAssist in debug mode?
+For now, it is only possible to run EcoAssist in debug mode on Windows. If required on macOS and Linux, let me know. For Windows, open a fresh window of the command prompt and run the following.
+```
+( "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%homedrive%\EcoAssist_files\EcoAssist\open.bat" debug )
+```
+This will show you EcoAssists output during runtime. If there are any errors, they will most probabaly show up here. If you want you can copy-paste it and [email](mailto:petervanlunteren@hotmail.com) it to me.
+
 ## How to create logfiles?
 If there is an error during runtime, it is important to give the program the opportunity to write out its logs. First thing you'll need to do is recreate the error in EcoAssist. After that, close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last. If there is an error during the installation or opening, you don't have to worry about this - in that case the logfiles are automatically created. 
  
