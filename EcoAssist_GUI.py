@@ -5178,13 +5178,11 @@ def write_help_tab():
 
     # folder with labelled data
     help_text.insert(END, f"{lbl_annotated_data_txt[lang]}\n")
-    help_text.insert(END, ["Browse the folder containing images and annotations in yolo format. All data should be in this folder, not in subfolders. EcoAssist will randomly partition"
-                    " the data into a training, test and validation set (based on the proportions set by you). You can annotate your data using the 'Annotate' tab, or (if you"
-                    f" already have a model which can detect the objects of interest) the post-processing feature 'lbl_yol_files_txt[lang]' in the 'Deploy' tab.\n\n",
-                    "Examine la carpeta que contiene las imágenes y anotaciones en formato YOLO. Todos los datos deben estar en esta carpeta, no en subcarpetas. EcoAssist dividirá "
-                    "aleatoriamente los datos en un conjunto de entrenamiento, prueba y validación (basado en las proporciones establecidas por usted). Puede anotar sus imágenes "
-                    f"utilizando la pestaña 'Anotar', o (si ya tiene un modelo que puede detectar los objetos de interés) la función de post-procesamiento 'lbl_yol_files_txt[lang]' en"
-                    " la pestaña 'Desplegar'.\n\n"][lang])
+    help_text.insert(END, ["Browse the folder containing images and annotations in Pascal VOC format. All data should be in this folder, not in subfolders. EcoAssist will randomly partition"
+                    " the data into a training, test and validation set (based on the proportions set by you). You can annotate your data using step 3 of the 'Deploy' tab.\n\n",
+                    "Examine la carpeta que contiene las imágenes y anotaciones en formato Pascal VOC. Todos los datos deben estar en esta carpeta, no en subcarpetas. EcoAssist dividirá "
+                    "aleatoriamente los datos en un conjunto de entrenamiento, prueba y validación (basado en las proporciones establecidas por usted). Puede anotar sus datos en el paso 3"
+                    " de la pestaña 'Despliegue'.\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
