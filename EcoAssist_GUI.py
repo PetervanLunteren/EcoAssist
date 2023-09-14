@@ -1341,11 +1341,10 @@ def pascal_voc_to_yolo(folder_path):
 
     # create classes.txt
     classes_txt = os.path.join(folder_path, "classes.txt")
-    if os.path.isfile(classes_txt):
-        os.remove(classes_txt)
-    with open(classes_txt, 'w') as fp:
-        for elem in classes_list:
-            fp.write(f"{elem}\n")
+    if not os.path.isfile(classes_txt):
+        with open(classes_txt, 'w') as fp:
+            for elem in classes_list:
+                fp.write(f"{elem}\n")
     
     # count instances
     total_instances = 0
@@ -1905,10 +1904,17 @@ def clean_training_dir(folder_path):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # remove yolo annotation files
+    # check if there were temp files
     yolo_written_file = os.path.join(folder_path, "yolo-files-written.txt")
+    yolo_written_file_present = os.path.exists(yolo_written_file)
+    if yolo_written_file_present:
+        yolo_written_file_empty = os.stat(yolo_written_file).st_size == 0
+    else:
+        yolo_written_file_empty = True
+
+    # remove yolo annotation files
     index = 0
-    if os.path.exists(yolo_written_file):
+    if yolo_written_file_present and not yolo_written_file_empty:
         send_to_output_window("\nCleaning up temporary files...")
         with open(yolo_written_file) as f:
             for txt_file in [line.rstrip() for line in f]:
@@ -1920,13 +1926,11 @@ def clean_training_dir(folder_path):
         os.remove(yolo_written_file)
         send_to_output_window(f"   currently at number {index}...")
         send_to_output_window(f"   done!")
+        classes_txt = os.path.join(folder_path, "classes.txt")
+        if os.path.isfile(classes_txt):
+            os.remove(classes_txt)
     else:
         send_to_output_window("\nNo temporary files. Nothing to clean...")
-
-    # remove classes.txt
-    classes_txt = os.path.join(folder_path, "classes.txt")
-    if os.path.isfile(classes_txt):
-        os.remove(classes_txt)
 
 # create pascal voc annotation files from a list of detections
 def create_pascal_voc_annotation(image_path, annotation_list, human_verified):
