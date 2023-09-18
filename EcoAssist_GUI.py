@@ -877,8 +877,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     hitl_shortcuts_frame.columnconfigure(1, weight=1, minsize=115)
 
     # shortcuts label
-    shortcut_labels = [["Next image:", "Previous image:", "Create box:", "Delete box:", "Verify and save image:"],
-                       ["Imagen siguiente:", "Imagen anterior:", "Crear cuadro:", "Eliminar cuadro:", "Verificar y guardar imagen:"]][lang]
+    shortcut_labels = [["Next image:", "Previous image:", "Create box:", "Delete box:", "Verify, save, next:"],
+                       ["Imagen siguiente:", "Imagen anterior:", "Crear cuadro:", "Eliminar cuadro:", "Verificar, guardar, siguiente:"]][lang]
     shortcut_values = ["d", "a", "w", "del", ["space", "espacio"][lang]]
     for i in range(len(shortcut_labels)):
         ttk.Label(master=hitl_shortcuts_frame, text=shortcut_labels[i]).grid(column=0, row=i, columnspan=1, sticky='w')
