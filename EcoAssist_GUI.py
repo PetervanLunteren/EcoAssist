@@ -958,7 +958,10 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
         if temp_file.exists():
 
             # give labelImg some time to save its xml file
-            time.sleep(0.1)
+            time.sleep(0.5)
+
+            # remove temp file
+            temp_file.delete()
 
             # set save status
             value_hitl_save_status.config(text = ["saving...", "guardando..."][lang])
@@ -967,7 +970,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             # loop trough file list and read xml files
             n_verified_files = 0
             with open(file_list_txt) as f:
-                for line in f:
+                for i, line in enumerate(f):
                     annotation = return_xml_path(line.rstrip())
                     if check_verification_status_and_update_json(xml_file = annotation, inverted_label_map = inverted_label_map, recognition_file = recognition_file, update_json = True):
                         n_verified_files += 1
@@ -978,9 +981,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             hitl_progbar['value'] = percentage
             value_hitl_stats_percentage.config(text = f"{percentage}%")
             value_hitl_stats_verified.config(text = f"{n_verified_files}/{total_n_files}")
-
-            # remove temp file
-            temp_file.delete()
         
         # set save status
         try:
