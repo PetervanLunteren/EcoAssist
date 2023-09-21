@@ -141,6 +141,8 @@ bash $HOME/Downloads/install.command
 ```
 3. If you're an Apple Silicon user (M1/M2), go for a nice walk because this may take about 30 minutes to complete. Some of the software packages are not yet adopted to the Apple Silicon processor. There is a workaround, but it takes some time. In order to make MegaDetector work on Apple Silicon computers, the guys at [Ecologize](http://ecologize.org/) had to re-build the model with *slightly* different results. The bounding boxes appear to be the same to around two decimal places in both location and confidence, which is good, but not *exactly* the same. Please keep in mind that this is an unvalidated version of MegaDetector, and they don't exactly know how it compares to the validated version since it is much less tested.
 4. When the installation is done, you'll find a `EcoAssist.command` file in your `Applications` folder. The app will open when double-clicked. You are free to move this file to a more convenient location. If you want EcoAssist in your dock, manually change `EcoAssist.command` to `EcoAssist.app`, then drag and drop it in your dock and change it back to `EcoAssist.command`. Not the prettiest solution, but it works...
+
+If you're having trouble opening EcoAssist, you might have to reinstall `Xcode`. This sometimes happens after upgrading your MacOS version. More information in [this issue](https://github.com/PetervanLunteren/EcoAssist/issues/21). 
 </details>
 
 <details>
