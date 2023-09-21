@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 4 Sept 2023
+# Latest edit by Peter van Lunteren on 20 Sept 2023
 
 # import packages like a christmas tree
 import os
@@ -11,6 +11,7 @@ import git
 import json
 import math
 import time
+import glob
 import torch
 import random
 import signal
@@ -814,7 +815,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     with open(file_list_txt) as f:
         for line in f:
             total_n_files += 1
-        f.close()
     if total_n_files == 0:
         mb.showerror(["No images to verify", "No hay imágenes para verificar"][lang],
                      ["There are no images to verify with the selected criteria. Use the 'Update counts' button to see how many "
@@ -823,18 +823,43 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                      "los criterios seleccionados."][lang])
         return
 
-    # track hitl progress in json
-    change_hitl_var_in_json(recognition_file, "in-progress")
-
     # read label map from json
     label_map = fetch_label_map_from_json(recognition_file)
     inverted_label_map = {v: k for k, v in label_map.items()}
 
+    # count n verified files and locate images that need converting
+    n_verified_files = 0
+    if get_hitl_var_in_json(recognition_file) != "never-started":
+        init_dialog = PatienceDialog(total = total_n_files, text = ["Initializing...", "Inicializando..."][lang])
+        init_dialog.open()
+        init_current = 1
+        imgs_needing_converting = []
+        with open(file_list_txt) as f:
+            for line in f:
+                img = line.rstrip()
+                annotation = return_xml_path(img)
+
+                # check which need converting to json
+                if check_if_img_needs_converting(img):
+                    imgs_needing_converting.append(img)
+
+                # check how many are verified
+                if verification_status(annotation):
+                    n_verified_files += 1
+
+                # update progress window
+                init_dialog.update_progress(current = init_current, percentage = True)
+                init_current += 1
+        init_dialog.close()
+
+    # track hitl progress in json
+    change_hitl_var_in_json(recognition_file, "in-progress")
+
     # close settings window if open
     try:
-        hitl_settings_window.withdraw()
+        hitl_settings_window.destroy()
     except NameError:
-        print("hitl_settings_window not defined -> nothing to withdraw()")
+        print("hitl_settings_window not defined -> nothing to destroy()")
         
     # init window
     hitl_progress_window = Toplevel(root)
@@ -877,9 +902,9 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     hitl_shortcuts_frame.columnconfigure(1, weight=1, minsize=115)
 
     # shortcuts label
-    shortcut_labels = [["Next image:", "Previous image:", "Create box:", "Delete box:", "Verify, save, next:"],
-                       ["Imagen siguiente:", "Imagen anterior:", "Crear cuadro:", "Eliminar cuadro:", "Verificar, guardar, siguiente:"]][lang]
-    shortcut_values = ["d", "a", "w", "del", ["space", "espacio"][lang]]
+    shortcut_labels = [["Next image:", "Previous image:", "Create box:", "Edit box:", "Delete box:", "Verify, save, and next image:"],
+                       ["Imagen siguiente:", "Imagen anterior:", "Crear cuadro:", "Editar cuadro:", "Eliminar cuadro:", "Verificar, guardar, y siguiente imagen:"]][lang]
+    shortcut_values = ["d", "a", "w", "s", "del", ["space", "espacio"][lang]]
     for i in range(len(shortcut_labels)):
         ttk.Label(master=hitl_shortcuts_frame, text=shortcut_labels[i]).grid(column=0, row=i, columnspan=1, sticky='w')
         ttk.Label(master=hitl_shortcuts_frame, text=shortcut_values[i]).grid(column=1, row=i, columnspan=1, sticky='e')
@@ -908,13 +933,11 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     value_hitl_stats_verified = ttk.Label(master=hitl_stats_frame, text="")
     value_hitl_stats_verified.grid(column=1, row=2, columnspan=1, sticky='e')
 
-    # total n images to verify
-    lbl_hitl_save_status = ttk.Label(master=hitl_stats_frame, text=["Status:", "Estado:"][lang])
-    lbl_hitl_save_status.grid(column=0, row=3, columnspan=1, sticky='w')
-    value_hitl_save_status = ttk.Label(master=hitl_stats_frame, text="")
-    value_hitl_save_status.grid(column=1, row=3, columnspan=1, sticky='e')
-
-    # show  window
+    # show window
+    percentage = round((n_verified_files/total_n_files)*100)
+    hitl_progbar['value'] = percentage
+    value_hitl_stats_percentage.config(text = f"{percentage}%")
+    value_hitl_stats_verified.config(text = f"{n_verified_files}/{total_n_files}")
     hitl_progress_window.update_idletasks()
     
     # locate open script
@@ -932,21 +955,18 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     # adjust command for unix OS
     if os.name != 'nt':
         command_args = "'" + "' '".join(command_args) + "'"
-    
+
     # log command
     print(command_args)
 
     # run command
     p = Popen(command_args,
-                # stdout=subprocess.PIPE,
-                # stderr=subprocess.STDOUT,
                 bufsize=1,
                 shell=True,
                 universal_newlines=True)
 
-    # create temp-file for the first iteration
-    temp_file = TemporaryTextFile(os.path.normpath(os.path.join(var_choose_folder.get(), "temp-folder", "_gosave.txt")), "First iteration.")
-    temp_file.create()
+    # create temp-file-dir
+    labelImg_exchange_dir = LabelImgExchangeDir(os.path.normpath(os.path.join(var_choose_folder.get(), "temp-folder", "labelImg-info")))
 
     # calculate metrics while annotating
     while p.poll() is None:
@@ -955,49 +975,40 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
         hitl_progress_window.update()
         
         # labelImg writes a temp-file to notify ecoassist
-        if temp_file.exists():
+        exists, fp = labelImg_exchange_dir.exist_file()
+        if exists:
 
-            # give labelImg some time to save its xml file
-            time.sleep(0.5)
+            # read
+            ver_diff = labelImg_exchange_dir.read_file(fp)
 
-            # remove temp file
-            temp_file.delete()
-
-            # set save status
-            value_hitl_save_status.config(text = ["saving...", "guardando..."][lang])
-            hitl_progress_window.update_idletasks()
-
-            # loop trough file list and read xml files
-            n_verified_files = 0
-            with open(file_list_txt) as f:
-                for i, line in enumerate(f):
-                    annotation = return_xml_path(line.rstrip())
-                    if check_verification_status_and_update_json(xml_file = annotation, inverted_label_map = inverted_label_map, recognition_file = recognition_file, update_json = True):
-                        n_verified_files += 1
-                f.close()
+            # adjust verification count
+            if ver_diff == '+':
+                n_verified_files += 1
+            elif ver_diff == '-':
+                n_verified_files -= 1
 
             # update labels
             percentage = round((n_verified_files/total_n_files)*100)
             hitl_progbar['value'] = percentage
             value_hitl_stats_percentage.config(text = f"{percentage}%")
             value_hitl_stats_verified.config(text = f"{n_verified_files}/{total_n_files}")
+
+            # remove temp file
+            labelImg_exchange_dir.delete_file(fp)
         
         # set save status
         try:
-            value_hitl_save_status.config(text = ["up-to-date", "actualizado"][lang])
             hitl_progress_window.update_idletasks()
             hitl_progress_window.update()
         
         # python can throw a TclError if user closes the window because the widgets are destroyed - nothing to worry about
         except Exception as error:
-            print("\nWhen closing the annotation window, there was an error:")
+            print("\nWhen closing the annotation window, there was an error. python can throw a TclError if user closes "
+                                                "the window because the widgets are destroyed - nothing to worry about.")
             print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
 
-        # we don't want the while loop to constantly run
-        time.sleep(0.2)
-
     # close accompanying window
-    hitl_progress_window.withdraw()
+    hitl_progress_window.destroy()
 
     # update frames of root
     update_frame_states()
@@ -1008,19 +1019,27 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     else:
         json_paths_are_relative = False
 
+    # check which images need converting
+    imgs_needing_converting = []
+    with open(file_list_txt) as f:
+        for line in f:
+            img = line.rstrip()
+            annotation = return_xml_path(img)
+            if check_if_img_needs_converting(img):
+                imgs_needing_converting.append(img)
+
+    # open json
+    with open(recognition_file, "r") as image_recognition_file_content:
+        n_img_in_json = len(json.load(image_recognition_file_content)['images'])
+
     # open patience window
-    patience_dialog = PatienceDialog(total = n_verified_files + total_n_files, text = ["Checking results...", "Comprobando resultados"][lang])
+    patience_dialog = PatienceDialog(total = len(imgs_needing_converting) + n_img_in_json, text = ["Checking results...", "Comprobando resultados"][lang])
     patience_dialog.open()
     current = 1
 
-    # check if there are still xmls not converted to json
-    with open(file_list_txt) as f:
-        for line in f:
-            annotation = return_xml_path(line.rstrip())
-            check_verification_status_and_update_json(xml_file = annotation, inverted_label_map = inverted_label_map, recognition_file = recognition_file, update_json = True)
-            patience_dialog.update_progress(current = current, percentage = True)
-            current += 1
-        f.close()
+    # convert
+    update_json_from_img_list(imgs_needing_converting, inverted_label_map, recognition_file, patience_dialog, current)
+    current += len(imgs_needing_converting)
 
     # open json
     with open(recognition_file, "r") as image_recognition_file_content:
@@ -1029,25 +1048,20 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     # check if there are images that the user first verified and then un-verified
     for image in data['images']:
         image_path = image['file']
+        # updating the progressbar takes considerable time
+        patience_dialog.update_progress(current = current, percentage = True)
+        current += 1
         if json_paths_are_relative:
             image_path = os.path.join(os.path.dirname(recognition_file), image_path)
         if 'manually_checked' in image:
-
-            # image has been manually checked in json
             if image['manually_checked']:
-                patience_dialog.update_progress(current = current, percentage = True)
-                current += 1
-
-                # but not anymore in xml
+                # image has been manually checked in json ...
                 xml_path = return_xml_path(image_path)
                 if os.path.isfile(xml_path):
-                    if not check_verification_status_and_update_json(xml_file = return_xml_path(image_path),
-                                                                    inverted_label_map = inverted_label_map,
-                                                                    recognition_file = recognition_file,
-                                                                    update_json = False):
+                    # ... but not anymore in xml
+                    if not verification_status(xml_path):
                         # set check flag in json
                         image['manually_checked'] = False
-
                         # reset confidence from 1.0 to arbitrary value 
                         for detection in image['detections']:
                             detection['conf'] = 0.7
@@ -1058,7 +1072,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
         json.dump(data, json_file, indent=1)
     image_recognition_file_content.close()
     patience_dialog.close()
-    
+
     # finalise things if all images are verified
     if n_verified_files == total_n_files:
         if mb.askyesno(title=["Are you done?", "¿Ya terminaste?"][lang],
@@ -1067,7 +1081,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                                 "'image_recognition_file.json' está actualizado.\n\n¿Quieres cerrar esta sesión de verificación"
                                 " y continuar con el paso final?"][lang]):
             # close window
-            hitl_progress_window.withdraw()
+            hitl_progress_window.destroy()
 
             # get plot from xml files
             fig = produce_graph(file_list_txt = file_list_txt)
@@ -1100,7 +1114,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             btn_hitl_final_export_n = Button(master=hitl_final_actions_frame, text=["No - go back to the main EcoAssist window",
                                                                                     "No - regrese a la ventana principal de EcoAssist"][lang], 
                                     width=1, command = lambda: [delete_temp_folder(file_list_txt),
-                                                                hitl_final_window.withdraw(),
+                                                                hitl_final_window.destroy(),
                                                                 change_hitl_var_in_json(recognition_file, "done"),
                                                                 update_frame_states()])
             btn_hitl_final_export_n.grid(row=0, column=1, rowspan=1, sticky='nesw', padx=5)
@@ -1207,7 +1221,6 @@ def start_or_continue_hitl():
         annotation_arguments_pkl = os.path.join(selected_dir, 'temp-folder', 'annotation_information.pkl')
         with open(annotation_arguments_pkl, 'rb') as fp:
             annotation_arguments = pickle.load(fp)
-            fp.close()
         
         # update class_txt_file from json in case user added classes last time
         class_list_txt = annotation_arguments['class_list_txt']
@@ -1361,12 +1374,11 @@ def pascal_voc_to_yolo(folder_path):
         send_to_output_window(f"   {counts['background']} background images ({round(counts['background'] / counts['images'] * 100, 1)}% of total n images)")
 
 # open xml and check if the data is already in the json
-def check_verification_status_and_update_json(xml_file, inverted_label_map, recognition_file = "", update_json = True): 
-    # import xml
-    tree = ET.parse(xml_file)
-    root = tree.getroot()
+def check_if_img_needs_converting(img_file): 
+    # open xml
+    root = ET.parse(return_xml_path(img_file)).getroot()
 
-    # read verification status of file
+    # read verification status
     try:
         verification_status = True if root.attrib['verified'] == 'yes' else False
     except:
@@ -1378,99 +1390,126 @@ def check_verification_status_and_update_json(xml_file, inverted_label_map, reco
     except:
         json_update_status = False
 
-    # convert to COCO
-    if update_json and verification_status and not json_update_status: 
+    # return whether or not it needs converting to json
+    if verification_status == True and json_update_status == False: 
+        return True
+    else:
+        return False
 
-        # file
-        path = root.findtext('path')
+# converts individual xml to coco
+def convert_xml_to_coco(xml_path, inverted_label_map):
+    # open
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    try:
+        verification_status = True if root.attrib['verified'] == 'yes' else False
+    except:
+        verification_status = False
+    path = root.findtext('path')
+    size = root.find('size')
+    im_width = int(size.findtext('width'))
+    im_height = int(size.findtext('height'))
 
-        # image info
-        size = root.find('size')
-        im_width = int(size.findtext('width'))
-        im_height = int(size.findtext('height'))
+    # fetch objects
+    verified_detections = []
+    new_class = False
+    for obj in root.findall('object'):
+        name = obj.findtext('name')
 
-        # detections
-        verified_detections = []
-        new_class = False
-        for obj in root.findall('object'):
+        # check if new class
+        if name in inverted_label_map:
+            new_class = False
+        else:
+            new_class = True
+            highest_index = 0
+            for key, value in inverted_label_map.items():
+                value = int(value)
+                if value > highest_index:
+                    highest_index = value
+            inverted_label_map[name] = str(highest_index + 1)
+        category = inverted_label_map[name]
 
-            # # category
-            name = obj.findtext('name')
+        # read 
+        bndbox = obj.find('bndbox')
+        xmin = int(float(bndbox.findtext('xmin')))
+        ymin = int(float(bndbox.findtext('ymin')))
+        xmax = int(float(bndbox.findtext('xmax')))
+        ymax = int(float(bndbox.findtext('ymax')))
 
-            # add key for new category
-            if name in inverted_label_map:
-                new_class = False
-            else:
-                new_class = True
-                highest_index = 0
-                for key, value in inverted_label_map.items():
-                    value = int(value)
-                    if value > highest_index:
-                        highest_index = value
-                inverted_label_map[name] = str(highest_index + 1)
-            category = inverted_label_map[name]
+        # convert
+        w_box = round(abs(xmax - xmin) / im_width, 5)
+        h_box = round(abs(ymax - ymin) / im_height, 5)
+        xo = round(xmin / im_width, 5)
+        yo = round(ymin / im_height, 5)
+        bbox = [xo, yo, w_box, h_box]
 
-            # # bbox
-            # read box coordinates
-            bndbox = obj.find('bndbox')
-            xmin = int(float(bndbox.findtext('xmin')))
-            ymin = int(float(bndbox.findtext('ymin')))
-            xmax = int(float(bndbox.findtext('xmax')))
-            ymax = int(float(bndbox.findtext('ymax')))
+        # compile
+        verified_detection = {'category' : category,
+                              'conf' : 1.0,
+                              'bbox' : bbox}
+        verified_detections.append(verified_detection)
+    verified_image = {'file' : path,
+                      'detections' : verified_detections}
+    
+    # return
+    return [verified_image, verification_status, new_class, inverted_label_map]
 
-            # convert to COCO
-            w_box = round(abs(xmax - xmin) / im_width, 5)
-            h_box = round(abs(ymax - ymin) / im_height, 5)
-            xo = round(xmin / im_width, 5)
-            yo = round(ymin / im_height, 5)
-            bbox = [xo, yo, w_box, h_box]
+# update json from list with verified images
+def update_json_from_img_list(verified_images, inverted_label_map, recognition_file, patience_dialog, current): 
 
-            # create detections
-            verified_detection = {'category' : category,
-                                  'conf' : 1.0,
-                                  'bbox' : bbox}
-            
-            # append detection
-            verified_detections.append(verified_detection)
-        
-        # create image
-        verified_image = {'file' : path,
-                          'detections' : verified_detections}
-        
         # check if the json has relative paths
         if check_json_paths(recognition_file) == "relative":
             json_paths_are_relative = True
         else:
             json_paths_are_relative = False
 
-        # open json data
+        # open
+        print(recognition_file)
         with open(recognition_file, "r") as image_recognition_file_content:
             data = json.load(image_recognition_file_content)
 
         # adjust
-        if new_class:
-            data['detection_categories'] = {v: k for k, v in inverted_label_map.items()}
         for image in data['images']:
             image_path = image['file']
             if json_paths_are_relative:
                 image_path = os.path.normpath(os.path.join(os.path.dirname(recognition_file), image_path))
-            if image_path == verified_image['file']:
+            if image_path in verified_images:
+
+                # update progress
+                patience_dialog.update_progress(current = current, percentage = True)
+                current += 1
+
+                # read
+                xml = return_xml_path(image_path)
+                coco, verification_status, new_class, inverted_label_map = convert_xml_to_coco(xml, inverted_label_map)
                 image['manually_checked'] = verification_status
+                if new_class:
+                    data['detection_categories'] = {v: k for k, v in inverted_label_map.items()}
                 if verification_status:
-                    image['detections'] = verified_image['detections']
+                    image['detections'] = coco['detections']
+
+                    # adjust xml file
+                    tree = ET.parse(xml)
+                    root = tree.getroot()
+                    root.set('json_updated', 'yes')
+                    indent(root)
+                    tree.write(xml)
         image_recognition_file_content.close()
 
         # write
+        print(recognition_file)
         with open(recognition_file, "w") as json_file:
             json.dump(data, json_file, indent=1)
         image_recognition_file_content.close()
-        
-        # add attribute to xml file so that we know we already updated this one
-        # if user saves a new xml file, the attribute disapears and is updated again
-        root.set('json_updated', 'yes')
-        indent(root)
-        tree.write(xml_file)
 
+# helper function to quickly check the verification status of xml
+def verification_status(xml):
+    tree = ET.parse(xml)
+    root = tree.getroot()
+    try:
+        verification_status = True if root.attrib['verified'] == 'yes' else False
+    except:
+        verification_status = False
     return verification_status
 
 # delpoy model and create json output files 
@@ -2653,23 +2692,33 @@ def return_xml_path(img_path):
     return os.path.normpath(temp_xml_path)
 
 # temporary file which labelImg writes to notify EcoAssist that it should convert xml to coco
-class TemporaryTextFile:
-    def __init__(self, path, content=None):
-        self.path = path
-        self.content = content
+class LabelImgExchangeDir:
+    def __init__(self, dir):
+        self.dir = dir
+        Path(self.dir).mkdir(parents=True, exist_ok=True)
 
-    def create(self):
-        if not os.path.exists(self.path):
-            with open(self.path, 'w+') as file:
-                if self.content:
-                    file.write(self.content)
+    def create_file(self, content, idx):
+        timestamp_miliseconds = str(str(datetime.date.today()) + str(datetime.datetime.now().strftime('%H%M%S%f'))).replace('-', '')
+        temp_file = os.path.normpath(os.path.join(self.dir, f"{timestamp_miliseconds}-{idx}.txt"))
+        with open(temp_file, 'w') as f:
+            f.write(content)
+        print(f"Written by LabelImg : '{temp_file}' -- With content : '{content}'")
+    
+    def read_file(self, fp):
+        with open(fp, 'r') as f:
+            content = f.read()
+            print(f"Read by EcoAssist   : '{fp}' -- With content : '{content}'")
+            return content
 
-    def delete(self):
-        if os.path.exists(self.path):
-            os.remove(self.path)
+    def delete_file(self, fp):
+        if os.path.exists(fp):
+            os.remove(fp)
 
-    def exists(self):
-        return os.path.exists(self.path)
+    def exist_file(self):
+        filelist = glob.glob(os.path.normpath(os.path.join(self.dir, '*.txt')))
+        for fn in sorted(filelist):
+            return [True, fn]
+        return [False, '']
 
 # simple window to show progressbar
 class PatienceDialog:
@@ -2678,13 +2727,10 @@ class PatienceDialog:
         self.root.title("Have patience")
         self.total = total
         self.text = text
-
         self.label = tk.Label(self.root, text=text)
         self.label.pack(pady=10)
-
         self.progress = ttk.Progressbar(self.root, mode='determinate', length=200)
         self.progress.pack(pady=10, padx = 10)
-
         self.root.withdraw()
 
     def open(self):
@@ -2692,16 +2738,19 @@ class PatienceDialog:
         self.root.deiconify()
 
     def update_progress(self, current, percentage = False):
-        self.progress['value'] = (current / self.total) * 100
-        if percentage:
-            percentage_value = round((current/self.total)*100)
-            self.label.config(text = f"{self.text}\n{percentage_value}%")
-        else:
-            self.label.config(text = f"{self.text}\n{current} of {self.total}")
-        self.root.update()
+        # updating takes considerable time - only do this 100 times
+        if current % math.ceil(self.total / 100) == 0:
+            self.progress['value'] = (current / self.total) * 100
+            if percentage:
+                percentage_value = round((current/self.total)*100)
+                self.label.config(text = f"{self.text}\n{percentage_value}%")
+            else:
+                self.label.config(text = f"{self.text}\n{current} of {self.total}")
+            self.root.update()
 
     def close(self):
-        self.root.withdraw()
+        self.root.destroy()
+
 
 # class for simple question with buttons
 class TextButtonWindow:
@@ -3237,7 +3286,7 @@ def set_language(to_lang):
         lang = 1
 
     # update addax text
-    lbl_addax.config(text=lbl_addax_txt[lang])
+    # lbl_addax.config(text=lbl_addax_txt[lang])
 
     # update tab texts
     tabControl.tab(deploy_tab, text=deploy_tab_text[lang])
@@ -4206,13 +4255,13 @@ es_flag = ImageTk.PhotoImage(es_flag)
 es_widget = tk.Button(root, image=es_flag, bg="white", highlightthickness=1, highlightbackground="white", relief="raised", command=lambda: set_language("es"))
 es_widget.grid(column=0, row=1, sticky='e', pady=(0, 2), padx=(3, 43))
 
-# link to addax 
-lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
-                    '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
+# # link to addax 
+# lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
+#                     '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
 
-lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
-lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
-lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
+# lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
+# lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
+# lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
 
 # deploy tab
 deploy_tab = ttk.Frame(tabControl)
