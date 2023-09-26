@@ -1290,8 +1290,13 @@ def pascal_voc_to_yolo(folder_path):
             file_name, file_ext = os.path.splitext(file)
 
             # for all images
-            if file_ext in ['.jpg', '.jpeg', '.gif', '.png']:
+            if file_ext.lower() in ['.jpg', '.jpeg', '.gif', '.png']:
                 counts['images'] += 1
+
+                # show progress per 1000 files
+                if index_d % 1000 == 0:
+                    send_to_output_window(f"   currently at number {index_d}...")
+                index_d += 1
 
                 # an image without an xml is a background
                 if not os.path.isfile(os.path.join(folder_path, f"{file_name}.xml")):
@@ -1308,11 +1313,6 @@ def pascal_voc_to_yolo(folder_path):
                 h = int(size.find('height').text)
                 with open(yolo_txt_path, 'w') as yolo_file:
                     yolo_written.write(yolo_txt_path + '\n')
-
-                    # show progress per 1000 files
-                    if index_d % 1000 == 0:
-                        send_to_output_window(f"   currently at number {index_d}...")
-                    index_d += 1
 
                     # a xml without any objects is also a background
                     is_background = True
