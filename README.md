@@ -127,6 +127,8 @@ Opening EcoAssist for the first time will take a bit longer than usual due to sc
 2. Download the [EcoAssist installation file](https://PetervanLunteren.github.io/EcoAssist/install.bat) and double-click it. If that doesn't work, you can drag and drop it in a command prompt window and press enter.
 3. If you've executed it with admin rights, it will be installed for all users. If you don't have admin rights, you will be prompted if you'd still like to enter an admin password, or proceed with the non-admin install - which will make EcoAssist available for your user only.
 4. When the installation is finished, there will be a shortcut file in your `Downloads` folder. You are free to move this file to a more convenient location. EcoAssist will open when double-clicked.
+
+If you're having trouble with permissions issues, you can choose to run it inside a Windows Subsystem for Linux (WSL) environment. See the steps [here](https://github.com/PetervanLunteren/EcoAssist/issues/23). 
 </details>
 
 <details>
