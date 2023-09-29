@@ -263,11 +263,16 @@ if [ "$PLATFORM" = "Linux" ]; then
   conda activate $ECOASSISTCONDAENV
   # requirements for Human-in-the-loop
   $PIP install pyqt5==5.15.2 lxml libxcb-xinerama0
-  echo "For the use of Human-in-the-loop we need to install the libxcb-xinerama0 package (https://packages.ubuntu.com/bionic/libxcb-xinerama0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install libxcb-xinerama0. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
+  echo "We need to install libxcb-xinerama0 (https://packages.ubuntu.com/bionic/libxcb-xinerama0) and libgl1 (https://www.opengl.org/sdk/libs/). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
   { # first try without sudo
     apt install libxcb-xinerama0 
   } || { # otherwise with sudo
     sudo apt install libxcb-xinerama0 
+    }
+  { # first try without sudo
+    apt install libgl1 
+  } || { # otherwise with sudo
+    sudo apt install libgl1 
     }
   cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Exiting installation." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   pyrcc5 -o libs/resources.py resources.qrc
