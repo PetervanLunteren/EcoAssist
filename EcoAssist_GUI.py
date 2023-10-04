@@ -3286,7 +3286,7 @@ def set_language(to_lang):
         lang = 1
 
     # update addax text
-    # lbl_addax.config(text=lbl_addax_txt[lang])
+    lbl_addax.config(text=lbl_addax_txt[lang])
 
     # update tab texts
     tabControl.tab(deploy_tab, text=deploy_tab_text[lang])
@@ -4255,13 +4255,13 @@ es_flag = ImageTk.PhotoImage(es_flag)
 es_widget = tk.Button(root, image=es_flag, bg="white", highlightthickness=1, highlightbackground="white", relief="raised", command=lambda: set_language("es"))
 es_widget.grid(column=0, row=1, sticky='e', pady=(0, 2), padx=(3, 43))
 
-# # link to addax 
-# lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
-#                     '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
+# link to addax 
+lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
+                 '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
 
-# lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
-# lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
-# lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
+lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
+lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
+lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
 
 # deploy tab
 deploy_tab = ttk.Frame(tabControl)
