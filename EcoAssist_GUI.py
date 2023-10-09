@@ -229,9 +229,9 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                         for k, v in img_for_exif._getexif().items()
                         if k in PIL.ExifTags.TAGS
                     }
+                    img_for_exif.close()
                 except:
                     exif_data = None
-                img_for_exif.close()
 
                 # check if datetime values can be found
                 exif_params = []
