@@ -1951,9 +1951,11 @@ def start_deploy():
         additional_vid_options.append("--recursive")
     if var_not_all_frames.get():
         additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
+    temp_frame_folder_created = False
     if var_cls_model.get() not in none_txt:
         global temp_frame_folder
         temp_frame_folder_obj = tempfile.TemporaryDirectory()
+        temp_frame_folder_created = True
         temp_frame_folder = temp_frame_folder_obj.name
         additional_vid_options.append("--frame_folder=" + temp_frame_folder)
         additional_vid_options.append("--keep_extracted_frames")
@@ -1969,7 +1971,7 @@ def start_deploy():
 
     # add image progress
     if var_process_img.get():
-        progress_img_frame = LabelFrame(md_progress_window, text=[" Process images ", " Procesar imágenes "][lang], pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+        progress_img_frame = LabelFrame(md_progress_window, text=[" Images ", " Imágenes "][lang], pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
         progress_img_frame.configure(font=(text_font, 15, "bold"))
         progress_img_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
         progress_img_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1995,7 +1997,7 @@ def start_deploy():
 
     # add video progress
     if var_process_vid.get():
-        progress_vid_frame = LabelFrame(md_progress_window, text=[" Process videos ", " Procesar vídeos "][lang], pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
+        progress_vid_frame = LabelFrame(md_progress_window, text=[" Videos ", " Vídeos "][lang], pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
         progress_vid_frame.configure(font=(text_font, 15, "bold"))
         progress_vid_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
         progress_vid_frame.columnconfigure(0, weight=3, minsize=115)
@@ -2035,7 +2037,8 @@ def start_deploy():
         md_progress_window.destroy()
 
         # clean up temp folder with frames
-        temp_frame_folder_obj.cleanup()
+        if temp_frame_folder_created:
+            temp_frame_folder_obj.cleanup()
 
     except Exception as error:
         # log error
