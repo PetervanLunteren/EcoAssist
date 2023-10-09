@@ -1,6 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 20 Sept 2023
+# Latest edit by Peter van Lunteren on 9 Oct 2023
 
 # import packages like a christmas tree
 import os
@@ -18,6 +18,7 @@ import signal
 import shutil
 import pickle
 import platform
+import tempfile
 import datetime
 import traceback
 import subprocess
@@ -40,7 +41,7 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set global variables
-version = "4.1"
+version = "4.2"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 # insert pythonpath
@@ -70,6 +71,7 @@ processing_txt = ["Processing", "Procesando"]
 elapsed_time_txt = ["Elapsed time", "Tiempo transcurrido"]
 remaining_time_txt = ["Remaining time", "Tiempo restante"]
 running_on_txt = ["Running on", "Funcionando en"]
+none_txt = ["None", "Ninguno"]
 of_txt = ["of", "de"]
 
 ##########################################
@@ -961,25 +963,18 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # run command
     p = Popen(command_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 bufsize=1,
                 shell=True,
                 universal_newlines=True)
 
-    # create temp-file-dir
-    labelImg_exchange_dir = LabelImgExchangeDir(os.path.normpath(os.path.join(var_choose_folder.get(), "temp-folder", "labelImg-info")))
+    # read the output
+    for line in p.stdout:
+        print(line, end='')
 
-    # calculate metrics while annotating
-    while p.poll() is None:
-
-        # show window
-        hitl_progress_window.update()
-        
-        # labelImg writes a temp-file to notify ecoassist
-        exists, fp = labelImg_exchange_dir.exist_file()
-        if exists:
-
-            # read
-            ver_diff = labelImg_exchange_dir.read_file(fp)
+        if "<EA>" in line:
+            ver_diff = re.search('<EA>(.)<EA>', line).group().replace('<EA>', '')
 
             # adjust verification count
             if ver_diff == '+':
@@ -993,8 +988,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             value_hitl_stats_percentage.config(text = f"{percentage}%")
             value_hitl_stats_verified.config(text = f"{n_verified_files}/{total_n_files}")
 
-            # remove temp file
-            labelImg_exchange_dir.delete_file(fp)
+            # show window
+            hitl_progress_window.update()
         
         # set save status
         try:
@@ -1502,15 +1497,136 @@ def update_json_from_img_list(verified_images, inverted_label_map, recognition_f
             json.dump(data, json_file, indent=1)
         image_recognition_file_content.close()
 
-# helper function to quickly check the verification status of xml
-def verification_status(xml):
-    tree = ET.parse(xml)
-    root = tree.getroot()
+# take MD json and classify detections
+def classify_detections(json_fpath, cls_thresh, data_type):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # adjust variables for images or videos
+    if data_type == "img":
+        progress_stats = progress_img_stats_cls
+        progress_frame = progress_img_frame
+        progress_progbar = progress_img_progbar_cls
+    else:
+        progress_stats = progress_vid_stats_cls
+        progress_frame = progress_vid_frame
+        progress_progbar = progress_vid_progbar_cls
+
+    # show user it's loading
+    progress_stats['text'] = create_md_progress_lbl(command = "load")
+    root.update()
+
+    # locate script
+    if os.name == 'nt':
+        classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classify_detections.bat")
+    else:
+        classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classify_detections.command")
+    cls_model_fpath = os.path.join(EcoAssist_files, "classification_models", var_cls_model.get())
+
+    # create command
+    command_args = []
+    command_args.append(classify_detections_script)
+    command_args.append(EcoAssist_files)
+    command_args.append(cls_model_fpath)
+    command_args.append(json_fpath)
+    command_args.append(str(cls_thresh))
     try:
-        verification_status = True if root.attrib['verified'] == 'yes' else False
-    except:
-        verification_status = False
-    return verification_status
+        command_args.append(temp_frame_folder)
+    except NameError:
+        pass
+
+    # adjust command for unix OS
+    if os.name != 'nt':
+        command_args = "'" + "' '".join(command_args) + "'"
+
+    # log command
+    print(command_args)
+
+    # prepare process and cancel method per OS
+    if os.name == 'nt':
+        # run windows command
+        p = Popen(command_args,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.STDOUT,
+                  bufsize=1,
+                  shell=True,
+                  universal_newlines=True)
+
+    else:
+        # run unix command
+        p = Popen(command_args,
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.STDOUT,
+                  bufsize=1,
+                  shell=True,
+                  universal_newlines=True,
+                  preexec_fn=os.setsid)
+
+    # cancel button
+    btn_cancel_cls = Button(progress_frame, text=cancel_txt[lang], command=lambda: cancel_subprocess(p))
+    btn_cancel_cls.grid(row=8, column=0, columnspan=2)
+
+    # calculate metrics while running
+    for line in p.stdout:
+        print(line, end='')
+
+        # get process stats and send them to tkinter
+        if line.startswith("GPU available: False"):
+            GPU_param = "CPU"
+        elif line.startswith("GPU available: True"):
+            GPU_param = "GPU"
+        elif '%' in line[0:4]:
+            
+            # read stats
+            times = re.search("(\[.*?\])", line)[1]
+            progress_bar = re.search("^[^\/]*[^[^ ]*", line.replace(times, ""))[0]
+            percentage = re.search("\d*%", progress_bar)[0][:-1]
+            current_im = re.search("\d*\/", progress_bar)[0][:-1]
+            total_im = re.search("\/\d*", progress_bar)[0][1:]
+            elapsed_time = re.search("(?<=\[)(.*)(?=<)", times)[1]
+            time_left = re.search("(?<=<)(.*)(?=,)", times)[1]
+            processing_speed = re.search("(?<=,)(.*)(?=])", times)[1].strip()
+            
+            # order stats
+            stats = create_md_progress_lbl(elapsed_time = elapsed_time,
+                                            time_left = time_left,
+                                            current_im = current_im,
+                                            total_im = total_im,
+                                            processing_speed = processing_speed,
+                                            percentage = percentage,
+                                            GPU_param = GPU_param,
+                                            data_type = data_type,
+                                            command = "running")
+            
+            # print stats
+            progress_progbar['value'] = percentage
+            progress_stats['text'] = stats
+        root.update()
+
+    # repeat when process is done
+    progress_stats['text'] = create_md_progress_lbl(elapsed_time = elapsed_time,
+                                                    time_left = time_left,
+                                                    current_im = current_im,
+                                                    total_im = total_im,
+                                                    processing_speed = processing_speed,
+                                                    percentage = percentage,
+                                                    GPU_param = GPU_param,
+                                                    data_type = data_type,
+                                                    command = "done")
+    root.update()
+
+    # remove button after process is done
+    btn_cancel_cls.grid_remove()
+
+# quit popen process
+def cancel_subprocess(process, process_killed = ""):
+    global cancel_deploy_model_pressed
+    if os.name == 'nt':
+        Popen(f"TASKKILL /F /PID {process.pid} /T")
+    else:
+        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    if process_killed == "deploy_model":
+        cancel_deploy_model_pressed = True
 
 # delpoy model and create json output files 
 def deploy_model(path_to_image_folder, selected_options, data_type):
@@ -1600,7 +1716,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     
     # log
     print(f"command:\n\n{command}\n\n")
-
+        
     # prepare process and cancel method per OS
     if os.name == 'nt':
         # run windows command
@@ -1611,10 +1727,6 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
                   shell=True,
                   universal_newlines=True)
 
-        # cancel button
-        btn_cancel = Button(progress_frame, text=cancel_txt[lang], command=lambda: Popen(f"TASKKILL /F /PID {p.pid} /T"))
-        btn_cancel.grid(row=9, column=0, columnspan=2)
-
     else:
         # run unix command
         p = Popen(command,
@@ -1624,11 +1736,12 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
                   shell=True,
                   universal_newlines=True,
                   preexec_fn=os.setsid)
-        
-        # add cancel button
-        btn_cancel = Button(progress_frame, text=cancel_txt[lang], command=lambda: os.killpg(os.getpgid(p.pid), signal.SIGTERM))
-        btn_cancel.grid(row=9, column=0, columnspan=2)
-
+    
+    # cancel button
+    global cancel_deploy_model_pressed
+    cancel_deploy_model_pressed = False
+    btn_cancel = Button(progress_frame, text=cancel_txt[lang], command=lambda: cancel_subprocess(p, "deploy_model"))
+    btn_cancel.grid(row=3, column=0, columnspan=2)
     
     # read output and direct to tkinter
     model_error_shown = False
@@ -1642,7 +1755,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
         if line.startswith("No image files found"):
             mb.showerror(["No images found", "No se han encontrado imágenes"][lang],
                         [f"There are no images found in '{chosen_folder}'. \n\nAre you sure you specified the correct folder?"
-                        f"If the files are in subdirectories, make sure you don't tick '{lbl_exclude_subs_txt}'.",
+                        f" If the files are in subdirectories, make sure you don't tick '{lbl_exclude_subs_txt[lang]}'.",
                         f"No se han encontrado imágenes en '{chosen_folder}'. \n\n¿Está seguro de haber especificado la carpeta correcta?"][lang])
             return
         if line.startswith("No videos found"):
@@ -1729,11 +1842,6 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     # remove button after process is done
     btn_cancel.grid_remove()
     
-    # remove frames.json file
-    frames_video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.frames.json")
-    if os.path.isfile(frames_video_recognition_file):
-        os.remove(frames_video_recognition_file)
-    
     # create ecoassist metadata
     ecoassist_metadata = {"ecoassist_metadata" : {"version" : version,
                                                   "custom_model" : custom_model_bool,
@@ -1753,6 +1861,19 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
         append_to_json(video_recognition_file, ecoassist_metadata)
         if var_abs_paths.get():
             make_json_absolute(video_recognition_file)
+    
+    # classify detections if specified by user
+    if not cancel_deploy_model_pressed:
+        if var_cls_model.get() not in none_txt:
+            if data_type == "img":
+                classify_detections(os.path.join(chosen_folder, "image_recognition_file.json"), var_cls_thresh.get(), data_type)
+            else:
+                classify_detections(os.path.join(chosen_folder, "video_recognition_file.json"), var_cls_thresh.get(), data_type)
+
+    # remove frames.json file
+    frames_video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.frames.json")
+    if os.path.isfile(frames_video_recognition_file):
+        os.remove(frames_video_recognition_file)
 
 # open progress window and initiate the model deployment
 def start_deploy():
@@ -1816,8 +1937,6 @@ def start_deploy():
     additional_img_options = ["--output_relative_filenames"]
     if not var_exclude_subs.get():
         additional_img_options.append("--recursive")
-    if var_excl_detecs.get():
-        additional_img_options.append("--threshold=" + str(var_md_thresh.get()))
     if var_use_checkpnts.get():
         additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
     if var_cont_checkpnt.get():
@@ -1827,13 +1946,17 @@ def start_deploy():
 
     # create command for the video process to be passed on to process_video.py
     additional_vid_options = []
+    additional_vid_options.append("--json_confidence_threshold=0.01")
     if not var_exclude_subs.get():
         additional_vid_options.append("--recursive")
-    if var_excl_detecs.get():
-        additional_vid_options.append("--rendering_confidence_threshold=" + str(var_md_thresh.get()))
-        additional_vid_options.append("--json_confidence_threshold=" + str(var_md_thresh.get()))
     if var_not_all_frames.get():
         additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
+    if var_cls_model.get() not in none_txt:
+        global temp_frame_folder
+        temp_frame_folder_obj = tempfile.TemporaryDirectory()
+        temp_frame_folder = temp_frame_folder_obj.name
+        additional_vid_options.append("--frame_folder=" + temp_frame_folder)
+        additional_vid_options.append("--keep_extracted_frames")
     
     # open new window with progress bar and stats
     md_progress_window = Toplevel(root)
@@ -1851,12 +1974,24 @@ def start_deploy():
         progress_img_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
         progress_img_frame.columnconfigure(0, weight=3, minsize=115)
         progress_img_frame.columnconfigure(1, weight=1, minsize=115)
+        ttk.Label(master=progress_img_frame, text="Detection progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=0, sticky = 'w')
         global progress_img_progbar
         progress_img_progbar = ttk.Progressbar(master=progress_img_frame, orient='horizontal', mode='determinate', length=280)
-        progress_img_progbar.grid(column=0, row=0, columnspan=2, padx=5, pady=(3,0))
+        progress_img_progbar.grid(column=0, row=1, columnspan=2, padx=5, pady=(3,0))
         global progress_img_stats
         progress_img_stats = ttk.Label(master=progress_img_frame, text=create_postprocess_lbl())
-        progress_img_stats.grid(column=0, row=1, padx=5, pady=(0,3), columnspan=2)
+        progress_img_stats.grid(column=0, row=2, padx=5, pady=(0,3), columnspan=2)
+
+        # progressbar for classification
+        if var_cls_model.get() not in none_txt:
+            ttk.Label(master=progress_img_frame, text="").grid(column=0, row=4, sticky = 'w')
+            ttk.Label(master=progress_img_frame, text="Classification progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=5, sticky = 'w')
+            global progress_img_progbar_cls
+            progress_img_progbar_cls = ttk.Progressbar(master=progress_img_frame, orient='horizontal', mode='determinate', length=280)
+            progress_img_progbar_cls.grid(column=0, row=6, columnspan=2, padx=5, pady=(3,0))
+            global progress_img_stats_cls
+            progress_img_stats_cls = ttk.Label(master=progress_img_frame, text=create_postprocess_lbl())
+            progress_img_stats_cls.grid(column=0, row=7, padx=5, pady=(0,3), columnspan=2)
 
     # add video progress
     if var_process_vid.get():
@@ -1865,17 +2000,30 @@ def start_deploy():
         progress_vid_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
         progress_vid_frame.columnconfigure(0, weight=3, minsize=115)
         progress_vid_frame.columnconfigure(1, weight=1, minsize=115)
+        ttk.Label(master=progress_vid_frame, text="Detection progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=0, sticky = 'w')
         global progress_vid_progbar
         progress_vid_progbar = ttk.Progressbar(master=progress_vid_frame, orient='horizontal', mode='determinate', length=280)
-        progress_vid_progbar.grid(column=0, row=0, columnspan=2, padx=10, pady=2)
+        progress_vid_progbar.grid(column=0, row=1, columnspan=2, padx=10, pady=2)
         global progress_vid_stats
         progress_vid_stats = ttk.Label(master=progress_vid_frame, text=create_postprocess_lbl())
-        progress_vid_stats.grid(column=0, row=1, columnspan=2)
+        progress_vid_stats.grid(column=0, row=2, columnspan=2)
+
+        # progressbar for classification
+        if var_cls_model.get() not in none_txt:
+            ttk.Label(master=progress_vid_frame, text="").grid(column=0, row=4, sticky = 'w')
+            ttk.Label(master=progress_vid_frame, text="Classification progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=5, sticky = 'w')
+            global progress_vid_progbar_cls
+            progress_vid_progbar_cls = ttk.Progressbar(master=progress_vid_frame, orient='horizontal', mode='determinate', length=280)
+            progress_vid_progbar_cls.grid(column=0, row=6, columnspan=2, padx=5, pady=(3,0))
+            global progress_vid_stats_cls
+            progress_vid_stats_cls = ttk.Label(master=progress_vid_frame, text=create_postprocess_lbl())
+            progress_vid_stats_cls.grid(column=0, row=7, padx=5, pady=(0,3), columnspan=2)
     
     try:
-        # process images ...
+        # detect images ...
         if var_process_img.get():
             deploy_model(var_choose_folder.get(), additional_img_options, data_type = "img")
+
         # ... and/or videos
         if var_process_vid.get():
             deploy_model(var_choose_folder.get(), additional_vid_options, data_type = "vid")
@@ -1885,6 +2033,9 @@ def start_deploy():
         
         # close progress window
         md_progress_window.destroy()
+
+        # clean up temp folder with frames
+        temp_frame_folder_obj.cleanup()
 
     except Exception as error:
         # log error
@@ -1934,6 +2085,7 @@ def produce_graph(file_list_txt = None, dir = None):
         fig = plt.figure(figsize = (10, 5))
         plt.bar(classes, counts, width = 0.4)
         plt.ylabel(["No. of instances verified", "No de instancias verificadas"][lang])
+        plt.close()
 
         # return results
         return fig
@@ -2269,10 +2421,28 @@ def select_detections(selection_dict, prepare_files):
     if json_paths_converted:
         make_json_absolute(recognition_file)
 
+# count confidence values per class for histograms
+def fetch_confs_per_class(json_fpath):
+    label_map = fetch_label_map_from_json(os.path.join(var_choose_folder.get(), 'image_recognition_file.json'))
+    confs = {}
+    for key in label_map:
+        confs[key] = []
+    with open(json_fpath) as content:
+        data = json.load(content)
+        for image in data['images']:
+            for detection in image['detections']:
+                conf = detection["conf"]
+                category = detection["category"]
+                confs[category].append(conf)
+    return confs
+
 # open the human-in-the-loop settings window
 def open_hitl_settings_window():
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # fetch confs for histograms
+    confs = fetch_confs_per_class(os.path.join(var_choose_folder.get(), 'image_recognition_file.json'))
 
     # set global vars
     global selection_dict
@@ -2331,9 +2501,18 @@ def open_hitl_settings_window():
     hitl_img_selection_frame.columnconfigure(3, weight=1, minsize=200)
     hitl_img_selection_frame.columnconfigure(4, weight=1, minsize=200)
 
+    # show explanation and resize window
+    def show_text_hitl_img_selection_explanation():
+        text_hitl_img_selection_explanation.grid(column=0, row=0, columnspan=5, padx=5, pady=5, sticky='ew')
+        hitl_settings_window.update()
+        w = hitl_settings_main_frame.winfo_width() + 30
+        h = hitl_settings_main_frame.winfo_height() + 10
+        hitl_settings_window.geometry(f'{w}x{h}')
+        hitl_settings_window.update()
+
     # img explanation
+    Button(master=hitl_img_selection_frame, text="?", width=1, command=show_text_hitl_img_selection_explanation).grid(column=0, row=0, columnspan=1, padx=5, pady=5, sticky='ew')
     text_hitl_img_selection_explanation = Text(master=hitl_img_selection_frame, wrap=WORD, width=1, height=12 * explanation_text_box_height_factor) 
-    text_hitl_img_selection_explanation.grid(column=0, row=0, columnspan=5, padx=5, pady=5, sticky='ew')
     text_hitl_img_selection_explanation.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=10, lmargin2=10)
     text_hitl_img_selection_explanation.insert(END, ["Here, you can specify which images you wish to review. If a detection aligns with the chosen criteria, the image will be "
                                                     "chosen for the verification process. In the review process, you’ll need to make sure all detections in the image are correct. "
@@ -2436,6 +2615,12 @@ def open_hitl_settings_window():
         lbl_class = ttk.Label(master=frame, text=v, state=NORMAL)
         min_conf = DoubleVar(value = 0.2)
         max_conf = DoubleVar(value = 0.8)
+        fig = plt.figure(figsize = (2, 0.3))
+        plt.hist(confs[k], bins = 10, range = (0,1))
+        plt.xticks([])
+        plt.yticks([])
+        dist_graph = FigureCanvasTkAgg(fig, frame)
+        plt.close()
         rsl = RangeSliderH(frame, [min_conf, max_conf], padX=11, digit_precision='.2f', bgColor = '#ececec', Width = 180)
         rad_var = IntVar()
         rad_var.set(1)
@@ -2492,7 +2677,9 @@ def open_hitl_settings_window():
         frame.grid(row = row, column = 0, columnspan = 5)
         chb.grid(row = 1, column = 0)
         lbl_class.grid(row = 1, column = 1)
-        rsl.grid(row = 0, rowspan= 3, column = 2)
+        rsl.grid(row = 0, rowspan= 3, column = 2, sticky = 's')
+        rsl.lower()
+        dist_graph.get_tk_widget().grid(row = 0, rowspan= 3, column = 2, sticky = 'n')
         rad_all.grid(row=0, column=3, sticky='w')
         rad_per.grid(row=1, column=3, sticky='w')
         ent_per.grid(row=1, column=3, sticky='e')
@@ -2519,7 +2706,7 @@ def open_hitl_settings_window():
     total_imgs_frame.columnconfigure(2, weight=1, minsize=200)
     total_imgs_frame.columnconfigure(3, weight=1, minsize=200)
     total_imgs_frame.columnconfigure(4, weight=1, minsize=200)
-    total_imgs_frame.grid(row = 5, column = 0, columnspan = 5)
+    total_imgs_frame.grid(row = row_count, column = 0, columnspan = 5)
     lbl_n_total_imgs = ttk.Label(master=total_imgs_frame, text="TOTAL: 0", state=NORMAL)
     lbl_n_total_imgs.grid(row = 1, column = 4)
 
@@ -2567,6 +2754,16 @@ def open_hitl_settings_window():
 ############################################
 ############# HELPER FUNCTIONS #############
 ############################################
+
+# helper function to quickly check the verification status of xml
+def verification_status(xml):
+    tree = ET.parse(xml)
+    root = tree.getroot()
+    try:
+        verification_status = True if root.attrib['verified'] == 'yes' else False
+    except:
+        verification_status = False
+    return verification_status
 
 # show or hide widgets in the human-in-the-loop image selection frame
 def enable_selection_widgets(row):
@@ -2702,12 +2899,10 @@ class LabelImgExchangeDir:
         temp_file = os.path.normpath(os.path.join(self.dir, f"{timestamp_miliseconds}-{idx}.txt"))
         with open(temp_file, 'w') as f:
             f.write(content)
-        print(f"Written by LabelImg : '{temp_file}' -- With content : '{content}'")
     
     def read_file(self, fp):
         with open(fp, 'r') as f:
             content = f.read()
-            print(f"Read by EcoAssist   : '{fp}' -- With content : '{content}'")
             return content
 
     def delete_file(self, fp):
@@ -3155,6 +3350,17 @@ def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky)
     var_short.set(dsp_chosen_dir)
     dsp.grid(column=n_column, row=n_row, sticky=str_sticky)
 
+# choose a custom classifier for animals
+def model_cls_options(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # remove or show thresh
+    if self not in none_txt:
+        place_cls_thresh()
+    else:
+        remove_cls_thresh()
+
 # load a custom yolov5 model
 def model_options(self):
     # log
@@ -3244,7 +3450,10 @@ def update_dpd_options(dpd, master, var, options, cmd, row, lbl, from_lang):
     dpd.grid_forget()
     index = options[from_lang].index(var.get()) # get dpd index
     var.set(options[lang][index]) # set to previous index
-    dpd = OptionMenu(master, var, *options[lang], command=cmd)
+    if cmd:
+        dpd = OptionMenu(master, var, *options[lang], command=cmd)
+    else:
+        dpd = OptionMenu(master, var, *options[lang])
     dpd.configure(width=1)
     dpd.grid(row=row, column=1, sticky='nesw', padx=5)
 
@@ -3300,10 +3509,11 @@ def set_language(to_lang):
     btn_choose_folder.config(text=browse_txt[lang])
     snd_step.config(text=" " + snd_step_txt[lang] + " ")
     lbl_model.config(text=lbl_model_txt[lang])
+    lbl_cls_model.config(text=lbl_cls_model_txt[lang])
     update_dpd_options(dpd_model, snd_step, var_model, dpd_options_model, model_options, row_model, lbl_model, from_lang)
+    update_dpd_options(dpd_cls_model, snd_step, var_cls_model, dpd_options_cls_model, model_cls_options, row_cls_model, lbl_cls_model, from_lang)
     lbl_exclude_subs.config(text=lbl_exclude_subs_txt[lang])
-    lbl_excl_detecs.config(text=lbl_excl_detecs_txt[lang])
-    lbl_md_thresh.config(text=lbl_md_thresh_txt[lang])
+    lbl_cls_thresh.config(text=" ↳ " + lbl_cls_thresh_txt[lang])
     lbl_use_custom_img_size_for_deploy.config(text=lbl_use_custom_img_size_for_deploy_txt[lang])
     lbl_image_size_for_deploy.config(text=lbl_image_size_for_deploy_txt[lang])
     update_ent_text(ent_image_size_for_deploy, f"{eg_txt[lang]}: 640")
@@ -3767,35 +3977,6 @@ def toggle_train_type(self):
         dsp_resume_checkpoint.config(state=NORMAL)
         var_resume_checkpoint_path.set("")
 
-# show warning and toggle model threshold option
-md_thresh_warning = True
-def toggle_md_thresh():
-    global md_thresh_warning
-    if var_excl_detecs.get() and not md_thresh_warning:
-        place_md_thresh()
-    elif var_excl_detecs.get() and md_thresh_warning:
-        md_thresh_warning = False
-        if mb.askyesno(warning_txt[lang], ["It is strongly advised to not exclude detections from the model output file. "
-                       "Only set the confidence threshold to a very small value if you really know what you're doing. "
-                       "The model output should include just about everything that the model produces. If you,"
-                       " because for some reason, want an extra-small output file, you would typically use a threshold of"
-                       " 0.01 or 0.05.\n\nIf you want to use a threshold for post-processing features (visualization / "
-                       "folder separation / cropping / annotation), please use the associated thresholds there.\n\nDo "
-                       "you still want to exclude detections from the model output file?",
-                       "Se recomienda encarecidamente no excluir las detecciones del fichero de salida del modelo. Sólo"
-                       " ajuste el umbral de confianza a un valor muy pequeño si realmente sabe lo que está haciendo. La"
-                       " salida del modelo debería incluir casi todo lo que el modelo produce. Si usted, por alguna razón,"
-                       " quiere un archivo de salida muy pequeño, debería usar un umbral de 0.01 o 0.05.\n\nSi desea utilizar"
-                       " un umbral para las características de post-procesamiento (visualización / separación de carpetas "
-                       "/ recorte / anotación), por favor, utilice los umbrales asociados allí.\n\n¿Sigue queriendo excluir "
-                       "las detecciones del archivo de salida del modelo?"][lang]):
-            place_md_thresh()
-        else:
-            var_excl_detecs.set(False)
-            remove_md_thresh()
-    else:
-        remove_md_thresh()
-
 # show warning for absolute paths option
 shown_abs_paths_warning = True
 def abs_paths_warning():
@@ -3809,17 +3990,17 @@ def abs_paths_warning():
                     " que está haciendo."][lang])
         shown_abs_paths_warning = False
 
-# place model threshold
-def place_md_thresh():    
-    lbl_md_thresh.grid(row=row_md_thresh, sticky='nesw', pady=2)
-    scl_md_thresh.grid(row=row_md_thresh, column=1, sticky='ew', padx=10)
-    dsp_md_thresh.grid(row=row_md_thresh, column=0, sticky='e', padx=0)
+# place classifier model threshold
+def place_cls_thresh():    
+    lbl_cls_thresh.grid(row=row_cls_thresh, sticky='nesw', pady=2)
+    scl_cls_thresh.grid(row=row_cls_thresh, column=1, sticky='ew', padx=10)
+    dsp_cls_thresh.grid(row=row_cls_thresh, column=0, sticky='e', padx=0)
 
-# remove model threshold
-def remove_md_thresh():
-    lbl_md_thresh.grid_remove()
-    scl_md_thresh.grid_remove()
-    dsp_md_thresh.grid_remove()
+# remove classifier model threshold
+def remove_cls_thresh():
+    lbl_cls_thresh.grid_remove()
+    scl_cls_thresh.grid_remove()
+    dsp_cls_thresh.grid_remove()
 
 # toggle image size entry box
 def toggle_image_size_for_deploy():
@@ -4256,9 +4437,8 @@ es_widget = tk.Button(root, image=es_flag, bg="white", highlightthickness=1, hig
 es_widget.grid(column=0, row=1, sticky='e', pady=(0, 2), padx=(3, 43))
 
 # link to addax 
-lbl_addax_txt = ['Need help training a model that can identify your target species? See Addax Data Science.',
-                 '¿Necesita ayuda para entrenar un modelo que pueda identificar su especie objetivo? Consulte Addax Data Science.']
-
+lbl_addax_txt = ['Need a model that can identify your target species? See Addax Data Science.',
+                 '¿Necesita un modelo que pueda identificar sus especies objetivo? Consulte Addax Data Science.']
 lbl_addax = Label(master=root, text=lbl_addax_txt[lang], anchor="w", bg="white", cursor= "hand2", fg="darkblue", font=(text_font, second_level_frame_font_size, "underline"))
 lbl_addax.grid(row=1, sticky='ns', pady=2, padx=3)
 lbl_addax.bind("<Button-1>", lambda e:webbrowser.open_new_tab("https://addaxdatascience.com/"))
@@ -4313,7 +4493,7 @@ btn_choose_folder = Button(master=fst_step, text=browse_txt[lang], width=1, comm
 btn_choose_folder.grid(row=row_choose_folder, column=1, sticky='nesw', padx=5)
 
 ### second step
-snd_step_txt = ['Step 2: Run model', 'Paso 2: Iniciar Modelo']
+snd_step_txt = ['Step 2: Analyse', 'Paso 2: Analice']
 row_snd_step = 2
 snd_step = LabelFrame(deploy_tab, text=" " + snd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 snd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
@@ -4321,8 +4501,8 @@ snd_step.grid(column=0, row=row_snd_step, sticky='nesw')
 snd_step.columnconfigure(0, weight=1, minsize=label_width)
 snd_step.columnconfigure(1, weight=1, minsize=widget_width)
 
-# choose model
-lbl_model_txt = ['Model', 'Modelo']
+# choose detector
+lbl_model_txt = ['Model to detect animals, vehicles, and people', 'Modelo para detectar animales, vehículos y personas']
 row_model = 0
 lbl_model = Label(master=snd_step, text=lbl_model_txt[lang], width=1, anchor="w")
 lbl_model.grid(row=row_model, sticky='nesw', pady=2)
@@ -4336,35 +4516,44 @@ dpd_model.configure(width=1)
 dpd_model.grid(row=row_model, column=1, sticky='nesw', padx=5)
 dsp_model = Label(master=snd_step, textvariable=var_model_short, fg='darkred')
 
+# choose classifier
+lbl_cls_model_txt = ['Model to classify species', 'Modelo de clasificación de especies']
+row_cls_model = 1
+lbl_cls_model = Label(master=snd_step, text=lbl_cls_model_txt[lang], width=1, anchor="w")
+lbl_cls_model.grid(row=row_cls_model, sticky='nesw', pady=2)
+classification_dir = os.path.join(EcoAssist_files, "classification_models")
+cls_models = [f for f in os.listdir(classification_dir) if os.path.isfile(os.path.join(classification_dir, f)) and f.endswith('.pt')]
+dpd_options_cls_model = [cls_models + ["None"], cls_models + ["Ninguno"]]
+var_cls_model = StringVar(snd_step)
+var_cls_model.set(dpd_options_cls_model[lang][0])
+var_cls_model_short = StringVar()
+var_cls_model_path = StringVar()
+dpd_cls_model = OptionMenu(snd_step, var_cls_model, *dpd_options_cls_model[lang], command=model_cls_options)
+dpd_cls_model.configure(width=1)
+dpd_cls_model.grid(row=row_cls_model, column=1, sticky='nesw', padx=5)
+dsp_cls_model = Label(master=snd_step, textvariable=var_cls_model_short, fg='darkred')
+
+# threshold for classidifactions (not grid by default)
+lbl_cls_thresh_txt = ["Threshold to classify species", "Umbral para clasificar las especies"]
+row_cls_thresh = 2
+lbl_cls_thresh = Label(snd_step, text=" ↳ " + lbl_cls_thresh_txt[lang], width=1, anchor="w")
+var_cls_thresh = DoubleVar()
+var_cls_thresh.set(0.6)
+scl_cls_thresh = Scale(snd_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_cls_thresh, showvalue=0, width=10, length=1)
+dsp_cls_thresh = Label(snd_step, textvariable=var_cls_thresh)
+dsp_cls_thresh.config(fg="darkred")
+if cls_models != []:
+    place_cls_thresh()
+
 # include subdirectories
 lbl_exclude_subs_txt = ["Don't process subdirectories", "No procesar subcarpetas"]
-row_exclude_subs = 1
+row_exclude_subs = 3
 lbl_exclude_subs = Label(snd_step, text=lbl_exclude_subs_txt[lang], width=1, anchor="w")
 lbl_exclude_subs.grid(row=row_exclude_subs, sticky='nesw', pady=2)
 var_exclude_subs = BooleanVar()
 var_exclude_subs.set(False)
 chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w")
 chb_exclude_subs.grid(row=row_exclude_subs, column=1, sticky='nesw', padx=5)
-
-# limit detections
-lbl_excl_detecs_txt = ["Exclude detections from output file", "Excluir detecciones desde el archivo de salida"]
-row_excl_detecs = 2
-lbl_excl_detecs = Label(snd_step, text=lbl_excl_detecs_txt[lang], width=1, anchor="w")
-lbl_excl_detecs.grid(row=row_excl_detecs, sticky='nesw', pady=2)
-var_excl_detecs = BooleanVar()
-var_excl_detecs.set(False)
-chb_excl_detecs = Checkbutton(snd_step, variable=var_excl_detecs, command=toggle_md_thresh, anchor="w")
-chb_excl_detecs.grid(row=row_excl_detecs, column=1, sticky='nesw', padx=5)
-
-# threshold for model deploy (not grid by deafult)
-lbl_md_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_md_thresh = 3
-lbl_md_thresh = Label(snd_step, text=" ↳ " + lbl_md_thresh_txt[lang], width=1, anchor="w")
-var_md_thresh = DoubleVar()
-var_md_thresh.set(0.01)
-scl_md_thresh = Scale(snd_step, from_=0.005, to=1, resolution=0.005, orient=HORIZONTAL, variable=var_md_thresh, showvalue=0, width=10, length=1)
-dsp_md_thresh = Label(snd_step, textvariable=var_md_thresh)
-dsp_md_thresh.config(fg="darkred")
 
 # use custom image size
 lbl_use_custom_img_size_for_deploy_txt = ["Use custom image size", "Usar tamaño de imagen personalizado"]
@@ -4911,7 +5100,7 @@ for frame in [fst_step, snd_step, img_frame, vid_frame, fth_step, sep_frame, req
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
-snd_step.grid_rowconfigure(row_md_thresh, minsize=0) # model tresh
+snd_step.grid_rowconfigure(row_cls_thresh, minsize=0) # model tresh
 snd_step.grid_rowconfigure(row_image_size_for_deploy, minsize=0) # image size for deploy
 req_params.grid_rowconfigure(row_model_architecture, minsize=0) # model architecture
 adv_params.grid_rowconfigure(row_n_freeze_layers, minsize=0) # n frozen layers
@@ -5002,24 +5191,6 @@ def write_help_tab():
     help_text.insert(END, ["By default, EcoAssist will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only the "
                     "files directly in the chosen folder.\n\n",
                     "Por defecto, EcoAssist buscará en los subdirectorios. Seleccione esta opción si desea ignorar los subdirectorios y procesar sólo los archivos directamente en la carpeta elegida.\n\n"][lang])
-    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
-    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
-
-    # exclude detections
-    help_text.insert(END, f"{lbl_excl_detecs_txt[lang]} / {lbl_md_thresh_txt[lang]}\n")
-    help_text.insert(END, ["This option will exclude detections from the output file. Please don't use this confidence threshold in order to set post-processing features"
-                    " or third party software. The idea is that the output file contains everything that the model can find, and all processes which use this output file "
-                    "will have their own ways of handling the confidence values. Once detections are excluded from the output file, there is no way of getting it back. "
-                    "It is strongly advised to not exclude detections from the output file. Only set the confidence threshold to a very small value if you really know what"
-                    " you're doing. If you, because for some reason, want an extra-small output file, you would typically use a threshold of 0.01 or 0.05. To adjust the "
-                    "threshold value, you can drag the slider or press either sides next to the slider for a 0.005 reduction or increment. Confidence values are within the "
-                    "[0.005, 1] interval.\n\n", "Esta opción excluirá las detecciones desde el archivo de salida. No utilice este umbral de confianza para configurar funciones"
-                    " de post-procesamiento o software de terceros. La idea es que el fichero de salida contenga todo lo que el modelo pueda encontrar, y todos los procesos "
-                    "que utilicen este fichero de salida tendrán sus propias formas de manejar los valores de confianza. Una vez excluidas las detecciones del fichero de salida,"
-                    " no hay forma de recuperarlas. Se recomienda encarecidamente no excluir detecciones del fichero de salida. Ajuste el umbral de confianza a un valor muy pequeño"
-                    " sólo si realmente sabe lo que está haciendo. Si usted, por alguna razón, desea un fichero de salida extra pequeño, normalmente utilizaría un umbral de 0.01 o "
-                    "0.05. Para ajustar el valor del umbral, puede arrastrar el control deslizante o pulsar cualquiera de los lados junto al control deslizante para una reducción o "
-                    "incremento de 0.005. Los valores de confianza están dentro del intervalo [0.005, 1].\n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -5196,8 +5367,8 @@ def write_help_tab():
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-    # confidence threshold
-    help_text.insert(END, f"{lbl_md_thresh_txt[lang]}\n")
+    # lassification confidence threshold TODO dit is nog oude text
+    help_text.insert(END, f"{lbl_cls_thresh_txt[lang]}\n")
     help_text.insert(END, ["Detections below this value will not be post-processed. To adjust the threshold value, you can drag the slider or press either sides next to "
                     "the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval. If you set the confidence threshold too high, "
                     "you will miss some detections. On the other hand, if you set the threshold too low, you will get false positives. When choosing a threshold for your "

@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 8 Sept 2023 (latest edit)
+@REM ### Peter van Lunteren, 9 Oct 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -173,7 +173,8 @@ echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_ins
 for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
 if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
 @REM set pip path
-set EA_PIP_EXE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
+set EA_PIP_EXE_DET=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
+set EA_PIP_EXE_CLA=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8\Scripts\pip3
 
 @REM set git cmds
 @REM check the default locations for a Git install
@@ -338,6 +339,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
 
+@REM create folder for classification models
+if not exist "%LOCATION_ECOASSIST_FILES%\classification_models" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models"
+
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
@@ -348,25 +352,41 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssi
 call activate ecoassistcondaenv
 
 @REM install additional packages for Human-in-the-loop
-"%EA_PIP_EXE%" install pyqt5==5.15.2 lxml
+"%EA_PIP_EXE_DET%" install pyqt5==5.15.2 lxml
 
 @REM install additional packages for EcoAssist
-"%EA_PIP_EXE%" install bounding_box
-"%EA_PIP_EXE%" install RangeSlider
+"%EA_PIP_EXE_DET%" install bounding_box
+"%EA_PIP_EXE_DET%" install RangeSlider
 
 @REM install additional packages for yolov5
-"%EA_PIP_EXE%" install GitPython==3.1.30
-"%EA_PIP_EXE%" install tensorboard==2.4.1
-"%EA_PIP_EXE%" install thop==0.1.1.post2209072238
-"%EA_PIP_EXE%" install protobuf==3.20.1
-"%EA_PIP_EXE%" install setuptools==65.5.1
-"%EA_PIP_EXE%" install numpy==1.23.4
+"%EA_PIP_EXE_DET%" install GitPython==3.1.30
+"%EA_PIP_EXE_DET%" install tensorboard==2.4.1
+"%EA_PIP_EXE_DET%" install thop==0.1.1.post2209072238
+"%EA_PIP_EXE_DET%" install protobuf==3.20.1
+"%EA_PIP_EXE_DET%" install setuptools==65.5.1
+"%EA_PIP_EXE_DET%" install numpy==1.23.4
 
 @REM log env info
 call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
 call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-"%EA_PIP_EXE%" freeze >> "%LOG_FILE%"
+"%EA_PIP_EXE_DET%" freeze >> "%LOG_FILE%"
+call %EA_CONDA_EXE% deactivate
+
+@REM activate dedicated environment for classification
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8
+call %EA_CONDA_EXE% create -n ecoassistcondaenv-yolov8 python=3.8 -y
+call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
+"%EA_PIP_EXE_CLA%" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+"%EA_PIP_EXE_CLA%" install ultralytics==8.0.191
+"%EA_PIP_EXE_CLA%" install numpy==1.24.1
+
+@REM log env info
+call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
+call %EA_CONDA_EXE% list >> "%LOG_FILE%"
+"%EA_PIP_EXE_CLA%" freeze >> "%LOG_FILE%"
+call %EA_CONDA_EXE% deactivate
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
