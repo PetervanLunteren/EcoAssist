@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 28 Aug 2023 (latest edit)
+### Peter van Lunteren, 9 Oct 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -36,8 +36,10 @@ fi
 
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
-PIP="${ECOASSISTCONDAENV}/bin/pip"
+ECOASSISTCONDAENV_DET="${CONDA_DIR}/envs/ecoassistcondaenv"
+ECOASSISTCONDAENV_CLA="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
+PIP_DET="${ECOASSISTCONDAENV_DET}/bin/pip"
+PIP_CLA="${ECOASSISTCONDAENV_CLA}/bin/pip"
 HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
 
 # remove the old ecoassistcondaenv
@@ -237,6 +239,9 @@ else
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
+# make dir for classification models
+mkdir -p $LOCATION_ECOASSIST_FILES/classification_models
+
 # install miniforge
 MFG="miniforge"
 if [ -d "$MFG" ]; then
@@ -253,16 +258,16 @@ source "${CONDA_DIR}/bin/activate"
 export PATH="${CONDA_DIR}/bin":$PATH
 
 # remove previous EcoAssist conda env if present
-conda env remove -p $ECOASSISTCONDAENV
+conda env remove -p $ECOASSISTCONDAENV_DET
 
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV
+  conda activate $ECOASSISTCONDAENV_DET
   # requirements for Human-in-the-loop
-  $PIP install pyqt5==5.15.2 lxml libxcb-xinerama0
+  $PIP_DET install pyqt5==5.15.2 lxml libxcb-xinerama0
   echo "We need to install libxcb-xinerama0 (https://packages.ubuntu.com/bionic/libxcb-xinerama0) and libgl1 (https://www.opengl.org/sdk/libs/). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
   { # first try without sudo
     apt install libxcb-xinerama0 
@@ -282,22 +287,24 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV
+  conda activate $ECOASSISTCONDAENV_DET
   # requirements for Human-in-the-loop
-  $PIP install pyqt5==5.15.2 lxml
+  $PIP_DET install pyqt5==5.15.2 lxml
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
   conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV
+  conda activate $ECOASSISTCONDAENV_DET
   { # install nightly pytorch via miniforge as arm64
-    $PIP install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+    # $PIP_DET install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu # DEBUG
+    $PIP_DET install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
   } || { # if the first try didn't work
-    conda install -c conda-forge pytorch torchvision -y
+    # conda install -c conda-forge pytorch torchvision -y # DEBUG
+    conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
   }
   # install lxml
-  $PIP install lxml
+  $PIP_DET install lxml
 
   # we need homebrew to install PyQt5 for Apple Silicon macs
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -313,20 +320,35 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
 fi
 
 # requirements for EcoAssist
-$PIP install bounding_box
-$PIP install RangeSlider
+$PIP_DET install bounding_box
+$PIP_DET install RangeSlider
 
 # requirements for yolov5
-$PIP install "gitpython>=3.1.30"
-$PIP install "tensorboard>=2.4.1"
-$PIP install "thop>=0.1.1"
-$PIP install "protobuf<=3.20.1"
-$PIP install "setuptools>=65.5.1"
+$PIP_DET install "gitpython>=3.1.30"
+$PIP_DET install "tensorboard>=2.4.1"
+$PIP_DET install "thop>=0.1.1"
+$PIP_DET install "protobuf<=3.20.1"
+$PIP_DET install "setuptools>=65.5.1"
 
 # log env info
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
-$PIP freeze >> "$LOG_FILE"
+$PIP_DET freeze >> "$LOG_FILE"
+conda deactivate
+
+# create dedicated yolov8 classification environment
+conda env remove -p $ECOASSISTCONDAENV_CLA
+conda create -p $ECOASSISTCONDAENV_CLA python=3.8 -y
+conda activate $ECOASSISTCONDAENV_CLA
+$PIP_CLA install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+# $PIP_CLA install torch torchvision torchaudio # DEBUG
+# conda install pytorch::pytorch torchvision torchaudio -c pytorch -y # DEBUG
+$PIP_CLA install "ultralytics==8.0.191"
+$PIP_CLA install "numpy==1.24.1"
+conda info --envs >> "$LOG_FILE"
+conda list >> "$LOG_FILE"
+$PIP_CLA freeze >> "$LOG_FILE" 
+conda deactivate
 
 # log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`

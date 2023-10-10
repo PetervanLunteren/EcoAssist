@@ -65,7 +65,19 @@ def remove_background(img, bbox_norm):
 
 # run through json and convert detections to classficiations
 def convert_detections_to_classification(json_path, img_dir):
-    print(f"GPU available: {torch.cuda.is_available()}")
+
+    # check if mps or cuda is available
+    GPU_availability = False
+    try:
+        if torch.backends.mps.is_built() and torch.backends.mps.is_available():
+            GPU_availability = True
+    except:
+        pass
+    if not GPU_availability:
+        GPU_availability = torch.cuda.is_available()
+
+    # start running
+    print(f"GPU available: {GPU_availability}")
     initial_it = True
     with open(json_path) as image_recognition_file_content:
         data = json.load(image_recognition_file_content)
