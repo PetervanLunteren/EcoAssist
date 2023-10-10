@@ -297,10 +297,8 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_DET
   { # install nightly pytorch via miniforge as arm64
-    # $PIP_DET install --pre torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/nightly/cpu # DEBUG
     $PIP_DET install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
   } || { # if the first try didn't work
-    # conda install -c conda-forge pytorch torchvision -y # DEBUG
     conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
   }
   # install lxml
@@ -341,8 +339,6 @@ conda env remove -p $ECOASSISTCONDAENV_CLA
 conda create -p $ECOASSISTCONDAENV_CLA python=3.8 -y
 conda activate $ECOASSISTCONDAENV_CLA
 $PIP_CLA install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-# $PIP_CLA install torch torchvision torchaudio # DEBUG
-# conda install pytorch::pytorch torchvision torchaudio -c pytorch -y # DEBUG
 $PIP_CLA install "ultralytics==8.0.191"
 $PIP_CLA install "numpy==1.24.1"
 conda info --envs >> "$LOG_FILE"
