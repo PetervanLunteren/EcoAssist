@@ -27,6 +27,19 @@ Now try to recreate the error and check the console output for its message.
 3. Close and save the file;
 4. Start EcoAssist as you would do normally and recreate the error.
 </details>
+<details>
+<summary><b>Linux</b></summary>
+<br>
+ 
+1. Open the file `/home/<username>/.EcoAssist_files/EcoAssist/open.command` with a text editor like TextEdit or Visual Studio Code;
+2. Outcomment these lines like so:
+```bash
+# exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
+# exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
+ ```
+3. Close and save the file;
+4. Start EcoAssist as you would do normally and recreate the error.
+</details>
 
 This will show you EcoAssist's output during runtime. If there are any errors, they will most probabaly show up here. If you want you can copy-paste it and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
 
