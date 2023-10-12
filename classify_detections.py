@@ -1,6 +1,6 @@
 # Script to add species specific classifications to animal detections
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 9 Oct 2023
+# Latest edit by Peter van Lunteren on 12 Oct 2023
 
 # import packages
 from ultralytics import YOLO
@@ -76,7 +76,21 @@ def convert_detections_to_classification(json_path, img_dir):
     if not GPU_availability:
         GPU_availability = torch.cuda.is_available()
 
-    # start running
+    # count the number of crops to classify
+    n_crops_to_classify = 0
+    with open(json_path) as image_recognition_file_content:
+        data = json.load(image_recognition_file_content)
+        label_map = fetch_label_map_from_json(json_path)
+        for image in data['images']:
+            if 'detections' in image:
+                for detection in image['detections']:
+                    conf = detection["conf"]
+                    category_id = detection['category']
+                    category = label_map[category_id]
+                    if conf >= cls_thresh and category == 'animal':
+                        n_crops_to_classify += 1
+
+    # crop and classify
     print(f"GPU available: {GPU_availability}")
     initial_it = True
     with open(json_path) as image_recognition_file_content:
@@ -87,38 +101,43 @@ def convert_detections_to_classification(json_path, img_dir):
         inverted_cls_label_map = {v: k for k, v in data['classification_categories'].items()}
         inverted_det_label_map = {v: k for k, v in data['detection_categories'].items()}
         n_tot_img = len(data['images'])
-        for image in tqdm(data['images']):
+        with tqdm(total=n_crops_to_classify) as pbar:
+            for image in data['images']:
 
-            # loop
-            fname = image['file']
-            for detection in image['detections']:
-                conf = detection["conf"]
-                category_id = detection['category']
-                category = label_map[category_id]
-                if conf >= cls_thresh and category == 'animal':
-                    img_fpath = os.path.join(img_dir, fname)
-                    bbox = detection['bbox']
-                    crop = remove_background(Image.open(img_fpath), bbox)
-                    name_classifications = get_classification(crop)
+                # loop
+                fname = image['file']
+                if 'detections' in image:
+                    for detection in image['detections']:
+                        conf = detection["conf"]
+                        category_id = detection['category']
+                        category = label_map[category_id]
+                        if conf >= cls_thresh and category == 'animal':
+                            img_fpath = os.path.join(img_dir, fname)
+                            bbox = detection['bbox']
+                            crop = remove_background(Image.open(img_fpath), bbox)
+                            name_classifications = get_classification(crop)
 
-                    # check if name already in classification_categories
-                    idx_classifications = []
-                    for elem in name_classifications:
-                        name = elem[0]
-                        if initial_it:
-                            if name not in inverted_cls_label_map:
-                                highest_index = 0
-                                for key, value in inverted_cls_label_map.items():
-                                    value = int(value)
-                                    if value > highest_index:
-                                        highest_index = value
-                                inverted_cls_label_map[name] = str(highest_index + 1)
-                        idx_classifications.append([inverted_cls_label_map[name], round(elem[1], 5)])
-                    initial_it = False
+                            # check if name already in classification_categories
+                            idx_classifications = []
+                            for elem in name_classifications:
+                                name = elem[0]
+                                if initial_it:
+                                    if name not in inverted_cls_label_map:
+                                        highest_index = 0
+                                        for key, value in inverted_cls_label_map.items():
+                                            value = int(value)
+                                            if value > highest_index:
+                                                highest_index = value
+                                        inverted_cls_label_map[name] = str(highest_index + 1)
+                                idx_classifications.append([inverted_cls_label_map[name], round(elem[1], 5)])
+                            initial_it = False
 
-                    # sort
-                    idx_classifications = sorted(idx_classifications, key=lambda x:x[1], reverse=True)
-                    detection['classifications'] = idx_classifications
+                            # sort
+                            idx_classifications = sorted(idx_classifications, key=lambda x:x[1], reverse=True)
+                            detection['classifications'] = idx_classifications
+
+                            # update prgressbar
+                            pbar.update(1)
 
     # write unaltered json for timelapse
     json_path_unaltered = os.path.splitext(json_path)[0] + "_original" + os.path.splitext(json_path)[1]
