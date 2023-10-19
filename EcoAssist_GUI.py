@@ -5,6 +5,8 @@
 # TODO: add install info for Apple Silicon homebrew sudo command
 # TODO: fix scroll bug of deploy_tab doesn't work anymore after deployment
 # TODO: auto adjust size of helptab after show/hide widgets
+# TODO: fix width after show hide subframes
+# TODO: add documentation for smooth_params.py
 # TODO: maak een check voor resize window en tel dan gewoon de widget lengths bij elkaar op. 
 # TODO: als je een grote json file hebt, dan even checken of alle lekker werkt met de human in the loop. Krijg je overal progress windows?
 # TODO: spaanse teksten bij de Help tab.
