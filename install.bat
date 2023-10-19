@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 9 Oct 2023 (latest edit)
+@REM ### Peter van Lunteren, 17 Oct 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -270,25 +270,25 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone https://github.com/agentmorris/MegaDetector.git cameratraps
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 4549e770cdfbc7e3d885df9cfaac572e9b5a934e
+    "%EA_GIT_EXE%" checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
 )
 
-@REM clone ai4eutils git if not present
-if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
-    echo Dir ai4eutils already exists! Skipping this step. | wtee -a "%LOG_FILE%"
-) else (
-    echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone https://github.com/Microsoft/ai4eutils
-    cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    @REM check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
-)
+@REM @REM clone ai4eutils git if not present
+@REM if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
+@REM     echo Dir ai4eutils already exists! Skipping this step. | wtee -a "%LOG_FILE%"
+@REM ) else (
+@REM     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
+@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     "%EA_GIT_EXE%" clone https://github.com/Microsoft/ai4eutils
+@REM     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     "%EA_GIT_EXE%" checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
+@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     @REM check the size of the folder
+@REM     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
+@REM )
 
 @REM clone yolov5 git if not present
 if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
@@ -339,8 +339,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
 
-@REM create folder for classification models
+@REM create folders for classification models
 if not exist "%LOCATION_ECOASSIST_FILES%\classification_models" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models"
+if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_animals" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_animals"
+if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons"
+if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles"
 
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
@@ -380,6 +383,8 @@ call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
 "%EA_PIP_EXE_CLA%" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 "%EA_PIP_EXE_CLA%" install ultralytics==8.0.191
 "%EA_PIP_EXE_CLA%" install numpy==1.24.1
+"%EA_PIP_EXE_CLA%" install humanfriendly==10.0
+"%EA_PIP_EXE_CLA%" install jsonpickle==3.0.2
 
 @REM log env info
 call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )

@@ -1,6 +1,13 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 9 Oct 2023
+# Latest edit by Peter van Lunteren on 18 Oct 2023
+
+# TODO: add install info for Apple Silicon homebrew sudo command
+# TODO: fix scroll bug of deploy_tab doesn't work anymore after deployment
+# TODO: auto adjust size of helptab after show/hide widgets
+# TODO: maak een check voor resize window en tel dan gewoon de widget lengths bij elkaar op. 
+# TODO: als je een grote json file hebt, dan even checken of alle lekker werkt met de human in the loop. Krijg je overal progress windows?
+# TODO: spaanse teksten bij de Help tab.
 
 # import packages like a christmas tree
 import os
@@ -34,15 +41,16 @@ from functools import partial
 import matplotlib.pyplot as plt
 from subprocess import Popen, PIPE
 import xml.etree.cElementTree as ET
-from PIL import ImageTk, Image, ImageFilter
 from bounding_box import bounding_box as bb
 from RangeSlider.RangeSlider import RangeSliderH
 from tkinter import filedialog, ttk, messagebox as mb
+from PIL import ImageTk, Image, ImageFilter, ImageFile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set global variables
-version = "4.2"
+version = "4.3"
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # insert pythonpath
 sys.path.insert(0, os.path.join(EcoAssist_files))
@@ -243,50 +251,51 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     exif_params.append(param_value)
 
         # loop through detections
-        for detection in image['detections']:
+        if 'detections' in image:
+            for detection in image['detections']:
 
-            # get confidence
-            conf = detection["conf"]
+                # get confidence
+                conf = detection["conf"]
 
-            # write max conf
-            if manually_checked:
-                max_detection_conf = "NA"
-            elif conf > max_detection_conf:
-                max_detection_conf = conf
-
-            # if above user specified thresh
-            if conf >= thresh:
-
-                # change conf to string for verified images
+                # write max conf
                 if manually_checked:
-                    conf = "NA"
+                    max_detection_conf = "NA"
+                elif conf > max_detection_conf:
+                    max_detection_conf = conf
 
-                # get detection info
-                category = detection["category"]
-                label = label_map[category]
-                if sep:
-                    unique_labels.append(label)
-                    unique_labels = sorted(list(set(unique_labels)))
+                # if above user specified thresh
+                if conf >= thresh:
 
-                # get bbox info
-                if vis or crp or csv:
-                    if data_type == "img":
-                        height, width = im_to_vis.shape[:2]
-                    else:
-                        height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    # change conf to string for verified images
+                    if manually_checked:
+                        conf = "NA"
 
-                    w_box = detection['bbox'][2]
-                    h_box = detection['bbox'][3]
-                    xo = detection['bbox'][0] + (w_box/2)
-                    yo = detection['bbox'][1] + (h_box/2)
-                    left = int(round(detection['bbox'][0] * width))
-                    top = int(round(detection['bbox'][1] * height))
-                    right = int(round(w_box * width)) + left
-                    bottom = int(round(h_box * height)) + top
+                    # get detection info
+                    category = detection["category"]
+                    label = label_map[category]
+                    if sep:
+                        unique_labels.append(label)
+                        unique_labels = sorted(list(set(unique_labels)))
 
-                    # store in list
-                    bbox_info.append([label, conf, manually_checked, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
+                    # get bbox info
+                    if vis or crp or csv:
+                        if data_type == "img":
+                            height, width = im_to_vis.shape[:2]
+                        else:
+                            height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                            width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+                        w_box = detection['bbox'][2]
+                        h_box = detection['bbox'][3]
+                        xo = detection['bbox'][0] + (w_box/2)
+                        yo = detection['bbox'][1] + (h_box/2)
+                        left = int(round(detection['bbox'][0] * width))
+                        top = int(round(detection['bbox'][1] * height))
+                        right = int(round(w_box * width)) + left
+                        bottom = int(round(h_box * height)) + top
+
+                        # store in list
+                        bbox_info.append([label, conf, manually_checked, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
 
         # separate files
         if sep:
@@ -1014,6 +1023,12 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     else:
         json_paths_are_relative = False
 
+    # open patience window
+    # TODO: dit moet een progresswindow worden die heen en weer gaat. Maar daar heb ik een grote json voor nodig.
+    converting_patience_dialog = PatienceDialog(total = 1,
+                                                text = ["Running verification...", "Verificación de funcionamiento..."][lang])
+    converting_patience_dialog.open()
+
     # check which images need converting
     imgs_needing_converting = []
     with open(file_list_txt) as f:
@@ -1022,6 +1037,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             annotation = return_xml_path(img)
             if check_if_img_needs_converting(img):
                 imgs_needing_converting.append(img)
+    converting_patience_dialog.update_progress(current = 1)
+    converting_patience_dialog.close()
 
     # open json
     with open(recognition_file, "r") as image_recognition_file_content:
@@ -1043,7 +1060,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     # check if there are images that the user first verified and then un-verified
     for image in data['images']:
         image_path = image['file']
-        # updating the progressbar takes considerable time
         patience_dialog.update_progress(current = current, percentage = True)
         current += 1
         if json_paths_are_relative:
@@ -1058,8 +1074,9 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                         # set check flag in json
                         image['manually_checked'] = False
                         # reset confidence from 1.0 to arbitrary value 
-                        for detection in image['detections']:
-                            detection['conf'] = 0.7
+                        if 'detections' in image:
+                            for detection in image['detections']:
+                                detection['conf'] = 0.7
     
     # write json
     image_recognition_file_content.close()
@@ -1189,12 +1206,34 @@ def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file,
     hitl_final_window.destroy()
     change_hitl_var_in_json(recognition_file, "done")
 
+# get size of file in appropriate unit
+def get_size(path):
+    size = os.path.getsize(path)
+    if size < 1024:
+        return f"{size} bytes"
+    elif size < pow(1024,2):
+        return f"{round(size/1024, 2)} KB"
+    elif size < pow(1024,3):
+        return f"{round(size/(pow(1024,2)), 2)} MB"
+    elif size < pow(1024,4):
+        return f"{round(size/(pow(1024,3)), 2)} GB"
+
 # check if the user is already in progress of verifying, otherwise start new session
 def start_or_continue_hitl():
 
     # early exit if only video json
     selected_dir = var_choose_folder.get()
     path_to_image_json = os.path.join(selected_dir, "image_recognition_file.json")
+
+    # warn user if the json file is very large
+    json_size = os.path.getsize(path_to_image_json)
+    if json_size > 10000:
+        mb.showwarning(warning_txt[lang], [f"The JSON file is very large ({get_size(path_to_image_json)}). This can cause the verification"
+                                            " step to perform very slow. It will work, but you'll have to have patience. ", "El archivo "
+                                            f"JSON es muy grande ({get_size(path_to_image_json)}). Esto puede hacer que el paso de verificación"
+                                            " funcione muy lentamente. Funcionará, pero tendrás que tener paciencia. "][lang])
+
+    # check requirements
     check_json_presence_and_warn_user(["verify", "verificar"][lang],
                                       ["verifying", "verificando"][lang],
                                       ["verification", "verificación"][lang])
@@ -1498,7 +1537,7 @@ def update_json_from_img_list(verified_images, inverted_label_map, recognition_f
         image_recognition_file_content.close()
 
 # take MD json and classify detections
-def classify_detections(json_fpath, cls_thresh, data_type):
+def classify_detections(json_fpath, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
@@ -1521,15 +1560,41 @@ def classify_detections(json_fpath, cls_thresh, data_type):
         classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classify_detections.bat")
     else:
         classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classify_detections.command")
-    cls_model_fpath = os.path.join(EcoAssist_files, "classification_models", var_cls_model.get())
+
+    # get classification params
+    if var_cls_animal_model.get() not in none_txt: 
+        cls_animal_model_fpath = os.path.join(EcoAssist_files, "classification_models", "cls_animals", var_cls_animal_model.get())
+        cls_animal_thresh = var_cls_animal_thresh.get()
+        cls_animal_smooth = var_smooth_cls_animal.get()
+    else:
+        cls_animal_model_fpath = 'None'
+        cls_animal_thresh = 'None'
+        cls_animal_smooth = 'None'
+    if var_cls_vehicle_model.get() not in none_txt: 
+        cls_vehicle_model_fpath = os.path.join(EcoAssist_files, "classification_models", "cls_vehicles", var_cls_vehicle_model.get())
+        cls_vehicle_thresh = var_cls_vehicle_thresh.get()
+    else:
+        cls_vehicle_model_fpath = 'None'
+        cls_vehicle_thresh = 'None'
+    if var_cls_person_model.get() not in none_txt: 
+        cls_person_model_fpath = os.path.join(EcoAssist_files, "classification_models", "cls_persons", var_cls_person_model.get())
+        cls_person_thresh = var_cls_person_thresh.get()
+    else:
+        cls_person_model_fpath = 'None'
+        cls_person_thresh = 'None'
 
     # create command
     command_args = []
     command_args.append(classify_detections_script)
     command_args.append(EcoAssist_files)
-    command_args.append(cls_model_fpath)
+    command_args.append(cls_animal_model_fpath)
+    command_args.append(str(cls_animal_thresh))
+    command_args.append(str(cls_animal_smooth))
+    command_args.append(cls_vehicle_model_fpath)
+    command_args.append(str(cls_vehicle_thresh))
+    command_args.append(cls_person_model_fpath)
+    command_args.append(str(cls_person_thresh))
     command_args.append(json_fpath)
-    command_args.append(str(cls_thresh))
     try:
         command_args.append(temp_frame_folder)
     except NameError:
@@ -1569,6 +1634,14 @@ def classify_detections(json_fpath, cls_thresh, data_type):
     # calculate metrics while running
     for line in p.stdout:
         print(line, end='')
+
+        # catch smoothening info lines
+        if "<EA>" in line:
+            smooth_output_line = re.search('<EA>(.+)<EA>', line).group().replace('<EA>', '')
+            smooth_output_file = os.path.join(os.path.dirname(json_fpath), "smooth-output.txt")
+            with open(smooth_output_file, 'a+') as f:
+                f.write(f"{smooth_output_line}\n")
+            f.close()
 
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
@@ -1614,6 +1687,8 @@ def classify_detections(json_fpath, cls_thresh, data_type):
                                                     data_type = data_type,
                                                     command = "done")
     root.update()
+
+
 
     # remove button after process is done
     btn_cancel_cls.grid_remove()
@@ -1744,9 +1819,9 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     btn_cancel.grid(row=3, column=0, columnspan=2)
     
     # read output and direct to tkinter
-    model_error_shown = False
+    model_error_present = False
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
-    model_warning_shown = False
+    model_warning_present = False
     model_warning_log = os.path.join(chosen_folder, "model_warning_log.txt")
     for line in p.stdout:
         print(line, end='')
@@ -1768,28 +1843,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
                         line + ["\n\nConverting the videos to .mp4 might fix the issue.",
                                 "\n\nConvertir los vídeos a .mp4 podría solucionar el problema."][lang])
             return
-        if "Exception:" in line:
-            if not model_error_shown:
-                mb.showerror(error_txt[lang], [f"There are one or more model errors. See\n\n'{model_error_log}'\n\nfor more information.",
-                                               f"Hay uno o más errores de modelo. Consulte\n\n'{model_error_log}'\n\npara obtener más información."][lang])
-                model_error_shown = True
 
-            # write errors to log file
+        # write errors to log file
+        if "Exception:" in line:
+            model_error_present = True
             with open(model_error_log, 'a+') as f:
                 f.write(f"{line}\n")
             f.close()
 
-        if "Warning:" in line and not '%' in line[0:4]:
+        # write warnings to log file
+        if "Warning:" in line:
             if not "could not determine MegaDetector version" in line \
                 and not "no metadata for unknown detector version" in line \
                 and not "using user-supplied image size" in line:
-                if not model_warning_shown:
-                    mb.showerror(warning_txt[lang], ["Model warning:\n\n", "Advertencia de modelo:\n\n"][lang] + line)
-                    mb.showerror(error_txt[lang], [f"There are one or more model warnings. See\n\n'{model_warning_log}'\n\nfor more information.",
-                                                f"Hay uno o más advertencias de modelo. Consulte\n\n'{model_warning_log}'\n\npara obtener más información."][lang])
-                    model_warning_shown = True
-
-                # write warnings to log file
+                model_warning_present = True
                 with open(model_warning_log, 'a+') as f:
                     f.write(f"{line}\n")
                 f.close()
@@ -1838,7 +1905,17 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
                                                     data_type = data_type,
                                                     command = "done")
     root.update()
-        
+
+    # show model error pop up window
+    if model_error_present:
+        mb.showerror(error_txt[lang], [f"There are one or more model errors. See\n\n'{model_error_log}'\n\nfor more information.",
+                                        f"Hay uno o más errores de modelo. Consulte\n\n'{model_error_log}'\n\npara obtener más información."][lang])
+
+    # show model warning pop up window
+    if model_warning_present:
+        mb.showerror(error_txt[lang], [f"There are one or more model warnings. See\n\n'{model_warning_log}'\n\nfor more information.",
+                                    f"Hay uno o más advertencias de modelo. Consulte\n\n'{model_warning_log}'\n\npara obtener más información."][lang])
+
     # remove button after process is done
     btn_cancel.grid_remove()
     
@@ -1864,11 +1941,13 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     
     # classify detections if specified by user
     if not cancel_deploy_model_pressed:
-        if var_cls_model.get() not in none_txt:
+        if var_cls_further.get() and var_cls_animal_model.get() not in none_txt or \
+            var_cls_further.get() and var_cls_vehicle_model.get() not in none_txt or \
+            var_cls_further.get() and var_cls_person_model.get() not in none_txt:
             if data_type == "img":
-                classify_detections(os.path.join(chosen_folder, "image_recognition_file.json"), var_cls_thresh.get(), data_type)
+                classify_detections(os.path.join(chosen_folder, "image_recognition_file.json"), data_type)
             else:
-                classify_detections(os.path.join(chosen_folder, "video_recognition_file.json"), var_cls_thresh.get(), data_type)
+                classify_detections(os.path.join(chosen_folder, "video_recognition_file.json"), data_type)
 
     # remove frames.json file
     frames_video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.frames.json")
@@ -1952,13 +2031,16 @@ def start_deploy():
     if var_not_all_frames.get():
         additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
     temp_frame_folder_created = False
-    if var_cls_model.get() not in none_txt:
-        global temp_frame_folder
-        temp_frame_folder_obj = tempfile.TemporaryDirectory()
-        temp_frame_folder_created = True
-        temp_frame_folder = temp_frame_folder_obj.name
-        additional_vid_options.append("--frame_folder=" + temp_frame_folder)
-        additional_vid_options.append("--keep_extracted_frames")
+    if var_process_vid.get():
+        if var_cls_further.get() and var_cls_animal_model.get() not in none_txt or \
+            var_cls_further.get() and var_cls_vehicle_model.get() not in none_txt or \
+            var_cls_further.get() and var_cls_person_model.get() not in none_txt:
+            global temp_frame_folder
+            temp_frame_folder_obj = tempfile.TemporaryDirectory()
+            temp_frame_folder_created = True
+            temp_frame_folder = temp_frame_folder_obj.name
+            additional_vid_options.append("--frame_folder=" + temp_frame_folder)
+            additional_vid_options.append("--keep_extracted_frames")
     
     # open new window with progress bar and stats
     md_progress_window = Toplevel(root)
@@ -1968,6 +2050,14 @@ def start_deploy():
     # logo
     logo = tk.Label(md_progress_window, image=grey_bg_logo)
     logo.grid(column=0, row=0, columnspan=2, sticky='ew', pady=(5, 0))
+
+    # check if user has selected any cls models
+    if var_cls_further.get() and var_cls_animal_model.get() not in none_txt or \
+        var_cls_further.get() and var_cls_vehicle_model.get() not in none_txt or \
+        var_cls_further.get() and var_cls_person_model.get() not in none_txt:
+        any_cls_model_selected = True
+    else:
+        any_cls_model_selected = False
 
     # add image progress
     if var_process_img.get():
@@ -1985,7 +2075,7 @@ def start_deploy():
         progress_img_stats.grid(column=0, row=2, padx=5, pady=(0,3), columnspan=2)
 
         # progressbar for classification
-        if var_cls_model.get() not in none_txt:
+        if any_cls_model_selected:
             ttk.Label(master=progress_img_frame, text="").grid(column=0, row=4, sticky = 'w')
             ttk.Label(master=progress_img_frame, text="Classification progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=5, sticky = 'w')
             global progress_img_progbar_cls
@@ -2011,7 +2101,7 @@ def start_deploy():
         progress_vid_stats.grid(column=0, row=2, columnspan=2)
 
         # progressbar for classification
-        if var_cls_model.get() not in none_txt:
+        if any_cls_model_selected:
             ttk.Label(master=progress_vid_frame, text="").grid(column=0, row=4, sticky = 'w')
             ttk.Label(master=progress_vid_frame, text="Classification progress", font=f'{text_font} {int(13 * text_size_adjustment_factor)} bold').grid(column=0, row=5, sticky = 'w')
             global progress_vid_progbar_cls
@@ -2180,6 +2270,12 @@ def select_detections(selection_dict, prepare_files):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
+    # open patience window
+    steps_progress = PatienceDialog(total = 8, text = [f"Loading...", f"Cargando..."][lang])
+    steps_progress.open()
+    current_step = 1
+    steps_progress.update_progress(current_step);current_step += 1
+
     # init vars
     selected_dir = var_choose_folder.get()
     recognition_file = os.path.join(selected_dir, 'image_recognition_file.json')
@@ -2187,12 +2283,14 @@ def select_detections(selection_dict, prepare_files):
     Path(temp_folder).mkdir(parents=True, exist_ok=True)
     file_list_txt = os.path.join(temp_folder, 'hitl_file_list.txt')
     class_list_txt = os.path.join(temp_folder, 'hitl_class_list.txt')
+    steps_progress.update_progress(current_step);current_step += 1
 
     # make sure json has relative paths
     json_paths_converted = False
     if check_json_paths(recognition_file) != "relative":
         make_json_relative(recognition_file)
         json_paths_converted = True
+    steps_progress.update_progress(current_step);current_step += 1
 
     # list selection criteria
     selected_categories = []
@@ -2202,6 +2300,7 @@ def select_detections(selection_dict, prepare_files):
     selected_files = {}
     rad_ann_val = rad_ann_var.get()
     ann_min_confs_generic = None
+    steps_progress.update_progress(current_step);current_step += 1
 
     # class specific values
     for key, values in selection_dict.items():
@@ -2219,11 +2318,13 @@ def select_detections(selection_dict, prepare_files):
             min_confs.append(min_conf)
             max_confs.append(max_conf)
             selected_files[category] = []
+    steps_progress.update_progress(current_step);current_step += 1
 
     # remove old file list if present
     if prepare_files:
         if os.path.isfile(file_list_txt):
             os.remove(file_list_txt)
+    steps_progress.update_progress(current_step);current_step += 1
 
     # loop though images and list those which pass the criteria
     img_and_detections_dict = {}
@@ -2234,7 +2335,9 @@ def select_detections(selection_dict, prepare_files):
 
         # check all images...
         for image in data['images']:
-            image_path = os.path.join(selected_dir, image['file']) # make absolute path
+
+            # set vars
+            image_path = os.path.join(selected_dir, image['file'])
             annotations = []
             image_already_added = False
 
@@ -2245,47 +2348,49 @@ def select_detections(selection_dict, prepare_files):
                 human_verified = False
             
             # check all detections ...
-            for detection in image['detections']:
-                category_id = detection['category']
-                category = label_map[category_id]
-                conf = detection['conf']
+            if 'detections' in image:
+                for detection in image['detections']:
+                    category_id = detection['category']
+                    category = label_map[category_id]
+                    conf = detection['conf']
 
-                # ... if they pass any of the criteria
-                for i in range(len(selected_categories)):
-                    if category == selected_categories[i] and conf >= min_confs[i] and conf <= max_confs[i]:
+                    # ... if they pass any of the criteria
+                    for i in range(len(selected_categories)):
+                        if category == selected_categories[i] and conf >= min_confs[i] and conf <= max_confs[i]:
+                            
+                            # this image contains one or more detections which pass
+                            if not image_already_added:
+                                selected_files[selected_categories[i]].append(image_path)
+                                image_already_added = True
+
+                    # prepare annotations
+                    if prepare_files:
+                        display_annotation = False
+
+                        # if one annotation treshold for all classes is specified
+                        if rad_ann_val == 1 and conf >= ann_min_confs_generic:
+                            display_annotation = True
                         
-                        # this image contains one or more detections which pass
-                        if not image_already_added:
-                            selected_files[selected_categories[i]].append(image_path)
-                            image_already_added = True
+                        # if class-specific annotation tresholds are specified
+                        elif rad_ann_val == 2 and conf >= ann_min_confs_specific[category]: 
+                            display_annotation = True
 
-                # prepare annotations
-                if prepare_files:
-                    display_annotation = False
-
-                    # if one annotation treshold for all classes is specified
-                    if rad_ann_val == 1 and conf >= ann_min_confs_generic:
-                        display_annotation = True
-                    
-                    # if class-specific annotation tresholds are specified
-                    elif rad_ann_val == 2 and conf >= ann_min_confs_specific[category]: 
-                        display_annotation = True
-
-                    # add this detection to the list
-                    if display_annotation:
-                        im = Image.open(image_path)
-                        width, height = im.size
-                        left = int(round(detection['bbox'][0] * width)) # xmin
-                        top = int(round(detection['bbox'][1] * height)) # ymin 
-                        right = int(round(detection['bbox'][2] * width)) + left # width
-                        bottom = int(round(detection['bbox'][3] * height)) + top # height
-                        list = [left, top, None, None, right, bottom, None, category]
-                        string = ','.join(map(str, list))
-                        annotations.append(string)
-                                
+                        # add this detection to the list
+                        if display_annotation:
+                            im = Image.open(image_path)
+                            width, height = im.size
+                            left = int(round(detection['bbox'][0] * width)) # xmin
+                            top = int(round(detection['bbox'][1] * height)) # ymin 
+                            right = int(round(detection['bbox'][2] * width)) + left # width
+                            bottom = int(round(detection['bbox'][3] * height)) + top # height
+                            list = [left, top, None, None, right, bottom, None, category]
+                            string = ','.join(map(str, list))
+                            annotations.append(string)
+                                    
             # create pascal voc annotation file for this image
             if prepare_files:
                 img_and_detections_dict[image_path] = {"annotations": annotations, "human_verified": human_verified}
+    steps_progress.update_progress(current_step);current_step += 1
 
     # update count widget
     total_imgs = 0
@@ -2379,12 +2484,15 @@ def select_detections(selection_dict, prepare_files):
 
             # close patience window
             patience_dialog.close()      
-    
+    steps_progress.update_progress(current_step);current_step += 1
+    steps_progress.close()
 
     # update total number of images
     lbl_n_total_imgs.config(text = [f"TOTAL: {total_imgs}", f"TOTAL: {total_imgs}"][lang])
     
     if prepare_files:
+
+        # TODO: hier moet ook een progress window komen als het een grote file is
 
         # create file with classes
         with open(class_list_txt, 'a') as f:
@@ -2419,7 +2527,6 @@ def select_detections(selection_dict, prepare_files):
                         message=["An error has occurred", "Ha ocurrido un error"][lang] + " (EcoAssist v" + version + "): '" + str(error) + "'.",
                         detail=traceback.format_exc())
 
-    
     # change json paths back, if converted earlier
     if json_paths_converted:
         make_json_absolute(recognition_file)
@@ -2433,10 +2540,11 @@ def fetch_confs_per_class(json_fpath):
     with open(json_fpath) as content:
         data = json.load(content)
         for image in data['images']:
-            for detection in image['detections']:
-                conf = detection["conf"]
-                category = detection["category"]
-                confs[category].append(conf)
+            if 'detections' in image:
+                for detection in image['detections']:
+                    conf = detection["conf"]
+                    category = detection["category"]
+                    confs[category].append(conf)
     return confs
 
 # open the human-in-the-loop settings window
@@ -2476,8 +2584,8 @@ def open_hitl_settings_window():
     hitl_settings_scrollbar = tk.Scrollbar(hitl_settings_scroll_frame, orient=VERTICAL, command=hitl_settings_canvas.yview)
     hitl_settings_scrollbar.pack(side=RIGHT, fill=Y)
 
-    # enable scroll on mousewheel
-    def on_mousewheel(event):
+    # enable scroll on mousewheel 
+    def hitl_settings_canvas_mousewheel(event):
         if os.name == 'nt':
             hitl_settings_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
         else:
@@ -2486,9 +2594,9 @@ def open_hitl_settings_window():
     # configure canvas and bind scroll events
     hitl_settings_canvas.configure(yscrollcommand=hitl_settings_scrollbar.set)
     hitl_settings_canvas.bind('<Configure>', lambda e: hitl_settings_canvas.configure(scrollregion=hitl_settings_canvas.bbox("all")))
-    hitl_settings_canvas.bind_all("<MouseWheel>", on_mousewheel)
-    hitl_settings_canvas.bind_all("<Button-4>", on_mousewheel) 
-    hitl_settings_canvas.bind_all("<Button-5>", on_mousewheel)
+    hitl_settings_canvas.bind_all("<MouseWheel>", hitl_settings_canvas_mousewheel)
+    hitl_settings_canvas.bind_all("<Button-4>", hitl_settings_canvas_mousewheel) 
+    hitl_settings_canvas.bind_all("<Button-5>", hitl_settings_canvas_mousewheel)
 
     # set labelframe to fill with widgets
     hitl_settings_main_frame = LabelFrame(hitl_settings_canvas)
@@ -3027,7 +3135,7 @@ def switch_yolov5_git_to(model_type):
     repository = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
     if model_type == "old models":
         if platform.processor() == "arm" and os.name != "nt": # M1 and M2
-            repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1")
+            repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1") 
         else:
             repository.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
     elif model_type == "new models":
@@ -3354,15 +3462,37 @@ def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky)
     dsp.grid(column=n_column, row=n_row, sticky=str_sticky)
 
 # choose a custom classifier for animals
-def model_cls_options(self):
+def model_cls_animal_options(self):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # remove or show thresh
+    # remove or show widgets
     if self not in none_txt:
-        place_cls_thresh()
+        place_cls_animal_options()
     else:
-        remove_cls_thresh()
+        remove_cls_animal_options()
+
+# choose a custom classifier for vehicles
+def model_cls_vehicle_options(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # remove or show widgets
+    if self not in none_txt:
+        place_cls_vehicle_options()
+    else:
+        remove_cls_vehicle_options()
+
+# choose a custom classifier for persons
+def model_cls_person_options(self):
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # remove or show widgets
+    if self not in none_txt:
+        place_cls_person_options()
+    else:
+        remove_cls_person_options()
 
 # load a custom yolov5 model
 def model_options(self):
@@ -3512,16 +3642,22 @@ def set_language(to_lang):
     btn_choose_folder.config(text=browse_txt[lang])
     snd_step.config(text=" " + snd_step_txt[lang] + " ")
     lbl_model.config(text=lbl_model_txt[lang])
-    lbl_cls_model.config(text=lbl_cls_model_txt[lang])
     update_dpd_options(dpd_model, snd_step, var_model, dpd_options_model, model_options, row_model, lbl_model, from_lang)
-    update_dpd_options(dpd_cls_model, snd_step, var_cls_model, dpd_options_cls_model, model_cls_options, row_cls_model, lbl_cls_model, from_lang)
     lbl_exclude_subs.config(text=lbl_exclude_subs_txt[lang])
-    lbl_cls_thresh.config(text=" ↳ " + lbl_cls_thresh_txt[lang])
     lbl_use_custom_img_size_for_deploy.config(text=lbl_use_custom_img_size_for_deploy_txt[lang])
     lbl_image_size_for_deploy.config(text=lbl_image_size_for_deploy_txt[lang])
     update_ent_text(ent_image_size_for_deploy, f"{eg_txt[lang]}: 640")
     lbl_abs_paths.config(text=lbl_abs_paths_txt[lang])
     lbl_process_img.config(text=lbl_process_img_txt[lang])
+    cls_frame.config(text=" ↳ " + cls_frame_txt[lang] + " ")
+    update_dpd_options(dpd_cls_animal_model, cls_frame, var_cls_animal_model, dpd_options_cls_animal_model, model_cls_animal_options, row_cls_animal_model, lbl_cls_animal_model, from_lang)
+    lbl_cls_animal_model.config(text="     " + lbl_cls_animal_model_txt[lang])
+    lbl_cls_animal_thresh.config(text="        ↳ " + lbl_cls_animal_thresh_txt[lang])
+    lbl_smooth_cls_animal.config(text="        ↳ " + lbl_smooth_cls_animal_txt[lang])
+    lbl_cls_vehicle_model.config(text="     " + lbl_cls_vehicle_model_txt[lang])
+    lbl_cls_vehicle_thresh.config(text="        ↳ " + lbl_cls_vehicle_thresh_txt[lang])
+    lbl_cls_person_model.config(text="     " + lbl_cls_person_model_txt[lang])
+    lbl_cls_person_thresh.config(text="        ↳ " + lbl_cls_person_thresh_txt[lang])
     img_frame.config(text=" ↳ " + img_frame_txt[lang] + " ")
     lbl_use_checkpnts.config(text="     " + lbl_use_checkpnts_txt[lang])
     lbl_checkpoint_freq.config(text="        ↳ " + lbl_checkpoint_freq_txt[lang])
@@ -3993,17 +4129,53 @@ def abs_paths_warning():
                     " que está haciendo."][lang])
         shown_abs_paths_warning = False
 
-# place classifier model threshold
-def place_cls_thresh():    
-    lbl_cls_thresh.grid(row=row_cls_thresh, sticky='nesw', pady=2)
-    scl_cls_thresh.grid(row=row_cls_thresh, column=1, sticky='ew', padx=10)
-    dsp_cls_thresh.grid(row=row_cls_thresh, column=0, sticky='e', padx=0)
+# place animal classifier widgets
+def place_cls_animal_options():    
+    lbl_cls_animal_thresh.grid(row=row_cls_animal_thresh, sticky='nesw', pady=2)
+    scl_cls_animal_thresh.grid(row=row_cls_animal_thresh, column=1, sticky='ew', padx=10)
+    dsp_cls_animal_thresh.grid(row=row_cls_animal_thresh, column=0, sticky='e', padx=0)
+    lbl_smooth_cls_animal.grid(row=row_smooth_cls_animal, sticky='nesw', pady=2)
+    chb_smooth_cls_animal.grid(row=row_smooth_cls_animal, column=1, sticky='nesw', padx=5)
+    cls_frame.grid_rowconfigure(row_cls_animal_thresh, minsize=minsize_rows)
+    cls_frame.grid_rowconfigure(row_smooth_cls_animal, minsize=minsize_rows)
 
-# remove classifier model threshold
-def remove_cls_thresh():
-    lbl_cls_thresh.grid_remove()
-    scl_cls_thresh.grid_remove()
-    dsp_cls_thresh.grid_remove()
+# remove animal classifier widgets
+def remove_cls_animal_options():
+    lbl_cls_animal_thresh.grid_remove()
+    scl_cls_animal_thresh.grid_remove()
+    dsp_cls_animal_thresh.grid_remove()
+    cls_frame.grid_rowconfigure(row_cls_animal_thresh, minsize=0)
+    lbl_smooth_cls_animal.grid_remove()
+    chb_smooth_cls_animal.grid_remove()
+    cls_frame.grid_rowconfigure(row_smooth_cls_animal, minsize=0)
+
+# place vehicle classifier widgets
+def place_cls_vehicle_options():    
+    lbl_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, sticky='nesw', pady=2)
+    scl_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, column=1, sticky='ew', padx=10)
+    dsp_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, column=0, sticky='e', padx=0)
+    cls_frame.grid_rowconfigure(row_cls_vehicle_thresh, minsize=minsize_rows)
+
+# remove vehicle classifier widgets
+def remove_cls_vehicle_options():
+    lbl_cls_vehicle_thresh.grid_remove()
+    scl_cls_vehicle_thresh.grid_remove()
+    dsp_cls_vehicle_thresh.grid_remove()
+    cls_frame.grid_rowconfigure(row_cls_vehicle_thresh, minsize=0)
+
+# place person classifier widgets
+def place_cls_person_options():    
+    lbl_cls_person_thresh.grid(row=row_cls_person_thresh, sticky='nesw', pady=2)
+    scl_cls_person_thresh.grid(row=row_cls_person_thresh, column=1, sticky='ew', padx=10)
+    dsp_cls_person_thresh.grid(row=row_cls_person_thresh, column=0, sticky='e', padx=0)
+    cls_frame.grid_rowconfigure(row_cls_person_thresh, minsize=minsize_rows)
+
+# remove person classifier widgets
+def remove_cls_person_options():
+    lbl_cls_person_thresh.grid_remove()
+    scl_cls_person_thresh.grid_remove()
+    dsp_cls_person_thresh.grid_remove()
+    cls_frame.grid_rowconfigure(row_cls_person_thresh, minsize=0)
 
 # toggle image size entry box
 def toggle_image_size_for_deploy():
@@ -4017,31 +4189,52 @@ def toggle_image_size_for_deploy():
 # toggle separation subframe
 def toggle_sep_frame():
     if var_separate_files.get():
+        sep_frame.grid(row=sep_frame_row, column=0, columnspan=2, sticky = 'ew')
         enable_widgets(sep_frame)
         sep_frame.configure(fg='black')
     else:
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
+        sep_frame.grid_forget()
+
+# toggle classification subframe
+def toggle_cls_frame(): 
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    if var_cls_further.get():
+        cls_frame.grid(row=cls_frame_row, column=0, columnspan=2, sticky = 'ew')
+        enable_widgets(cls_frame)
+        toggle_checkpoint_freq()
+        cls_frame.configure(fg='black')
+    else:
+        disable_widgets(cls_frame)
+        cls_frame.configure(fg='grey80')
+        cls_frame.grid_forget()
 
 # toggle image subframe
 def toggle_img_frame():
     if var_process_img.get():
+        img_frame.grid(row=img_frame_row, column=0, columnspan=2, sticky = 'ew')
         enable_widgets(img_frame)
         toggle_checkpoint_freq()
         img_frame.configure(fg='black')
     else:
         disable_widgets(img_frame)
         img_frame.configure(fg='grey80')
+        img_frame.grid_forget()
 
 # toggle video subframe
 def toggle_vid_frame():
     if var_process_vid.get():
+        vid_frame.grid(row=vid_frame_row, column=0, columnspan=2, sticky='ew')
         enable_widgets(vid_frame)
         toggle_nth_frame()
         vid_frame.configure(fg='black')
     else:
         disable_widgets(vid_frame)
         vid_frame.configure(fg='grey80')
+        vid_frame.grid_forget()
 
 # convert frame to completed
 def complete_frame(frame):
@@ -4060,6 +4253,7 @@ def complete_frame(frame):
     if any_step:
         frame.configure(fg='green3')
     if snd_step:
+        cls_frame.configure(relief = 'groove')
         img_frame.configure(relief = 'groove')
         vid_frame.configure(relief = 'groove')
 
@@ -4110,6 +4304,8 @@ def enable_frame(frame):
     if any_step:
         frame.configure(fg='darkblue')
     if snd_step:
+        toggle_cls_frame()
+        cls_frame.configure(relief = 'solid')
         toggle_img_frame()
         img_frame.configure(relief = 'solid')
         toggle_vid_frame()
@@ -4138,6 +4334,9 @@ def disable_frame(frame):
     frame.configure(relief = 'flat')
     if frame.cget('text').startswith(f' {step_txt[lang]} 2'):
         # snd_step only
+        disable_widgets(cls_frame)
+        cls_frame.configure(fg='grey80')
+        cls_frame.configure(relief = 'flat')
         disable_widgets(img_frame)
         img_frame.configure(fg='grey80')
         img_frame.configure(relief = 'flat')
@@ -4452,6 +4651,14 @@ deploy_tab.columnconfigure(0, weight=1, minsize=frame_width)
 deploy_tab.columnconfigure(1, weight=1, minsize=frame_width)
 deploy_tab_text = ['Deploy', 'Despliegue']
 tabControl.add(deploy_tab, text=deploy_tab_text[lang])
+deploy_canvas = tk.Canvas(deploy_tab)
+deploy_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+deploy_y_scrollbar = ttk.Scrollbar(deploy_tab, orient=tk.VERTICAL, command=deploy_canvas.yview)
+deploy_y_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+deploy_canvas.configure(yscrollcommand=deploy_y_scrollbar.set)
+deploy_scrollable_frame = ttk.Frame(deploy_canvas)
+deploy_canvas.create_window((0, 0), window=deploy_scrollable_frame, anchor="nw")
+deploy_scrollable_frame.bind("<Configure>", lambda event: deploy_canvas.configure(scrollregion=deploy_canvas.bbox("all")))
 
 # train tab
 train_tab = ttk.Frame(tabControl)
@@ -4477,7 +4684,7 @@ tabControl.grid()
 ### first step
 fst_step_txt = ['Step 1: Select folder', 'Paso 1: Seleccione carpeta']
 row_fst_step = 1
-fst_step = LabelFrame(deploy_tab, text=" " + fst_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+fst_step = LabelFrame(deploy_scrollable_frame, text=" " + fst_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 fst_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fst_step.grid(column=0, row=row_fst_step, columnspan=1, sticky='ew')
 fst_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -4496,16 +4703,16 @@ btn_choose_folder = Button(master=fst_step, text=browse_txt[lang], width=1, comm
 btn_choose_folder.grid(row=row_choose_folder, column=1, sticky='nesw', padx=5)
 
 ### second step
-snd_step_txt = ['Step 2: Analyse', 'Paso 2: Analice']
+snd_step_txt = ['Step 2: Analysis', 'Paso 2: Análisis']
 row_snd_step = 2
-snd_step = LabelFrame(deploy_tab, text=" " + snd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+snd_step = LabelFrame(deploy_scrollable_frame, text=" " + snd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 snd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 snd_step.grid(column=0, row=row_snd_step, sticky='nesw')
 snd_step.columnconfigure(0, weight=1, minsize=label_width)
 snd_step.columnconfigure(1, weight=1, minsize=widget_width)
 
 # choose detector
-lbl_model_txt = ['Model to detect animals, vehicles, and people', 'Modelo para detectar animales, vehículos y personas']
+lbl_model_txt = ['Model to detect animals, vehicles, and persons', 'Modelo para detectar animales, vehículos y personas']
 row_model = 0
 lbl_model = Label(master=snd_step, text=lbl_model_txt[lang], width=1, anchor="w")
 lbl_model.grid(row=row_model, sticky='nesw', pady=2)
@@ -4519,34 +4726,127 @@ dpd_model.configure(width=1)
 dpd_model.grid(row=row_model, column=1, sticky='nesw', padx=5)
 dsp_model = Label(master=snd_step, textvariable=var_model_short, fg='darkred')
 
-# choose classifier
-lbl_cls_model_txt = ['Model to classify species', 'Modelo de clasificación de especies']
-row_cls_model = 1
-lbl_cls_model = Label(master=snd_step, text=lbl_cls_model_txt[lang], width=1, anchor="w")
-lbl_cls_model.grid(row=row_cls_model, sticky='nesw', pady=2)
-classification_dir = os.path.join(EcoAssist_files, "classification_models")
-cls_models = [f for f in os.listdir(classification_dir) if os.path.isfile(os.path.join(classification_dir, f)) and f.endswith('.pt')]
-dpd_options_cls_model = [cls_models + ["None"], cls_models + ["Ninguno"]]
-var_cls_model = StringVar(snd_step)
-var_cls_model.set(dpd_options_cls_model[lang][0])
-var_cls_model_short = StringVar()
-var_cls_model_path = StringVar()
-dpd_cls_model = OptionMenu(snd_step, var_cls_model, *dpd_options_cls_model[lang], command=model_cls_options)
-dpd_cls_model.configure(width=1)
-dpd_cls_model.grid(row=row_cls_model, column=1, sticky='nesw', padx=5)
-dsp_cls_model = Label(master=snd_step, textvariable=var_cls_model_short, fg='darkred')
+# check if user has classifiers installed
+cls_params = []
+for elem in ["cls_animals", "cls_vehicles", "cls_persons"]:
+    cls_dir = os.path.join(EcoAssist_files, "classification_models", elem)
+    cls_models = [f for f in os.listdir(cls_dir) if os.path.isfile(os.path.join(cls_dir, f)) and f.endswith('.pt')]
+    cls_model_present = True if cls_models != [] else False
+    dpd_options_cls_model = [cls_models + ["None"], cls_models + ["Ninguno"]]
+    cls_params.extend([cls_models, cls_model_present, dpd_options_cls_model])
+cls_animal_models, cls_animal_model_present, dpd_options_cls_animal_model, \
+    cls_vehicle_models, cls_vehicle_model_present, dpd_options_cls_vehicle_model, \
+    cls_person_models, cls_person_model_present, dpd_options_cls_person_model = cls_params
+any_cls_model_present = True if any([cls_animal_model_present, cls_vehicle_model_present, cls_person_model_present]) else False
 
-# threshold for classidifactions (not grid by default)
-lbl_cls_thresh_txt = ["Threshold to classify species", "Umbral para clasificar las especies"]
-row_cls_thresh = 2
-lbl_cls_thresh = Label(snd_step, text=" ↳ " + lbl_cls_thresh_txt[lang], width=1, anchor="w")
-var_cls_thresh = DoubleVar()
-var_cls_thresh.set(0.6)
-scl_cls_thresh = Scale(snd_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_cls_thresh, showvalue=0, width=10, length=1)
-dsp_cls_thresh = Label(snd_step, textvariable=var_cls_thresh)
-dsp_cls_thresh.config(fg="darkred")
-if cls_models != []:
-    place_cls_thresh()
+# use classifier
+lbl_cls_further_txt = ["Further classify detections", "Seguir clasificando las detecciones"]
+row_cls_further = 1
+lbl_cls_further = Label(snd_step, text=lbl_cls_further_txt[lang], width=1, anchor="w")
+lbl_cls_further.grid(row=row_cls_further, sticky='nesw', pady=2)
+var_cls_further = BooleanVar()
+# var_cls_further is set at the frame below
+chb_cls_further = Checkbutton(snd_step, variable=var_cls_further, command=toggle_cls_frame, anchor="w")
+chb_cls_further.grid(row=row_cls_further, column=1, sticky='nesw', padx=5)
+
+## classification option frame (hidden by default)
+cls_frame_txt = ["Classification options", "Opciones de clasificación"]
+cls_frame_row = 2
+cls_frame = LabelFrame(snd_step, text=" ↳ " + cls_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
+cls_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
+cls_frame.grid(row=cls_frame_row, column=0, columnspan=2, sticky = 'ew')
+cls_frame.columnconfigure(0, weight=1, minsize=label_width)
+cls_frame.columnconfigure(1, weight=1, minsize=widget_width)
+if any_cls_model_present:
+    var_cls_further.set(True)
+else:
+    var_cls_further.set(False)
+    cls_frame.grid_forget()
+
+# choose classifier for animals
+lbl_cls_animal_model_txt = ['Model to classify animals', 'Modelo para clasificar animales']
+row_cls_animal_model = 0
+lbl_cls_animal_model = Label(master=cls_frame, text="     " + lbl_cls_animal_model_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_animal_model.grid(row=row_cls_animal_model, sticky='nesw', pady=2)
+var_cls_animal_model = StringVar(cls_frame)
+var_cls_animal_model.set(dpd_options_cls_animal_model[lang][0])
+dpd_cls_animal_model = OptionMenu(cls_frame, var_cls_animal_model, *dpd_options_cls_animal_model[lang], command=model_cls_animal_options)
+dpd_cls_animal_model.configure(width=1, state=DISABLED)
+dpd_cls_animal_model.grid(row=row_cls_animal_model, column=1, sticky='nesw', padx=5)
+
+# threshold for animal classifications
+lbl_cls_animal_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
+row_cls_animal_thresh = 1
+lbl_cls_animal_thresh = Label(cls_frame, text="        ↳ " + lbl_cls_animal_thresh_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_animal_thresh.grid(row=row_cls_animal_thresh, sticky='nesw', pady=2)
+var_cls_animal_thresh = DoubleVar()
+var_cls_animal_thresh.set(0.6)
+scl_cls_animal_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_cls_animal_thresh, showvalue=0, width=10, length=1, state=DISABLED)
+scl_cls_animal_thresh.grid(row=row_cls_animal_thresh, column=1, sticky='ew', padx=10)
+dsp_cls_animal_thresh = Label(cls_frame, textvariable=var_cls_animal_thresh)
+dsp_cls_animal_thresh.grid(row=row_cls_animal_thresh, column=0, sticky='e', padx=0)
+dsp_cls_animal_thresh.config(fg="darkred")
+
+# include subdirectories
+lbl_smooth_cls_animal_txt = ["Smoothen results", "Suavizar resultados"]
+row_smooth_cls_animal = 2
+lbl_smooth_cls_animal = Label(cls_frame, text="        ↳ " + lbl_smooth_cls_animal_txt[lang], width=1, anchor="w")
+lbl_smooth_cls_animal.grid(row=row_smooth_cls_animal, sticky='nesw', pady=2)
+var_smooth_cls_animal = BooleanVar()
+var_smooth_cls_animal.set(True)
+chb_smooth_cls_animal = Checkbutton(cls_frame, variable=var_smooth_cls_animal, anchor="w")
+chb_smooth_cls_animal.grid(row=row_smooth_cls_animal, column=1, sticky='nesw', padx=5)
+model_cls_animal_options(dpd_options_cls_animal_model[lang][0])
+
+# choose classifier for vehicles
+lbl_cls_vehicle_model_txt = ['Model to classify vehicles', 'Modelo para clasificar vehículos']
+row_cls_vehicle_model = 3
+lbl_cls_vehicle_model = Label(master=cls_frame, text="     " + lbl_cls_vehicle_model_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_vehicle_model.grid(row=row_cls_vehicle_model, sticky='nesw', pady=2)
+var_cls_vehicle_model = StringVar(cls_frame)
+var_cls_vehicle_model.set(dpd_options_cls_vehicle_model[lang][0])
+dpd_cls_vehicle_model = OptionMenu(cls_frame, var_cls_vehicle_model, *dpd_options_cls_vehicle_model[lang], command=model_cls_vehicle_options)
+dpd_cls_vehicle_model.configure(width=1, state=DISABLED)
+dpd_cls_vehicle_model.grid(row=row_cls_vehicle_model, column=1, sticky='nesw', padx=5)
+
+# threshold for vehicle classifications
+lbl_cls_vehicle_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
+row_cls_vehicle_thresh = 4
+lbl_cls_vehicle_thresh = Label(cls_frame, text="        ↳ " + lbl_cls_vehicle_thresh_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, sticky='nesw', pady=2)
+var_cls_vehicle_thresh = DoubleVar()
+var_cls_vehicle_thresh.set(0.6)
+scl_cls_vehicle_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_cls_vehicle_thresh, showvalue=0, width=10, length=1, state=DISABLED)
+scl_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, column=1, sticky='ew', padx=10)
+dsp_cls_vehicle_thresh = Label(cls_frame, textvariable=var_cls_vehicle_thresh)
+dsp_cls_vehicle_thresh.grid(row=row_cls_vehicle_thresh, column=0, sticky='e', padx=0)
+dsp_cls_vehicle_thresh.config(fg="darkred")
+model_cls_vehicle_options(dpd_options_cls_vehicle_model[lang][0])
+
+# choose classifier for person
+lbl_cls_person_model_txt = ['Model to classify persons', 'Modelo para clasificar personas']
+row_cls_person_model = 5
+lbl_cls_person_model = Label(master=cls_frame, text="     " + lbl_cls_person_model_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_person_model.grid(row=row_cls_person_model, sticky='nesw', pady=2)
+var_cls_person_model = StringVar(cls_frame)
+var_cls_person_model.set(dpd_options_cls_person_model[lang][0])
+dpd_cls_person_model = OptionMenu(cls_frame, var_cls_person_model, *dpd_options_cls_person_model[lang], command=model_cls_person_options)
+dpd_cls_person_model.configure(width=1, state=DISABLED)
+dpd_cls_person_model.grid(row=row_cls_person_model, column=1, sticky='nesw', padx=5)
+
+# threshold for person classifications
+lbl_cls_person_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
+row_cls_person_thresh = 6
+lbl_cls_person_thresh = Label(cls_frame, text="        ↳ " + lbl_cls_person_thresh_txt[lang], width=1, anchor="w", state=DISABLED)
+lbl_cls_person_thresh.grid(row=row_cls_person_thresh, sticky='nesw', pady=2)
+var_cls_person_thresh = DoubleVar()
+var_cls_person_thresh.set(0.6)
+scl_cls_person_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_cls_person_thresh, showvalue=0, width=10, length=1, state=DISABLED)
+scl_cls_person_thresh.grid(row=row_cls_person_thresh, column=1, sticky='ew', padx=10)
+dsp_cls_person_thresh = Label(cls_frame, textvariable=var_cls_person_thresh)
+dsp_cls_person_thresh.grid(row=row_cls_person_thresh, column=0, sticky='e', padx=0)
+dsp_cls_person_thresh.config(fg="darkred")
+model_cls_person_options(dpd_options_cls_person_model[lang][0])
 
 # include subdirectories
 lbl_exclude_subs_txt = ["Don't process subdirectories", "No procesar subcarpetas"]
@@ -4598,7 +4898,7 @@ var_process_img.set(False)
 chb_process_img = Checkbutton(snd_step, variable=var_process_img, command=toggle_img_frame, anchor="w")
 chb_process_img.grid(row=row_process_img, column=1, sticky='nesw', padx=5)
 
-## image option frame (dsiabled by default)
+## image option frame (hidden by default)
 img_frame_txt = ["Image options", "Opciones de imagen"]
 img_frame_row = 8
 img_frame = LabelFrame(snd_step, text=" ↳ " + img_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
@@ -4606,6 +4906,7 @@ img_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 img_frame.grid(row=img_frame_row, column=0, columnspan=2, sticky = 'ew')
 img_frame.columnconfigure(0, weight=1, minsize=label_width)
 img_frame.columnconfigure(1, weight=1, minsize=widget_width)
+img_frame.grid_forget()
 
 # use checkpoints
 lbl_use_checkpnts_txt = ["Use checkpoints while running", "Usar puntos de control mientras se ejecuta"]
@@ -4657,6 +4958,7 @@ vid_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 vid_frame.grid(row=vid_frame_row, column=0, columnspan=2, sticky='ew')
 vid_frame.columnconfigure(0, weight=1, minsize=label_width)
 vid_frame.columnconfigure(1, weight=1, minsize=widget_width)
+vid_frame.grid_forget()
 
 # dont process all frames
 lbl_not_all_frames_txt = ["Don't process every frame", "No procesar cada fotograma"]
@@ -4689,7 +4991,7 @@ btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='
 ### human-in-the-loop step
 trd_step_txt = ["Step 3: Annotation (optional)", "Paso 3: Anotación (opcional)"]
 trd_step_row = 1
-trd_step = LabelFrame(deploy_tab, text=" " + trd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+trd_step = LabelFrame(deploy_scrollable_frame, text=" " + trd_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 trd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 trd_step.grid(column=1, row=trd_step_row, sticky='nesw')
 trd_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -4710,7 +5012,7 @@ btn_hitl_main.grid(row=row_hitl_main, column=1, sticky='nesw', padx=5)
 ### third step
 fth_step_txt = ["Step 4: Post-processing (optional)", "Paso 4: Post-Procesado (opcional)"]
 fth_step_row = 2
-fth_step = LabelFrame(deploy_tab, text=" " + fth_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
+fth_step = LabelFrame(deploy_scrollable_frame, text=" " + fth_step_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue', borderwidth=2)
 fth_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fth_step.grid(column=1, row=fth_step_row, sticky='nesw')
 fth_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -4746,6 +5048,7 @@ sep_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 sep_frame.grid(row=sep_frame_row, column=0, columnspan=2, sticky = 'ew')
 sep_frame.columnconfigure(0, weight=1, minsize=label_width)
 sep_frame.columnconfigure(1, weight=1, minsize=widget_width)
+sep_frame.grid_forget()
 
 # method of file placement
 lbl_file_placement_txt = ["Method of file placement", "Método de desplazamiento de archivo"]
@@ -5099,15 +5402,37 @@ btn_cancel_training.grid(row=row_cancel_training, column=1, sticky='ew')
 btn_cancel_training.config(state=DISABLED)
 
 # set minsize for all rows inside labelframes...
-for frame in [fst_step, snd_step, img_frame, vid_frame, fth_step, sep_frame, req_params, adv_params]:
+for frame in [fst_step, snd_step, cls_frame, img_frame, vid_frame, fth_step, sep_frame, req_params, adv_params]:
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
-snd_step.grid_rowconfigure(row_cls_thresh, minsize=0) # model tresh
+snd_step.grid_rowconfigure(row_cls_animal_thresh, minsize=0) # model tresh
 snd_step.grid_rowconfigure(row_image_size_for_deploy, minsize=0) # image size for deploy
+snd_step.grid_rowconfigure(cls_frame_row, minsize=0) # cls options
+snd_step.grid_rowconfigure(img_frame_row, minsize=0) # image options
+snd_step.grid_rowconfigure(vid_frame_row, minsize=0) # video options
+cls_frame.grid_rowconfigure(row_cls_animal_thresh, minsize=0) # cls animal thresh
+cls_frame.grid_rowconfigure(row_smooth_cls_animal, minsize=0) # cls animal smooth
+cls_frame.grid_rowconfigure(row_cls_vehicle_thresh, minsize=0) # cls vehicle thresh
+cls_frame.grid_rowconfigure(row_cls_person_thresh, minsize=0) # cls person thresh
+fth_step.grid_rowconfigure(sep_frame_row, minsize=0) # sep options
 req_params.grid_rowconfigure(row_model_architecture, minsize=0) # model architecture
 adv_params.grid_rowconfigure(row_n_freeze_layers, minsize=0) # n frozen layers
 adv_params.grid_rowconfigure(row_n_generations, minsize=0) # n generations
+
+# enable scroll on mousewheel
+def deploy_canvas_mousewheel(event):
+    if os.name == 'nt':
+        deploy_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+    else:
+        deploy_canvas.yview_scroll(int(-1 * (event.delta / 2)), 'units')
+
+# make deploy_tab scrollable
+deploy_canvas.update_idletasks()
+deploy_canvas.configure(scrollregion=deploy_canvas.bbox("all"))
+deploy_canvas.bind_all("<MouseWheel>", deploy_canvas_mousewheel)
+deploy_canvas.bind_all("<Button-4>", deploy_canvas_mousewheel)
+deploy_canvas.bind_all("<Button-5>", deploy_canvas_mousewheel)
 
 # help tab
 scroll = Scrollbar(help_tab)
@@ -5370,8 +5695,8 @@ def write_help_tab():
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-    # lassification confidence threshold TODO dit is nog oude text
-    help_text.insert(END, f"{lbl_cls_thresh_txt[lang]}\n")
+    # classification confidence threshold TODO: dit is nog oude text
+    help_text.insert(END, f"{lbl_cls_animal_thresh_txt[lang]}\n")
     help_text.insert(END, ["Detections below this value will not be post-processed. To adjust the threshold value, you can drag the slider or press either sides next to "
                     "the slider for a 0.005 reduction or increment. Confidence values are within the [0.005, 1] interval. If you set the confidence threshold too high, "
                     "you will miss some detections. On the other hand, if you set the threshold too low, you will get false positives. When choosing a threshold for your "
@@ -5724,8 +6049,11 @@ def write_about_tab():
 
     # development credits
     about_text.insert(END, ["Development\n", "Desarrollo\n"][lang])
-    about_text.insert(END, ["EcoAssist is developed in collaboration with ",
-                            "EcoAssist se desarrolla en colaboración con "][lang])
+    about_text.insert(END, ["EcoAssist is developed by ",
+                            "EcoAssist ha sido desarrollado por "][lang])
+    about_text.insert(INSERT, "Addax Data Science", hyperlink.add(partial(webbrowser.open, "https://addaxdatascience.com/")))
+    about_text.insert(END, [" in collaboration with ",
+                            " en colaboración con "][lang])
     about_text.insert(INSERT, "Smart Parks", hyperlink.add(partial(webbrowser.open, "https://www.smartparks.org/")))
     about_text.insert(END, ".\n\n")
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1

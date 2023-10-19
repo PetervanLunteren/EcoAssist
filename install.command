@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 9 Oct 2023 (latest edit)
+### Peter van Lunteren, 19 Oct 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -40,7 +40,7 @@ ECOASSISTCONDAENV_DET="${CONDA_DIR}/envs/ecoassistcondaenv"
 ECOASSISTCONDAENV_CLA="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
 PIP_DET="${ECOASSISTCONDAENV_DET}/bin/pip"
 PIP_CLA="${ECOASSISTCONDAENV_CLA}/bin/pip"
-HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
+HOMEBREW_DIR="/opt/homebrew"
 
 # remove the old ecoassistcondaenv
 PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
@@ -171,21 +171,9 @@ if [ -d "$CAM" ]; then
   echo "Dir ${CAM} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/agentmorris/cameratraps.git 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout b4d30ed665f450435286e35f43b836f2ebe44c7e 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-fi
-
-# clone ai4eutils git 
-AI4="ai4eutils"
-if [ -d "$AI4" ]; then
-  echo "Dir ${AI4} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
-else
-  echo "Dir ${AI4} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/Microsoft/ai4eutils 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/ai4eutils || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout 9260e6b876fd40e9aecac31d38a86fe8ade52dfd 2>&1 | tee -a "$LOG_FILE"
+  git checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -218,11 +206,7 @@ if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MDv5a} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
-    curl --keepalive -L -o md_v5a.0.0.pt https://lila.science/public/md_rebuild/md_v5a.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
-  else
-    curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
-  fi
+  curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
 
 # download the MDv5b model 
@@ -231,16 +215,15 @@ if [ -f "$MDv5b" ]; then
   echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
-    curl --keepalive -L -o md_v5b.0.0.pt https://lila.science/public/md_rebuild/md_v5b.0.0_rebuild_pt-1.12_zerolr.pt 2>&1 | tee -a "$LOG_FILE" # slightly modified version for Apple Silicon macs 
-  else
-    curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE" # normal model
-  fi
+  curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # make dir for classification models
 mkdir -p $LOCATION_ECOASSIST_FILES/classification_models
+mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_animals
+mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_persons
+mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_vehicles
 
 # install miniforge
 MFG="miniforge"
@@ -266,6 +249,8 @@ if [ "$PLATFORM" = "Linux" ]; then
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_DET
+  # upgrade pip
+  $PIP_DET install --upgrade pip
   # requirements for Human-in-the-loop
   $PIP_DET install pyqt5==5.15.2 lxml libxcb-xinerama0
   echo "We need to install libxcb-xinerama0 (https://packages.ubuntu.com/bionic/libxcb-xinerama0) and libgl1 (https://www.opengl.org/sdk/libs/). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
@@ -288,14 +273,18 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
   conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_DET
+  # upgrade pip
+  $PIP_DET install --upgrade pip
   # requirements for Human-in-the-loop
   $PIP_DET install pyqt5==5.15.2 lxml
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  conda env create --name ecoassistcondaenv --file $LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-m1.yml
+  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_DET
+  # upgrade pip
+  $PIP_DET install --upgrade pip
   { # install nightly pytorch via miniforge as arm64
     $PIP_DET install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
   } || { # if the first try didn't work
@@ -305,11 +294,23 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   $PIP_DET install lxml
 
   # we need homebrew to install PyQt5 for Apple Silicon macs
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew 2>&1 | tee -a "$LOG_FILE"
-  export PATH="${HOMEBREW_DIR}/bin:$PATH"
+  echo "In order to enable the pyQt5 package for Apple Silicon (required for the the " 2>&1 | tee -a "$LOG_FILE"
+  echo "annotation and human-in-the-loop feature), we need to install it via Homebrew." 2>&1 | tee -a "$LOG_FILE"
   BREW="${HOMEBREW_DIR}/bin/brew"
-  
+  export PATH="${HOMEBREW_DIR}/bin:$PATH"
+
+  # check if it is already installed
+  if test -f $BREW; then
+    echo "Homebrew already exists on the default location ($BREW). Skipping install." 2>&1 | tee -a "$LOG_FILE"
+  else
+    echo "Homebrew does not exist on the default location ($BREW). Proceeding to install." 2>&1 | tee -a "$LOG_FILE"
+    echo "The script will check for sudo permissions and might prompt you for a password." 2>&1 | tee -a "$LOG_FILE"
+    echo "If you don't know the sudo password, you can skip this by pressing Ctrl+D." 2>&1 | tee -a "$LOG_FILE"
+    echo "EcoAssist will still work fine without it, but the annotation and " 2>&1 | tee -a "$LOG_FILE"
+    echo "human-in-the-loop feature will not work." 2>&1 | tee -a "$LOG_FILE"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tee -a "$LOG_FILE"
+  fi
+
   # further requirements for Human-in-the-loop
   arch -arm64 $BREW install pyqt@5
   cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -341,6 +342,8 @@ conda activate $ECOASSISTCONDAENV_CLA
 $PIP_CLA install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
 $PIP_CLA install "ultralytics==8.0.191"
 $PIP_CLA install "numpy==1.24.1"
+$PIP_CLA install "humanfriendly==10.0"
+$PIP_CLA install "jsonpickle==3.0.2"
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
 $PIP_CLA freeze >> "$LOG_FILE" 

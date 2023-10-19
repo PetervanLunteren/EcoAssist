@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open Human-in-the-loop from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 28 Aug 2023 (latest edit)
+### Peter van Lunteren, 19 Oct 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -29,7 +29,7 @@ fi
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
 ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
 PIP="${ECOASSISTCONDAENV}/bin/pip"
-HOMEBREW_DIR="${LOCATION_ECOASSIST_FILES}/homebrew"
+HOMEBREW_DIR="/opt/homebrew"
 
 # add paths
 export PYTHONPATH="$PYTHONPATH:$LOCATION_ECOASSIST_FILES"

@@ -1,5 +1,5 @@
 @REM ### Windows commands to execute classify_detections.py script in different conda environment
-@REM ### Peter van Lunteren, 9 Oct 2023 (latest edit)
+@REM ### Peter van Lunteren, 17 Oct 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -29,11 +29,19 @@ call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
 set PYTHONPATH=%LOCATION_ECOASSIST_FILES%\cameratraps\classification
 
 @REM run script
-set CLS_MODEL_FILE=%2
-set CLS_JSON_FILE=%3
-set CLS_THRESH=%4
-set CLS_TEMP_FRAME_FOLDER=%5
-python %LOCATION_ECOASSIST_FILES%\EcoAssist\classify_detections.py %CLS_MODEL_FILE% %CLS_JSON_FILE% %CLS_THRESH% %LOCATION_ECOASSIST_FILES% %CLS_TEMP_FRAME_FOLDER%
+set "A=%2"
+set "B=%3"
+set "C=%4"
+set "D=%5"
+set "E=%6"
+set "F=%7"
+set "G=%8"
+set "H=%9"
+shift
+set "I=%9"
+if "%I%" == "" ( set "I=dummy-variable" )
+set "J=%LOCATION_ECOASSIST_FILES%"
+python %LOCATION_ECOASSIST_FILES%\EcoAssist\classify_detections.py %A% %B% %C% %D% %E% %F% %G% %H% %I% %J%
 
 @REM activate ecoassistcondaenv again
 call %EA_CONDA_EXE% deactivate
