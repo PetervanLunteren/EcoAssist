@@ -29,17 +29,6 @@ json_path = str(sys.argv[8])
 temp_frame_folder = str(sys.argv[9])
 EcoAssist_files = str(sys.argv[10])
 
-print(f"DEBUG animal_model_fpath : {animal_model_fpath}")
-print(f"DEBUG animal_thresh : {animal_thresh}")
-print(f"DEBUG smooth_bool : {smooth_bool}")
-print(f"DEBUG vehicle_model_fpath : {vehicle_model_fpath}")
-print(f"DEBUG vehicle_thresh : {vehicle_thresh}")
-print(f"DEBUG person_model_fpath : {person_model_fpath}")
-print(f"DEBUG person_thresh : {person_thresh}")
-print(f"DEBUG json_path : {json_path}")
-print(f"DEBUG temp_frame_folder : {temp_frame_folder}")
-print(f"DEBUG EcoAssist_files : {EcoAssist_files}")
-
 # load models
 animal_model = YOLO(animal_model_fpath) if animal_model_fpath != None else None
 vehicle_model = YOLO(vehicle_model_fpath) if vehicle_model_fpath != None else None
@@ -395,7 +384,7 @@ def smooth_json(json_input_fpath, json_output_fpath):
             n_detections_flipped,n_images_changed))
         print('<EA>"Other" smoothing: changed {} detections on {} images<EA>'.format(
             n_other_classifications_changed,n_other_images_changed))
-        with open(classifier_output_path_within_image_smoothing,'w') as f: # DEBUG
+        with open(classifier_output_path_within_image_smoothing,'w') as f:
             json.dump(d,f,indent=1)
         print('Wrote results to:\n{}'.format(classifier_output_path_within_image_smoothing))
         smoothed_classification_files.append(classifier_output_path_within_image_smoothing)
