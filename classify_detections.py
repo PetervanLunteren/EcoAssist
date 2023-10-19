@@ -63,7 +63,7 @@ def fetch_label_map_from_json(path_to_json):
     label_map = data['detection_categories']
     return label_map
 
-# crop detection with equal sides
+# crop detection with equal sides (Thanks Dan Morris)
 def remove_background(img, bbox_norm):
     img_w, img_h = img.size
     xmin = int(bbox_norm[0] * img_w)
