@@ -1,7 +1,5 @@
 [![status](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e/status.svg)](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e)
-[![Project Status: Active The project has reached a stable, usable state
-and is being actively
-developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![Project Status: Active The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![GitHub](https://img.shields.io/github/license/PetervanLunteren/EcoAssist)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7223363.svg)](https://doi.org/10.5281/zenodo.7223363)
 ![GitHub last
@@ -13,15 +11,24 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
 
 <h2 align="center">Simplifying camera trap image analysis for ecologists</h2>
 
+
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
 The [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) model is preloaded. This model can find out which images contain an animal and filter out the empties. Unfortunately, MegaDetector does not identify the animals, it just finds them. If you want a model that can identify species for your specific ecosystem or project, you'll have to train it yourself. Or outsource it to [Addax Data Science](https://addaxdatascience.com/).
 
-[<img align="right" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
-
 Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a pilot study for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
 
 You can also help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
+
+[<img align="left" alt="alt_text" width="25%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/black-fg-white-bg.jpg" /> ](https://addaxdatascience.com/)
+[<img align="left" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 
 ## Quick links
 1. [Demo](#demo)
