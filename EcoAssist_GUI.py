@@ -4565,6 +4565,7 @@ tabControl = ttk.Notebook(root)
 # prepare logo
 logo_path = os.path.join(EcoAssist_files,'EcoAssist', 'imgs', 'logo.png')
 logo = Image.open(logo_path)
+logo = logo.resize((200, 90))
 white_bg_logo = Image.new("RGBA", logo.size, "WHITE")
 white_bg_logo.paste(logo, (0, 0), logo)
 white_bg_logo.convert('RGB')

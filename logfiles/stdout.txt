@@ -1,0 +1,217 @@
+Starting at: Sun Nov  5 16:04:12 CET 2023
+
+uname -a:
+
+Darwin Peters-MacBook-Pro-2.local 22.3.0 Darwin Kernel Version 22.3.0: Mon Jan 30 20:38:37 PST 2023; root:xnu-8792.81.3~2/RELEASE_ARM64_T6000 arm64
+
+System information:
+
+Software:
+
+    System Software Overview:
+
+      System Version: macOS 13.2.1 (22D68)
+      Kernel Version: Darwin 22.3.0
+      Boot Volume: Macintosh HD
+      Boot Mode: Normal
+      Computer Name: Peter’s MacBook Pro
+      User Name: Peter van Lunteren (peter)
+      Secure Virtual Memory: Enabled
+      System Integrity Protection: Enabled
+      Time since boot: 1 hour, 15 minutes
+
+Hardware:
+
+    Hardware Overview:
+
+      Model Name: MacBook Pro
+      Model Identifier: MacBookPro18,3
+      Model Number: MKGP3X/A
+      Chip: Apple M1 Pro
+      Total Number of Cores: 8 (6 performance and 2 efficiency)
+      Memory: 16 GB
+      System Firmware Version: 8419.80.7
+      OS Loader Version: 8419.80.7
+      Serial Number (system): JH34GMYGWJ
+      Hardware UUID: 505A3936-620E-5504-9D7F-8559EE3AE4C6
+      Provisioning UDID: 00006000-001C65CC3E92401E
+      Activation Lock Status: Disabled
+
+Memory:
+
+      Memory: 16 GB
+      Type: LPDDR5
+      Manufacturer: Samsung
+
+Storage:
+
+    Macintosh HD - Data:
+
+      Free: 213,18 GB (213.176.193.024 bytes)
+      Capacity: 494,38 GB (494.384.795.648 bytes)
+      Mount Point: /System/Volumes/Data
+      File System: APFS
+      Writable: Yes
+      Ignore Ownership: No
+      BSD Name: disk3s5
+      Volume UUID: EA85FD5D-EE42-4C45-8532-92E8593331E1
+      Physical Drive:
+          Device Name: APPLE SSD AP0512R
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: Apple Fabric
+          Internal: Yes
+          Partition Map Type: Unknown
+          S.M.A.R.T. Status: Verified
+
+    Macintosh HD:
+
+      Free: 213,18 GB (213.176.193.024 bytes)
+      Capacity: 494,38 GB (494.384.795.648 bytes)
+      Mount Point: /
+      File System: APFS
+      Writable: No
+      Ignore Ownership: No
+      BSD Name: disk3s1s1
+      Volume UUID: 6463840A-B39F-4390-8007-1EA8E1066FEB
+      Physical Drive:
+          Device Name: APPLE SSD AP0512R
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: Apple Fabric
+          Internal: Yes
+          Partition Map Type: Unknown
+          S.M.A.R.T. Status: Verified
+
+File sizes with depth 0:
+
+4.2G	/Applications/.EcoAssist_files
+
+File sizes with depth 1:
+
+ 42M	/Applications/.EcoAssist_files/EcoAssist
+ 23M	/Applications/.EcoAssist_files/Human-in-the-loop
+229M	/Applications/.EcoAssist_files/cameratraps
+138M	/Applications/.EcoAssist_files/classification_models
+3.2G	/Applications/.EcoAssist_files/miniforge
+539M	/Applications/.EcoAssist_files/pretrained_models
+ 17M	/Applications/.EcoAssist_files/yolov5
+
+File sizes with depth 2:
+
+4.0K	/Applications/.EcoAssist_files/EcoAssist/CODE_OF_CONDUCT.md
+8.0K	/Applications/.EcoAssist_files/EcoAssist/CONTRIBUTING.md
+324K	/Applications/.EcoAssist_files/EcoAssist/EcoAssist_GUI.py
+ 24K	/Applications/.EcoAssist_files/EcoAssist/FAQ.md
+4.0K	/Applications/.EcoAssist_files/EcoAssist/LICENSE
+ 20K	/Applications/.EcoAssist_files/EcoAssist/README.md
+4.0K	/Applications/.EcoAssist_files/EcoAssist/_config.yml
+4.0K	/Applications/.EcoAssist_files/EcoAssist/citation.cff
+4.0K	/Applications/.EcoAssist_files/EcoAssist/classify_detections.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/classify_detections.command
+ 36K	/Applications/.EcoAssist_files/EcoAssist/classify_detections.py
+ 20K	/Applications/.EcoAssist_files/EcoAssist/crop_detections.py
+ 12K	/Applications/.EcoAssist_files/EcoAssist/errors.md
+ 28K	/Applications/.EcoAssist_files/EcoAssist/fileicon
+2.5M	/Applications/.EcoAssist_files/EcoAssist/imgs
+4.0K	/Applications/.EcoAssist_files/EcoAssist/index.md
+ 28K	/Applications/.EcoAssist_files/EcoAssist/install.bat
+ 20K	/Applications/.EcoAssist_files/EcoAssist/install.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/label-animals.md
+4.0K	/Applications/.EcoAssist_files/EcoAssist/label.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/label.command
+8.0K	/Applications/.EcoAssist_files/EcoAssist/logfiles
+8.0K	/Applications/.EcoAssist_files/EcoAssist/open.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/open.command
+8.0K	/Applications/.EcoAssist_files/EcoAssist/smooth_params.py
+840K	/Applications/.EcoAssist_files/EcoAssist/test_images
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/CONTRIBUTING.rst
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/HISTORY.rst
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/LICENSE
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/MANIFEST.in
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/Makefile
+ 16K	/Applications/.EcoAssist_files/Human-in-the-loop/README.rst
+  0B	/Applications/.EcoAssist_files/Human-in-the-loop/__init__.py
+ 32K	/Applications/.EcoAssist_files/Human-in-the-loop/build-tools
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/data
+6.0M	/Applications/.EcoAssist_files/Human-in-the-loop/demo
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/issue_template.md
+100K	/Applications/.EcoAssist_files/Human-in-the-loop/labelImg.py
+1.1M	/Applications/.EcoAssist_files/Human-in-the-loop/libs
+4.4M	/Applications/.EcoAssist_files/Human-in-the-loop/readme
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/requirements
+472K	/Applications/.EcoAssist_files/Human-in-the-loop/resources
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/resources.qrc
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/setup.cfg
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/setup.py
+288K	/Applications/.EcoAssist_files/Human-in-the-loop/tests
+ 12K	/Applications/.EcoAssist_files/Human-in-the-loop/tools
+4.0K	/Applications/.EcoAssist_files/cameratraps/LICENSE
+8.0K	/Applications/.EcoAssist_files/cameratraps/README-package.md
+ 20K	/Applications/.EcoAssist_files/cameratraps/README.md
+9.6M	/Applications/.EcoAssist_files/cameratraps/api
+ 14M	/Applications/.EcoAssist_files/cameratraps/archive
+4.0K	/Applications/.EcoAssist_files/cameratraps/citation.cff
+488K	/Applications/.EcoAssist_files/cameratraps/classification
+ 12K	/Applications/.EcoAssist_files/cameratraps/collaborations.md
+2.0M	/Applications/.EcoAssist_files/cameratraps/data_management
+420K	/Applications/.EcoAssist_files/cameratraps/detection
+ 52K	/Applications/.EcoAssist_files/cameratraps/envs
+ 14M	/Applications/.EcoAssist_files/cameratraps/images
+140K	/Applications/.EcoAssist_files/cameratraps/md_utils
+124K	/Applications/.EcoAssist_files/cameratraps/md_visualization
+ 16K	/Applications/.EcoAssist_files/cameratraps/megadetector-challenges.md
+ 56K	/Applications/.EcoAssist_files/cameratraps/megadetector.md
+4.0K	/Applications/.EcoAssist_files/cameratraps/pyproject.toml
+104K	/Applications/.EcoAssist_files/cameratraps/sandbox
+140K	/Applications/.EcoAssist_files/cameratraps/taxonomy_mapping
+ 69M	/Applications/.EcoAssist_files/classification_models/cls_animals
+ 69M	/Applications/.EcoAssist_files/classification_models/cls_persons
+  0B	/Applications/.EcoAssist_files/classification_models/cls_vehicles
+4.0K	/Applications/.EcoAssist_files/miniforge/LICENSE.txt
+ 13M	/Applications/.EcoAssist_files/miniforge/bin
+4.7M	/Applications/.EcoAssist_files/miniforge/conda-meta
+4.0K	/Applications/.EcoAssist_files/miniforge/condabin
+1.9G	/Applications/.EcoAssist_files/miniforge/envs
+ 28K	/Applications/.EcoAssist_files/miniforge/etc
+ 13M	/Applications/.EcoAssist_files/miniforge/include
+148M	/Applications/.EcoAssist_files/miniforge/lib
+524K	/Applications/.EcoAssist_files/miniforge/libexec
+  0B	/Applications/.EcoAssist_files/miniforge/man
+1.1G	/Applications/.EcoAssist_files/miniforge/pkgs
+336K	/Applications/.EcoAssist_files/miniforge/sbin
+684K	/Applications/.EcoAssist_files/miniforge/share
+4.0K	/Applications/.EcoAssist_files/miniforge/shell
+  0B	/Applications/.EcoAssist_files/miniforge/ssl
+268M	/Applications/.EcoAssist_files/pretrained_models/md_v5a.0.0.pt
+268M	/Applications/.EcoAssist_files/pretrained_models/md_v5b.0.0.pt
+3.9M	/Applications/.EcoAssist_files/pretrained_models/yolov5n.pt
+8.0K	/Applications/.EcoAssist_files/yolov5/CONTRIBUTING.md
+ 36K	/Applications/.EcoAssist_files/yolov5/LICENSE
+ 32K	/Applications/.EcoAssist_files/yolov5/README.md
+ 16K	/Applications/.EcoAssist_files/yolov5/__pycache__
+8.0K	/Applications/.EcoAssist_files/yolov5/benchmarks.py
+ 36K	/Applications/.EcoAssist_files/yolov5/classify
+756K	/Applications/.EcoAssist_files/yolov5/data
+ 16K	/Applications/.EcoAssist_files/yolov5/detect.py
+ 32K	/Applications/.EcoAssist_files/yolov5/export.py
+8.0K	/Applications/.EcoAssist_files/yolov5/hubconf.py
+276K	/Applications/.EcoAssist_files/yolov5/models
+4.0K	/Applications/.EcoAssist_files/yolov5/requirements.txt
+ 76K	/Applications/.EcoAssist_files/yolov5/segment
+4.0K	/Applications/.EcoAssist_files/yolov5/setup.cfg
+ 36K	/Applications/.EcoAssist_files/yolov5/train.py
+ 60K	/Applications/.EcoAssist_files/yolov5/tutorial.ipynb
+740K	/Applications/.EcoAssist_files/yolov5/utils
+ 20K	/Applications/.EcoAssist_files/yolov5/val.py
+
+Path to python: /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv/bin/
+
+PYHTONPATH=:/Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv/bin/:/Applications/.EcoAssist_files/cameratraps:/Applications/.EcoAssist_files/ai4eutils:/Applications/.EcoAssist_files/yolov5:/Applications/.EcoAssist_files/EcoAssist
+
+PATH=/Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv/bin/:/usr/bin/:/Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv/bin:/Applications/.EcoAssist_files/miniforge/bin:/Applications/.EcoAssist_files/miniforge/condabin:/Users/peter/mambaforge/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Library/Apple/usr/bin
+
+python version: Python 3.8.18
+
+python location: /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv/bin//python
+
