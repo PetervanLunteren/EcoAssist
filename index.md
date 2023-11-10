@@ -5,6 +5,7 @@
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-580MY93687"></script>
 <script>
+  window.location.href = "https://addaxdatascience.com/ecoassist/";
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
