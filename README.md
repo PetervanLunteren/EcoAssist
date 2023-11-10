@@ -9,8 +9,20 @@ commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/logo_large.png" width=60% height="auto" />
 </p>
 
-<h2 align="center">Simplifying camera trap image analysis for ecologists</h2>
+EcoAssist is an application designed to streamline the work of ecologists dealing with camera trap images. It’s an AI platform that allows you to analyse images with machine learning models for automatic detection, offering ecologists a way to save time and focus on conservation efforts.
 
+<h2 align="center">See https://addaxdatascience.com/ecoassist/ for more info</h2>
+
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_animal.jpg" width=45% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_red_fox.JPG" width=45% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_ocelot.JPG" width=45% height="auto" /> 
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_tinamou.JPG" width=45% height="auto" /> 
+</p>
+
+<!---
+
+OLD README MARKDOWN:
 
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
@@ -315,3 +327,5 @@ As far as I know, there are three other software packages capable of deploying t
 * [CamTrap Detector](https://github.com/bencevans/camtrap-detector)
 * [MegaDetector GUI](https://github.com/petargyurov/megadetector-gui)
 * [Megadetector-Interface](https://github.com/NaomiMcWilliam/Megadetector-Interface)
+
+--->
