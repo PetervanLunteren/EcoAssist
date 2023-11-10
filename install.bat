@@ -131,13 +131,13 @@ if exist "%CURRENT_INSTALL%" (
 
 @REM make dir
 if not exist "%LOCATION_ECOASSIST_FILES%" (
-    mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
+    mkdir "%LOCATION_ECOASSIST_FILES%" || ( echo "Cannot create %LOCATION_ECOASSIST_FILES%. Copy-paste this output and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
     attrib +h "%LOCATION_ECOASSIST_FILES%"
     echo Created empty dir:                     '%LOCATION_ECOASSIST_FILES%'
 )
 
 @REM change directory
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 
 @REM set conda cmds
 @REM check the default locations for a conda install
@@ -210,7 +210,7 @@ set EA_GIT_EXE=%PATH_TO_GIT_INSTALLATION%\cmd\git.exe
 
 @REM install and test wtee
 curl -OL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/wintee/wtee.exe
-echo hello world | wtee -a hello-world.txt || ( echo "Looks like something is blocking your downloads... This is probably due to the settings of your device. Try again with your antivirus, VPN, proxy or any other protection software disabled. Email petervanlunteren@hotmail.com if you need any further assistance." & cmd /k & exit )
+echo hello world | wtee -a hello-world.txt || ( echo "Looks like something is blocking your downloads... This is probably due to the settings of your device. Try again with your antivirus, VPN, proxy or any other protection software disabled. Email peter@addaxdatascience.com if you need any further assistance." & cmd /k & exit )
 if exist hello-world.txt del /F hello-world.txt
 
 @REM check if log file already exists, otherwise create empty log file
@@ -234,7 +234,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
     echo Dir EcoAssist already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
@@ -267,11 +267,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     echo Dir cameratraps already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone https://github.com/agentmorris/MegaDetector.git cameratraps
-    cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
 )
@@ -281,11 +281,11 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
 @REM     echo Dir ai4eutils already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 @REM ) else (
 @REM     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 @REM     "%EA_GIT_EXE%" clone https://github.com/Microsoft/ai4eutils
-@REM     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 @REM     "%EA_GIT_EXE%" checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
-@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 @REM     @REM check the size of the folder
 @REM     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
 @REM )
@@ -295,7 +295,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     echo Dir yolov5 already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir yolov5 does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone https://github.com/ultralytics/yolov5.git
     @REM checkout will happen dynamically during runtime with switch_yolov5_git_to()
     @REM check the size of the folder
@@ -307,7 +307,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\Human-in-the-loop\" (
     echo Dir Human-in-the-loop already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir Human-in-the-loop does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\Human-in-the-loop" | wtee -a "%LOG_FILE%"
@@ -319,9 +319,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5a.0.0.pt" (
 ) else (
     echo "File md_v5a.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
     if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
@@ -332,9 +332,9 @@ if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
 ) else (
     echo "File md_v5b.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
     if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
 )
@@ -349,9 +349,9 @@ if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles" mkd
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call %EA_CONDA_EXE% env create --name ecoassistcondaenv --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call activate ecoassistcondaenv
 
 @REM install additional packages for Human-in-the-loop

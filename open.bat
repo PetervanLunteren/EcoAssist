@@ -63,7 +63,7 @@ set PATH=%PATH_TO_GIT_INSTALLATION%\cmd;%PATH%
 set GIT_PYTHON_GIT_EXECUTABLE=%PATH_TO_GIT_INSTALLATION%\cmd\git.exe
 
 @REM change directory
-cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Copy-paste this output and send it to petervanlunteren@hotmail.com for further support." & cmd /k & exit )
+cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Copy-paste this output and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 
 @REM set log file and delete the last one
 set LOG_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\session_log.txt

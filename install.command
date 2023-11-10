@@ -65,7 +65,7 @@ rm -rf $LOCATION_ECOASSIST_FILES
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance."; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance."; exit 1; }
 
 # check if log file already exists, otherwise create empty log file
 LOG_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/installation_log.txt
@@ -132,7 +132,7 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
 fi
 
 # clone EcoAssist git 
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance."; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance."; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -172,9 +172,9 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28 2>&1 | tee -a "$LOG_FILE"
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone yolov5 git 
@@ -185,7 +185,7 @@ else
   echo "Dir ${YOL} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/ultralytics/yolov5.git 2>&1 | tee -a "$LOG_FILE"
   # checkout will happen dynamically during runtime with switch_yolov5_git_to()
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
 # clone Human-in-the-loop git 
@@ -200,7 +200,7 @@ fi
 
 # download the MDv5a model 
 mkdir -p $LOCATION_ECOASSIST_FILES/pretrained_models
-cd $LOCATION_ECOASSIST_FILES/pretrained_models || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES/pretrained_models || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 MDv5a="md_v5a.0.0.pt"
 if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -217,7 +217,7 @@ else
   echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
   curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to petervanlunteren@hotmail.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # make dir for classification models
 mkdir -p $LOCATION_ECOASSIST_FILES/classification_models
