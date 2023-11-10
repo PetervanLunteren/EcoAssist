@@ -1,6 +1,6 @@
 <html>
   <head>
-    <meta http-equiv="refresh" content="0; url=https://example.com/newlocation">
+    <meta http-equiv="refresh" content="0; url=https://addaxdatascience.com/ecoassist/">
   </head>
 </html>
 
