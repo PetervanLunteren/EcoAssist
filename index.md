@@ -15,4 +15,5 @@
 
 <img src="{{ "imgs/logo_large.png" | prepend: site.baseurl | prepend: site.url}}" alt="Logo" />
 
-### Simplifying camera trap image analysis with AI. See its [addaxdatascience.com/ecoassist](https://addaxdatascience.com/ecoassist/) for more information.
+### Simplifying camera trap image analysis with AI.
+### See its [addaxdatascience.com/ecoassist](https://addaxdatascience.com/ecoassist/) for more information.
