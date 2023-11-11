@@ -9,7 +9,7 @@
 
 EcoAssist is an application designed to streamline the work of ecologists dealing with camera trap images. It’s an AI platform that allows you to analyse images with machine learning models for automatic detection, offering ecologists a way to save time and focus on conservation efforts.
 
-<h2 align="center">See https://addaxdatascience.com/ecoassist/ for more info</h2>
+## See [addaxdatascience.com/ecoassist/](https://addaxdatascience.com/ecoassist/) for more info
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_animal.jpg" width=45% height="auto" />
