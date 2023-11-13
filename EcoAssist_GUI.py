@@ -4125,7 +4125,7 @@ dsp_model = Label(master=snd_step, textvariable=var_model_short, fg='darkred')
 cls_params = []
 for elem in ["cls_animals", "cls_vehicles", "cls_persons"]:
     cls_dir = os.path.join(EcoAssist_files, "classification_models", elem)
-    cls_models = [f for f in os.listdir(cls_dir) if os.path.isfile(os.path.join(cls_dir, f)) and f.endswith('.pt')]
+    cls_models = sorted([f for f in os.listdir(cls_dir) if os.path.isfile(os.path.join(cls_dir, f)) and f.endswith('.pt')])
     cls_model_present = True if cls_models != [] else False
     dpd_options_cls_model = [cls_models + ["None"], cls_models + ["Ninguno"]]
     cls_params.extend([cls_models, cls_model_present, dpd_options_cls_model])
