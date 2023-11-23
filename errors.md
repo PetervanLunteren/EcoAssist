@@ -114,4 +114,7 @@ Dummy class 5
 Another option to check your labelImg installation is to open a directory of non-annotated images. That should work without any problems. If not, [email me](mailto:petervanlunteren@hotmail.com) the logfiles and I will have a look. [This](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-create-logfiles) is how to write the error to the logfiles and [this](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-find-logfiles) is how to find them. 
 
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
+## `error: RPC failed; curl 18 Transferred a partial file MiB/s` while installing
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. There are also some other ways we can try to solve it, but I think this would be the easiest one. Let me know if this doesn't work.
+
+There are also some other ways we can try to solve it, but I think this would be the easiest one.
