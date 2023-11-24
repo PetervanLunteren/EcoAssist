@@ -350,6 +350,7 @@ call activate ecoassistcondaenv
 "%EA_PIP_EXE_DET%" install exifread
 "%EA_PIP_EXE_DET%" install piexif
 "%EA_PIP_EXE_DET%" install openpyxl
+"%EA_PIP_EXE_DET%" install pyarrow
 
 @REM install additional packages for yolov5
 "%EA_PIP_EXE_DET%" install GitPython==3.1.30
