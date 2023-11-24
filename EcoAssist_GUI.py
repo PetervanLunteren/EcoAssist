@@ -409,8 +409,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         summary = pd.DataFrame(det_info.groupby(['label', 'data_type']).size().sort_values(ascending=False).reset_index(name='n_detections'))
         summary.to_csv(csv_for_summary, encoding='utf-8', mode='w', index=False, header=True)
 
-    # DEBUG
-    print(f"var_exp_format : {var_exp_format.get()}")
     # convert csv to xlsx if required
     if var_exp_format.get() == dpd_options_exp_format[lang][0]: 
         xslx_path = os.path.join(dst_dir, "results.xlsx")
@@ -425,7 +423,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 df.to_excel(writer, sheet_name=result_type, index=None, header=True)
                 if os.path.isfile(csv_path):
                     os.remove(csv_path)
-    # DEBUG
 
     # remove cancel button
     btn_cancel.grid_remove()
@@ -4988,13 +4985,6 @@ def main():
     disable_frame(snd_step)
     disable_frame(trd_step)
     disable_frame(fth_step)
-
-    # DEBUG
-    var_choose_folder.set("/Users/peter/Desktop/_test_images")
-    var_output_dir.set("/Users/peter/Desktop/_csv")
-    var_exp.set(True)
-    update_frame_states()
-    root.update_idletasks()
 
     # run
     root.mainloop()
