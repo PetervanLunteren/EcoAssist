@@ -1,8 +1,10 @@
-# GUI to simplify camera trap image analysis with species recognition models\
+# GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 10 Nov 2023
+# Latest edit by Peter van Lunteren on 24 Nov 2023
 
+# TODO: BACKEND - leave train data export with same folder sturcture and same timestamp
+# TODO: BACKEND - use PyTorch.crop() for classification to run on GPU
 # TODO: CLASSIFICATION - add documentation for new features
 # TODO: CLASSIFICATION - add documentation for smooth_params.py
 # TODO: CLASSIFICATION - add messagebox pointing user to smooth_info.txt file
@@ -37,6 +39,7 @@ from tkinter import *
 from pathlib import Path
 from random import randint
 from functools import partial
+from GPSPhoto import gpsphoto
 import matplotlib.pyplot as plt
 from subprocess import Popen, PIPE
 import xml.etree.cElementTree as ET
@@ -85,10 +88,15 @@ of_txt = ["of", "de"]
 ############# MAIN FUNCTIONS #############
 ##########################################
 
+
+
 # post-process files
-def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type):
+def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+
+    # check exif fields for new camera trap models
+    exif_fields = []
 
     # prepare data specific vars
     if data_type == "img":
@@ -148,22 +156,29 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     n_images = len(data['images'])
 
     # initialise the csv files
-    if csv:
+    # csv files are always created, no matter what the user specified as export format
+    # these csv files are then converted to the desired format and deleted, if required
+    if exp:
         # for files
         csv_for_files = os.path.join(dst_dir, "results_files.csv")
         if not os.path.isfile(csv_for_files):
             df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence", "human_verified",
-                                               'datetime', 'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value',
-                                               'aperture_value', 'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
+                                               'DateTimeOriginal', 'DateTime', 'DateTimeDigitized', 'Latitude', 'Longitude', 'GPSLink', 'Altitude', 'Make',
+                                               'Model', 'Flash', 'ExifOffset', 'ResolutionUnit', 'YCbCrPositioning', 'XResolution', 'YResolution',
+                                               'ExifVersion', 'ComponentsConfiguration', 'FlashPixVersion', 'ColorSpace', 'ExifImageWidth',
+                                               'ISOSpeedRatings', 'ExifImageHeight', 'ExposureMode', 'WhiteBalance', 'SceneCaptureType',
+                                               'ExposureTime', 'Software', 'Sharpness', 'Saturation', 'ReferenceBlackWhite'])
             df.to_csv(csv_for_files, encoding='utf-8', index=False)
         
         # for detections
         csv_for_detections = os.path.join(dst_dir, "results_detections.csv")
         if not os.path.isfile(csv_for_detections):
             df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "label", "confidence", "human_verified", "bbox_left",
-                                               "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width", 'datetime',
-                                               'datetime_original', 'datetime_digitized', 'make', 'shutter_speed_value', 'aperture_value',
-                                               'exposure_bias_value', 'max_aperture_value', 'GPSInfo'])
+                                               "bbox_top", "bbox_right", "bbox_bottom", "file_height", "file_width", 'DateTimeOriginal', 'DateTime',
+                                               'DateTimeDigitized', 'Latitude', 'Longitude', 'GPSLink', 'Altitude', 'Make', 'Model', 'Flash', 'ExifOffset',
+                                               'ResolutionUnit', 'YCbCrPositioning', 'XResolution', 'YResolution', 'ExifVersion', 'ComponentsConfiguration',
+                                               'FlashPixVersion', 'ColorSpace', 'ExifImageWidth', 'ISOSpeedRatings', 'ExifImageHeight', 'ExposureMode',
+                                               'WhiteBalance', 'SceneCaptureType', 'ExposureTime', 'Software', 'Sharpness', 'Saturation', 'ReferenceBlackWhite'])
             df.to_csv(csv_for_detections, encoding='utf-8', index=False)
 
     # loop through images
@@ -212,10 +227,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         csv_files = []
 
         # open files
-        if vis or crp or csv:
+        if vis or crp or exp:
             if data_type == "img":
                 im_to_vis = cv2.imread(os.path.join(src_dir, file))
                 im_to_crop_path = os.path.join(src_dir, file)
+                
                  # load old image and extract EXIF
                 origImage = Image.open(os.path.join(src_dir, file))
                 try:
@@ -228,7 +244,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 vid = cv2.VideoCapture(os.path.join(src_dir, file))
 
             # try to read exif data
-            if csv:
+            if exp:
                 try:
                     img_for_exif = PIL.Image.open(os.path.join(src_dir, file))
                     exif_data = {
@@ -237,14 +253,26 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                         if k in PIL.ExifTags.TAGS
                     }
                     img_for_exif.close()
+                    gpsinfo = gpsphoto.getGPSData(os.path.join(src_dir, file))
+                    if 'Latitude' in gpsinfo and 'Longitude' in gpsinfo:
+                        gpsinfo['GPSLink'] = f"https://maps.google.com/?q={gpsinfo['Latitude']},{gpsinfo['Longitude']}"
+                    exif_data = {**exif_data, **gpsinfo}
                 except:
                     exif_data = None
 
                 # check if datetime values can be found
                 exif_params = []
-                for param in ['DateTime', 'DateTimeOriginal', 'DateTimeDigitized', 'Make', 'ShutterSpeedValue', 'ApertureValue', 'ExposureBiasValue', 'MaxApertureValue', 'GPSInfo']:
+                for param in ['DateTimeOriginal', 'DateTime', 'DateTimeDigitized', 'Latitude', 'Longitude', 'GPSLink', 'Altitude', 'Make', 'Model',
+                              'Flash', 'ExifOffset', 'ResolutionUnit', 'YCbCrPositioning', 'XResolution', 'YResolution', 'ExifVersion',
+                              'ComponentsConfiguration', 'FlashPixVersion', 'ColorSpace', 'ExifImageWidth', 'ISOSpeedRatings',
+                              'ExifImageHeight', 'ExposureMode', 'WhiteBalance', 'SceneCaptureType', 'ExposureTime', 'Software',
+                              'Sharpness', 'Saturation', 'ReferenceBlackWhite']:
                     try:
-                        param_value = str(exif_data[param])
+                        if param.startswith('DateTime'):
+                            datetime_raw = str(exif_data[param])
+                            param_value = datetime.datetime.strptime(datetime_raw, '%Y:%m:%d %H:%M:%S').strftime('%d/%m/%y %H:%M:%S')
+                        else:
+                            param_value = str(exif_data[param])
                     except:
                         param_value = "NA"
                     exif_params.append(param_value)
@@ -277,7 +305,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                         unique_labels = sorted(list(set(unique_labels)))
 
                     # get bbox info
-                    if vis or crp or csv:
+                    if vis or crp or exp:
                         if data_type == "img":
                             height, width = im_to_vis.shape[:2]
                         else:
@@ -310,7 +338,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
         
         # collect info to append to csv files
-        if csv:
+        if exp:
             # file info
             row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf, manually_checked, *exif_params]])
             row.to_csv(csv_for_files, encoding='utf-8', mode='a', index=False, header=False)
@@ -335,6 +363,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(im, im_to_vis)
+
             # load new image and save exif
             if (exif != None):
                 image_new = Image.open(im)
@@ -357,6 +386,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 Path(os.path.dirname(im_path)).mkdir(parents=True, exist_ok=True)
                 crp_im.save(im_path)
                 counter += 1
+
                  # load new image and save exif
                 if (exif != None):
                     image_new = Image.open(im_path)
@@ -371,13 +401,31 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         root.update()
 
     # create summary csv
-    if csv:
+    if exp:
         csv_for_summary = os.path.join(dst_dir, "results_summary.csv")
         if os.path.exists(csv_for_summary):
             os.remove(csv_for_summary)
         det_info = pd.DataFrame(pd.read_csv(csv_for_detections))
         summary = pd.DataFrame(det_info.groupby(['label', 'data_type']).size().sort_values(ascending=False).reset_index(name='n_detections'))
         summary.to_csv(csv_for_summary, encoding='utf-8', mode='w', index=False, header=True)
+
+    # DEBUG
+    print(f"var_exp_format : {var_exp_format.get()}")
+    # convert csv to xlsx if required
+    if var_exp_format.get() == dpd_options_exp_format[lang][0]: 
+        xslx_path = os.path.join(dst_dir, "results.xlsx")
+        with pd.ExcelWriter(xslx_path) as writer:
+            for result_type in ['detections', 'files', 'summary']:
+                csv_path = os.path.join(dst_dir, f"results_{result_type}.csv")
+                df = pd.read_csv(csv_path)
+                if result_type in ['detections', 'files']:
+                    df['DateTimeOriginal'] = pd.to_datetime(df['DateTimeOriginal'], format='%d/%m/%y %H:%M:%S')
+                    df['DateTime'] = pd.to_datetime(df['DateTime'], format='%d/%m/%y %H:%M:%S')
+                    df['DateTimeDigitized'] = pd.to_datetime(df['DateTimeDigitized'], format='%d/%m/%y %H:%M:%S')
+                df.to_excel(writer, sheet_name=result_type, index=None, header=True)
+                if os.path.isfile(csv_path):
+                    os.remove(csv_path)
+    # DEBUG
 
     # remove cancel button
     btn_cancel.grid_remove()
@@ -408,7 +456,7 @@ def start_postprocess():
     sep_conf = var_sep_conf.get()
     vis = var_vis_files.get()
     crp = var_crp_files.get()
-    csv = var_csv.get()
+    exp = var_exp.get()
 
     # check which json files are present
     img_json = False
@@ -490,11 +538,11 @@ def start_postprocess():
     try:
         # postprocess images
         if img_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type = "img")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, data_type = "img")
 
         # postprocess videos
         if vid_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, csv, data_type = "vid")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, data_type = "vid")
         
         # complete
         complete_frame(fth_step)
@@ -3234,7 +3282,10 @@ def set_language(to_lang):
     lbl_sep_conf.config(text="     " + lbl_sep_conf_txt[lang])
     lbl_vis_files.config(text=lbl_vis_files_txt[lang])
     lbl_crp_files.config(text=lbl_crp_files_txt[lang])
-    lbl_csv.config(text=lbl_csv_txt[lang])
+    lbl_exp.config(text=lbl_exp_txt[lang])
+    exp_frame.config(text=" ↳ " + exp_frame_txt[lang] + " ")
+    lbl_exp_format.config(text=lbl_exp_format_txt[lang])
+
     lbl_thresh.config(text=lbl_thresh_txt[lang])
     btn_start_postprocess.config(text=btn_start_postprocess_txt[lang])
 
@@ -3601,6 +3652,18 @@ def toggle_sep_frame():
         sep_frame.grid_forget()
     resize_canvas_to_content()
 
+# toggle export subframe
+def toggle_exp_frame():
+    if var_exp.get():
+        exp_frame.grid(row=exp_frame_row, column=0, columnspan=2, sticky = 'ew')
+        enable_widgets(exp_frame)
+        exp_frame.configure(fg='black')
+    else:
+        disable_widgets(exp_frame)
+        exp_frame.configure(fg='grey80')
+        exp_frame.grid_forget()
+    resize_canvas_to_content()
+
 # toggle classification subframe
 def toggle_cls_frame(): 
     # log
@@ -3719,6 +3782,7 @@ def enable_frame(frame):
         vid_frame.configure(relief = 'solid')
     if fth_step:
         toggle_sep_frame()
+        toggle_exp_frame()
         sep_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
@@ -4487,19 +4551,41 @@ var_crp_files.set(False)
 chb_crp_files = Checkbutton(fth_step, variable=var_crp_files, anchor="w")
 chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
 
-# create csv files
-lbl_csv_txt = ["Export results to .csv and retrieve metadata", "Exportar a .csv y recuperar los metadatos"]
-row_csv = 5
-lbl_csv = Label(fth_step, text=lbl_csv_txt[lang], width=1, anchor="w")
-lbl_csv.grid(row=row_csv, sticky='nesw', pady=2)
-var_csv = BooleanVar()
-var_csv.set(False)
-chb_csv = Checkbutton(fth_step, variable=var_csv, anchor="w")
-chb_csv.grid(row=row_csv, column=1, sticky='nesw', padx=5)
+# export results
+lbl_exp_txt = ["Export results and retrieve metadata", "Exportar resultados y recuperar metadatos"]
+row_exp = 5
+lbl_exp = Label(fth_step, text=lbl_exp_txt[lang], width=1, anchor="w")
+lbl_exp.grid(row=row_exp, sticky='nesw', pady=2)
+var_exp = BooleanVar()
+var_exp.set(False)
+chb_exp = Checkbutton(fth_step, variable=var_exp, anchor="w", command=toggle_exp_frame)
+chb_exp.grid(row=row_exp, column=1, sticky='nesw', padx=5)
+
+## exportation options
+exp_frame_txt = ["Export options", "Opciones de exportación"]
+exp_frame_row = 6
+exp_frame = LabelFrame(fth_step, text=" ↳ " + exp_frame_txt[lang] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
+exp_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
+exp_frame.grid(row=exp_frame_row, column=0, columnspan=2, sticky = 'ew')
+exp_frame.columnconfigure(0, weight=1, minsize=label_width - subframe_correction_factor)
+exp_frame.columnconfigure(1, weight=1, minsize=widget_width - subframe_correction_factor)
+exp_frame.grid_forget()
+
+# export format
+lbl_exp_format_txt = ["Output file format", "Formato del archivo de salida"]
+row_exp_format = 0
+lbl_exp_format = Label(exp_frame, text="     " + lbl_exp_format_txt[lang], pady=2, width=1, anchor="w")
+lbl_exp_format.grid(row=row_exp_format, sticky='nesw')
+dpd_options_exp_format = [["XLSX", "CSV"], ["XLSX", "CSV"]]
+var_exp_format = StringVar(exp_frame)
+var_exp_format.set(dpd_options_exp_format[lang][0])
+dpd_exp_format = OptionMenu(exp_frame, var_exp_format, *dpd_options_exp_format[lang])
+dpd_exp_format.configure(width=1)
+dpd_exp_format.grid(row=row_exp_format, column=1, sticky='nesw', padx=5)
 
 # threshold
 lbl_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_lbl_thresh = 6
+row_lbl_thresh = 7
 lbl_thresh = Label(fth_step, text=lbl_thresh_txt[lang], width=1, anchor="w")
 lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
 var_thresh = DoubleVar()
@@ -4512,7 +4598,7 @@ dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
 btn_start_postprocess_txt = ["Post-process files", "Post-procesar archivos"]
-row_start_postprocess = 7
+row_start_postprocess = 8
 btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
@@ -4531,6 +4617,7 @@ cls_frame.grid_rowconfigure(row_smooth_cls_animal, minsize=0) # cls animal smoot
 cls_frame.grid_rowconfigure(row_cls_vehicle_thresh, minsize=0) # cls vehicle thresh
 cls_frame.grid_rowconfigure(row_cls_person_thresh, minsize=0) # cls person thresh
 fth_step.grid_rowconfigure(sep_frame_row, minsize=0) # sep options
+fth_step.grid_rowconfigure(exp_frame_row, minsize=0) # exp options
 
 # enable scroll on mousewheel
 def deploy_canvas_mousewheel(event):
@@ -4790,12 +4877,11 @@ def write_help_tab():
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
-    # export csv files
-    help_text.insert(END, f"{lbl_csv_txt[lang]}\n")
-    help_text.insert(END, ["This will translate the output files of step 2 into csv files and try to retrieve image metadata like date, settings, and GPS. Can be opened in "
-                           "spreadsheet applications such as Excel and Numbers and imported for further processing in R, Python, etc.\n\n",
-                    "Esto convertirá los archivos de salida del paso 2 en archivos csv e intentará recuperar los metadatos de las imágenes, como la fecha, configuraciones "
-                    "y GPS. Pueden abrirse en aplicaciones de hojas de cálculo como Excel y Numbers e importarse para su posterior procesamiento en R, Python, etc.\n\n"][lang])
+    # export results
+    help_text.insert(END, f"{lbl_exp_txt[lang]}\n")
+    help_text.insert(END, ["Here you can select whether you want to export the results to other file formats. It will additionally try to fetch image metadata, like "
+                           "timestamps, locations, and more.\n\n", "Aquí puede seleccionar si desea exportar los resultados a otros formatos de archivo. Además, "
+                           "intentará obtener metadatos de la imagen, como marcas de tiempo, ubicaciones, etc. \n\n"][lang])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -4902,6 +4988,13 @@ def main():
     disable_frame(snd_step)
     disable_frame(trd_step)
     disable_frame(fth_step)
+
+    # DEBUG
+    var_choose_folder.set("/Users/peter/Desktop/_test_images")
+    var_output_dir.set("/Users/peter/Desktop/_csv")
+    var_exp.set(True)
+    update_frame_states()
+    root.update_idletasks()
 
     # run
     root.mainloop()

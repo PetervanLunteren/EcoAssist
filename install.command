@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 19 Oct 2023 (latest edit)
+### Peter van Lunteren, 24 Nov 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -321,6 +321,10 @@ fi
 # requirements for EcoAssist
 $PIP_DET install bounding_box
 $PIP_DET install RangeSlider
+$PIP_DET install gpsphoto
+$PIP_DET install exifread
+$PIP_DET install piexif
+$PIP_DET install openpyxl
 
 # requirements for yolov5
 $PIP_DET install "gitpython>=3.1.30"

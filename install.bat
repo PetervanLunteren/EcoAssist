@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 Oct 2023 (latest edit)
+@REM ### Peter van Lunteren, 24 Nov 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -276,20 +276,6 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
 )
 
-@REM @REM clone ai4eutils git if not present
-@REM if exist "%LOCATION_ECOASSIST_FILES%\ai4eutils\" (
-@REM     echo Dir ai4eutils already exists! Skipping this step. | wtee -a "%LOG_FILE%"
-@REM ) else (
-@REM     echo Dir ai4eutils does not exists! Clone repo... | wtee -a "%LOG_FILE%"
-@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-@REM     "%EA_GIT_EXE%" clone https://github.com/Microsoft/ai4eutils
-@REM     cd "%LOCATION_ECOASSIST_FILES%\ai4eutils" || ( echo "Could not change directory to ai4eutils. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-@REM     "%EA_GIT_EXE%" checkout 1bbbb8030d5be3d6488ac898f9842d715cdca088
-@REM     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-@REM     @REM check the size of the folder
-@REM     dir "%LOCATION_ECOASSIST_FILES%\ai4eutils" | wtee -a "%LOG_FILE%"
-@REM )
-
 @REM clone yolov5 git if not present
 if exist "%LOCATION_ECOASSIST_FILES%\yolov5\" (
     echo Dir yolov5 already exists! Skipping this step. | wtee -a "%LOG_FILE%"
@@ -360,6 +346,10 @@ call activate ecoassistcondaenv
 @REM install additional packages for EcoAssist
 "%EA_PIP_EXE_DET%" install bounding_box
 "%EA_PIP_EXE_DET%" install RangeSlider
+"%EA_PIP_EXE_DET%" install gpsphoto
+"%EA_PIP_EXE_DET%" install exifread
+"%EA_PIP_EXE_DET%" install piexif
+"%EA_PIP_EXE_DET%" install openpyxl
 
 @REM install additional packages for yolov5
 "%EA_PIP_EXE_DET%" install GitPython==3.1.30
