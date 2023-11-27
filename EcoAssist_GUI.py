@@ -58,8 +58,7 @@ sys.path.insert(0, os.path.join(EcoAssist_files, "ai4eutils"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "yolov5"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
 
-# import modules from cloned repositories
-from cameratraps.detection.pytorch_detector import PTDetector
+# import modules from forked repositories
 from visualise_detection.bounding_box import bounding_box as bb
 
 # log pythonpath
@@ -2747,7 +2746,10 @@ def switch_yolov5_git_to(model_type):
 def extract_label_map_from_model(model_file):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
-            
+
+    # import module from cameratraps dir
+    from cameratraps.detection.pytorch_detector import PTDetector
+
     # load model
     label_map_detector = PTDetector(model_file, force_cpu = True)
     
