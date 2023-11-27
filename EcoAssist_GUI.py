@@ -1,9 +1,8 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 24 Nov 2023
+# Latest edit by Peter van Lunteren on 27 Nov 2023
 
-# TODO: BACKEND - leave train data export with same folder sturcture and same timestamp
 # TODO: BACKEND - use PyTorch.crop() for classification to run on GPU
 # TODO: CLASSIFICATION - add documentation for new features
 # TODO: CLASSIFICATION - add documentation for smooth_params.py
@@ -908,8 +907,6 @@ def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file,
             copy_or_move = "Copy"
 
     # init vars
-    timestamp = str(datetime.date.today()) + str(datetime.datetime.now().strftime("%H%M%S"))
-    timestamp = timestamp.replace('-', '')
     src_dir = os.path.normpath(var_choose_folder.get())
     
     # loop through the images
@@ -932,21 +929,22 @@ def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file,
         for img in f:
 
             # get relative path
-            img = os.path.relpath(img.rstrip(), src_dir)
+            img_rel_path = os.path.relpath(img.rstrip(), src_dir)
 
             # uniquify image
-            img_filename_dst = f"{timestamp}-{'-'.join([x for x in img.split(os.sep) if x != ''])}"
-            src_img = os.path.join(src_dir, img)
-            dst_img = os.path.join(dst_dir, img_filename_dst)
+            src_img = os.path.join(src_dir, img_rel_path)
+            dst_img = os.path.join(dst_dir, img_rel_path)
+            Path(os.path.dirname(dst_img)).mkdir(parents=True, exist_ok=True)
             if copy_or_move == "Move":
                 shutil.move(src_img, dst_img)
             elif copy_or_move == "Copy":
                 shutil.copy2(src_img, dst_img)
 
             # uniquify annotation
-            ann_filename_dst = os.path.splitext(img_filename_dst)[0] + ".xml"
-            src_ann = return_xml_path(os.path.join(src_dir, img))
-            dst_ann = os.path.join(dst_dir, ann_filename_dst)
+            ann_rel_path = os.path.splitext(img_rel_path)[0] + ".xml"
+            src_ann = return_xml_path(os.path.join(src_dir, img_rel_path))
+            dst_ann = os.path.join(dst_dir, ann_rel_path)
+            Path(os.path.dirname(dst_ann)).mkdir(parents=True, exist_ok=True)
             shutil.move(src_ann, dst_ann)
 
             # update dialog
