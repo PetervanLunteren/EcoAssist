@@ -626,7 +626,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     # init window
     hitl_progress_window = Toplevel(root)
     hitl_progress_window.title(["Manual check overview", "Verificación manual"][lang])
-    hitl_progress_window.geometry()
+    hitl_progress_window.geometry("+1+1")
 
     # logo
     logo = tk.Label(hitl_progress_window, image=grey_bg_logo)
