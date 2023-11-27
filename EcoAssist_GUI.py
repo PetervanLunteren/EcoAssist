@@ -42,7 +42,6 @@ from GPSPhoto import gpsphoto
 import matplotlib.pyplot as plt
 from subprocess import Popen, PIPE
 import xml.etree.cElementTree as ET
-from bounding_box import bounding_box as bb
 from RangeSlider.RangeSlider import RangeSliderH
 from tkinter import filedialog, ttk, messagebox as mb
 from PIL import ImageTk, Image, ImageFilter, ImageFile
@@ -58,6 +57,10 @@ sys.path.insert(0, os.path.join(EcoAssist_files))
 sys.path.insert(0, os.path.join(EcoAssist_files, "ai4eutils"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "yolov5"))
 sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
+
+# import modules from cloned repositories
+from cameratraps.detection.pytorch_detector import PTDetector
+from visualise_detection.bounding_box import bounding_box as bb
 
 # log pythonpath
 print(sys.path)
@@ -409,7 +412,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         summary.to_csv(csv_for_summary, encoding='utf-8', mode='w', index=False, header=True)
 
     # convert csv to xlsx if required
-    if var_exp_format.get() == dpd_options_exp_format[lang][0]: 
+    if exp and var_exp_format.get() == dpd_options_exp_format[lang][0]: 
         xslx_path = os.path.join(dst_dir, "results.xlsx")
         with pd.ExcelWriter(xslx_path) as writer:
             for result_type in ['detections', 'files', 'summary']:
@@ -2744,9 +2747,6 @@ def switch_yolov5_git_to(model_type):
 def extract_label_map_from_model(model_file):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
-
-    # import module from cameratraps dir
-    from cameratraps.detection.pytorch_detector import PTDetector
             
     # load model
     label_map_detector = PTDetector(model_file, force_cpu = True)

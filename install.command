@@ -198,6 +198,16 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
+# clone visualise_detection git 
+VIS="visualise_detection"
+if [ -d "$VIS" ]; then
+  echo "Dir ${VIS} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
+else
+  echo "Dir ${VIS} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress --depth 1 https://github.com/PetervanLunteren/visualise_detection.git 2>&1 | tee -a "$LOG_FILE"
+  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+fi
+
 # download the MDv5a model 
 mkdir -p $LOCATION_ECOASSIST_FILES/pretrained_models
 cd $LOCATION_ECOASSIST_FILES/pretrained_models || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -319,7 +329,6 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
 fi
 
 # requirements for EcoAssist
-$PIP_DET install bounding_box
 $PIP_DET install RangeSlider
 $PIP_DET install gpsphoto
 $PIP_DET install exifread
