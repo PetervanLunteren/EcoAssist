@@ -18,6 +18,34 @@ EcoAssist is an application designed to streamline the work of ecologists dealin
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_tinamou.JPG" width=45% height="auto" /> 
 </p>
 
+## Cite
+Please use the following citations if you used EcoAssist in your research.
+
+[Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
+```BibTeX
+@article{van_Lunteren_EcoAssist_2023,
+  author = {van Lunteren, Peter},
+  doi = {10.21105/joss.05581},
+  journal = {Journal of Open Source Software},
+  month = aug,
+  number = {88},
+  pages = {5581},
+  title = {{EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models}},
+  url = {https://joss.theoj.org/papers/10.21105/joss.05581},
+  volume = {8},
+  year = {2023}
+}
+```
+
+[Link to paper](https://arxiv.org/abs/1907.06772)
+```BibTeX
+@article{Beery_Efficient_2019,
+  title     = {Efficient Pipeline for Camera Trap Image Review},
+  author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
+  journal   = {arXiv preprint arXiv:1907.06772},
+  year      = {2019}
+}
+```
 <!---
 
 OLD README MARKDOWN:
