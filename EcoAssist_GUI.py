@@ -2082,6 +2082,7 @@ def select_detections(selection_dict, prepare_files):
                 current += 1
 
                 # create text file with images
+                file_list_txt = os.path.normpath(file_list_txt)
                 with open(file_list_txt, 'a') as f:
                     f.write(f"{os.path.normpath(img)}\n")
                     f.close()
