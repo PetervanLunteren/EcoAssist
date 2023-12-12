@@ -1,9 +1,8 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 27 Nov 2023
+# Latest edit by Peter van Lunteren on 12 Dec 2023
 
-# TODO: BACKEND - use PyTorch.crop() for classification to run on GPU
 # TODO: CLASSIFICATION - add documentation for new features
 # TODO: CLASSIFICATION - add documentation for smooth_params.py
 # TODO: CLASSIFICATION - add messagebox pointing user to smooth_info.txt file
@@ -981,7 +980,7 @@ def start_or_continue_hitl():
 
     # warn user if the json file is very large
     json_size = os.path.getsize(path_to_image_json)
-    if json_size > 10000:
+    if json_size > 500000:
         mb.showwarning(warning_txt[lang], [f"The JSON file is very large ({get_size(path_to_image_json)}). This can cause the verification"
                                             " step to perform very slow. It will work, but you'll have to have patience. ", "El archivo "
                                             f"JSON es muy grande ({get_size(path_to_image_json)}). Esto puede hacer que el paso de verificación"
@@ -1407,7 +1406,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
         
         # add argument to command call
         selected_options.append("--class_mapping_filename=" + native_model_classes_json_file)
-            
+
     # create commands for Windows
     if os.name == 'nt':
         if selected_options == []:
@@ -1432,7 +1431,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
         command = img_command
     else:
         command = vid_command
-    
+
     # log
     print(f"command:\n\n{command}\n\n")
         
@@ -1461,7 +1460,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     cancel_deploy_model_pressed = False
     btn_cancel = Button(progress_frame, text=cancel_txt[lang], command=lambda: cancel_subprocess(p, "deploy_model"))
     btn_cancel.grid(row=3, column=0, columnspan=2)
-    
+
     # read output and direct to tkinter
     model_error_present = False
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
@@ -1602,7 +1601,14 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
 def start_deploy():
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
+
+    # make sure user doesn't press the button twice
+    btn_start_deploy.config(state=DISABLED)
+    info_window = CustomWindow(title = ["Have patience", "Ten paciencia"][lang],
+                               text = ["Button clicked! Preparing deployment...",
+                                       "¡Botón pulsado! Preparando despliegue..."][lang])
+    info_window.open()
+
     # fetch global variables
     global progress_img_frame
     global progress_vid_frame
@@ -1686,6 +1692,12 @@ def start_deploy():
             additional_vid_options.append("--frame_folder=" + temp_frame_folder)
             additional_vid_options.append("--keep_extracted_frames")
     
+    # close info window as the progress window will open here
+    info_window.close()
+
+    # the user can cancel the deployment too, so better be sure it is enabled again
+    btn_start_deploy.config(state=NORMAL)
+
     # open new window with progress bar and stats
     md_progress_window = Toplevel(root)
     md_progress_window.title("Deploy progress")
@@ -1728,7 +1740,7 @@ def start_deploy():
             global progress_img_stats_cls
             progress_img_stats_cls = ttk.Label(master=progress_img_frame, text=create_postprocess_lbl())
             progress_img_stats_cls.grid(column=0, row=7, padx=5, pady=(0,3), columnspan=2)
-
+    
     # add video progress
     if var_process_vid.get():
         progress_vid_frame = LabelFrame(md_progress_window, text=[" Videos ", " Vídeos "][lang], pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg='darkblue')
@@ -1754,7 +1766,7 @@ def start_deploy():
             global progress_vid_stats_cls
             progress_vid_stats_cls = ttk.Label(master=progress_vid_frame, text=create_postprocess_lbl())
             progress_vid_stats_cls.grid(column=0, row=7, padx=5, pady=(0,3), columnspan=2)
-    
+
     try:
         # detect images ...
         if var_process_img.get():
@@ -1774,6 +1786,9 @@ def start_deploy():
         if temp_frame_folder_created:
             temp_frame_folder_obj.cleanup()
 
+        # enable button
+        btn_start_deploy.config(state=NORMAL)
+
     except Exception as error:
         # log error
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
@@ -1788,6 +1803,9 @@ def start_deploy():
         
         # close window
         md_progress_window.destroy()
+
+        # enable button
+        btn_start_deploy.config(state=NORMAL)
 
 # get data from file list and create graph
 def produce_graph(file_list_txt = None, dir = None):
@@ -2637,6 +2655,25 @@ class LabelImgExchangeDir:
             return [True, fn]
         return [False, '']
 
+# simple window class to pop up and be closed
+class CustomWindow:
+    def __init__(self, title="", text=""):
+        self.title = title
+        self.text = text
+        self.root = None
+
+    def open(self):
+        self.root = tk.Tk()
+        self.root.title(self.title)
+
+        label = tk.Label(self.root, text=self.text)
+        label.pack(padx=10, pady=10)
+
+        self.root.update_idletasks()
+
+    def close(self):
+        self.root.destroy()
+
 # simple window to show progressbar
 class PatienceDialog:
     def __init__(self, total, text):
@@ -2659,7 +2696,7 @@ class PatienceDialog:
         if current % math.ceil(self.total / 100) == 0:
             self.progress['value'] = (current / self.total) * 100
             if percentage:
-                percentage_value = round((current/self.total)*100)
+                percentage_value = round((current/self.total) * 100)
                 self.label.config(text = f"{self.text}\n{percentage_value}%")
             else:
                 self.label.config(text = f"{self.text}\n{current} of {self.total}")
