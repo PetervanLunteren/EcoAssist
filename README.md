@@ -21,6 +21,10 @@ EcoAssist is an application designed to streamline the work of ecologists dealin
 ## Cite
 Please use the following citations if you used EcoAssist in your research.
 
+<details>
+<summary>EcoAssist</summary>
+<br>
+
 [Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
 ```BibTeX
 @article{van_Lunteren_EcoAssist_2023,
@@ -36,6 +40,11 @@ Please use the following citations if you used EcoAssist in your research.
   year = {2023}
 }
 ```
+</details>
+
+<details>
+<summary>MegaDetector</summary>
+<br>
 
 [Link to paper](https://arxiv.org/abs/1907.06772)
 ```BibTeX
@@ -46,6 +55,7 @@ Please use the following citations if you used EcoAssist in your research.
   year      = {2019}
 }
 ```
+</details>
 <!---
 
 OLD README MARKDOWN:
