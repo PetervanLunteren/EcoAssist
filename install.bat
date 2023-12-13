@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 27 Nov 2023 (latest edit)
+@REM ### Peter van Lunteren, 13 Dec 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -377,17 +377,10 @@ call %EA_CONDA_EXE% list >> "%LOG_FILE%"
 "%EA_PIP_EXE_DET%" freeze >> "%LOG_FILE%"
 call %EA_CONDA_EXE% deactivate
 
-@REM activate dedicated environment for classification
+@REM create and log dedicated environment for classification
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8
-call %EA_CONDA_EXE% create -n ecoassistcondaenv-yolov8 python=3.8 -y
+call %EA_CONDA_EXE% env create --file EcoAssist\envs\classifier-yolov8-windows.yml
 call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
-"%EA_PIP_EXE_CLA%" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-"%EA_PIP_EXE_CLA%" install ultralytics==8.0.191
-"%EA_PIP_EXE_CLA%" install numpy==1.24.1
-"%EA_PIP_EXE_CLA%" install humanfriendly==10.0
-"%EA_PIP_EXE_CLA%" install jsonpickle==3.0.2
-
-@REM log env info
 call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
 call %EA_CONDA_EXE% list >> "%LOG_FILE%"
