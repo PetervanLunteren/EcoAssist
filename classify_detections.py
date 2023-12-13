@@ -520,7 +520,10 @@ def smooth_json(json_input_fpath, json_output_fpath):
         for im in images_this_sequence:
             fn = im['file_name']
             results_this_image = filename_to_results[fn]
-            if results_this_image['detections'] is None:
+            if 'detections' in results_this_image:
+                if results_this_image['detections'] is None:
+                    continue
+            else:
                 continue
             for det in results_this_image['detections']:
                 
