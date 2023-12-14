@@ -2670,6 +2670,7 @@ class CustomWindow:
         label.pack(padx=10, pady=10)
 
         self.root.update_idletasks()
+        self.root.update()
 
     def close(self):
         self.root.destroy()
