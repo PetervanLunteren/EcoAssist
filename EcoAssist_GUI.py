@@ -1438,12 +1438,16 @@ def deploy_model(path_to_image_folder, selected_options, data_type):
     # prepare process and cancel method per OS
     if os.name == 'nt':
         # run windows command
+        environ = os.environ.copy()
+        environ['PYTHONIOENCODING'] = 'utf-8'
         p = Popen(command,
                   stdout=subprocess.PIPE,
                   stderr=subprocess.STDOUT,
                   bufsize=1,
                   shell=True,
-                  universal_newlines=True)
+                  universal_newlines=True,
+                  env=environ,
+                  encoding='utf-8')
 
     else:
         # run unix command
