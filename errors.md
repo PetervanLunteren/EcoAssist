@@ -115,3 +115,26 @@ Another option to check your labelImg installation is to open a directory of non
 
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. There are also some other ways we can try to solve it, but I think this would be the easiest one. Let me know if this doesn't work.
+
+## `PackagesNotFoundError: The following packages are not available from current channels`
+I'm not sure what causes conda to not find certain packages on your device, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking Conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
+
+You can check if the computer has access to the Conda channels by attempting to access the channels. Here's how:
+
+**Using a Web Browser:**
+Open a web browser and try to access the Conda channels directly. Can you open the following websites? You should see a list of hyperlinks (see screenshot).
+* [https://conda.anaconda.org/conda-forge/win-64](https://conda.anaconda.org/conda-forge/win-64)
+* [https://conda.anaconda.org/pytorch/win-64](https://conda.anaconda.org/pytorch/win-64)
+
+**Using the command line:**
+Open a new command prompt window and copy-paste the following commands and press enter. It will download a text file from the Conda channels to check if something is blocking the connection. This can be done using the following commands:
+```
+curl -O https://conda.anaconda.org/conda-forge/win-64/patch_instructions.json
+```
+```
+curl -O https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json
+```
+
+The text files (`.json`) are downloaded to your root folder (if the download succeeded), and can be deleted afterward. We don't need them, It's just to check the connection. 
+
+Let me know how this goes!
