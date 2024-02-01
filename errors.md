@@ -114,7 +114,9 @@ Dummy class 5
 Another option to check your labelImg installation is to open a directory of non-annotated images. That should work without any problems. If not, [email me](mailto:petervanlunteren@hotmail.com) the logfiles and I will have a look. [This](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-create-logfiles) is how to write the error to the logfiles and [this](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-find-logfiles) is how to find them. 
 
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
-This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. There are also some other ways we can try to solve it, but I think this would be the easiest one. Let me know if this doesn't work.
+This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it. There are also some other ways we can try to solve it, but I think this would be the easiest one.
+
+Let me know if this doesn't work!
 
 ## `PackagesNotFoundError: The following packages are not available from current channels`
 I'm not sure what causes conda to not find certain packages on your device, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking Conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
