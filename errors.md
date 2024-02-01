@@ -100,19 +100,6 @@ If you see this message poping up somewhere, there is something going on with yo
 ## `ValueError: path is on mount '...', start on mount '...'`
 This is a Windows error message and means that your training data is located on a different drive than EcoAssist. For example, it would say `ValueError: path is on mount 'C:', start on mount 'F:'`, which means that the training data is located on your `F:` drive, while EcoAssist is located on the `C:` drive. The sollution is to get everything on the same drive. So either install EcoAssist on the `F:` drive, or move the training data to the `C:` drive. 
 
-## `An error occurred while opening the annotation software labelImg. Please send an email to petervanlunteren@hotmail.com to resolve this bug.`
-This crash can occur when there are more classes in an annotation file than in the `classes.txt` file. That means that the annotation file class number of a specific annotation refers to a non-existing class in the `classes.txt`. So for example, if you have two lines in your `classes.txt` (`species A`, and `species B`), but there is an annotation file which is labeled as the third class (which would be 2 when counting from 0), for example: `2 0.929183 0.683231 0.135604 0.238979`. This will cause labelImg to crash, since it can’t find which class the “2” refers to. A good test would be to add some dummy classes to your `classes.txt`, and then try to open labelImg again. For example:
-```
-Species A
-Species B
-Dummy class 1
-Dummy class 2
-Dummy class 3
-Dummy class 4
-Dummy class 5
-```
-Another option to check your labelImg installation is to open a directory of non-annotated images. That should work without any problems. If not, [email me](mailto:petervanlunteren@hotmail.com) the logfiles and I will have a look. [This](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-create-logfiles) is how to write the error to the logfiles and [this](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-find-logfiles) is how to find them. 
-
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it. There are also some other ways we can try to solve it, but I think this would be the easiest one.
 
@@ -140,3 +127,5 @@ curl -O https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json
 The text files (`.json`) are downloaded to your root folder (if the download succeeded), and can be deleted afterward. We don't need them, It's just to check the connection. 
 
 Let me know how this goes!
+
+## `Exception: '>=' not supported between instances of 'RuntimeError' and 'int'`
