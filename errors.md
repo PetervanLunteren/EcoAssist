@@ -129,3 +129,14 @@ The text files (`.json`) are downloaded to your root folder (if the download suc
 Let me know how this goes!
 
 ## `Exception: '>=' not supported between instances of 'RuntimeError' and 'int'`
+Solution comming up...
+
+## Example email for faulty installation
+
+Thanks for your email. I'm sorry to hear that you're experiencing difficulties with installing EcoAssist.
+
+In many cases, installation issues stem from incomplete dependency downloads, often blocked by security settings on the destination computer. This may be attributed to security software such as VPNs, proxy servers, or antivirus applications, which are known to be particularly strict on company computers.
+
+Could you please check if any of these security settings are enabled on your computer? If so, would it be possible to temporarily disable them during the EcoAssist installation process?
+
+If the problem persists, please copy-paste the console output and share it with me. This will allow me to investigate the issue further and provide you with a solution.
