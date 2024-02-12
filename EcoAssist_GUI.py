@@ -1,7 +1,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 10 Feb 2024
+# Latest edit by Peter van Lunteren on 12 Feb 2024
 
 # TODO: DONE - Do a test run to try to get predictions from a MEWC h5 model.
 # TODO: DONE - try to get that inside a conda env and then inside a conda env yaml file
@@ -75,18 +75,12 @@
 # TODO: DONE - add feature to disable GPU ('disable GPU processing')
 # TODO: DONE - zet all logos, plaatjes en icons in de folder en pas de paden aan tot relative
 # TODO: DONE - adjust text on website for all icons in EA are from flaticon
-
-
-
-
-
 # TODO: DONE - shell: remove all except dir with models when updating. .... or not?
 # TODO: DONE - shell: rename ecoassistcondaenv to ecoassistcondaenv-base
 # TODO: DONE - shell: remove all conda envs starting with ecoassistcondaenv when updating
 # TODO: DONE - shell: convert everything to env.yamls that is much more overzichtelijk. it's the way to go, son.
 # TODO: DONE - shell: download MDv5a wel standaard tijdens de installation. Zonder MD krijg je niets. Dan is volgens mij het probleem van de dropdown zonder modellen ook opgelost.
-
-# TODO: shell: bij de install maak je alvast foldertjes aan voor alle modellen die er dan zijn. Anders krijg je dalijk meteen 20 meldeingen. Of je doet iets dat dit meteen gebeurd bij de eerste keer EA opstarten, dan daarna een var in global_vars aanpassen. Alle modeelen daarna krijg je dus wel een melding.
+# TODO: DONE - shell: bij de install maak je alvast foldertjes aan voor alle modellen die er dan zijn. Anders krijg je dalijk meteen 20 meldeingen. Of je doet iets dat dit meteen gebeurd bij de eerste keer EA opstarten, dan daarna een var in global_vars aanpassen. Alle modeelen daarna krijg je dus wel een melding.
 
 # TODO: check if it works on WINDOWS -> try everything, also without GPU
 # TODO: add global_vars.json to git ignore because we don't want it to be updated every time I choose some things. 
@@ -3275,6 +3269,15 @@ def set_up_unkown_model(title, model_dict, model_type):
     with open(var_file, "w") as vars:
         json.dump(model_dict, vars, indent=2)
 
+# check if this is the first startup since install 
+def is_first_startup():
+    return os.path.exists(os.path.join(EcoAssist_files, "first-startup.txt"))
+
+# remove the first startup file
+def remove_first_startup_file():
+    first_startup_file = os.path.join(EcoAssist_files, "first-startup.txt")
+    os.remove(first_startup_file)
+
 # this function downloads a json with model info and tells the user is there is something new
 def fetch_latest_model_info():
     start_time = time.time()
@@ -3298,16 +3301,25 @@ def fetch_latest_model_info():
                 all_models = list(model_dicts.keys())
                 known_models = fetch_known_models(CLS_DIR if typ == "cls" else DET_DIR)
                 unknown_models = [e for e in all_models if e not in known_models]
+                
+                # all models are treated unknown during first startup
+                if is_first_startup():
+                    unknown_models = all_models
 
-                # show a description of all the unknown models
+                # show a description of all the unknown models, except if first startup
                 if unknown_models != []:
                     for model_id in unknown_models:
                         model_dict = model_dicts[model_id]
-                        show_model_info(title = model_id, model_dict = model_dict, new_model = True)
+                        if not is_first_startup():
+                            show_model_info(title = model_id, model_dict = model_dict, new_model = True)
                         set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
                 
-                # update root so that the new models show up in the dropdown menu
-                update_model_dropdowns()
+            # remove first startup file when its done
+            if is_first_startup():
+                remove_first_startup_file()
+
+            # update root so that the new models show up in the dropdown menu
+            update_model_dropdowns()
 
     except requests.exceptions.Timeout:
         print("Request timed out. File download stopped.")
