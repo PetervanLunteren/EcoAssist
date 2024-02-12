@@ -52,22 +52,6 @@ else
   BRANCH_NAME="main"
 fi
 
-# # activate conda
-# PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-# if [ -f "$PATH_TO_CONDA_INSTALLATION_TXT_FILE" ]; then
-#   # intel macs and linux have a txt file with the conda path
-#   PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-#   PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-#   echo "PATH_TO_CONDA_INSTALLATION_TXT_FILE exists: $PATH_TO_CONDA_INSTALLATION_TXT_FILE"
-#   echo "Path to conda is: $PATH_TO_CONDA"
-#   echo "Path to conda.sh: $PATH_TO_CONDA_SH"
-#   source "$PATH_TO_CONDA_SH"
-# elif [ -d "$HOME/miniforge3/envs/ecoassistcondaenv" ]; then
-#   # apple silicons have it installed in their home dir
-#   echo "ecoassistcondaenv exists in $HOME/miniforge3/envs/ecoassistcondaenv"
-#   source $HOME/miniforge3/bin/activate
-# fi
-
 # delete previous installation of EcoAssist if present so that it can update, except the subdir 'models'
 rm -rf "${LOCATION_ECOASSIST_FILES}/cameratraps" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/cameratraps'"
 rm -rf "${LOCATION_ECOASSIST_FILES}/EcoAssist" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/EcoAssist'"
@@ -157,6 +141,7 @@ else
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
     ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns"
     bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+    chmod 755 $FILE # change permissions
     mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
   elif [ "$PLATFORM" = "Linux" ]; then
     # create shortcut file
@@ -233,21 +218,11 @@ else
 fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
-# # download the MDv5b model 
-# MDv5b="md_v5b.0.0.pt"
-# if [ -f "$MDv5b" ]; then
-#   echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
-# else
-#   echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-#   curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE"
-# fi
-# cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+# create a dir for the classification models, if not already present
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/cls"
 
-# # make dir for classification models
-# mkdir -p $LOCATION_ECOASSIST_FILES/classification_models
-# mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_animals
-# mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_persons
-# mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_vehicles
+# create txt file to let EcoAssist know it will be the first startup since install
+echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
 
 # install miniforge
 MFG="miniforge"
@@ -263,9 +238,6 @@ fi
 source "${CONDA_DIR}/etc/profile.d/conda.sh"
 source "${CONDA_DIR}/bin/activate"
 export PATH="${CONDA_DIR}/bin":$PATH
-
-# remove previous EcoAssist conda environments if present
-conda env list | awk '$1 ~ /^ecoassistcondaenv/ {print $1}' | xargs -I {} conda env remove -n {}
 
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
@@ -348,6 +320,8 @@ $PIP_BASE install gpsphoto
 $PIP_BASE install exifread
 $PIP_BASE install piexif
 $PIP_BASE install openpyxl
+$PIP_BASE install customtkinter
+$PIP_BASE install CTkTable
 
 # requirements for yolov5
 $PIP_BASE install "gitpython>=3.1.30"
@@ -363,13 +337,14 @@ $PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
 # create dedicated yolov8 classification environment
-conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/yolov8.yml"
+conda env remove -p $ECOASSISTCONDAENV_YOLOV8
+conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
 conda activate $ECOASSISTCONDAENV_YOLOV8
-# $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-# $PIP_YOLOV8 install "ultralytics==8.0.191"
-# $PIP_YOLOV8 install "numpy==1.24.1"
-# $PIP_YOLOV8 install "humanfriendly==10.0"
-# $PIP_YOLOV8 install "jsonpickle==3.0.2"
+$PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+$PIP_YOLOV8 install "ultralytics==8.0.191"
+$PIP_YOLOV8 install "numpy==1.24.1"
+$PIP_YOLOV8 install "humanfriendly==10.0"
+$PIP_YOLOV8 install "jsonpickle==3.0.2"
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
 $PIP_YOLOV8 freeze >> "$LOG_FILE" 
