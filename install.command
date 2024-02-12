@@ -45,20 +45,14 @@ PIP_MEWC="${ECOASSISTCONDAENV_MEWC}/bin/pip"
 HOMEBREW_DIR="/opt/homebrew"
 
 # check for sandbox argument and specify branch 
-echo "Argument received: $1"
 if [ "$1" == "sandbox" ]; then
-  GIT_BRANCH_NAME="sandbox"
+  GITHUB_BRANCH_NAME="sandbox"
 else
-  GIT_BRANCH_NAME="main"
+  GITHUB_BRANCH_NAME="main"
 fi
 
-# delete previous installation of EcoAssist if present so that it can update, except the subdir 'models'
-rm -rf "${LOCATION_ECOASSIST_FILES}/cameratraps" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/cameratraps'"
-rm -rf "${LOCATION_ECOASSIST_FILES}/EcoAssist" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/EcoAssist'"
-rm -rf "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/Human-in-the-loop'"
-rm -rf "${LOCATION_ECOASSIST_FILES}/miniforge" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/miniforge'"
-rm -rf "${LOCATION_ECOASSIST_FILES}/visualise_detection" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/visualise_detection'"
-rm -rf "${LOCATION_ECOASSIST_FILES}/yolov5" && echo "Removed dir '${LOCATION_ECOASSIST_FILES}/yolov5'"
+# delete previous installation of EcoAssist if present so that it can update
+rm -rf $LOCATION_ECOASSIST_FILES && echo "Removed dir '${LOCATION_ECOASSIST_FILES}'"
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
@@ -128,14 +122,14 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   fi
 fi
 
-# clone EcoAssist git 
+# clone EcoAssist git
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance."; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress --depth 1 --branch $GIT_BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress --depth 1 --branch $GITHUB_BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
