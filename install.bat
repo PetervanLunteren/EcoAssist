@@ -373,7 +373,8 @@ call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute 
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
 call %EA_CONDA_EXE% list >> "%LOG_FILE%"
 "%EA_PIP_EXE_BASE%" freeze >> "%LOG_FILE%"
-call %EA_CONDA_EXE% deactivate
+CALL conda.bat deactivate
+@REM call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for yolov8 classification
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8
@@ -383,7 +384,8 @@ call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute 
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
 call %EA_CONDA_EXE% list >> "%LOG_FILE%"
 "%EA_PIP_EXE_YOLOV8%" freeze >> "%LOG_FILE%"
-call %EA_CONDA_EXE% deactivate
+CALL conda.bat deactivate
+@REM call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for mewc classification
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc
@@ -393,7 +395,8 @@ call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute 
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
 call %EA_CONDA_EXE% list >> "%LOG_FILE%"
 "%EA_PIP_EXE_MEWC%" freeze >> "%LOG_FILE%"
-call %EA_CONDA_EXE% deactivate
+CALL conda.bat deactivate
+@REM call %EA_CONDA_EXE% deactivate
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
