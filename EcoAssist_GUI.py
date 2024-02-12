@@ -1935,17 +1935,21 @@ def start_deploy(simple_mode = False):
                 additional_vid_options.append("--keep_extracted_frames")
     
     try:
-        # detect images ...
-        if var_process_img.get():
-            deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
 
-        # ... and/or videos
-        if var_process_vid.get() and not simple_mode:
-            deploy_model(chosen_folder, additional_vid_options, data_type = "vid", simple_mode = simple_mode)
+        # if not deployed through simple mode, check the input values
+        if not simple_mode:
+            # detect images ...
+            if var_process_img.get():
+                deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
+
+            # ... and/or videos
+            if var_process_vid.get() and not simple_mode:
+                deploy_model(chosen_folder, additional_vid_options, data_type = "vid", simple_mode = simple_mode)
         
-        # add predefined postprocess for simple mode directly after deployment and classification
-        if simple_mode:
-             postprocess(src_dir = chosen_folder,
+        # if deployed through simple mode, analyse images and add predefined postprocess for simple mode directly after deployment and classification
+        else:
+            deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
+            postprocess(src_dir = chosen_folder,
                          dst_dir = chosen_folder,
                          thresh = global_vars["var_thresh_default"],
                          sep = False,
@@ -1956,7 +1960,7 @@ def start_deploy(simple_mode = False):
                          exp = True,
                          exp_format = "XLSX",
                          data_type = "img")
-             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
+            show_result_info(os.path.join(chosen_folder, "results.xlsx"))
 
         # reset window
         update_frame_states()
@@ -6408,4 +6412,3 @@ def main():
 # executable as script
 if __name__ == "__main__":
     main()
-
