@@ -27,7 +27,7 @@ fi
 
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
+ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv-base"
 PIP="${ECOASSISTCONDAENV}/bin/pip"
 HOMEBREW_DIR="/opt/homebrew"
 
