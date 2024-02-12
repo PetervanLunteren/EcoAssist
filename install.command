@@ -47,9 +47,9 @@ HOMEBREW_DIR="/opt/homebrew"
 # check for sandbox argument and specify branch 
 echo "Argument received: $1"
 if [ "$1" == "sandbox" ]; then
-  BRANCH_NAME="sandbox"
+  GIT_BRANCH_NAME="sandbox"
 else
-  BRANCH_NAME="main"
+  GIT_BRANCH_NAME="main"
 fi
 
 # delete previous installation of EcoAssist if present so that it can update, except the subdir 'models'
@@ -135,7 +135,7 @@ if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress --depth 1 --branch $BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress --depth 1 --branch $GIT_BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
