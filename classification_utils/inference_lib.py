@@ -1,60 +1,78 @@
-# Script to add species specific classifications to animal detections
-# Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 17 Oct 2023
+# library of inference functions to be used for classifying MD crops 
+# Created by Peter van Lunteren
+# Latest edit by Peter van Lunteren on 22 Jan 2024
 
-# import packages
-from ultralytics import YOLO
+# # import packages
 import json
 import os
-import sys
-import torch
-import stat
-import time
-import pickle
-import humanfriendly
 from tqdm import tqdm
 from PIL import Image, ImageOps
 from collections import defaultdict 
-import shutil
-
-# init vars
-animal_model_fpath = str(sys.argv[1]) if sys.argv[1] != 'None' else None
-animal_thresh = float(sys.argv[2]) if sys.argv[2] != 'None' else None
-smooth_bool = True if sys.argv[3] == 'True' else False
-vehicle_model_fpath = str(sys.argv[4]) if sys.argv[4] != 'None' else None
-vehicle_thresh = float(sys.argv[5]) if sys.argv[5] != 'None' else None
-person_model_fpath = str(sys.argv[6]) if sys.argv[6] != 'None' else None
-person_thresh = float(sys.argv[7]) if sys.argv[7] != 'None' else None
-json_path = str(sys.argv[8])
-temp_frame_folder = str(sys.argv[9])
-EcoAssist_files = str(sys.argv[10])
-
-# load models
-animal_model = YOLO(animal_model_fpath) if animal_model_fpath != None else None
-vehicle_model = YOLO(vehicle_model_fpath) if vehicle_model_fpath != None else None
-person_model = YOLO(person_model_fpath) if person_model_fpath != None else None
-
-# get external code in here
-sys.path.insert(0, EcoAssist_files)
-sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
-from detection.video_utils import frame_results_to_video_results
-from md_utils.ct_utils import is_list_sorted
+from cameratraps.detection.video_utils import frame_results_to_video_results
+from cameratraps.md_utils.ct_utils import is_list_sorted
 from EcoAssist.smooth_params import *
 
-# fetch classifications for single crop
-def get_classification(img_fpath, detection_type):
-    if detection_type == 'animal':
-        results = animal_model(img_fpath, verbose=False)
-    elif detection_type == 'vehicle':
-        results = vehicle_model(img_fpath, verbose=False)
-    elif detection_type == 'person':
-        results = person_model(img_fpath, verbose=False)
-    names_dict = results[0].names
-    probs = results[0].probs.data.tolist()
-    classifications = []
-    for idx, v in names_dict.items():
-        classifications.append([v, probs[idx]])
-    return classifications
+# MAIN FUNCTION different workflow for videos than for images
+def classify_MD_json(json_path,
+                     GPU_availability,
+                     cls_detec_thresh,
+                     cls_class_thresh,
+                     smooth_bool,
+                     inference_function,
+                     temp_frame_folder,
+                     cls_model_fpath):
+    if json_path.endswith('video_recognition_file.json'):
+
+        # init vars
+        json_path_head = os.path.splitext(json_path)[0]
+        json_path_tail = os.path.splitext(json_path)[1]
+        video_level_json = json_path
+        video_level_json_original = json_path_head + '_original' + json_path_tail
+        frame_level_json = json_path_head + '.frames' + json_path_tail
+        frame_level_json_original = json_path_head + '.frames_original' + json_path_tail
+
+        # for video's we need to classify the frames json instead of the normal json
+        convert_detections_to_classification(json_path = frame_level_json,
+                                            img_dir = temp_frame_folder,
+                                            GPU_availability = GPU_availability,
+                                            cls_detec_thresh = cls_detec_thresh,
+                                            cls_class_thresh = cls_class_thresh,
+                                            smooth_bool = smooth_bool,
+                                            inference_function = inference_function,
+                                            cls_model_fpath = cls_model_fpath)
+        
+        # convert frame results to video results
+        frame_results_to_video_results(input_file = frame_level_json,
+                                    output_file = video_level_json)
+        frame_results_to_video_results(input_file = frame_level_json_original,
+                                    output_file = video_level_json_original)
+
+        # remove unnecessary jsons
+        if os.path.isfile(frame_level_json_original):
+            os.remove(frame_level_json_original)
+        if os.path.isfile(frame_level_json):
+            os.remove(frame_level_json)
+
+    # for images it's much more straight forward
+    else:
+        convert_detections_to_classification(json_path = json_path,
+                                            img_dir = os.path.dirname(json_path),
+                                            GPU_availability = GPU_availability,
+                                            cls_detec_thresh = cls_detec_thresh,
+                                            cls_class_thresh = cls_class_thresh,
+                                            smooth_bool = smooth_bool,
+                                            inference_function = inference_function,
+                                            cls_model_fpath = cls_model_fpath)
+
+# fetch forbidden classes from the model's variables.json
+def fetch_forbidden_classes(cls_model_fpath):
+    var_file = os.path.join(os.path.dirname(cls_model_fpath), "variables.json")
+    with open(var_file, 'r') as file:
+        model_vars = json.load(file)
+    all_classes = model_vars["all_classes"]
+    selected_classes = model_vars["selected_classes"]
+    forbidden_classes = [e for e in all_classes if e not in selected_classes]
+    return forbidden_classes
 
 # fetch label map from json
 def fetch_label_map_from_json(path_to_json):
@@ -85,18 +103,22 @@ def remove_background(img, bbox_norm):
     crop = ImageOps.pad(crop, size=(box_size, box_size), color=0)
     return crop
 
-# run through json and convert detections to classficiations
-def convert_detections_to_classification(json_path, img_dir):
+# set confidence scores of forbidden classes to 0 and normalize the rest
+def remove_forbidden_classes(name_classifications, forbidden_classes):
+    name_classifications = [[name, 0] if name in forbidden_classes else [name, score] for name, score in name_classifications]
+    total_confidence = sum(score for _, score in name_classifications if score > 0)
+    name_classifications = [[name, score / total_confidence] if score > 0 else [name, 0] for name, score in name_classifications]
+    return name_classifications
 
-    # check if mps or cuda is available
-    GPU_availability = False
-    try:
-        if torch.backends.mps.is_built() and torch.backends.mps.is_available():
-            GPU_availability = True
-    except:
-        pass
-    if not GPU_availability:
-        GPU_availability = torch.cuda.is_available()
+# run through json and convert detections to classficiations
+def convert_detections_to_classification(json_path,
+                                         img_dir,
+                                         GPU_availability,
+                                         cls_detec_thresh,
+                                         cls_class_thresh,
+                                         smooth_bool,
+                                         inference_function,
+                                         cls_model_fpath):
 
     # count the number of crops to classify
     n_crops_to_classify = 0
@@ -109,19 +131,18 @@ def convert_detections_to_classification(json_path, img_dir):
                     conf = detection["conf"]
                     category_id = detection['category']
                     category = label_map[category_id]
-                    if animal_model_fpath != None:
-                        if conf >= animal_thresh and category == 'animal':
-                            n_crops_to_classify += 1
-                    if vehicle_model_fpath != None:
-                        if conf >= vehicle_thresh and category == 'vehicle':
-                            n_crops_to_classify += 1
-                    if person_model_fpath != None:
-                        if conf >= person_thresh and category == 'person':
-                            n_crops_to_classify += 1
+                    if conf >= cls_detec_thresh and category == 'animal':
+                        n_crops_to_classify += 1
+    
+    # send signal to catch error if there is nothing to classify
+    if n_crops_to_classify == 0:
+        print("n_crops_to_classify is zero. Nothing to classify.")
+        return
 
     # crop and classify
     print(f"GPU available: {GPU_availability}")
     initial_it = True
+    forbidden_classes = fetch_forbidden_classes(cls_model_fpath)
     with open(json_path) as image_recognition_file_content:
         data = json.load(image_recognition_file_content)
         label_map = fetch_label_map_from_json(json_path)
@@ -129,7 +150,6 @@ def convert_detections_to_classification(json_path, img_dir):
             data['classification_categories'] = {}
         inverted_cls_label_map = {v: k for k, v in data['classification_categories'].items()}
         inverted_det_label_map = {v: k for k, v in data['detection_categories'].items()}
-        n_tot_img = len(data['images'])
         with tqdm(total=n_crops_to_classify) as pbar:
             for image in data['images']:
 
@@ -140,20 +160,13 @@ def convert_detections_to_classification(json_path, img_dir):
                         conf = detection["conf"]
                         category_id = detection['category']
                         category = label_map[category_id]
-                        if animal_model_fpath == None and category == 'animal':
-                            continue
-                        if vehicle_model_fpath == None and category == 'vehicle':
-                            continue
-                        if person_model_fpath == None and category == 'person':
-                            continue
-                        if category == 'animal' and conf >= animal_thresh or \
-                            category == 'vehicle' and conf >= vehicle_thresh or \
-                            category == 'person' and conf >= person_thresh:
+                        if category == 'animal' and conf >= cls_detec_thresh:
                             img_fpath = os.path.join(img_dir, fname)
                             bbox = detection['bbox']
                             crop = remove_background(Image.open(img_fpath), bbox)
-                            name_classifications = get_classification(crop, category)
-
+                            name_classifications = inference_function(crop)
+                            name_classifications = remove_forbidden_classes(name_classifications, forbidden_classes)
+                            
                             # check if name already in classification_categories
                             idx_classifications = []
                             for elem in name_classifications:
@@ -179,6 +192,7 @@ def convert_detections_to_classification(json_path, img_dir):
     # # write unaltered json for timelapse
     json_path_unaltered = os.path.splitext(json_path)[0] + "_original" + os.path.splitext(json_path)[1]
     data['classification_categories'] = {v: k for k, v in inverted_cls_label_map.items()}
+    data['forbidden_classes'] = forbidden_classes
     with open(json_path_unaltered, "w") as json_file:
         json.dump(data, json_file, indent=1)
 
@@ -211,13 +225,15 @@ def convert_detections_to_classification(json_path, img_dir):
                     category = det_label_map[category_id]
                     if 'classifications' in detection:
                         highest_classification = detection['classifications'][0]
-                        class_idx = highest_classification[0]
-                        class_name = cls_label_map[class_idx]
-                        detec_idx = inverted_det_label_map[class_name]
-                        detection['prev_conf'] = detection["conf"]
-                        detection['prev_category'] = detection['category']
-                        detection["conf"] = highest_classification[1]
-                        detection['category'] = str(detec_idx)
+                        class_idx, class_conf = detection['classifications'][0]
+                        if class_conf >= cls_class_thresh:
+                            class_idx = highest_classification[0]
+                            class_name = cls_label_map[class_idx]
+                            detec_idx = inverted_det_label_map[class_name]
+                            detection['prev_conf'] = detection["conf"]
+                            detection['prev_category'] = detection['category']
+                            detection["conf"] = highest_classification[1]
+                            detection['category'] = str(detec_idx)
 
     # write json to be used by EcoAssist
     data['detection_categories'] = {v: k for k, v in inverted_det_label_map.items()}
@@ -714,35 +730,3 @@ def smooth_json(json_input_fpath, json_output_fpath):
     #% remove temporary jsons
     if os.path.isfile(classifier_output_path_within_image_smoothing):
         os.remove(classifier_output_path_within_image_smoothing)
-
-# different workflow for videos than for images
-if json_path.endswith('video_recognition_file.json'):
-
-    # init vars
-    json_path_head = os.path.splitext(json_path)[0]
-    json_path_tail = os.path.splitext(json_path)[1]
-    video_level_json = json_path
-    video_level_json_original = json_path_head + '_original' + json_path_tail
-    frame_level_json = json_path_head + '.frames' + json_path_tail
-    frame_level_json_original = json_path_head + '.frames_original' + json_path_tail
-
-    # for video's we need to classify the frames json instead of the normal json
-    convert_detections_to_classification(json_path = frame_level_json,
-                                         img_dir = temp_frame_folder)
-    
-    # convert frame results to video results
-    frame_results_to_video_results(input_file = frame_level_json,
-                                   output_file = video_level_json)
-    frame_results_to_video_results(input_file = frame_level_json_original,
-                                   output_file = video_level_json_original)
-
-    # remove unnecessary jsons
-    if os.path.isfile(frame_level_json_original):
-        os.remove(frame_level_json_original)
-    if os.path.isfile(frame_level_json):
-        os.remove(frame_level_json)
-
-# for images it's much more straight forward
-else:
-    convert_detections_to_classification(json_path = json_path,
-                                         img_dir = os.path.dirname(json_path))

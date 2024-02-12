@@ -39,7 +39,7 @@ Now try to recreate the error and check the console output for its message.
 4. Start EcoAssist as you would do normally and recreate the error.
 </details>
 
-This will show you EcoAssist's output during runtime. If there are any errors, they will most probably show up here. If you want you can copy-paste it and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
+This will show you EcoAssist's output during runtime. If there are any errors, they will most probabaly show up here. If you want you can copy-paste it and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
 
 ## How to create logfiles?
 If there is an error during runtime, it is important to give the program the opportunity to write out its logs. First thing you'll need to do is recreate the error in EcoAssist. After that, close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last. If there is an error during the installation or opening, you don't have to worry about this - in that case the logfiles are automatically created. 
@@ -100,43 +100,18 @@ If you see this message poping up somewhere, there is something going on with yo
 ## `ValueError: path is on mount '...', start on mount '...'`
 This is a Windows error message and means that your training data is located on a different drive than EcoAssist. For example, it would say `ValueError: path is on mount 'C:', start on mount 'F:'`, which means that the training data is located on your `F:` drive, while EcoAssist is located on the `C:` drive. The sollution is to get everything on the same drive. So either install EcoAssist on the `F:` drive, or move the training data to the `C:` drive. 
 
+## `An error occurred while opening the annotation software labelImg. Please send an email to petervanlunteren@hotmail.com to resolve this bug.`
+This crash can occur when there are more classes in an annotation file than in the `classes.txt` file. That means that the annotation file class number of a specific annotation refers to a non-existing class in the `classes.txt`. So for example, if you have two lines in your `classes.txt` (`species A`, and `species B`), but there is an annotation file which is labeled as the third class (which would be 2 when counting from 0), for example: `2 0.929183 0.683231 0.135604 0.238979`. This will cause labelImg to crash, since it can’t find which class the “2” refers to. A good test would be to add some dummy classes to your `classes.txt`, and then try to open labelImg again. For example:
+```
+Species A
+Species B
+Dummy class 1
+Dummy class 2
+Dummy class 3
+Dummy class 4
+Dummy class 5
+```
+Another option to check your labelImg installation is to open a directory of non-annotated images. That should work without any problems. If not, [email me](mailto:petervanlunteren@hotmail.com) the logfiles and I will have a look. [This](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-create-logfiles) is how to write the error to the logfiles and [this](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#how-to-find-logfiles) is how to find them. 
+
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
-This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it. There are also some other ways we can try to solve it, but I think this would be the easiest one.
-
-Let me know if this doesn't work!
-
-## `PackagesNotFoundError: The following packages are not available from current channels`
-I'm not sure what causes conda to not find certain packages on your device, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking Conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
-
-You can check if the computer has access to the Conda channels by attempting to access the channels. Here's how:
-
-**Using a Web Browser:**
-Open a web browser and try to access the Conda channels directly. Can you open the following websites? You should see a list of hyperlinks (see screenshot).
-* [https://conda.anaconda.org/conda-forge/win-64](https://conda.anaconda.org/conda-forge/win-64)
-* [https://conda.anaconda.org/pytorch/win-64](https://conda.anaconda.org/pytorch/win-64)
-
-**Using the command line:**
-Open a new command prompt window and copy-paste the following commands and press enter. It will download a text file from the Conda channels to check if something is blocking the connection. This can be done using the following commands:
-```
-curl -O https://conda.anaconda.org/conda-forge/win-64/patch_instructions.json
-```
-```
-curl -O https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json
-```
-
-The text files (`.json`) are downloaded to your root folder (if the download succeeded), and can be deleted afterward. We don't need them, It's just to check the connection. 
-
-Let me know how this goes!
-
-## `Exception: '>=' not supported between instances of 'RuntimeError' and 'int'`
-Solution comming up...
-
-## Example email for faulty installation
-
-Thanks for your email. I'm sorry to hear that you're experiencing difficulties with installing EcoAssist.
-
-In many cases, installation issues stem from incomplete dependency downloads, often blocked by security settings on the destination computer. This may be attributed to security software such as VPNs, proxy servers, or antivirus applications, which are known to be particularly strict on company computers.
-
-Could you please check if any of these security settings are enabled on your computer? If so, would it be possible to temporarily disable them during the EcoAssist installation process?
-
-If the problem persists, please copy-paste the console output and share it with me. This will allow me to investigate the issue further and provide you with a solution.
+This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. There are also some other ways we can try to solve it, but I think this would be the easiest one. Let me know if this doesn't work.
