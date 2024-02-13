@@ -82,11 +82,6 @@
 # TODO: DONE - shell: download MDv5a wel standaard tijdens de installation. Zonder MD krijg je niets. Dan is volgens mij het probleem van de dropdown zonder modellen ook opgelost.
 # TODO: DONE - shell: bij de install maak je alvast foldertjes aan voor alle modellen die er dan zijn. Anders krijg je dalijk meteen 20 meldeingen. Of je doet iets dat dit meteen gebeurd bij de eerste keer EA opstarten, dan daarna een var in global_vars aanpassen. Alle modeelen daarna krijg je dus wel een melding.
 
-# TODO: check if it works on WINDOWS -> try everything, also without GPU
-# TODO: add global_vars.json to git ignore because we don't want it to be updated every time I choose some things. 
-
-
-
 # TODOs FOR LATER
 # TODO: fix root.update() bug which requires switch_mode() to be called twice during start up. Without doing this, the script halts at the first root.update().
 # TODO: implement the automatic installs of env.yml files
@@ -1536,7 +1531,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
         command = vid_command
 
     # if user specified to disable GPU, prepend and set system variable
-    if var_disable_GPU.get():
+    if var_disable_GPU.get() and not simple_mode:
         if os.name == 'nt': # windows
             command[:0] = ['set', 'CUDA_VISIBLE_DEVICES=""', '&']
         elif platform.system() == 'Darwin': # macos
@@ -1584,7 +1579,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
         
         # save output if something goes wrong
         MD_output = MD_output + line
-        MD_output = MD_output[-2000:]
+        MD_output = MD_output[-1000:]
 
         # log
         print(line, end='')
@@ -1984,7 +1979,7 @@ def start_deploy(simple_mode = False):
     except Exception as error:
 
         # log error
-        print("\n\nERROR:\n" + str(error) + "\n\nDETAILS:\n" + MD_output + "\n\n")
+        print("\n\nERROR:\n" + str(error) + "\n\nMD_OUTPUT:\n" + MD_output + "\n\nTRACEBACK:\n" + traceback.format_exc() + "\n\n")
         print(f"cancel_deploy_model_pressed : {cancel_deploy_model_pressed}")
 
         if cancel_deploy_model_pressed:
@@ -1994,7 +1989,7 @@ def start_deploy(simple_mode = False):
             # show error
             mb.showerror(title=error_txt[lang_idx],
                         message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
-                        detail=MD_output)
+                        detail=MD_output + "\n" + traceback.format_exc())
             
             # close window
             progress_window.close()
@@ -3224,7 +3219,11 @@ def fig2img(fig):
     return img
 
 # make piechart from results.xlsx
-def create_pie_chart(file_path):
+def create_pie_chart(file_path, looks, st_angle = 45):
+
+    # log
+    print(f"EXECUTED : {sys._getframe().f_code.co_name}({locals()})\n")
+
     df = pd.read_excel(file_path, sheet_name='summary')
     labels = df['label']
     detections = df['n_detections']
@@ -3236,20 +3235,24 @@ def create_pie_chart(file_path):
                      detections.values.tolist()[i],
                      f"{round(percentages.values.tolist()[i], 1)}%"])
     _, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"), facecolor="#CFCFCF")
-    wedges, _ = ax.pie(detections, startangle=45, colors=sns.color_palette('Set2'))
+    wedges, _ = ax.pie(detections, startangle=st_angle, colors=sns.color_palette('Set2'))
     bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
-    kw = dict(arrowprops=dict(arrowstyle="-"),
-              bbox=bbox_props, zorder=0, va="center")
+    if looks != "no-lines":
+        kw = dict(arrowprops=dict(arrowstyle="-"),
+                bbox=bbox_props, zorder=0, va="center")
     for i, p in enumerate(wedges):
         ang = (p.theta2 - p.theta1) / 2. + p.theta1
         y = np.sin(np.deg2rad(ang))
         x = np.cos(np.deg2rad(ang))
         horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
         connectionstyle = f"angle,angleA=0,angleB={ang}"
-        # kw["arrowprops"].update({"connectionstyle": connectionstyle}) # nicer, but: https://github.com/matplotlib/matplotlib/issues/12820
-        kw["arrowprops"].update({"arrowstyle": '-'})
-        ax.annotate(labels[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
-                    horizontalalignment=horizontalalignment, **kw)
+        if looks == "nice":
+            kw["arrowprops"].update({"connectionstyle": connectionstyle}) # nicer, but sometimes raises bug: https://github.com/matplotlib/matplotlib/issues/12820
+        elif looks == "simple":
+            kw["arrowprops"].update({"arrowstyle": '-'})
+        if looks != "no-lines":
+            ax.annotate(labels[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
+                        horizontalalignment=horizontalalignment, **kw)
     img = fig2img(plt)
     plt.close()
     return [img, rows]
@@ -3742,7 +3745,30 @@ def show_result_info(file_path):
         rs_root.withdraw()
 
     # read results for xlsx file
-    graph_img, table_rows = create_pie_chart(file_path)
+    # some combinations of eprcentages raises a bug: https://github.com/matplotlib/matplotlib/issues/12820
+    # hence we're going to try the nicest layout with some different angles, then an OK layout, and no
+    # lines as last resort
+    try:
+        graph_img, table_rows = create_pie_chart(file_path, looks = "nice", st_angle = 0)
+    except ValueError:
+        print("ValueError - trying again with different params.")
+        try:
+            graph_img, table_rows = create_pie_chart(file_path, looks = "nice", st_angle = 23)
+        except ValueError:
+            print("ValueError - trying again with different params.")
+            try:
+                graph_img, table_rows = create_pie_chart(file_path, looks = "nice", st_angle = 45)
+            except ValueError:
+                print("ValueError - trying again with different params.")
+                try:
+                    graph_img, table_rows = create_pie_chart(file_path, looks = "nice", st_angle = 90)
+                except ValueError:
+                    print("ValueError - trying again with different params.")
+                    try:
+                        graph_img, table_rows = create_pie_chart(file_path, looks = "simple")
+                    except ValueError:
+                        print("ValueError - trying again with different params.")
+                        graph_img, table_rows = create_pie_chart(file_path, looks = "no-lines")
 
     # create window
     rs_root = customtkinter.CTkToplevel(root)
@@ -3753,7 +3779,7 @@ def show_result_info(file_path):
     result_main_frame = customtkinter.CTkFrame(rs_root, corner_radius=0, fg_color = 'transparent')
     result_main_frame.grid(row=0, column=0, sticky="ns")
 
-    # new model label
+    # label
     lbl1 = customtkinter.CTkLabel(result_main_frame, text="The images are processed!", font = main_label_font, height=20)
     lbl1.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/4), columnspan = 2, sticky="nswe")
     lbl2 = customtkinter.CTkLabel(result_main_frame, text=f"The results are saved at '{file_path}'.", height=20)
