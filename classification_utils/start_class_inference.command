@@ -28,7 +28,7 @@ FRAME_DIR=${9}
 # set variables
 INF_SCRIPT="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/model_types/${MODEL_TYPE}/classify_detections.py"
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-BASE_ENV="${CONDA_DIR}/envs/ecoassistcondaenv"
+BASE_ENV="${CONDA_DIR}/envs/ecoassistcondaenv-base"
 CLS_ENV="${CONDA_DIR}/envs/ecoassistcondaenv-${MODEL_TYPE}"
 
 # add ecoassist folder to path
