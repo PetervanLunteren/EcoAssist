@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 12 Feb 2024 (latest edit)
+@REM ### Peter van Lunteren, 13 Feb 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -319,35 +319,17 @@ if exist "%LOCATION_ECOASSIST_FILES%\visualise_detection\" (
 )
 
 @REM download the md_v5a.0.0.pt model if not present
-if exist "%LOCATION_ECOASSIST_FILES%\models\det\md_v5a.0.0.pt" (
+if exist "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a\md_v5a.0.0.pt" (
     echo "File md_v5a.0.0.pt already exists! Skipping this step." | wtee -a "%LOG_FILE%"
 ) else (
     echo "File md_v5a.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
-    if not exist "%LOCATION_ECOASSIST_FILES%\models\det" mkdir "%LOCATION_ECOASSIST_FILES%\models\det"
-    cd "%LOCATION_ECOASSIST_FILES%\models\det" || ( echo "Could not change directory to \models\det. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    if not exist "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" mkdir "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a"
+    cd "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" || ( echo "Could not change directory to \models\det\MegaDetector 5a. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\models\det" | wtee -a "%LOG_FILE%"
+    dir "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" | wtee -a "%LOG_FILE%"
 )
-
-@REM @REM DEBUG
-@REM call conda env remove -n env1
-@REM call conda env remove -n env2
-@REM call conda env remove -n ecoassistcondaenv-base
-@REM call conda env remove -n ecoassistcondaenv-yolov8
-@REM call conda env remove -n ecoassistcondaenv-mewc
-
-@REM call conda create --name env1 python=3.8 -y
-@REM call activate env1
-@REM pip install numpy
-@REM call conda deactivate
-
-@REM call conda create --name env2 python=3.8 -y
-@REM call activate env2
-@REM pip install pillow
-@REM call conda deactivate
-@REM @REM DEBUG
 
 @REM create folder for classification models
 if not exist "%LOCATION_ECOASSIST_FILES%\models\cls" mkdir "%LOCATION_ECOASSIST_FILES%\models\cls"
@@ -383,34 +365,16 @@ call activate ecoassistcondaenv-base
 @REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
 @REM "%EA_PIP_EXE_BASE%" install setuptools==65.5.1
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
-@REM call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-@REM call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
-@REM call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-@REM "%EA_PIP_EXE_BASE%" freeze >> "%LOG_FILE%"
 call %EA_CONDA_EXE% deactivate
-@REM CALL conda.bat deactivate
 
 @REM create and log dedicated environment for yolov8 classification
 call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\yolov8.yml
 call activate ecoassistcondaenv-yolov8
-@REM CALL conda.bat activate ecoassistcondaenv-yolov8
-call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
-call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-"%EA_PIP_EXE_YOLOV8%" freeze >> "%LOG_FILE%"
+"%EA_PIP_EXE_YOLOV8%" install ultralytics==8.0.191
 call %EA_CONDA_EXE% deactivate
-@REM CALL conda.bat deactivate
 
 @REM create and log dedicated environment for mewc classification
 call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\mewc-windows.yml
-call activate ecoassistcondaenv-mewc
-@REM CALL conda.bat activate ecoassistcondaenv-mewc
-call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
-call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-"%EA_PIP_EXE_MEWC%" freeze >> "%LOG_FILE%"
-call %EA_CONDA_EXE% deactivate
-@REM CALL conda.bat deactivate
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
