@@ -3246,7 +3246,8 @@ def create_pie_chart(file_path):
         x = np.cos(np.deg2rad(ang))
         horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
         connectionstyle = f"angle,angleA=0,angleB={ang}"
-        kw["arrowprops"].update({"connectionstyle": connectionstyle})
+        # kw["arrowprops"].update({"connectionstyle": connectionstyle}) # nicer, but: https://github.com/matplotlib/matplotlib/issues/12820
+        kw["arrowprops"].update({"arrowstyle": '-'})
         ax.annotate(labels[i], xy=(x, y), xytext=(1.35*np.sign(x), 1.4*y),
                     horizontalalignment=horizontalalignment, **kw)
     img = fig2img(plt)
