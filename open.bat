@@ -74,7 +74,7 @@ set START_DATE=%date% %time%
 echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
 @REM activate environment
-call %EA_CONDA_EXE% activate ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% activate ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%" || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 
 @REM add gits to PYTHONPATH
@@ -82,7 +82,7 @@ set PYTHONPATH=%LOCATION_ECOASSIST_FILES%;%LOCATION_ECOASSIST_FILES%\cameratraps
 echo PYTHONPATH : %PYTHONPATH% >> "%LOG_FILE%"
 
 @REM add python.exe and site packages to PATH
-set PATH=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv;%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\lib\python3.8\site-packages;%PATH%
+set PATH=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base;%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base\lib\python3.8\site-packages;%PATH%
 echo PATH : %PATH% >> "%LOG_FILE%"
 
 @REM check python version
