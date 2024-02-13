@@ -1,12 +1,28 @@
 @REM ### Windows commands to execute classify_detections.py script in different conda environment
-@REM ### Peter van Lunteren, 17 Oct 2023 (latest edit)
+@REM ### Peter van Lunteren, 13 Feb 2024 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
+@REM catch arguments
+set "GPU_DISABLED=%1"
+set "MODEL_TYPE=%2"
+set "LOCATION_ECOASSIST_FILES=%3"
+set "MODEL_FPATH=%4"
+set "DET_THRESH=%5"
+set "CLS_THRESH=%6"
+set "SMOOTH_BOOL=%7"
+set "JSON_FPATH=%8"
+set "FRAME_DIR=%9"
+if "%FRAME_DIR%" == "" ( set "FRAME_DIR=dummy-variable" )
+
+@REM if you need to catch more arguments, you'll have to shift the index back to below 10, like so:
+@REM set "H=%9"
+@REM shift
+@REM set "I=%9"
+
 @REM set EcoAssist_files
-set LOCATION_ECOASSIST_FILES=%1
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM fetch conda install path and set cmds
@@ -21,28 +37,27 @@ if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_COND
 @REM change directory
 cd "%LOCATION_ECOASSIST_FILES%" || ( cmd /k & exit )
 
+@REM set variables
+set "INF_SCRIPT=%LOCATION_ECOASSIST_FILES%\EcoAssist\classification_utils\model_types\%MODEL_TYPE%\classify_detections.py"
+set BASE_ENV=ecoassistcondaenv-base
+set CLS_ENV=ecoassistcondaenv-%MODEL_TYPE%
+
 @REM activate dedicated environment
 call %EA_CONDA_EXE% deactivate
-call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
+call %EA_CONDA_EXE% activate %CLS_ENV%
+call %EA_CONDA_EXE% env list 
 
 @REM add gits to PYTHONPATH
 set PYTHONPATH=%LOCATION_ECOASSIST_FILES%\cameratraps\classification
 
 @REM run script
-set "A=%2"
-set "B=%3"
-set "C=%4"
-set "D=%5"
-set "E=%6"
-set "F=%7"
-set "G=%8"
-set "H=%9"
-shift
-set "I=%9"
-if "%I%" == "" ( set "I=dummy-variable" )
-set "J=%LOCATION_ECOASSIST_FILES%"
-python %LOCATION_ECOASSIST_FILES%\EcoAssist\classify_detections.py %A% %B% %C% %D% %E% %F% %G% %H% %I% %J%
+if "%GPU_DISABLED%"=="True" (
+    set "CUDA_VISIBLE_DEVICES=" && python %INF_SCRIPT% %LOCATION_ECOASSIST_FILES% %MODEL_FPATH% %DET_THRESH% %CLS_THRESH% %SMOOTH_BOOL% %JSON_FPATH% %FRAME_DIR%
+) else (
+    python %INF_SCRIPT% %LOCATION_ECOASSIST_FILES% %MODEL_FPATH% %DET_THRESH% %CLS_THRESH% %SMOOTH_BOOL% %JSON_FPATH% %FRAME_DIR%
+)
 
 @REM activate ecoassistcondaenv again
 call %EA_CONDA_EXE% deactivate
-call %EA_CONDA_EXE% activate ecoassistcondaenv
+call %EA_CONDA_EXE% activate %BASE_ENV%
+call %EA_CONDA_EXE% env list 
