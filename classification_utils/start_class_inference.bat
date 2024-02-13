@@ -17,12 +17,14 @@ set "JSON_FPATH=%8"
 set "FRAME_DIR=%9"
 if "%FRAME_DIR%" == "" ( set "FRAME_DIR=dummy-variable" )
 
-@REM if you need to catch more arguments, you'll have to shift the index back to below 10, like so:
+@REM if you need to catch more arguments, you'll have to shift the index back to single digits, like so:
 @REM set "H=%9"
 @REM shift
 @REM set "I=%9"
+@REM shift
+@REM set "J=%9"
 
-@REM set EcoAssist_files
+@REM add EcoAssist_files to path
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM fetch conda install path and set cmds
@@ -48,7 +50,7 @@ call %EA_CONDA_EXE% activate %CLS_ENV%
 call %EA_CONDA_EXE% env list 
 
 @REM add gits to PYTHONPATH
-set PYTHONPATH=%LOCATION_ECOASSIST_FILES%\cameratraps\classification
+set PYTHONPATH=%PYTHONPATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM run script
 if "%GPU_DISABLED%"=="True" (
