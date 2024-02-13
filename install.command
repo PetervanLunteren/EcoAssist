@@ -345,7 +345,7 @@ $PIP_YOLOV8 freeze >> "$LOG_FILE"
 conda deactivate
 
 # create dedicated mewc classification environment
-conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc.yml"
+conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos.yml"
 conda activate $ECOASSISTCONDAENV_MEWC
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
