@@ -1,7 +1,12 @@
 name: ecoassistcondaenv-mewc
 
+channels:
+  - conda-forge
+
 dependencies:
   - python=3.8.15
+  - conda-forge::cudatoolkit=11.3
+  - conda-forge::cudnn=8.1
   - pip
   - pip:
     - humanfriendly
