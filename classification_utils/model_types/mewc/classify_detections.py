@@ -2,7 +2,7 @@
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 22 Jan 2024
+# Latest edit by Peter van Lunteren on 13 Feb 2024
 
 #############################################
 ############### MODEL GENERIC ###############
