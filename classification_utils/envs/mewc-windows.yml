@@ -5,8 +5,8 @@ channels:
 
 dependencies:
   - python=3.8.15
-  - conda-forge::cudatoolkit=11.3
-  - conda-forge::cudnn=8.1
+  - conda-forge::cudatoolkit=11.2
+  - conda-forge::cudnn=8.1.0
   - pip
   - pip:
     - humanfriendly
@@ -22,6 +22,6 @@ dependencies:
     - requests
     - scikit-learn
     - statistics
-    - tensorflow
+    - tensorflow<2.11
     - tensorflow_addons
     - tqdm
