@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### Unix commands to execute the classification inference in a specific conda env
-### Peter van Lunteren, 22 Jan 2024 (latest edit)
+### Peter van Lunteren, 13 Feb 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
