@@ -2390,6 +2390,7 @@ def open_hitl_settings_window():
     hitl_settings_window = Toplevel(root)
     hitl_settings_window.title(["Verification selection settings", "Configuración de selección de verificación"][lang_idx])
     hitl_settings_window.geometry()
+    hitl_settings_window.maxsize(width=ADV_WINDOW_WIDTH, height=800)
 
     # set scrollable frame
     hitl_settings_scroll_frame = Frame(hitl_settings_window)
@@ -3437,6 +3438,8 @@ def open_species_selection():
     # create window
     ss_root = customtkinter.CTkToplevel(root)
     ss_root.title("Species selection")
+    # ss_root.attributes('-topmost',1)
+    bring_window_to_top_but_not_for_ever(ss_root)
     spp_frm_1 = customtkinter.CTkFrame(master=ss_root)
     spp_frm_1.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
     spp_frm = customtkinter.CTkFrame(master=spp_frm_1, width=1000)
@@ -3593,6 +3596,14 @@ class ModelDownloadProgressWindow:
     def close(self):
         self.dm_root.destroy()
 
+# make sure the window pops up in front initially, but does not stay on top if the users selects an other window
+def bring_window_to_top_but_not_for_ever(master):
+    def lift_toplevel():
+        master.lift()
+        master.attributes('-topmost', False)
+    master.attributes('-topmost', True)
+    master.after(100, lift_toplevel)
+
 # open window with model info
 def show_model_info(title = None, model_dict = None, new_model = False):
     
@@ -3629,7 +3640,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     # create window
     nm_root = customtkinter.CTkToplevel(root)
     nm_root.title("Model information")
-    nm_root.attributes('-topmost',1)
+    bring_window_to_top_but_not_for_ever(nm_root)
 
     # new model label
     if new_model:
@@ -3743,6 +3754,8 @@ def show_result_info(file_path):
     def more_options():
         switch_mode()
         rs_root.withdraw()
+
+    file_path = os.path.normpath(file_path)
 
     # read results for xlsx file
     # some combinations of eprcentages raises a bug: https://github.com/matplotlib/matplotlib/issues/12820
@@ -5289,10 +5302,10 @@ if os.name == "nt": # windows
     resize_img_factor = 0.95
     text_size_adjustment_factor = 0.83
     first_level_frame_font_size = 13
-    second_level_frame_font_size = 11
+    second_level_frame_font_size = 10
     label_width = 320
-    widget_width = 150
-    frame_width = label_width + widget_width + 50
+    widget_width = 225
+    frame_width = label_width + widget_width + 60
     subframe_correction_factor = 15
     minsize_rows = 28
     explanation_text_box_height_factor = 0.8
@@ -5302,13 +5315,14 @@ if os.name == "nt": # windows
     LOGO_SIZE = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
-    SIM_WINDOW_HEIGHT = 696
-    ADV_EXTRA_GRADIENT_HEIGHT = 110
+    SIM_WINDOW_HEIGHT = 699
+    ADV_EXTRA_GRADIENT_HEIGHT = 78
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
+    ADDAX_TXT_SIZE = 8
 elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
@@ -5334,6 +5348,7 @@ elif sys.platform == "linux" or sys.platform == "linux2": # linux
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
+    ADDAX_TXT_SIZE = 9
 else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
@@ -5359,9 +5374,12 @@ else: # macOS
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
+    ADDAX_TXT_SIZE = 9
 
 # TKINTER MAIN WINDOW 
 root = Tk()
+s = ttk.Style(root)
+s.configure("TNotebook", tabposition='n')
 root.withdraw()
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
 
@@ -5405,9 +5423,9 @@ adv_btn_reset_values.grid(row=0, column=0, padx=PADX, pady=(0, 0), columnspan = 
 
 # about
 adv_abo_lbl_txt = ["By Addax Data Science. More conservation technology? Visit", "Creado por Addax Data Science. ¿Más tecnología de conservación? Visite"]
-adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = 9))
+adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
 adv_abo_lbl.grid(row=6, column=0, columnspan = 2, sticky="")
-adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = 9, underline=1))
+adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
 adv_abo_lbl_link.grid(row=7, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 adv_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
@@ -6420,9 +6438,9 @@ sim_run_btn = customtkinter.CTkButton(sim_run_frm, text=sim_run_btn_txt[lang_idx
 sim_run_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe", columnspan = 2)
 
 # about
-sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = 9))
+sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
 sim_abo_lbl.grid(row=5, column=0, columnspan = 2, sticky="")
-sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = 9, underline=1))
+sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
 sim_abo_lbl_link.grid(row=6, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 sim_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
