@@ -4353,7 +4353,7 @@ class ProgressWindow:
         seconds_per_image_txt = ["Seconds per image:", "Segundos por imagen:"]
         animals_per_second_txt = ["Animals per second:", "Animales por segundo:"]
         seconds_per_animal_txt = ["Seconds per animal:", "Segundos por animal:"]
-        frames_per_second_txt = ["Fotogramas per second:", "Imágenes por segundo:"]
+        frames_per_second_txt = ["Frames per second:", "Fotogramas por segundo:"]
         seconds_per_frame_txt = ["Seconds per frame:", "Segundos por fotograma:"]
         starting_up_txt = ["Starting up...", "Arrancando..."]
 
