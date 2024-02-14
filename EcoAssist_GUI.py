@@ -4443,7 +4443,6 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.img_cls_spe_val.configure(text = parsed_speed)
                 self.img_cls_hwa_val.configure(text = hware)
-                # self.img_cls_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.img_cls_num_lbl.grid_remove()
                 self.img_cls_num_val.grid_remove()
@@ -4494,7 +4493,6 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_det_spe_val.configure(text = parsed_speed)
                 self.vid_det_hwa_val.configure(text = hware)
-                # self.vid_det_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_det_num_lbl.grid_remove()
                 self.vid_det_num_val.grid_remove()
@@ -4545,7 +4543,6 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_cls_spe_val.configure(text = parsed_speed)
                 self.vid_cls_hwa_val.configure(text = hware)
-                # self.vid_cls_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_cls_num_lbl.grid_remove()
                 self.vid_cls_num_val.grid_remove()
@@ -4585,7 +4582,6 @@ class ProgressWindow:
                     self.img_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_pst_ela_val.configure(text = time_ela)
                 self.img_pst_rem_val.configure(text = time_rem)
-                # self.img_pst_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.img_pst_rem_lbl.grid_remove()
                 self.img_pst_rem_val.grid_remove()
@@ -4619,7 +4615,6 @@ class ProgressWindow:
                     self.vid_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_pst_ela_val.configure(text = time_ela)
                 self.vid_pst_rem_val.configure(text = time_rem)
-                # self.vid_pst_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_pst_rem_lbl.grid_remove()
                 self.vid_pst_rem_val.grid_remove()
