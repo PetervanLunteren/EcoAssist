@@ -374,7 +374,7 @@ call activate ecoassistcondaenv-yolov8
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for mewc classification
-call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\mewc-windows.yml
+call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\mewc-linux-windows.yml
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"

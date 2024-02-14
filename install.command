@@ -330,48 +330,25 @@ conda list >> "$LOG_FILE"
 $PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
-# create dedicated mewc classification environment # DEBUG
+# create dedicated mewc classification environment
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos.yml"
-  # conda activate $ECOASSISTCONDAENV_MEWC
-  # conda info --envs >> "$LOG_FILE"
-  # conda list >> "$LOG_FILE"
-  # $PIP_MEWC freeze >> "$LOG_FILE" 
-  # conda deactivate
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-silicon.yml"
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-intel.yml"
-  # conda activate $ECOASSISTCONDAENV_MEWC
-  # conda info --envs >> "$LOG_FILE"
-  # conda list >> "$LOG_FILE"
-  # $PIP_MEWC freeze >> "$LOG_FILE" 
-  # conda deactivate
 elif [ "$PLATFORM" = "Linux" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-windows.yml"
-  # conda activate $ECOASSISTCONDAENV_MEWC
-  # conda info --envs >> "$LOG_FILE"
-  # conda list >> "$LOG_FILE"
-  # $PIP_MEWC freeze >> "$LOG_FILE" 
-  # conda deactivate
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-linux-windows.yml"
 fi
 
-# create dedicated yolov8 classification environment # DEBUG
+# create dedicated yolov8 classification environment
 if [ "$PLATFORM" = "Intel Mac" ]; then
   conda env remove -p $ECOASSISTCONDAENV_YOLOV8
   conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
   conda activate $ECOASSISTCONDAENV_YOLOV8
-  
-  # $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
   conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
-
-  # $PIP_YOLOV8 install "ultralytics==8.0.191"
-  # $PIP_YOLOV8 install "numpy==1.24.1"
-  # $PIP_YOLOV8 install "humanfriendly==10.0"
-  # $PIP_YOLOV8 install "jsonpickle==3.0.2"
   conda install -c conda-forge ultralytics=8.0.191 -y
   conda install -c conda-forge numpy==1.24.1 -y
   conda install -c conda-forge humanfriendly==10.0 -y
   conda install -c conda-forge jsonpickle==3.0.2 -y
-
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
   $PIP_YOLOV8 freeze >> "$LOG_FILE" 
