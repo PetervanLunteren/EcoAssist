@@ -136,7 +136,7 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5"
+current_EA_version = "5.0"
 corresponding_model_info_version = "1"
 
 # set global variables
