@@ -1379,8 +1379,18 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
                   universal_newlines=True,
                   preexec_fn=os.setsid)
 
+    # set global vars
+    global subprocess_output
+    subprocess_output = ""
+
     # calculate metrics while running
     for line in p.stdout:
+
+        # save output if something goes wrong
+        subprocess_output = subprocess_output + line
+        subprocess_output = subprocess_output[-1000:]
+
+        # log
         print(line, end='')
 
         # catch early exit if there are no detections that meet the requirmentents to classify
@@ -1572,15 +1582,15 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     cancel_deploy_model_pressed = False
     global model_error_present
     global model_warning_present
-    global MD_output
-    MD_output = ""
+    global subprocess_output
+    subprocess_output = ""
 
     # read output
     for line in p.stdout:
         
         # save output if something goes wrong
-        MD_output = MD_output + line
-        MD_output = MD_output[-1000:]
+        subprocess_output = subprocess_output + line
+        subprocess_output = subprocess_output[-1000:]
 
         # log
         print(line, end='')
@@ -1980,7 +1990,7 @@ def start_deploy(simple_mode = False):
     except Exception as error:
 
         # log error
-        print("\n\nERROR:\n" + str(error) + "\n\nMD_OUTPUT:\n" + MD_output + "\n\nTRACEBACK:\n" + traceback.format_exc() + "\n\n")
+        print("\n\nERROR:\n" + str(error) + "\n\nSUBPROCESS OUTPUT:\n" + subprocess_output + "\n\nTRACEBACK:\n" + traceback.format_exc() + "\n\n")
         print(f"cancel_deploy_model_pressed : {cancel_deploy_model_pressed}")
 
         if cancel_deploy_model_pressed:
@@ -1990,7 +2000,7 @@ def start_deploy(simple_mode = False):
             # show error
             mb.showerror(title=error_txt[lang_idx],
                         message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
-                        detail=MD_output + "\n" + traceback.format_exc())
+                        detail=subprocess_output + "\n" + traceback.format_exc())
             
             # close window
             progress_window.close()
