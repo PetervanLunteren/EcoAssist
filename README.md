@@ -56,17 +56,64 @@ Please use the following citations if you used EcoAssist in your research.
 }
 ```
 </details>
+
+## Uninstall
+All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. 
+
+<details>
+<summary>Location on Windows</summary>
+<br>
+  
+```r
+# All users
+─── 📁Program Files
+    └── 📁EcoAssist_files
+
+# Single user
+─── 📁Users
+    └── 📁<username>
+        └── 📁EcoAssist_files
+```
+</details>
+
+<details>
+<summary>Location on macOS</summary>
+<br>
+  
+```r
+─── 📁Applications
+    └── 📁.EcoAssist_files
+```
+</details>
+
+<details>
+<summary>Location on Linux</summary>
+<br>
+  
+```r
+─── 📁home
+    └── 📁<username>
+        └── 📁.EcoAssist_files
+```
+</details>
+
+
+
+
+
+
+
 <!---
 
 OLD README MARKDOWN:
 
 EcoAssist is an open-source application designed to streamline the work of ecologists dealing with camera trap images. It's an AI platform that enables annotation, training, and deployment of custom models for automatic species detection, offering ecologists a way to save time reviewing images and focus on conservation efforts.
 
-The [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) model is preloaded. This model can find out which images contain an animal and filter out the empties. Unfortunately, MegaDetector does not identify the animals, it just finds them. If you want a model that can identify species for your specific ecosystem or project, you'll have to train it yourself. Or outsource it to [Addax Data Science](https://addaxdatascience.com/).
+The [MegaDetector](https://github.com/ecologize/CameraTraps/blob/main/megadetector.md) model is preloaded. This model can find out which images contain an animal and filter out the empties. Unfortunately, MegaDetector does not identify the animals, it just finds them. If you want a model that can identify species for your specific ecosystem or project, you'll have to train it yourself. Or outsource it to [Addax Data Science](https://addaxdatascience.com/).
 
 Recently, I joined forces with [Smart Parks](https://www.smartparks.org/). We’re working on expanding the software to become a standalone and robust platform for camera trap image analysis to be used by ecologists worldwide. We'll test the setup with a pilot study for the [Desert Lion Conservation Project](https://www.desertlion.info/) in Namibia. If you feel like contributing to the development of EcoAssist, see the [sponsor section](#sponsor) below. 
 
-You can also help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
+You can also help me by letting me know about any improvements, bugs, or new features so that I can keep EcoAssist up-to-date. You can [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new) or [email me](mailto:petervanlunteren@hotmail.com). An e-mail just to say hi and tell me about your project is also very much appreciated!
 
 [<img align="left" alt="alt_text" width="25%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/black-fg-white-bg.jpg" /> ](https://addaxdatascience.com/)
 [<img align="left" alt="alt_text" width="18%" src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/Logo_Social_Smartparks-01.png" /> ](https://www.smartparks.org/)
@@ -305,46 +352,6 @@ If you used the training function.
   url = {https://github.com/ultralytics/yolov5},
   license = {AGPL-3.0}
 }
-```
-</details>
-
-## Uninstall
-All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. More about updating [here](#update). 
-
-<details>
-<summary>Location on Windows</summary>
-<br>
-  
-```r
-# All users
-─── 📁Program Files
-    └── 📁EcoAssist_files
-
-# Single user
-─── 📁Users
-    └── 📁<username>
-        └── 📁EcoAssist_files
-```
-</details>
-
-<details>
-<summary>Location on macOS</summary>
-<br>
-  
-```r
-─── 📁Applications
-    └── 📁.EcoAssist_files
-```
-</details>
-
-<details>
-<summary>Location on Linux</summary>
-<br>
-  
-```r
-─── 📁home
-    └── 📁<username>
-        └── 📁.EcoAssist_files
 ```
 </details>
 
