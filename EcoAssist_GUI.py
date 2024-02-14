@@ -6476,7 +6476,7 @@ def main():
     # try to download the model info json to check if there are new models
     fetch_latest_model_info()
 
-    # # initialise start screen
+    # initialise start screen
     enable_frame(fst_step)
     disable_frame(snd_step)
     disable_frame(trd_step)
