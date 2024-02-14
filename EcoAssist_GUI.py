@@ -1540,6 +1540,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                             "machines, not on macOS. Proceeding without GPU disabled.", "Deshabilitar el procesamiento de "
                             "la GPU actualmente sólo es compatible con dispositivos CUDA en máquinas Linux y Windows, no en"
                             " macOS. Proceder sin GPU desactivada."][lang_idx])
+            var_disable_GPU.set(False)
         else: # linux
             command = "CUDA_VISIBLE_DEVICES='' " + command
 
