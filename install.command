@@ -368,7 +368,7 @@ else
 fi
 
 # create dedicated mewc classification environment # DEBUG
-elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
+if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos.yml"
   conda activate $ECOASSISTCONDAENV_MEWC
   conda info --envs >> "$LOG_FILE"
