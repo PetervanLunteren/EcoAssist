@@ -3,95 +3,10 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
-# TODO: DONE - Do a test run to try to get predictions from a MEWC h5 model.
-# TODO: DONE - try to get that inside a conda env and then inside a conda env yaml file
-# TODO: DONE - remove human and vehicle classification model options
-# TODO: DONE - make sure yolov8 can still run normally, without the human and vehicle model options
-# TODO: DONE - zorg dat er ook een tweede thresh is en werkt in de detection.py
-# TODO: DONE - change the folder structure for more options, a folder with envs, dir cls.commands, dir cls.bats, dir cls_scripts.py.
-# TODO: DONE - rename 'pretrained_models' to detection_models
-# TODO: DONE - add the option to run a MEWC model file
-# TODO: DONE - remove the checkbox if you want a cls model. If you chose not "none"....
-# TODO: DONE - add global variables.json that writes to after clicking deploy and postprocess
-# TODO: DONE - add option to select which animals are present in your project area. 
-# TODO: DONE - add spanish translation to all widgets and make sure it works when switching language
-# TODO: DONE - set the box around flag to lang_idx var from global_vars
-# TODO: DONE - als je een verkeerde waarde voor image size doet, dan ga je terugh naar mainwindow, maar de deploy button is wel disabled.
-# TODO: DONE - error message box moet pas opkomen na de classification model. Check ff goed.
-# TODO: DONE - maak een early exit als er bijvoorbeeld geen videos in de dir zitten, of als er geen detects boven de thresh zitten of te classificeren bijvoorbeeld. 
-# TODO: DONE - incorporate forbidden classes into inference_lib.py (like deepfaune did)
-# TODO: DONE - maak de download window ook met custom tkinter. 
-# TODO: DONE - place namib model on hugging face and create install window with preogressbars. 
-# TODO: DONE - add update field to model info.
-# TODO: DONE - wil ik wel die nieuwe modellen zo aanprijzen? Misschien wel chiller als ik gewoon een berichtje kan sturen als er een nieuw model is, en dat ze dan moeten updaten. Er moeten immers ook gewoon extra scripts bij enzo. De inference_lib moet aangepast worden etc. Ze moeten sowieso updaten joh. Eigenlijk moet er nog een var bij, namelijk minimale version. Dan kan hij gewoon zeggen je moet updaten of niet. 
-# TODO: DONE - train test MEWC model with some tasmanian classes. That way I can test if it works well if there is a new model added to the json.
-# TODO: DONE - pas die repo aan. Ik die info.jsons wil ik ook versionen (v1, v2, v3, etc.) Dan kan ik gewoon verder ontwikkelen zeg maar. Tot dat ik een goede format heb. 
-# TODO: DONE - add citation button to model info, if present. 
-# TODO: DONE - alles met model vars moet een default value hebben. Dan wotrdt het meer hufter proof. model_vars.get("url", "")
-# TODO: DONE - zorg dat bij de eerste keer openen niet op custom model komt.
-# TODO: DONE - make class selection window ook met custom tkinter. 
-# TODO: DONE - add a button to see model info. 
-# TODO: DONE - add field that shows if the user needs to update EcoAssist to the show model info window. 
-# TODO: DONE - als ie aan het opstarten is zie je eerst de window een beetje tweaken. Kan ik dat anders doen?
-# TODO: DONE - email JOSS if I can publish the namib model. 
-# TODO: DONE - bedenk een ander systeem met modellen enzo. Niet dat ie de dirs gaat checken, maar een json die alle opties geeft, met urls, descriptions etc. Dan kun je aan de hand daarvan gaan downloaden. Dan iets instellen dat ie automatisch die json download als ie internet heeft als ie opstart. Als er dan een nieuw model is, geen dan de description. 
-# TODO: DONE - catch MD errors. try: catch UnboundLocalError https://github.com/PetervanLunteren/EcoAssist/issues/32. Dan krijg ik meteen een beter inzicht in de elapsed time errors. 
-# TODO: DONE - add default values for all thresholds so that they can be used by the simple mode without messing up the values in advanced mode
-# TODO: DONE - twee grey buttons Sponsor en Reset values
-# TODO: DONE - doe kleur logo bij advanced mode en dezelfde layout
-# TODO: DONE - maak de cancel button in de progress window
-# TODO: DONE - add postprocess frame to ProgressWindow
-# TODO: DONE - maak een progressbar in de nieuwe stijl (customtkinter) waar alle dingetjes aan kunnen koppelen (image - detection, image - classification, video, postprocessing, etc.)
-# TODO: DONE - remove old progress window. 
-# TODO: DONE - koppel simple mode aan de backend
-# TODO: DONE - doe MD5a voor simple mode en de defaults voor thresholds
-# TODO: DONE - remove progressbar inside simple_mode
-# TODO: DONE - als je MD5b kiest dan krijg je een popup window met de vraag of je wilt updaten. De progress window komt ook op, en gaat neit weg. Dus wss even wat later inzetten.
-# TODO: DONE - als je een cls kiest bj advanc_mode, dan wordt die niet automatisch gekozen bij simple_mode. Wel de spp in de list, maar niet de drop down. Even kijken, je moet wss een dropdown updatetje doen als je switched. Andersom doet ie het wel gek genoeg.... Ik heb het idee dat het te maken heeft met toggle_cls_frame({}), en dat de advanc_mode dropdown wel wordt geupdate, maar de simple niet.
-# TODO: DONE - species selection window voor adnvaced mode heeft geen goede PADY voor de subframe
-# TODO: DONE - doe path/to/folder standaard als je nog geen dir hebt gekozen
-# TODO: DONE - verander naan van EA_models repo naar EcoAssist-models
-# TODO: DONE - implement simple mode
-# TODO: DONE - als je MD 5b probeert dan krijg je een update schermpie maar de deploy blijft disabled
-# TODO: DONE - maak results page
-# TODO: DONE - maak de display labels van advanc mode groen of blauw. Zelfde kleur als titles. 
-# TODO: DONE - maak deploy button simple window ook disable (btn_start_deploy & sim_dir_btn > sim_run_btn)
-# TODO: DONE - enable / disable frames -> groene border doen we niet. Wel een rode als de dir niet goed is, of als er geen spp geselecteerd zijn? Wil ik dit wel... wat gebuerd er eigenlijk als er geen spp geselecteerd zijn?
-# TODO: DONE - maak een top banner voor simple en advanced mode. Dus het logo, maar dan lang gerekt. EN misschien met een fade out naar de zijkant?
-# TODO: DONE - sponsor button: Im grateful for every motivation to keep working on this project. even mooi maken op github.
-# TODO: DONE - als je vids en imgs exporteert naar xlsx dan verwijdert ie de eerste weer zodat je alleen info over vids overhoudt. Probeer maar eens.
-# TODO: DONE - remove smooth results option for now
-# TODO: DONE - activate reset values button
-# TODO: DONE - activate switch button with flag
-# TODO: DONE - translate everything to spanish
-# TODO: DONE - do info button next to dropdown simple mode for model info
-# TODO: DONE - maak de model names wat beter. Er komen dalijk verschillende modellen aan voor amazon bijvoorbeeld. 
-# TODO: DONE - Zorg dat de dpd wordt geupdate als er nieuwe modellen zijn neer gezet
-# TODO: DONE - do the banners again
-# TODO: DONE - add documentation for new features
-# TODO: DONE - do all the TODOs in text
-# TODO: DONE - clean script from top to bottom
-# TODO: DONE - check alle debugs
-# TODO: DONE - add feature to disable GPU ('disable GPU processing')
-# TODO: DONE - zet all logos, plaatjes en icons in de folder en pas de paden aan tot relative
-# TODO: DONE - adjust text on website for all icons in EA are from flaticon
-# TODO: DONE - shell: remove all except dir with models when updating. .... or not?
-# TODO: DONE - shell: rename ecoassistcondaenv to ecoassistcondaenv-base
-# TODO: DONE - shell: remove all conda envs starting with ecoassistcondaenv when updating
-# TODO: DONE - shell: convert everything to env.yamls that is much more overzichtelijk. it's the way to go, son.
-# TODO: DONE - shell: download MDv5a wel standaard tijdens de installation. Zonder MD krijg je niets. Dan is volgens mij het probleem van de dropdown zonder modellen ook opgelost.
-# TODO: DONE - shell: bij de install maak je alvast foldertjes aan voor alle modellen die er dan zijn. Anders krijg je dalijk meteen 20 meldeingen. Of je doet iets dat dit meteen gebeurd bij de eerste keer EA opstarten, dan daarna een var in global_vars aanpassen. Alle modeelen daarna krijg je dus wel een melding.
-
-# TODOs FOR LATER
 # TODO: fix root.update() bug which requires switch_mode() to be called twice during start up. Without doing this, the script halts at the first root.update().
 # TODO: implement the automatic installs of env.yml files
 # TODO: check progress windows when using large jsons, search for TODOs in code
 # TODO: get hitl prgoress bar inside labelimg window
-
-
-
-
-
 
 # import packages like a very pointy half christmas tree
 import os
@@ -5244,7 +5159,8 @@ class GreyTopButton(customtkinter.CTkButton):
                        hover_color = ("#CFCFCF", "#2B2B2B"),
                        text_color = ("black", "white"),
                        height = 10,
-                       width = 140)
+                       width = 140,
+                       border_width=GREY_BUTTON_BORDER_WIDTH)
 
 def reset_values():
 
@@ -5352,15 +5268,16 @@ if os.name == "nt": # windows
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
     ADDAX_TXT_SIZE = 8
+    GREY_BUTTON_BORDER_WIDTH = 0
 elif sys.platform == "linux" or sys.platform == "linux2": # linux
     text_font = "Times"
     resize_img_factor = 1
     text_size_adjustment_factor = 0.7
     first_level_frame_font_size = 13
     second_level_frame_font_size = 10
-    label_width = 330
-    widget_width = 160
-    frame_width = label_width + widget_width + 50
+    label_width = 320
+    widget_width = 225
+    frame_width = label_width + widget_width + 60
     subframe_correction_factor = 15
     minsize_rows = 28
     explanation_text_box_height_factor = 1
@@ -5370,14 +5287,15 @@ elif sys.platform == "linux" or sys.platform == "linux2": # linux
     LOGO_SIZE = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
-    SIM_WINDOW_HEIGHT = 696
-    ADV_EXTRA_GRADIENT_HEIGHT = 110
+    SIM_WINDOW_HEIGHT = 683
+    ADV_EXTRA_GRADIENT_HEIGHT = 70
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
-    ADDAX_TXT_SIZE = 9
+    ADDAX_TXT_SIZE = 8
+    GREY_BUTTON_BORDER_WIDTH = 1
 else: # macOS
     text_font = "TkDefaultFont"
     resize_img_factor = 1
@@ -5404,6 +5322,7 @@ else: # macOS
     RESULTS_WINDOW_WIDTH = 803
     RESULTS_WINDOW_HEIGHT = 700
     ADDAX_TXT_SIZE = 9
+    GREY_BUTTON_BORDER_WIDTH = 0
 
 # TKINTER MAIN WINDOW 
 root = Tk()
