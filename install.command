@@ -336,13 +336,13 @@ if [ "$PLATFORM" = "Intel Mac" ]; then
   conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
   conda activate $ECOASSISTCONDAENV_YOLOV8
   # $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-  conda install pytorch::pytorch torchvision torchaudio -c pytorch
-  # conda install -c pytorch  -c conda-forge pytorch torchvision pytorch=11.8 ultralytics
-  conda install -c conda-forge ultralytics
-  conda install -c conda-forge numpy
-  conda install -c conda-forge humanfriendly
-  conda install -c conda-forge jsonpickle
-  # conda install -c conda-forge opencv
+  conda install pytorch::pytorch torchvision torchaudio -c pytorch -y
+  # conda install -c pytorch  -c conda-forge pytorch torchvision pytorch=11.8 ultralytics -y
+  conda install -c conda-forge ultralytics -y
+  conda install -c conda-forge numpy -y
+  conda install -c conda-forge humanfriendly -y
+  conda install -c conda-forge jsonpickle -y
+  # conda install -c conda-forge opencv -y
   # $PIP_YOLOV8 install "ultralytics==8.0.191"
   # $PIP_YOLOV8 install "numpy==1.24.1"
   # $PIP_YOLOV8 install "humanfriendly==10.0"
