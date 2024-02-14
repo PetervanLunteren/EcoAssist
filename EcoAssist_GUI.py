@@ -4362,19 +4362,23 @@ class ProgressWindow:
         if process == "img_det":
             if status == "load":
                 self.img_det_wai_lbl.configure(text = algorithm_starting_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.img_det_wai_lbl.grid_remove()
-                self.img_det_num_lbl.grid()
-                self.img_det_num_val.grid()
-                self.img_det_ela_lbl.grid()
-                self.img_det_ela_val.grid()
-                self.img_det_rem_lbl.grid()
-                self.img_det_rem_val.grid()
-                self.img_det_spe_lbl.grid()
-                self.img_det_spe_val.grid()
-                self.img_det_hwa_lbl.grid()
-                self.img_det_hwa_val.grid()
-                self.img_det_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.img_det_wai_lbl.grid_remove()
+                    self.img_det_num_lbl.grid()
+                    self.img_det_num_val.grid()
+                    self.img_det_ela_lbl.grid()
+                    self.img_det_ela_val.grid()
+                    self.img_det_rem_lbl.grid()
+                    self.img_det_rem_val.grid()
+                    self.img_det_spe_lbl.grid()
+                    self.img_det_spe_val.grid()
+                    self.img_det_hwa_lbl.grid()
+                    self.img_det_hwa_val.grid()
+                    self.img_det_can_btn.grid()
+                    self.img_det_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.img_det_pbr.set(percentage)
                 self.img_det_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4389,7 +4393,6 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.img_det_spe_val.configure(text = parsed_speed)
                 self.img_det_hwa_val.configure(text = hware)
-                self.img_det_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.img_det_num_lbl.grid_remove()
                 self.img_det_num_val.grid_remove()
@@ -4409,19 +4412,23 @@ class ProgressWindow:
         elif process == "img_cls":
             if status == "load":
                 self.img_cls_wai_lbl.configure(text = algorithm_starting_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.img_cls_wai_lbl.grid_remove()
-                self.img_cls_num_lbl.grid()
-                self.img_cls_num_val.grid()
-                self.img_cls_ela_lbl.grid()
-                self.img_cls_ela_val.grid()
-                self.img_cls_rem_lbl.grid()
-                self.img_cls_rem_val.grid()
-                self.img_cls_spe_lbl.grid()
-                self.img_cls_spe_val.grid()
-                self.img_cls_hwa_lbl.grid()
-                self.img_cls_hwa_val.grid()
-                self.img_cls_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.img_cls_wai_lbl.grid_remove()
+                    self.img_cls_num_lbl.grid()
+                    self.img_cls_num_val.grid()
+                    self.img_cls_ela_lbl.grid()
+                    self.img_cls_ela_val.grid()
+                    self.img_cls_rem_lbl.grid()
+                    self.img_cls_rem_val.grid()
+                    self.img_cls_spe_lbl.grid()
+                    self.img_cls_spe_val.grid()
+                    self.img_cls_hwa_lbl.grid()
+                    self.img_cls_hwa_val.grid()
+                    self.img_cls_can_btn.grid()
+                    self.img_cls_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.img_cls_pbr.set(percentage)
                 self.img_cls_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4436,7 +4443,7 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.img_cls_spe_val.configure(text = parsed_speed)
                 self.img_cls_hwa_val.configure(text = hware)
-                self.img_cls_can_btn.configure(command = cancel_func)
+                # self.img_cls_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.img_cls_num_lbl.grid_remove()
                 self.img_cls_num_val.grid_remove()
@@ -4456,19 +4463,23 @@ class ProgressWindow:
         if process == "vid_det":
             if status == "load":
                 self.vid_det_wai_lbl.configure(text = algorithm_starting_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.vid_det_wai_lbl.grid_remove()
-                self.vid_det_num_lbl.grid()
-                self.vid_det_num_val.grid()
-                self.vid_det_ela_lbl.grid()
-                self.vid_det_ela_val.grid()
-                self.vid_det_rem_lbl.grid()
-                self.vid_det_rem_val.grid()
-                self.vid_det_spe_lbl.grid()
-                self.vid_det_spe_val.grid()
-                self.vid_det_hwa_lbl.grid()
-                self.vid_det_hwa_val.grid()
-                self.vid_det_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.vid_det_wai_lbl.grid_remove()
+                    self.vid_det_num_lbl.grid()
+                    self.vid_det_num_val.grid()
+                    self.vid_det_ela_lbl.grid()
+                    self.vid_det_ela_val.grid()
+                    self.vid_det_rem_lbl.grid()
+                    self.vid_det_rem_val.grid()
+                    self.vid_det_spe_lbl.grid()
+                    self.vid_det_spe_val.grid()
+                    self.vid_det_hwa_lbl.grid()
+                    self.vid_det_hwa_val.grid()
+                    self.vid_det_can_btn.grid()
+                    self.vid_det_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.vid_det_pbr.set(percentage)
                 self.vid_det_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4483,7 +4494,7 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_det_spe_val.configure(text = parsed_speed)
                 self.vid_det_hwa_val.configure(text = hware)
-                self.vid_det_can_btn.configure(command = cancel_func)
+                # self.vid_det_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_det_num_lbl.grid_remove()
                 self.vid_det_num_val.grid_remove()
@@ -4503,19 +4514,23 @@ class ProgressWindow:
         elif process == "vid_cls":
             if status == "load":
                 self.vid_cls_wai_lbl.configure(text = algorithm_starting_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.vid_cls_wai_lbl.grid_remove()
-                self.vid_cls_num_lbl.grid()
-                self.vid_cls_num_val.grid()
-                self.vid_cls_ela_lbl.grid()
-                self.vid_cls_ela_val.grid()
-                self.vid_cls_rem_lbl.grid()
-                self.vid_cls_rem_val.grid()
-                self.vid_cls_spe_lbl.grid()
-                self.vid_cls_spe_val.grid()
-                self.vid_cls_hwa_lbl.grid()
-                self.vid_cls_hwa_val.grid()
-                self.vid_cls_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.vid_cls_wai_lbl.grid_remove()
+                    self.vid_cls_num_lbl.grid()
+                    self.vid_cls_num_val.grid()
+                    self.vid_cls_ela_lbl.grid()
+                    self.vid_cls_ela_val.grid()
+                    self.vid_cls_rem_lbl.grid()
+                    self.vid_cls_rem_val.grid()
+                    self.vid_cls_spe_lbl.grid()
+                    self.vid_cls_spe_val.grid()
+                    self.vid_cls_hwa_lbl.grid()
+                    self.vid_cls_hwa_val.grid()
+                    self.vid_cls_can_btn.grid()
+                    self.vid_cls_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.vid_cls_pbr.set(percentage)
                 self.vid_cls_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4530,7 +4545,7 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_cls_spe_val.configure(text = parsed_speed)
                 self.vid_cls_hwa_val.configure(text = hware)
-                self.vid_cls_can_btn.configure(command = cancel_func)
+                # self.vid_cls_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_cls_num_lbl.grid_remove()
                 self.vid_cls_num_val.grid_remove()
@@ -4550,13 +4565,17 @@ class ProgressWindow:
         elif process == "img_pst":
             if status == "load":
                 self.img_pst_wai_lbl.configure(text = starting_up_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.img_pst_wai_lbl.grid_remove()
-                self.img_pst_ela_lbl.grid()
-                self.img_pst_ela_val.grid()
-                self.img_pst_rem_lbl.grid()
-                self.img_pst_rem_val.grid()
-                self.img_pst_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.img_pst_wai_lbl.grid_remove()
+                    self.img_pst_ela_lbl.grid()
+                    self.img_pst_ela_val.grid()
+                    self.img_pst_rem_lbl.grid()
+                    self.img_pst_rem_val.grid()
+                    self.img_pst_can_btn.grid()
+                    self.img_pst_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.img_pst_pbr.set(percentage)
                 self.img_pst_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4566,7 +4585,7 @@ class ProgressWindow:
                     self.img_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_pst_ela_val.configure(text = time_ela)
                 self.img_pst_rem_val.configure(text = time_rem)
-                self.img_pst_can_btn.configure(command = cancel_func)
+                # self.img_pst_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.img_pst_rem_lbl.grid_remove()
                 self.img_pst_rem_val.grid_remove()
@@ -4580,13 +4599,17 @@ class ProgressWindow:
         elif process == "vid_pst":
             if status == "load":
                 self.vid_pst_wai_lbl.configure(text = starting_up_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
-                self.vid_pst_wai_lbl.grid_remove()
-                self.vid_pst_ela_lbl.grid()
-                self.vid_pst_ela_val.grid()
-                self.vid_pst_rem_lbl.grid()
-                self.vid_pst_rem_val.grid()
-                self.vid_pst_can_btn.grid()
+                if self.just_shown_load_screen:
+                    self.vid_pst_wai_lbl.grid_remove()
+                    self.vid_pst_ela_lbl.grid()
+                    self.vid_pst_ela_val.grid()
+                    self.vid_pst_rem_lbl.grid()
+                    self.vid_pst_rem_val.grid()
+                    self.vid_pst_can_btn.grid()
+                    self.vid_pst_can_btn.configure(command = cancel_func)
+                    self.just_shown_load_screen = False
                 percentage = (cur_it / tot_it)
                 self.vid_pst_pbr.set(percentage)
                 self.vid_pst_per.configure(text = f" {round(percentage * 100)}% ")
@@ -4596,7 +4619,7 @@ class ProgressWindow:
                     self.vid_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_pst_ela_val.configure(text = time_ela)
                 self.vid_pst_rem_val.configure(text = time_rem)
-                self.vid_pst_can_btn.configure(command = cancel_func)
+                # self.vid_pst_can_btn.configure(command = cancel_func)
             elif status == "done":
                 self.vid_pst_rem_lbl.grid_remove()
                 self.vid_pst_rem_val.grid_remove()
