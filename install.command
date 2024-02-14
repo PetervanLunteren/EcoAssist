@@ -333,19 +333,25 @@ conda deactivate
 # create dedicated mewc classification environment # DEBUG
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos.yml"
-  conda activate $ECOASSISTCONDAENV_MEWC
-  conda info --envs >> "$LOG_FILE"
-  conda list >> "$LOG_FILE"
-  $PIP_MEWC freeze >> "$LOG_FILE" 
-  conda deactivate
-else
-  # intel macs and linux
+  # conda activate $ECOASSISTCONDAENV_MEWC
+  # conda info --envs >> "$LOG_FILE"
+  # conda list >> "$LOG_FILE"
+  # $PIP_MEWC freeze >> "$LOG_FILE" 
+  # conda deactivate
+elif [ "$PLATFORM" = "Intel Mac" ]; then
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-intel.yml"
+  # conda activate $ECOASSISTCONDAENV_MEWC
+  # conda info --envs >> "$LOG_FILE"
+  # conda list >> "$LOG_FILE"
+  # $PIP_MEWC freeze >> "$LOG_FILE" 
+  # conda deactivate
+elif [ "$PLATFORM" = "Linux" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-windows.yml"
-  conda activate $ECOASSISTCONDAENV_MEWC
-  conda info --envs >> "$LOG_FILE"
-  conda list >> "$LOG_FILE"
-  $PIP_MEWC freeze >> "$LOG_FILE" 
-  conda deactivate
+  # conda activate $ECOASSISTCONDAENV_MEWC
+  # conda info --envs >> "$LOG_FILE"
+  # conda list >> "$LOG_FILE"
+  # $PIP_MEWC freeze >> "$LOG_FILE" 
+  # conda deactivate
 fi
 
 # create dedicated yolov8 classification environment # DEBUG
