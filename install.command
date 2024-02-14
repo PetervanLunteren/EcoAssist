@@ -236,7 +236,7 @@ export PATH="${CONDA_DIR}/bin":$PATH
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector.yml
+  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
@@ -260,7 +260,7 @@ if [ "$PLATFORM" = "Linux" ]; then
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/environment-detector-mac.yml
+  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
