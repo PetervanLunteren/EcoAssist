@@ -1,5 +1,5 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 13 Dec 2023 (latest edit)
+@REM ### Peter van Lunteren, 13 Feb 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -173,8 +173,9 @@ echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_ins
 for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
 if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
 @REM set pip path
-set EA_PIP_EXE_DET=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv\Scripts\pip3
-set EA_PIP_EXE_CLA=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8\Scripts\pip3
+set EA_PIP_EXE_BASE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base\Scripts\pip3
+set EA_PIP_EXE_YOLOV8=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8\Scripts\pip3
+set EA_PIP_EXE_MEWC=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc\Scripts\pip3
 
 @REM set git cmds
 @REM check the default locations for a Git install
@@ -229,13 +230,20 @@ echo Installation started at %START_DATE% | wtee -a "%LOG_FILE%"
 @REM log system information
 systeminfo | wtee -a "%LOG_FILE%"
 
+@REM check for sandbox argument and specify branch
+if "%1%"=="sandbox" (
+  set "GITHUB_BRANCH_NAME=sandbox"
+) else (
+  set "GITHUB_BRANCH_NAME=main"
+)
+
 @REM clone EcoAssist git if not present
 if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
     echo Dir EcoAssist already exists! Skipping this step. | wtee -a "%LOG_FILE%"
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git
+    "%EA_GIT_EXE%" clone --depth 1 --branch %GITHUB_BRANCH_NAME% https://github.com/PetervanLunteren/EcoAssist.git
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
@@ -311,81 +319,62 @@ if exist "%LOCATION_ECOASSIST_FILES%\visualise_detection\" (
 )
 
 @REM download the md_v5a.0.0.pt model if not present
-if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5a.0.0.pt" (
+if exist "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a\md_v5a.0.0.pt" (
     echo "File md_v5a.0.0.pt already exists! Skipping this step." | wtee -a "%LOG_FILE%"
 ) else (
     echo "File md_v5a.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
-    if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    if not exist "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" mkdir "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a"
+    cd "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" || ( echo "Could not change directory to \models\det\MegaDetector 5a. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5a.0.0.pt
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
+    dir "%LOCATION_ECOASSIST_FILES%\models\det\MegaDetector 5a" | wtee -a "%LOG_FILE%"
 )
 
-@REM download the md_v5b.0.0.pt model if not present
-if exist "%LOCATION_ECOASSIST_FILES%\pretrained_models\md_v5b.0.0.pt" (
-    echo "File md_v5b.0.0.pt already exists! Skipping this step." | wtee -a "%LOG_FILE%"
-) else (
-    echo "File md_v5b.0.0.pt does not exists! Downloading file..." | wtee -a "%LOG_FILE%"
-    if not exist "%LOCATION_ECOASSIST_FILES%\pretrained_models" mkdir "%LOCATION_ECOASSIST_FILES%\pretrained_models"
-    cd "%LOCATION_ECOASSIST_FILES%\pretrained_models" || ( echo "Could not change directory to pretrained_models. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    curl --keepalive -OL https://github.com/ecologize/CameraTraps/releases/download/v5.0/md_v5b.0.0.pt
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    @REM check the size of the folder
-    dir "%LOCATION_ECOASSIST_FILES%\pretrained_models" | wtee -a "%LOG_FILE%"
-)
+@REM create folder for classification models
+if not exist "%LOCATION_ECOASSIST_FILES%\models\cls" mkdir "%LOCATION_ECOASSIST_FILES%\models\cls"
 
-@REM create folders for classification models
-if not exist "%LOCATION_ECOASSIST_FILES%\classification_models" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models"
-if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_animals" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_animals"
-if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons"
-if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles"
+@REM create txt file to let EcoAssist know it will be the first startup since install
+echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
+
+@REM remove all old ecoassist conda evironments, if present
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-call %EA_CONDA_EXE% env create --name ecoassistcondaenv --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
+call %EA_CONDA_EXE% env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-call activate ecoassistcondaenv
-
-@REM install additional packages for Human-in-the-loop
-"%EA_PIP_EXE_DET%" install pyqt5==5.15.2 lxml
-
-@REM install additional packages for EcoAssist
-"%EA_PIP_EXE_DET%" install RangeSlider
-"%EA_PIP_EXE_DET%" install gpsphoto
-"%EA_PIP_EXE_DET%" install exifread
-"%EA_PIP_EXE_DET%" install piexif
-"%EA_PIP_EXE_DET%" install openpyxl
-"%EA_PIP_EXE_DET%" install pyarrow
-
-@REM install additional packages for yolov5
-"%EA_PIP_EXE_DET%" install GitPython==3.1.30
-"%EA_PIP_EXE_DET%" install tensorboard==2.4.1
-"%EA_PIP_EXE_DET%" install thop==0.1.1.post2209072238
-"%EA_PIP_EXE_DET%" install protobuf==3.20.1
-"%EA_PIP_EXE_DET%" install setuptools==65.5.1
-"%EA_PIP_EXE_DET%" install numpy==1.23.4
-
-@REM log env info
-call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
-call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-"%EA_PIP_EXE_DET%" freeze >> "%LOG_FILE%"
+call activate ecoassistcondaenv-base
+"%EA_PIP_EXE_BASE%" install pyqt5==5.15.2 lxml
+"%EA_PIP_EXE_BASE%" install RangeSlider
+"%EA_PIP_EXE_BASE%" install gpsphoto
+"%EA_PIP_EXE_BASE%" install exifread
+"%EA_PIP_EXE_BASE%" install piexif
+"%EA_PIP_EXE_BASE%" install openpyxl
+"%EA_PIP_EXE_BASE%" install pyarrow
+"%EA_PIP_EXE_BASE%" install customtkinter
+"%EA_PIP_EXE_BASE%" install CTkTable
+"%EA_PIP_EXE_BASE%" install GitPython==3.1.30
+@REM "%EA_PIP_EXE_BASE%" install tensorboard==2.4.1
+@REM "%EA_PIP_EXE_BASE%" install thop==0.1.1.post2209072238
+@REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
+@REM "%EA_PIP_EXE_BASE%" install setuptools==65.5.1
+"%EA_PIP_EXE_BASE%" install numpy==1.23.4
 call %EA_CONDA_EXE% deactivate
 
-@REM create and log dedicated environment for classification
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8
-call %EA_CONDA_EXE% env create --file EcoAssist\envs\classifier-yolov8-windows.yml
-call %EA_CONDA_EXE% activate ecoassistcondaenv-yolov8
-call %EA_CONDA_EXE% info --envs || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
-call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%"
-call %EA_CONDA_EXE% list >> "%LOG_FILE%"
-"%EA_PIP_EXE_CLA%" freeze >> "%LOG_FILE%"
+@REM create and log dedicated environment for yolov8 classification
+call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\yolov8.yml
+call activate ecoassistcondaenv-yolov8
+"%EA_PIP_EXE_YOLOV8%" install ultralytics==8.0.191
 call %EA_CONDA_EXE% deactivate
+
+@REM create and log dedicated environment for mewc classification
+call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\mewc-linux-windows.yml
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"

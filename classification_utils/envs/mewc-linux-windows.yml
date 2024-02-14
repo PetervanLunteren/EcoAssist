@@ -1,0 +1,27 @@
+name: ecoassistcondaenv-mewc
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.8.15
+  - conda-forge::cudatoolkit=11.2
+  - conda-forge::cudnn=8.1.0
+  - pip
+  - pip:
+    - humanfriendly
+    - imgaug
+    - jsonpickle
+    - keras_efficientnet_v2
+    - matplotlib
+    - numpy
+    - pandas
+    - piexif
+    - pillow
+    - pyyaml
+    - requests
+    - scikit-learn
+    - statistics
+    - tensorflow<2.11
+    - tensorflow_addons
+    - tqdm

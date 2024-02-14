@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 24 Nov 2023 (latest edit)
+### Peter van Lunteren, 12 Feb 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -36,32 +36,23 @@ fi
 
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV_DET="${CONDA_DIR}/envs/ecoassistcondaenv"
-ECOASSISTCONDAENV_CLA="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
-PIP_DET="${ECOASSISTCONDAENV_DET}/bin/pip"
-PIP_CLA="${ECOASSISTCONDAENV_CLA}/bin/pip"
+ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
+ECOASSISTCONDAENV_YOLOV8="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
+ECOASSISTCONDAENV_MEWC="${CONDA_DIR}/envs/ecoassistcondaenv-mewc"
+PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
+PIP_YOLOV8="${ECOASSISTCONDAENV_YOLOV8}/bin/pip"
+PIP_MEWC="${ECOASSISTCONDAENV_MEWC}/bin/pip"
 HOMEBREW_DIR="/opt/homebrew"
 
-# remove the old ecoassistcondaenv
-PATH_TO_CONDA_INSTALLATION_TXT_FILE=$LOCATION_ECOASSIST_FILES/EcoAssist/path_to_conda_installation.txt
-if [ -f "$PATH_TO_CONDA_INSTALLATION_TXT_FILE" ]; then
-  # intel macs and linux have a txt file with the conda path
-  PATH_TO_CONDA=`cat $PATH_TO_CONDA_INSTALLATION_TXT_FILE`
-  PATH_TO_CONDA_SH="$PATH_TO_CONDA/etc/profile.d/conda.sh"
-  echo "PATH_TO_CONDA_INSTALLATION_TXT_FILE exists: $PATH_TO_CONDA_INSTALLATION_TXT_FILE"
-  echo "Path to conda is: $PATH_TO_CONDA"
-  echo "Path to conda.sh: $PATH_TO_CONDA_SH"
-  source "$PATH_TO_CONDA_SH"
-  conda env remove -n ecoassistcondaenv
-elif [ -d "$HOME/miniforge3/envs/ecoassistcondaenv" ]; then
-  # apple silicons have it installed in their home dir
-  echo "ecoassistcondaenv exists in $HOME/miniforge3/envs/ecoassistcondaenv"
-  source $HOME/miniforge3/bin/activate
-  conda env remove -p $HOME/miniforge3/envs/ecoassistcondaenv
+# check for sandbox argument and specify branch 
+if [ "$1" == "sandbox" ]; then
+  GITHUB_BRANCH_NAME="sandbox"
+else
+  GITHUB_BRANCH_NAME="main"
 fi
 
 # delete previous installation of EcoAssist if present so that it can update
-rm -rf $LOCATION_ECOASSIST_FILES
+rm -rf $LOCATION_ECOASSIST_FILES && echo "Removed dir '${LOCATION_ECOASSIST_FILES}'"
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
@@ -131,19 +122,20 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   fi
 fi
 
-# clone EcoAssist git 
+# clone EcoAssist git
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance."; exit 1; }
 ECO="EcoAssist"
 if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress --depth 1 https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress --depth 1 --branch $GITHUB_BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
     ICON="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.icns"
     bash $LOCATION_ECOASSIST_FILES/EcoAssist/fileicon set $FILE $ICON 2>&1 | tee -a "$LOG_FILE" # set icon
+    chmod 755 $FILE # change permissions
     mv -f $FILE "/Applications/EcoAssist.command" # move file and replace
   elif [ "$PLATFORM" = "Linux" ]; then
     # create shortcut file
@@ -209,8 +201,8 @@ else
 fi
 
 # download the MDv5a model 
-mkdir -p $LOCATION_ECOASSIST_FILES/pretrained_models
-cd $LOCATION_ECOASSIST_FILES/pretrained_models || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a"
+cd "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a" || { echo "Could not change directory to pretrained_models. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 MDv5a="md_v5a.0.0.pt"
 if [ -f "$MDv5a" ]; then
   echo "File ${MDv5a} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
@@ -218,22 +210,13 @@ else
   echo "File ${MDv5a} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
   curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt 2>&1 | tee -a "$LOG_FILE"
 fi
-
-# download the MDv5b model 
-MDv5b="md_v5b.0.0.pt"
-if [ -f "$MDv5b" ]; then
-  echo "File ${MDv5b} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
-else
-  echo "File ${MDv5b} does not exist! Downloading file..." 2>&1 | tee -a "$LOG_FILE"
-  curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt 2>&1 | tee -a "$LOG_FILE"
-fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Please send an email to peter@addaxdatascience.com for assistance." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
-# make dir for classification models
-mkdir -p $LOCATION_ECOASSIST_FILES/classification_models
-mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_animals
-mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_persons
-mkdir -p $LOCATION_ECOASSIST_FILES/classification_models/cls_vehicles
+# create a dir for the classification models, if not already present
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/cls"
+
+# create txt file to let EcoAssist know it will be the first startup since install
+echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
 
 # install miniforge
 MFG="miniforge"
@@ -250,19 +233,16 @@ source "${CONDA_DIR}/etc/profile.d/conda.sh"
 source "${CONDA_DIR}/bin/activate"
 export PATH="${CONDA_DIR}/bin":$PATH
 
-# remove previous EcoAssist conda env if present
-conda env remove -p $ECOASSISTCONDAENV_DET
-
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
+  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV_DET
+  conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
-  $PIP_DET install --upgrade pip
+  $PIP_BASE install --upgrade pip
   # requirements for Human-in-the-loop
-  $PIP_DET install pyqt5==5.15.2 lxml libxcb-xinerama0
+  $PIP_BASE install pyqt5==5.15.2 lxml libxcb-xinerama0
   echo "We need to install libxcb-xinerama0 (https://packages.ubuntu.com/bionic/libxcb-xinerama0) and libgl1 (https://www.opengl.org/sdk/libs/). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
   { # first try without sudo
     apt install libxcb-xinerama0 
@@ -280,28 +260,28 @@ if [ "$PLATFORM" = "Linux" ]; then
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
+  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV_DET
+  conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
-  $PIP_DET install --upgrade pip
+  $PIP_BASE install --upgrade pip
   # requirements for Human-in-the-loop
-  $PIP_DET install pyqt5==5.15.2 lxml
+  $PIP_BASE install pyqt5==5.15.2 lxml
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  conda env create --name ecoassistcondaenv --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
+  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
   # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
-  conda activate $ECOASSISTCONDAENV_DET
+  conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
-  $PIP_DET install --upgrade pip
+  $PIP_BASE install --upgrade pip
   { # install nightly pytorch via miniforge as arm64
-    $PIP_DET install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
+    $PIP_BASE install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
   } || { # if the first try didn't work
     conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
   }
   # install lxml
-  $PIP_DET install lxml
+  $PIP_BASE install lxml
 
   # we need homebrew to install PyQt5 for Apple Silicon macs
   echo "In order to enable the pyQt5 package for Apple Silicon (required for the the " 2>&1 | tee -a "$LOG_FILE"
@@ -329,38 +309,65 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
 fi
 
 # requirements for EcoAssist
-$PIP_DET install RangeSlider
-$PIP_DET install gpsphoto
-$PIP_DET install exifread
-$PIP_DET install piexif
-$PIP_DET install openpyxl
+$PIP_BASE install RangeSlider
+$PIP_BASE install gpsphoto
+$PIP_BASE install exifread
+$PIP_BASE install piexif
+$PIP_BASE install openpyxl
+$PIP_BASE install customtkinter
+$PIP_BASE install CTkTable
 
 # requirements for yolov5
-$PIP_DET install "gitpython>=3.1.30"
-$PIP_DET install "tensorboard>=2.4.1"
-$PIP_DET install "thop>=0.1.1"
-$PIP_DET install "protobuf<=3.20.1"
-$PIP_DET install "setuptools>=65.5.1"
+$PIP_BASE install "gitpython>=3.1.30"
+$PIP_BASE install "tensorboard>=2.4.1"
+$PIP_BASE install "thop>=0.1.1"
+$PIP_BASE install "protobuf<=3.20.1"
+$PIP_BASE install "setuptools>=65.5.1"
 
 # log env info
 conda info --envs >> "$LOG_FILE"
 conda list >> "$LOG_FILE"
-$PIP_DET freeze >> "$LOG_FILE"
+$PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
+# create dedicated mewc classification environment
+if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-silicon.yml"
+elif [ "$PLATFORM" = "Intel Mac" ]; then
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-intel.yml"
+elif [ "$PLATFORM" = "Linux" ]; then
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-linux-windows.yml"
+fi
+
 # create dedicated yolov8 classification environment
-conda env remove -p $ECOASSISTCONDAENV_CLA
-conda create -p $ECOASSISTCONDAENV_CLA python=3.8 -y
-conda activate $ECOASSISTCONDAENV_CLA
-$PIP_CLA install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-$PIP_CLA install "ultralytics==8.0.191"
-$PIP_CLA install "numpy==1.24.1"
-$PIP_CLA install "humanfriendly==10.0"
-$PIP_CLA install "jsonpickle==3.0.2"
-conda info --envs >> "$LOG_FILE"
-conda list >> "$LOG_FILE"
-$PIP_CLA freeze >> "$LOG_FILE" 
-conda deactivate
+if [ "$PLATFORM" = "Intel Mac" ]; then
+  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
+  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_YOLOV8
+  conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
+  conda install -c conda-forge ultralytics=8.0.191 -y
+  conda install -c conda-forge numpy==1.24.1 -y
+  conda install -c conda-forge humanfriendly==10.0 -y
+  conda install -c conda-forge jsonpickle==3.0.2 -y
+  conda info --envs >> "$LOG_FILE"
+  conda list >> "$LOG_FILE"
+  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  conda deactivate
+else
+  # apple silicon and linux
+  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
+  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_YOLOV8
+  $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+  $PIP_YOLOV8 install "ultralytics==8.0.191"
+  $PIP_YOLOV8 install "numpy==1.24.1"
+  $PIP_YOLOV8 install "humanfriendly==10.0"
+  $PIP_YOLOV8 install "jsonpickle==3.0.2"
+  conda info --envs >> "$LOG_FILE"
+  conda list >> "$LOG_FILE"
+  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  conda deactivate
+fi
 
 # log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
