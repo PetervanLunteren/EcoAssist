@@ -4,7 +4,14 @@
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
-# TODO: ANNOTATION - improve annotation experience: progress windows when using large jsons, convert pyqt5 to pyqt6 for apple silicon, implement image progress into main labelimg window
+# TODO: ANNOTATION - improve annotation experience
+    # - make one progress windows in stead of all separate pbars when using large jsons
+    # - convert pyqt5 to pyqt6 for apple silicon so we don't need to install it via homebrew
+    # - implement image progress status into main labelimg window, so you don't have two separate windows
+    # - apparently you still get images in which a class is found under the annotation threshold,
+    #         it should count only the images that have classes above the set annotation threshold,
+    #         at this point it only checks whether it should draw an bbox or not, but still shows the image
+
 
 # import packages like a very pointy half christmas tree
 import os
