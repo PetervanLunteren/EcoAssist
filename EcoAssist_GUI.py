@@ -1,7 +1,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 15 Feb 2024
+# Latest edit by Peter van Lunteren on 12 Feb 2024
 
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience: progress windows when using large jsons, convert pyqt5 to pyqt6 for apple silicon, implement image progress into main labelimg window
@@ -199,9 +199,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                                                'WhiteBalance', 'SceneCaptureType', 'ExposureTime', 'Software', 'Sharpness', 'Saturation', 'ReferenceBlackWhite'])
             df.to_csv(csv_for_detections, encoding='utf-8', index=False)
 
+    # set global vars
+    global postprocessing_error_log
+    postprocessing_error_log = os.path.join(dst_dir, "postprocessing_error_log.txt")
+
     # loop through images
-    failure_warning_shown = False
-    failure_warning_log = os.path.join(dst_dir, "failure_warning_log.txt")
     for image in data['images']:
 
         # cancel process if required
@@ -210,15 +212,9 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         
         # check for failure
         if "failure" in image:
-            if not failure_warning_shown:
-                mb.showwarning(warning_txt[lang_idx], [f"One or more files failed to be analysed by the model (e.g., corrupt files) and will be skipped by "
-                                                  f"post-processing features. See\n\n'{failure_warning_log}'\n\nfor more info.",
-                                                  f"Uno o más archivos no han podido ser analizados por el modelo (por ejemplo, ficheros corruptos) y serán "
-                                                  f"omitidos por las funciones de post-procesamiento. Para más información, véase\n\n'{failure_warning_log}'"][lang_idx])
-                failure_warning_shown = True
             
             # write warnings to log file
-            with open(failure_warning_log, 'a+') as f:
+            with open(postprocessing_error_log, 'a+') as f:
                 f.write(f"File '{image['file']}' was skipped by post processing features because '{image['failure']}'\n")
             f.close()
 
@@ -561,6 +557,14 @@ def start_postprocess():
         
         # complete
         complete_frame(fth_step)
+
+        # check if there are postprocessing errors written
+        if os.path.isfile(postprocessing_error_log): 
+            mb.showwarning(warning_txt[lang_idx], [f"One or more files failed to be analysed by the model (e.g., corrupt files) and will be skipped by "
+                                                f"post-processing features. See\n\n'{postprocessing_error_log}'\n\nfor more info.",
+                                                f"Uno o más archivos no han podido ser analizados por el modelo (por ejemplo, ficheros corruptos) y serán "
+                                                f"omitidos por las funciones de post-procesamiento. Para más información, véase\n\n'{postprocessing_error_log}'"][lang_idx])
+
 
         # close progress window
         progress_window.close()
@@ -1493,8 +1497,6 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     # set global vars
     global cancel_deploy_model_pressed
     cancel_deploy_model_pressed = False
-    global model_error_present
-    global model_warning_present
     global subprocess_output
     subprocess_output = ""
 
@@ -1528,7 +1530,6 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
 
         # write errors to log file
         if "Exception:" in line:
-            model_error_present = True
             with open(model_error_log, 'a+') as f:
                 f.write(f"{line}\n")
             f.close()
@@ -1538,7 +1539,6 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
             if not "could not determine MegaDetector version" in line \
                 and not "no metadata for unknown detector version" in line \
                 and not "using user-supplied image size" in line:
-                model_warning_present = True
                 with open(model_warning_log, 'a+') as f:
                     f.write(f"{line}\n")
                 f.close()
@@ -1685,12 +1685,8 @@ def start_deploy(simple_mode = False):
 
     # redicrect warnings and error to log files
     chosen_folder = var_choose_folder.get()
-    global model_error_present
-    model_error_present = False
     global model_error_log
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
-    global model_warning_present
-    model_warning_present = False
     global model_warning_log
     model_warning_log = os.path.join(chosen_folder, "model_warning_log.txt")
 
@@ -1886,14 +1882,23 @@ def start_deploy(simple_mode = False):
             temp_frame_folder_obj.cleanup()
 
         # show model error pop up window
-        if model_error_present:
+        if os.path.isfile(model_error_log):
             mb.showerror(error_txt[lang_idx], [f"There were one or more model errors. See\n\n'{model_error_log}'\n\nfor more information.",
                                             f"Se han producido uno o más errores de modelo. Consulte\n\n'{model_error_log}'\n\npara obtener más información."][lang_idx])
 
         # show model warning pop up window
-        if model_warning_present:
+        if os.path.isfile(model_warning_log):
             mb.showerror(error_txt[lang_idx], [f"There were one or more model warnings. See\n\n'{model_warning_log}'\n\nfor more information.",
                                         f"Se han producido uno o más advertencias de modelo. Consulte\n\n'{model_warning_log}'\n\npara obtener más información."][lang_idx])
+
+        # show postprocessing warning log
+        global postprocessing_error_log
+        postprocessing_error_log = os.path.join(chosen_folder, "postprocessing_error_log.txt")
+        if os.path.isfile(postprocessing_error_log): 
+            mb.showwarning(warning_txt[lang_idx], [f"One or more files failed to be analysed by the model (e.g., corrupt files) and will be skipped by "
+                                                f"post-processing features. See\n\n'{postprocessing_error_log}'\n\nfor more info.",
+                                                f"Uno o más archivos no han podido ser analizados por el modelo (por ejemplo, ficheros corruptos) y serán "
+                                                f"omitidos por las funciones de post-procesamiento. Para más información, véase\n\n'{postprocessing_error_log}'"][lang_idx])
 
         # enable button
         btn_start_deploy.configure(state=NORMAL)
