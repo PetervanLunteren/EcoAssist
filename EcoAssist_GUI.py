@@ -1,12 +1,10 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 12 Feb 2024
+# Latest edit by Peter van Lunteren on 15 Feb 2024
 
-# TODO: fix root.update() bug which requires switch_mode() to be called twice during start up. Without doing this, the script halts at the first root.update().
-# TODO: implement the automatic installs of env.yml files
-# TODO: check progress windows when using large jsons, search for TODOs in code
-# TODO: get hitl prgoress bar inside labelimg window
+# TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
+# TODO: ANNOTATION - improve annotation experience: progress windows when using large jsons, convert pyqt5 to pyqt6 for apple silicon, implement image progress into main labelimg window
 
 # import packages like a very pointy half christmas tree
 import os
@@ -5326,6 +5324,8 @@ else: # macOS
 
 # TKINTER MAIN WINDOW 
 root = Tk()
+EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
+root.iconphoto(True, EcoAssist_icon_image)
 s = ttk.Style(root)
 s.configure("TNotebook", tabposition='n')
 root.withdraw()
