@@ -236,6 +236,7 @@ def convert_detections_to_classification(json_path,
                             detection['category'] = str(detec_idx)
 
     # write json to be used by EcoAssist
+    inverted_det_label_map['unidentified animal'] = inverted_det_label_map.pop('animal') # change all left over animals to unidentified
     data['detection_categories'] = {v: k for k, v in inverted_det_label_map.items()}
     with open(json_path, "w") as json_file:
         json.dump(data, json_file, indent=1)
