@@ -1829,6 +1829,7 @@ def start_deploy(simple_mode = False):
         if var_use_checkpnts.get():
             additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
         if var_cont_checkpnt.get():
+            check_checkpnt()
             additional_img_options.append("--resume_from_checkpoint=" + loc_chkpnt_file)
         if var_use_custom_img_size_for_deploy.get():
             additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
