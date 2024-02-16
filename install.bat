@@ -337,6 +337,10 @@ if not exist "%LOCATION_ECOASSIST_FILES%\models\cls" mkdir "%LOCATION_ECOASSIST_
 @REM create txt file to let EcoAssist know it will be the first startup since install
 echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
 
+@REM activate conda/mamba command
+set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
+
 @REM remove all old ecoassist conda evironments, if present
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
@@ -344,8 +348,6 @@ call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "There was 
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 
 @REM create conda env and install packages for MegaDetector
-set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
-call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call %EA_CONDA_EXE% env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
