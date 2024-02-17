@@ -3,6 +3,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
+# TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one.
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
