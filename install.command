@@ -233,6 +233,9 @@ source "${CONDA_DIR}/etc/profile.d/conda.sh"
 source "${CONDA_DIR}/bin/activate"
 export PATH="${CONDA_DIR}/bin":$PATH
 
+# suppress conda warnings about updates
+conda config --set notify_outdated_conda false
+
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
