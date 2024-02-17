@@ -3304,21 +3304,33 @@ def download_model(model_dir):
 
     # download
     try:
-        # some models have multiple files to be downloaded
-        # check the total size first
-        total_size = 0
-        for download_url, _ in download_info:
-            response = requests.get(download_url, stream=True)
-            response.raise_for_status()
-            total_size += int(response.headers.get('content-length', 0))
+        try:
+            # some models have multiple files to be downloaded
+            # check the total size first
+            total_size = 0
+            for download_url, _ in download_info:
+                response = requests.get(download_url, stream=True)
+                response.raise_for_status()
+                total_size += int(response.headers.get('content-length', 0))
 
+        except Exception as error:
+            # Let the user know there is no internet connection
+            print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+            mb.showerror(["Download required", "Descarga necesaria"][lang_idx],
+                         message = [f"The model '{model_title}' is not downloaded yet and it seems like there is no internet connection.",
+                                    f"El modelo '{model_title}' aún no se ha descargado y parece que no hay conexión a Internet."][lang_idx],
+                         detail = ["If you want to know the size of the model file and decide whether you want to download it, make "
+                                   "sure you have an internet connection.", "Si desea conocer el tamaño del archivo del modelo y decidir si "
+                                   "desea descargarlo, asegúrese de que dispone de conexión a Internet."][lang_idx])
+            return False
+           
         # check if the user wants to download
         if not mb.askyesno(["Download required", "Descarga necesaria"][lang_idx],
-                           [f"The model {model_title} is not downloaded yet. It will take {format_size(total_size)}"
+                        [f"The model {model_title} is not downloaded yet. It will take {format_size(total_size)}"
                             f" of storage. Do you want to download?", f"El modelo {model_title} aún no se ha descargado."
                             f" Ocupará {format_size(total_size)} de almacenamiento. ¿Desea descargarlo?"][lang_idx]):
             return False
-
+        
         # if yes, initiate download and show progress
         progress_bar = tqdm(total=total_size, unit='B', unit_scale=True)
         download_popup = ModelDownloadProgressWindow(model_title = model_title, total_size_str = format_size(total_size))
@@ -3344,8 +3356,9 @@ def download_model(model_dir):
     except Exception as error:
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
         mb.showerror(title=error_txt[lang_idx],
-                        message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
-                        detail=traceback.format_exc())
+                        message=[f"Something went wrong when trying to download the model '{model_title}'. Are you sure you are connected to the internet?",
+                                 f"Algo ha ido mal al intentar descargar el modelo '{model_title}'. Está seguro de que está conectado a internet?"][lang_idx],
+                        detail=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.")
 
 ##############################################
 ############# FRONTEND FUNCTIONS #############
