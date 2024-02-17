@@ -3748,11 +3748,11 @@ def show_result_info(file_path):
     result_main_frame.grid(row=0, column=0, sticky="ns")
 
     # label
-    lbl1 = customtkinter.CTkLabel(result_main_frame, text="The images are processed!", font = main_label_font, height=20)
+    lbl1 = customtkinter.CTkLabel(result_main_frame, text=["The images are processed!", "¡Las imágenes están procesadas!"][lang_idx], font = main_label_font, height=20)
     lbl1.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/4), columnspan = 2, sticky="nswe")
-    lbl2 = customtkinter.CTkLabel(result_main_frame, text=f"The results are saved at '{file_path}'.", height=20)
+    lbl2 = customtkinter.CTkLabel(result_main_frame, text=[f"The results are saved at '{file_path}'.", f"Los resultados se guardan en '{file_path}'."][lang_idx], height=20)
     lbl2.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY/4), columnspan = 2, sticky="nswe")
-    lbl3 = customtkinter.CTkLabel(result_main_frame, text=f"You can find a quick overview of the results below.", height=20)
+    lbl3 = customtkinter.CTkLabel(result_main_frame, text=[f"You can find a quick overview of the results below.", f"A continuación encontrará un resumen de los resultados."][lang_idx], height=20)
     lbl3.grid(row=2, column=0, padx=PADX, pady=(PADY/4, PADY/4), columnspan = 2, sticky="nswe")
 
     # graph frame
@@ -3760,7 +3760,7 @@ def show_result_info(file_path):
     graph_frm_1.grid(row=3, column=0, padx=PADX, pady=PADY, sticky="nswe")
     graph_frm_2 = model_info_frame(master=graph_frm_1)
     graph_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
-    graph_lbl_1 = customtkinter.CTkLabel(graph_frm_1, text="Chart", font = main_label_font)
+    graph_lbl_1 = customtkinter.CTkLabel(graph_frm_1, text=["Graph", "Gráfico"][lang_idx], font = main_label_font)
     graph_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
     graph_img = customtkinter.CTkImage(graph_img, size=(600, 300))
     graph_lbl_2 = customtkinter.CTkLabel(graph_frm_2, text="", image = graph_img)
@@ -3769,13 +3769,13 @@ def show_result_info(file_path):
     # developer frame
     table_frm_1 = model_info_frame(master=result_main_frame)
     table_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
-    table_lbl_1 = customtkinter.CTkLabel(table_frm_1, text="Table", font = main_label_font)
+    table_lbl_1 = customtkinter.CTkLabel(table_frm_1, text=["Table", "Tabla"][lang_idx], font = main_label_font)
     table_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
     table_scr_frm = customtkinter.CTkScrollableFrame(table_frm_1, width = RESULTS_TABLE_WIDTH)
     table_scr_frm.grid(row=0, column=1, columnspan = 3, padx=(0, PADX), pady=PADY, sticky="nesw")
     table_header = CTkTable(master=table_scr_frm,
                       column=3,
-                      values=[["Species", "Count", "Percentage"]],
+                      values=[[["Species", "Especie"][lang_idx], ["Count", "Cuenta"][lang_idx], ["Percentage", "Porcentaje"][lang_idx]]],
                       font = main_label_font,
                       color_phase = "horizontal",
                       header_color = customtkinter.ThemeManager.theme["CTkFrame"]["top_fg_color"],
@@ -3795,11 +3795,11 @@ def show_result_info(file_path):
     btns_frm.columnconfigure(0, weight=1, minsize=10)
     btns_frm.columnconfigure(1, weight=1, minsize=10)
     btns_frm.columnconfigure(2, weight=1, minsize=10)
-    close_btn = customtkinter.CTkButton(btns_frm, text="Close window", command=close)
+    close_btn = customtkinter.CTkButton(btns_frm, text=["Close window", "Cerrar ventana"][lang_idx], command=close)
     close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
-    openf_btn = customtkinter.CTkButton(btns_frm, text="Open file", command=lambda: open_file_or_folder(file_path))
+    openf_btn = customtkinter.CTkButton(btns_frm, text=["Open file", "Abrir archivo"][lang_idx], command=lambda: open_file_or_folder(file_path))
     openf_btn.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nwse")
-    moreo_btn = customtkinter.CTkButton(btns_frm, text="More options", command=more_options)
+    moreo_btn = customtkinter.CTkButton(btns_frm, text=["More options", "Otras opciones"][lang_idx], command=more_options)
     moreo_btn.grid(row=0, column=2, padx=(0, PADX), pady=PADY, sticky="nwse")
 
 # class for simple question with buttons
