@@ -3,6 +3,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
+# TODO: ERROR - catch UnicodeError for special characters and point them in the right direction. 
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
@@ -12,7 +13,6 @@
     # - apparently you still get images in which a class is found under the annotation threshold,
     #         it should count only the images that have classes above the set annotation threshold,
     #         at this point it only checks whether it should draw an bbox or not, but still shows the image
-
 
 # import packages like a very pointy half christmas tree
 import os
