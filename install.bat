@@ -341,6 +341,9 @@ echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 
+@REM suppress conda warnings about updates
+call %EA_CONDA_EXE% config --set notify_outdated_conda false
+
 @REM remove all old ecoassist conda evironments, if present
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
