@@ -3,7 +3,6 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
-# TODO: ERROR - catch UnicodeError for special characters and point them in the right direction. 
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
@@ -1510,6 +1509,8 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     cancel_deploy_model_pressed = False
     global subprocess_output
     subprocess_output = ""
+    previous_processed_img = ["There is no previously processed image. The problematic character is in the first image to analyse.",
+                              "No hay ninguna imagen previamente procesada. El personaje problemático está en la primera imagen a analizar."][lang_idx]
 
     # read output
     for line in p.stdout:
@@ -1538,6 +1539,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                         line + ["\n\nConverting the videos to .mp4 might fix the issue.",
                                 "\n\nConvertir los vídeos a .mp4 podría solucionar el problema."][lang_idx])
             return
+        if line.startswith("UnicodeEncodeError:"):
+            mb.showerror("Unparsable special character",
+                         [f"{line}\n\nThere seems to be a special character in a filename that cannot be parsed. Unfortunately, it's not"
+                          " possible to point you to the problematic file directly, but I can tell you that the last successfully analysed"
+                          f" image was\n\n{previous_processed_img}\n\nThe problematic character should be in the file or folder name of "
+                          "the next image, alphabetically. Please remove any special charachters from the path and try again.", 
+                          f"{line}\n\nParece que hay un carácter especial en un nombre de archivo que no se puede analizar. Lamentablemente,"
+                          " no es posible indicarle directamente el archivo problemático, pero puedo decirle que la última imagen analizada "
+                          f"con éxito fue\n\n{previous_processed_img}\n\nEl carácter problemático debe estar en el nombre del archivo o "
+                          "carpeta de la siguiente imagen, alfabéticamente. Elimine los caracteres especiales de la ruta e inténtelo de "
+                          "nuevo."][lang_idx])
+            return
+        if line.startswith("Processing image "):
+            previous_processed_img = line.replace("Processing image ", "")
 
         # write errors to log file
         if "Exception:" in line:
@@ -6431,8 +6446,6 @@ sim_abo_lbl.grid(row=5, column=0, columnspan = 2, sticky="")
 sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
 sim_abo_lbl_link.grid(row=6, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 sim_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
-
-
 
 # main function
 def main():
