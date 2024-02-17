@@ -2665,6 +2665,11 @@ def convert_bbox_pascal_to_yolo(size, box):
     h = h*dh
     return (x,y,w,h)
 
+# special function because the sim dpd has a different value for 'None'
+def sim_mdl_dpd_callback(self):
+    var_cls_model.set(dpd_options_cls_model[lang_idx][sim_dpd_options_cls_model[lang_idx].index(self)])
+    model_cls_animal_options(var_cls_model.get())
+
 # return xml path with temp-folder squeezed in
 def return_xml_path(img_path):
     head_path = var_choose_folder.get()
@@ -2987,8 +2992,8 @@ def model_cls_animal_options(self):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # set simple mode cls dropdown to the same value
-    sim_mdl_dpd.set(self)
+    # set simple mode cls dropdown to the same index for its own dpd list
+    sim_mdl_dpd.set(sim_dpd_options_cls_model[lang_idx][dpd_options_cls_model[lang_idx].index(self)])
 
     # remove or show widgets
     if self not in none_txt:
@@ -4603,7 +4608,8 @@ def update_dpd_options(dpd, master, var, options, cmd, row, lbl, from_lang_idx):
 def update_sim_mdl_dpd():
     global sim_mdl_dpd
     sim_mdl_dpd.grid_forget()
-    sim_mdl_dpd = customtkinter.CTkOptionMenu(sim_mdl_frm, variable = var_cls_model, values=dpd_options_cls_model[lang_idx], command=model_cls_animal_options, width = 1)
+    sim_mdl_dpd = customtkinter.CTkOptionMenu(sim_mdl_frm, values=sim_dpd_options_cls_model[lang_idx], command=sim_mdl_dpd_callback, width = 1)
+    sim_mdl_dpd.set(sim_dpd_options_cls_model[lang_idx][dpd_options_cls_model[lang_idx].index(var_cls_model.get())])
     sim_mdl_dpd.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="nswe", columnspan = 2)
 
 # refresh ent texts
@@ -6374,13 +6380,17 @@ sim_mdl_img_widget = customtkinter.CTkLabel(sim_mdl_frm_1, text="", image = mdl_
 sim_mdl_img_widget.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_mdl_frm = MySubFrame(master=sim_mdl_frm_1)
 sim_mdl_frm.grid(row=1, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
-sim_mdl_lbl_txt = ["Which model do you want to use?", "¿Qué modelo quieres usar?"]
+sim_mdl_lbl_txt = ["Which species identification model do you want to use?", "¿Qué modelo de identificación de especies quiere utilizar?"]
 sim_mdl_lbl = customtkinter.CTkLabel(sim_mdl_frm, text=sim_mdl_lbl_txt[lang_idx], font = main_label_font)
 sim_mdl_lbl.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
 sim_mdl_inf = InfoButton(master = sim_mdl_frm, text = "?", command = sim_mdl_show_info)
 sim_mdl_inf.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="e", columnspan = 2)
-sim_mdl_dpd = customtkinter.CTkOptionMenu(sim_mdl_frm, variable = var_cls_model, values=dpd_options_cls_model[lang_idx], command=model_cls_animal_options, width = 1)
-sim_mdl_dpd.set(dpd_options_cls_model[lang_idx][global_vars["var_cls_model_idx"]]) # take idx instead of string
+# convert to more elaborate dpd value for the 'None' simple mode option
+sim_suffixes = [" - just show me where the animals are",
+                " - muéstrame dónde están los animales"]
+sim_dpd_options_cls_model = [[item[0] + sim_suffixes[i], *item[1:]] for i, item in enumerate(dpd_options_cls_model)]
+sim_mdl_dpd = customtkinter.CTkOptionMenu(sim_mdl_frm, values=sim_dpd_options_cls_model[lang_idx], command=sim_mdl_dpd_callback, width = 1)
+sim_mdl_dpd.set(sim_dpd_options_cls_model[lang_idx][global_vars["var_cls_model_idx"]]) # take idx instead of string
 sim_mdl_dpd.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="nswe", columnspan = 2)
 
 # select animals
