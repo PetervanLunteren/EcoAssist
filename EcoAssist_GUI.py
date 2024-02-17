@@ -14,6 +14,7 @@
     #         it should count only the images that have classes above the set annotation threshold,
     #         at this point it only checks whether it should draw an bbox or not, but still shows the image
 
+
 # import packages like a very pointy half christmas tree
 import os
 import re
@@ -119,6 +120,8 @@ select_txt = ["Select", "Seleccionar"]
 invalid_value_txt = ["Invalid value", "Valor no válido"]
 none_txt = ["None", "Ninguno"]
 of_txt = ["of", "de"]
+suffixes_for_sim_none = [" - just show me where the animals are",
+                         " - muéstrame dónde están los animales"]
 
 #############################################
 ############# BACKEND FUNCTIONS #############
@@ -3698,6 +3701,8 @@ def update_model_dropdowns():
     dpd_options_model = [det_models + ["Custom model"], det_models + ["Otro modelo"]]
     update_dpd_options(dpd_model, snd_step, var_det_model, dpd_options_model, model_options, row_model, lbl_model, lang_idx)
     model_cls_animal_options(var_cls_model.get())
+    global sim_dpd_options_cls_model
+    sim_dpd_options_cls_model = [[item[0] + suffixes_for_sim_none[i], *item[1:]] for i, item in enumerate(dpd_options_cls_model)]
     update_sim_mdl_dpd()
     root.update_idletasks()
 
@@ -6387,9 +6392,7 @@ sim_mdl_lbl.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, s
 sim_mdl_inf = InfoButton(master = sim_mdl_frm, text = "?", command = sim_mdl_show_info)
 sim_mdl_inf.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="e", columnspan = 2)
 # convert to more elaborate dpd value for the 'None' simple mode option
-sim_suffixes = [" - just show me where the animals are",
-                " - muéstrame dónde están los animales"]
-sim_dpd_options_cls_model = [[item[0] + sim_suffixes[i], *item[1:]] for i, item in enumerate(dpd_options_cls_model)]
+sim_dpd_options_cls_model = [[item[0] + suffixes_for_sim_none[i], *item[1:]] for i, item in enumerate(dpd_options_cls_model)]
 sim_mdl_dpd = customtkinter.CTkOptionMenu(sim_mdl_frm, values=sim_dpd_options_cls_model[lang_idx], command=sim_mdl_dpd_callback, width = 1)
 sim_mdl_dpd.set(sim_dpd_options_cls_model[lang_idx][global_vars["var_cls_model_idx"]]) # take idx instead of string
 sim_mdl_dpd.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="nswe", columnspan = 2)
