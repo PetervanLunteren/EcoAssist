@@ -3,6 +3,8 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
+# TODO: EXIF - try running new version of MegaDetector and extracting exif directly. Then write to CSV file from json. 
+# TODO: ERROR HANDLING - height, width = im_to_vis.shape[:2] (line 332) AttributeError: 'NoneType' object has no attribute 'shape'. Try except and write to error to file.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. 
 # TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one.
