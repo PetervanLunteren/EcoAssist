@@ -3,7 +3,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
-# TODO: EXIF - try running new version of MegaDetector and extracting exif directly. Then write to CSV file from json. 
+# TODO: EXIF - try extracting exif directly. Then write to CSV file from json. See args --include_image_size --include_image_timestamp --include_exif_data
 # TODO: ERROR HANDLING - height, width = im_to_vis.shape[:2] (line 332) AttributeError: 'NoneType' object has no attribute 'shape'. Try except and write to error to file.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
