@@ -7,7 +7,7 @@
 # TODO: ERROR HANDLING - height, width = im_to_vis.shape[:2] (line 332) AttributeError: 'NoneType' object has no attribute 'shape'. Try except and write to error to file.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
-# TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one.
+# TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one. Test --allow_checkpoint_overwrite. Might be enough to just enable this on default.
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
