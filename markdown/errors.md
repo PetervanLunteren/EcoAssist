@@ -140,3 +140,16 @@ In many cases, installation issues stem from incomplete dependency downloads, of
 Could you please check if any of these security settings are enabled on your computer? If so, would it be possible to temporarily disable them during the EcoAssist installation process?
 
 If the problem persists, please copy-paste the console output and share it with me. This will allow me to investigate the issue further and provide you with a solution.
+
+## `ImportError: DLL load failed while importing _ctypes: The specified module could not be found.`
+### Option 1
+It looks like your miniforge installation was corrupted in one way or another. Perhaps due to an unstable internet connection, but who knows. A reinstall with stable internet should do the trick, but please note that all virtual environments created through miniforge will be lost. That is, if you installed miniforge just for EcoAssist, there is nothing to worry about. I'm just saying that if you're using miniforge for other applications too, you should double check before uninstalling it. 
+
+### Option 2
+It looks like you have two conda distributions on your machine, namely "C:\ProgramData\anaconda3" and "C:\ProgramData\miniforge3". These two might be interfering with each other. Try uninstalling one of them and retry the EcoAssist installation. I'm guessing that you installed miniforge3 especially for EcoAssist, right? Then it is safe to uninstall it again. Follow the steps below.
+1. Double click the file "C:\ProgramData\miniforge3\Uninstall-Miniforge3.exe";
+2. Follow the steps provided to uninstall;Leave Anaconda3 as it is and do not reinstall Miniforge3;
+3. Repeat the EcoAssist installation with the latest install file: https://addaxdatascience.com/ecoassist/#install
+4. It will probably find your anaconda3 installation automatically, but perhaps you'll have to provide the path when prompted: "C:\ProgramData\anaconda3".
+
+Hope this works! Let me know how it goes.
