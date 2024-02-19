@@ -4,17 +4,11 @@
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
 # # # PRIORITY 1
-# TODO: MODEL DOWNLOAD - fix bug about model download
-    # - try to recreate on VM
-    # - add timeout
-    # - add header
-    # - add download size in json
-    # - create info screen with manual download (firewall or proxy issues, So it would be worth a try to disconnect from VPN and connect though hotspot/open networks )
-# TODO: WINDOW SIZE - window size decreasing see email Saul
 # TODO: EXIF - try extracting exif directly. Then write to CSV file from json. See args --include_image_size --include_image_timestamp --include_exif_data
 # TODO: ERROR HANDLING - height, width = im_to_vis.shape[:2] (line 332) AttributeError: 'NoneType' object has no attribute 'shape'. Try except and write to error to file.
 
 # # # PRIORITY 2
+# TODO: WINDOW SIZE - window size decreasing see email Saul
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
 # TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one. Test --allow_checkpoint_overwrite. Might be enough to just enable this on default.
@@ -3266,7 +3260,12 @@ def fetch_latest_model_info():
 
     # try downloading latest model info
     try:
-        response = requests.get(model_info_url, timeout=1)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
+            "Accept-Encoding": "*",
+            "Connection": "keep-alive"
+        }
+        response = requests.get(model_info_url, timeout=1, headers=headers)
         if response.status_code == 200:
             with open(model_info_local, 'wb') as file:
                 file.write(response.content)
@@ -3333,49 +3332,46 @@ def needs_EA_update(required_version):
     return False
 
 # download required files for a particular model
-def download_model(model_dir):
+def download_model(model_dir, skip_ask=False):
     # init vars
     model_title = os.path.basename(model_dir)
     model_type = os.path.basename(os.path.dirname(model_dir))
     model_vars = load_model_vars(model_type = model_type)
     download_info = model_vars["download_info"]
+    total_download_size = model_vars["total_download_size"]
 
     # download
-    try:
-        try:
-            # some models have multiple files to be downloaded
-            # check the total size first
-            total_size = 0
-            for download_url, _ in download_info:
-                response = requests.get(download_url, stream=True)
-                response.raise_for_status()
-                total_size += int(response.headers.get('content-length', 0))
-
-        except Exception as error:
-            # Let the user know there is no internet connection
-            print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-            mb.showerror(["Download required", "Descarga necesaria"][lang_idx],
-                         message = [f"The model '{model_title}' is not downloaded yet and it seems like there is no internet connection.",
-                                    f"El modelo '{model_title}' aún no se ha descargado y parece que no hay conexión a Internet."][lang_idx],
-                         detail = ["If you want to know the size of the model file and decide whether you want to download it, make "
-                                   "sure you have an internet connection.", "Si desea conocer el tamaño del archivo del modelo y decidir si "
-                                   "desea descargarlo, asegúrese de que dispone de conexión a Internet."][lang_idx])
-            return False
-           
+    try:          
         # check if the user wants to download
-        if not mb.askyesno(["Download required", "Descarga necesaria"][lang_idx],
-                        [f"The model {model_title} is not downloaded yet. It will take {format_size(total_size)}"
+        if not skip_ask:
+            if not mb.askyesno(["Download required", "Descarga necesaria"][lang_idx],
+                            [f"The model {model_title} is not downloaded yet. It will take {total_download_size}"
                             f" of storage. Do you want to download?", f"El modelo {model_title} aún no se ha descargado."
-                            f" Ocupará {format_size(total_size)} de almacenamiento. ¿Desea descargarlo?"][lang_idx]):
-            return False
-        
+                            f" Ocupará {total_download_size} de almacenamiento. ¿Desea descargarlo?"][lang_idx]):
+                return False
+
+        # set headers to trick host to thinking we are a browser
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
+            "Accept-Encoding": "*",
+            "Connection": "keep-alive"
+        }
+
+        # some models have multiple files to be downloaded
+        # check the total size first
+        total_size = 0
+        for download_url, _ in download_info:
+            response = requests.get(download_url, stream=True, timeout=5, headers=headers)
+            response.raise_for_status()
+            total_size += int(response.headers.get('content-length', 0))
+
         # if yes, initiate download and show progress
         progress_bar = tqdm(total=total_size, unit='B', unit_scale=True)
         download_popup = ModelDownloadProgressWindow(model_title = model_title, total_size_str = format_size(total_size))
         download_popup.open()
         for download_url, fname in download_info:
             file_path = os.path.join(model_dir, fname)
-            response = requests.get(download_url, stream=True)
+            response = requests.get(download_url, stream=True, timeout=5, headers=headers)
             response.raise_for_status()
             
             with open(file_path, 'wb') as file:
@@ -3393,14 +3389,153 @@ def download_model(model_dir):
     # catch errors
     except Exception as error:
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        mb.showerror(title=error_txt[lang_idx],
-                        message=[f"Something went wrong when trying to download the model '{model_title}'. Are you sure you are connected to the internet?",
-                                 f"Algo ha ido mal al intentar descargar el modelo '{model_title}'. Está seguro de que está conectado a internet?"][lang_idx],
-                        detail=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.")
+        show_download_error_window(model_title, model_dir, model_vars)
 
 ##############################################
 ############# FRONTEND FUNCTIONS #############
 ##############################################
+
+# open window with model info
+def show_download_error_window(model_title, model_dir, model_vars):
+    
+    # get dwonload info
+    download_info = model_vars["download_info"]
+    total_download_size = model_vars["total_download_size"]
+    
+    # define functions
+    def try_again():
+        de_root.destroy()
+        download_model(model_dir, skip_ask = True)
+    
+    # create window
+    de_root = customtkinter.CTkToplevel(root)
+    de_root.title(["Download error", "Error de descarga"][lang_idx])
+    bring_window_to_top_but_not_for_ever(de_root)
+
+    # main label
+    lbl2 = customtkinter.CTkLabel(de_root, text=f"{model_title} ({total_download_size})", font = main_label_font)
+    lbl2.grid(row=0, column=0, padx=PADX, pady=(PADY, 0), columnspan = 2, sticky="nswe")
+    lbl2 = customtkinter.CTkLabel(de_root, text=["Something went wrong while trying to download the model. This can have "
+                                                 "several causes.", "Algo salió mal al intentar descargar el modelo. Esto "
+                                                 "puede tener varias causas."][lang_idx])
+    lbl2.grid(row=1, column=0, padx=PADX, pady=(0, PADY/2), columnspan = 2, sticky="nswe")
+
+    # internet connection frame
+    int_frm_1 = customtkinter.CTkFrame(master=de_root)
+    int_frm_1.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    int_frm_1.columnconfigure(0, weight=1, minsize=700)
+    int_frm_2 = customtkinter.CTkFrame(master=int_frm_1)
+    int_frm_2.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    int_frm_2.columnconfigure(0, weight=1, minsize=700)
+    int_lbl = customtkinter.CTkLabel(int_frm_1, text=[" 1. Internet connection", " 1. Conexión a Internet"][lang_idx], font = main_label_font)
+    int_lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="nsw")
+    int_txt_1 = customtkinter.CTkTextbox(master=int_frm_2, corner_radius=10, height = 55, wrap = "word", fg_color = "transparent")
+    int_txt_1.grid(row=0, column=0, padx=PADX/4, pady=(0, PADY/4), sticky="nswe")
+    int_txt_1.insert(END, ["Check if you have a stable internet connection. If possible, try again on a fibre internet "
+                           "connection, or perhaps on a different, stronger, Wi-Fi network. Sometimes connecting to an "
+                           "open network such as a mobile hotspot can do the trick.", "Comprueba si tienes una conexión "
+                           "a Internet estable. Si es posible, inténtalo de nuevo con una conexión de fibra o quizás con "
+                           "otra red Wi-Fi más potente. A veces, conectarse a una red abierta, como un hotspot móvil, "
+                           "puede funcionar."][lang_idx])
+
+    # protection software frame
+    pro_frm_1 = customtkinter.CTkFrame(master=de_root)
+    pro_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    pro_frm_1.columnconfigure(0, weight=1, minsize=700)
+    pro_frm_2 = customtkinter.CTkFrame(master=pro_frm_1)
+    pro_frm_2.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    pro_frm_2.columnconfigure(0, weight=1, minsize=700)
+    pro_lbl = customtkinter.CTkLabel(pro_frm_1, text=[" 2. Protection software", " 2. Software de protección"][lang_idx], font = main_label_font)
+    pro_lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="nsw")
+    pro_txt_1 = customtkinter.CTkTextbox(master=pro_frm_2, corner_radius=10, height = 55, wrap = "word", fg_color = "transparent")
+    pro_txt_1.grid(row=0, column=0, padx=PADX/4, pady=(0, PADY/4), sticky="nswe")
+    pro_txt_1.insert(END, ["Some firewall, proxy or VPN settings might block the internet connection. Try again with this "
+                           "protection software disabled.", "Algunas configuraciones de cortafuegos, proxy o VPN podrían "
+                           "bloquear la conexión a Internet. Inténtalo de nuevo con este software de protección "
+                           "desactivado."][lang_idx])
+
+    # try internet connection again 
+    btns_frm1 = customtkinter.CTkFrame(master=de_root)
+    btns_frm1.columnconfigure(0, weight=1, minsize=10)
+    btns_frm1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    tryag_btn = customtkinter.CTkButton(btns_frm1, text=["Try internet connection again", "Prueba de nuevo la conexión a Internet"][lang_idx], command=try_again)
+    tryag_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
+
+    # manual download frame
+    pro_frm_1 = customtkinter.CTkFrame(master=de_root)
+    pro_frm_1.grid(row=5, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    pro_frm_1.columnconfigure(0, weight=1, minsize=700)
+    pro_frm_2 = customtkinter.CTkFrame(master=pro_frm_1)
+    pro_frm_2.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    pro_frm_2.columnconfigure(0, weight=1, minsize=700)
+    pro_lbl1 = customtkinter.CTkLabel(pro_frm_1, text=[" 3. Manual download", " 3. Descarga manual"][lang_idx], font = main_label_font)
+    pro_lbl1.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="nsw")
+    pro_lbl2 = customtkinter.CTkLabel(pro_frm_2, text=["If the above suggestions don't work, it might be easiest to manually"
+                                                       " download the file(s) and place them in the appropriate folder.", 
+                                                       "Si las sugerencias anteriores no funcionan, puede que lo más fácil "
+                                                       "sea descargar manualmente el archivo o archivos y colocarlos en "
+                                                       "la carpeta adecuada."][lang_idx])
+    pro_lbl2.grid(row=0, column=0, padx=PADX, pady=(PADY, 0), sticky="nsw")
+
+    # download instructions are dependent on their host
+    step_n = 1
+    show_next_steps = True
+    if model_title == "Namibian Desert - Addax Data Science":
+        main_url = download_info[0][0].replace("/resolve/main/namib_desert_v1.pt?download=true", "/tree/main")
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif model_title == "Tasmania - University of Tasmania":
+        main_url = download_info[1][0].replace("/resolve/main/class_list.yaml?download=true", "/tree/main")
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl6 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[1][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[1][1]}'."][lang_idx]);step_n += 1
+        pro_lbl6.grid(row=5, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    else:
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" (!) No manual steps provided. Please take a screenshot of this"
+                                                           " window and send an email to", f" (!) No se proporcionan pasos "
+                                                           "manuales. Por favor, tome una captura de pantalla de esta ventana"
+                                                           " y enviar un correo electrónico a"][lang_idx])
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text="peter@addaxdatascience.com", cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback("mailto:peter@addaxdatascience.com"))
+        show_next_steps = False
+
+    if show_next_steps:
+        # general steps
+        pro_lbl7 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Make sure you can view hidden files in your file explorer.", 
+                                                           f" {step_n}. Asegúrate de que puedes ver los archivos ocultos en tu explorador de archivos."][lang_idx]);step_n += 1
+        pro_lbl7.grid(row=6, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl8 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Move the downloaded file(s) into the folder:",
+                                                           f" {step_n}. Mueva los archivos descargados a la carpeta:"][lang_idx]);step_n += 1
+        pro_lbl8.grid(row=7, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl9 = customtkinter.CTkLabel(pro_frm_2, text=f"'{model_dir}'")
+        pro_lbl9.grid(row=8, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl10 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Close EcoAssist and try again.",
+                                                            f" {step_n}. Cierre EcoAssist e inténtelo de nuevo."][lang_idx]);step_n += 1
+        pro_lbl10.grid(row=9, column=0, padx=PADX, pady=(PADY/8, PADY/8), sticky="nsw")
+
+        # close EcoAssist
+        btns_frm2 = customtkinter.CTkFrame(master=de_root)
+        btns_frm2.columnconfigure(0, weight=1, minsize=10)
+        btns_frm2.grid(row=6, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+        close_btn = customtkinter.CTkButton(btns_frm2, text=["Close EcoAssist", "Cerrar EcoAssist"][lang_idx], command=on_toplevel_close)
+        close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
 
 # open frame to select species for advanc mode
 def open_species_selection():
@@ -5397,6 +5532,7 @@ s = ttk.Style(root)
 s.configure("TNotebook", tabposition='n')
 root.withdraw()
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
+url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 
 # ADVANCED MODE WINDOW 
 advanc_mode = Toplevel(root)
