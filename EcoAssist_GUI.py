@@ -3,8 +3,18 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 12 Feb 2024
 
+# # # PRIORITY 1
+# TODO: MODEL DOWNLOAD - fix bug about model download
+    # - try to recreate on VM
+    # - add timeout
+    # - add header
+    # - add download size in json
+    # - create info screen with manual download (firewall or proxy issues, So it would be worth a try to disconnect from VPN and connect though hotspot/open networks )
+# TODO: WINDOW SIZE - window size decreasing see email Saul
 # TODO: EXIF - try extracting exif directly. Then write to CSV file from json. See args --include_image_size --include_image_timestamp --include_exif_data
 # TODO: ERROR HANDLING - height, width = im_to_vis.shape[:2] (line 332) AttributeError: 'NoneType' object has no attribute 'shape'. Try except and write to error to file.
+
+# # # PRIORITY 2
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
 # TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one. Test --allow_checkpoint_overwrite. Might be enough to just enable this on default.
@@ -17,7 +27,6 @@
     # - apparently you still get images in which a class is found under the annotation threshold,
     #         it should count only the images that have classes above the set annotation threshold,
     #         at this point it only checks whether it should draw an bbox or not, but still shows the image
-
 
 # import packages like a very pointy half christmas tree
 import os
