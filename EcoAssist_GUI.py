@@ -2011,7 +2011,6 @@ def start_deploy(simple_mode = False):
                          exp = True,
                          exp_format = "XLSX",
                          data_type = "img")
-            show_result_info(os.path.join(chosen_folder, "results.xlsx"))
 
         # reset window
         update_frame_states()
@@ -2046,6 +2045,10 @@ def start_deploy(simple_mode = False):
         btn_start_deploy.configure(state=NORMAL)
         sim_run_btn.configure(state=NORMAL)
         root.update()
+
+        # show results
+        if simple_mode:
+            show_result_info(os.path.join(chosen_folder, "results.xlsx"))
 
     except Exception as error:
 
