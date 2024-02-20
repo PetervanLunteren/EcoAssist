@@ -11,7 +11,6 @@
 # TODO: WINDOW SIZE - window size decreasing see email Saul
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
-# TODO: TWO CHECKPOINT FILES - if you restart from checkpoint file and again write checkpoints, there will be two checkpoint files. It should take the most recent one, instead of the first one. Test --allow_checkpoint_overwrite. Might be enough to just enable this on default.
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
@@ -236,6 +235,20 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 f.write(f"File '{image['file']}' was skipped by post processing features because '{image['failure']}'\n")
             f.close()
 
+            # calculate stats
+            elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
+            time_left_sep = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
+            progress_window.update_values(process = f"{data_type}_pst",
+                                            status = "running",
+                                            cur_it = nloop,
+                                            tot_it = n_images,
+                                            time_ela = elapsed_time_sep,
+                                            time_rem = time_left_sep,
+                                            cancel_func = cancel)
+
+            nloop += 1
+            root.update()
+
             # skip this iteration
             continue
         
@@ -258,10 +271,29 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # open files
         if vis or crp or exp:
             if data_type == "img":
-                im_to_vis = cv2.imread(os.path.join(src_dir, file))
+                im_to_vis = cv2.imread(os.path.normpath(os.path.join(src_dir, file)))
+
+                # check if that image was able to be loaded
+                if im_to_vis is None:
+                    with open(postprocessing_error_log, 'a+') as f:
+                        f.write(f"File '{image['file']}' was skipped by post processing features likely because of a special charachter in the file path \n")
+                    f.close()
+                    elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
+                    time_left_sep = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
+                    progress_window.update_values(process = f"{data_type}_pst",
+                                                    status = "running",
+                                                    cur_it = nloop,
+                                                    tot_it = n_images,
+                                                    time_ela = elapsed_time_sep,
+                                                    time_rem = time_left_sep,
+                                                    cancel_func = cancel)
+                    nloop += 1
+                    root.update()
+                    continue
+
                 im_to_crop_path = os.path.join(src_dir, file)
                 
-                 # load old image and extract EXIF
+                # load old image and extract EXIF
                 origImage = Image.open(os.path.join(src_dir, file))
                 try:
                     exif = origImage.info['exif']
@@ -1695,6 +1727,14 @@ def model_needs_downloading(model_vars, model_type):
         # user selected none
         return [False, ""]
 
+# check if path contains special characters
+def contains_special_characters(path):
+    allowed_characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-./ +\:'()")
+    for char in path:
+        if char not in allowed_characters:
+            return [True, char]
+    return [False, ""]
+
 # open progress window and initiate the model deployment
 def start_deploy(simple_mode = False):
     # log
@@ -1723,6 +1763,8 @@ def start_deploy(simple_mode = False):
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
     global model_warning_log
     model_warning_log = os.path.join(chosen_folder, "model_warning_log.txt")
+    global model_special_char_log
+    model_special_char_log = os.path.join(chosen_folder, "model_special_char_log.txt")
 
     # set global variable
     temp_frame_folder_created = False
@@ -1771,6 +1813,77 @@ def start_deploy(simple_mode = False):
     global progress_window
     progress_window = ProgressWindow(processes = processes)
     progress_window.open()
+
+    # check the chosen folder of special characters and alert the user is there are any
+    isolated_special_fpaths = {"total_saved_images": 0}
+    for main_dir, _, files in os.walk(chosen_folder):
+        for file in files:
+            file_path = os.path.join(main_dir, file)
+            if os.path.splitext(file_path)[1].lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.mp4', '.avi', '.mpeg', '.mpg']:
+                bool, char = contains_special_characters(file_path)
+                if bool:
+                    drive, rest_of_path = os.path.splitdrive(file_path)
+                    path_components = rest_of_path.split(os.path.sep)
+                    isolated_special_fpath = drive
+                    for path_component in path_components: # check the largest dir that is faulty
+                        isolated_special_fpath = os.path.join(isolated_special_fpath, path_component)
+                        if contains_special_characters(path_component)[0]:
+                            isolated_special_fpaths["total_saved_images"] += 1
+                            if isolated_special_fpath in isolated_special_fpaths:
+                                isolated_special_fpaths[isolated_special_fpath][0] += 1
+                            else:
+                                isolated_special_fpaths[isolated_special_fpath] = [1, char]
+    n_special_chars = len(isolated_special_fpaths) - 1
+    total_saved_images = isolated_special_fpaths['total_saved_images'];del isolated_special_fpaths['total_saved_images']
+
+    if total_saved_images > 0:
+        # write to log file 
+        if os.path.isfile(model_special_char_log):
+            os.remove(model_special_char_log)
+        for k, v in isolated_special_fpaths.items():
+            line = f"There are {str(v[0]).ljust(4)} files hidden behind the {str(v[1])} character in folder '{k}'"
+            if not line.isprintable():
+                line = repr(line)
+                print(f"\nSPECIAL CHARACTER LOG: This special character is going to give an error : {line}\n") # log
+            with open(model_special_char_log, 'a+') as f:
+                f.write(f"{line}\n")
+            f.close()
+        
+        # log to console
+        print(f"\nSPECIAL CHARACTER LOG: There are {total_saved_images} files hidden behind {n_special_chars} special characters.\n")
+
+        # prompt user
+        special_char_popup_btns = [["Continue with filepaths as they are now",
+                                    "Open log file and review the probelmatic filepaths"],
+                                ["Continuar con las rutas de archivo tal y como están ahora",
+                                    "Abrir el archivo de registro y revisar las rutas de archivo probelmáticas"]][lang_idx]
+        special_char_popup = TextButtonWindow(title = ["Special characters found", "Caracteres especiales encontrados"][lang_idx],
+                                            text = ["Special characters can be problematic during analysis, resulting in files being skipped.\n"
+                                                    f"With your current folder structure, there are a total of {total_saved_images} files that will be potentially skipped.\n"
+                                                    f"If you want to make sure these images will be analysed, you would need to manually adjust the names of {n_special_chars} folders.\n"
+                                                    "You can find an overview of the probelematic characters and filepaths in the log file:\n\n"
+                                                    f"'{model_special_char_log}'\n\n"
+                                                    f"You can also decide to continue with the filepaths as they are now, with the risk of excluding {total_saved_images} files.", 
+                                                    "Los caracteres especiales pueden ser problemáticos durante el análisis, haciendo que se omitan archivos.\n"
+                                                    f"Con su actual estructura de carpetas, hay un total de {total_saved_images} archivos que serán potencialmente omitidos.\n"
+                                                    f"Si desea asegurarse de que estas imágenes se analizarán, deberá ajustar manualmente los nombres de las carpetas {n_special_chars}.\n"
+                                                    "Puede encontrar un resumen de los caracteres problemáticos y las rutas de los archivos en el archivo de registro:\n\n"
+                                                    f"'{model_special_char_log}'\n\n"
+                                                    f"También puede decidir continuar con las rutas de archivo tal y como están ahora, con el riesgo de excluir archivos {total_saved_images}"][lang_idx],
+                                            buttons = special_char_popup_btns)
+        
+        # run option window and check user input
+        user_input = special_char_popup.run()
+        if user_input != special_char_popup_btns[0]:
+            # user does not want to continue as is
+            if user_input == special_char_popup_btns[1]:
+                # user chose to review paths, so open log file
+                open_file_or_folder(model_special_char_log)
+            # close progressbar and fix deploy buttuns
+            btn_start_deploy.configure(state=NORMAL)
+            sim_run_btn.configure(state=NORMAL)
+            progress_window.close()
+            return
 
     # start building the command
     additional_img_options = ["--output_relative_filenames"]
@@ -1855,8 +1968,7 @@ def start_deploy(simple_mode = False):
             additional_img_options.append("--recursive")
         if var_use_checkpnts.get():
             additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
-        if var_cont_checkpnt.get():
-            check_checkpnt()
+        if var_cont_checkpnt.get() and check_checkpnt():
             additional_img_options.append("--resume_from_checkpoint=" + loc_chkpnt_file)
         if var_use_custom_img_size_for_deploy.get():
             additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
@@ -2975,18 +3087,32 @@ def move_files(file, detection_type, var_file_placement, max_detection_conf, var
     # return new relative file path
     return(new_file)
 
+# sort multiple checkpoint in order from recent to last
+def sort_checkpoint_files(files):
+    def get_timestamp(file):
+        timestamp_str = file.split('_')[1].split('.')[0]
+        return datetime.datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
+    sorted_files = sorted(files, key=get_timestamp, reverse=True)
+    return sorted_files
+
 # check if checkpoint file is present and assign global variable
 def check_checkpnt():
     global loc_chkpnt_file
+    loc_chkpnt_files = []
     for filename in os.listdir(var_choose_folder.get()):
-            if re.search('^checkpoint_\d+\.json$', filename):
-                loc_chkpnt_file = os.path.join(var_choose_folder.get(), filename)
-                return True
-    mb.showinfo(["No checkpoint file found", "No se ha encontrado ningún archivo de puntos de control"][lang_idx],
-                    ["There is no checkpoint file found. Cannot continue from checkpoint file...",
-                    "No se ha encontrado ningún archivo de punto de control. No se puede continuar desde el archivo de punto de control..."][lang_idx])
-    return False
-
+        if re.search('^checkpoint_\d+\.json$', filename):
+            loc_chkpnt_files.append(filename)
+    if len(loc_chkpnt_files) == 0:
+        mb.showinfo(["No checkpoint file found", "No se ha encontrado ningún archivo de puntos de control"][lang_idx],
+                        ["There is no checkpoint file found. Cannot continue from checkpoint file...",
+                        "No se ha encontrado ningún archivo de punto de control. No se puede continuar desde el archivo de punto de control..."][lang_idx])
+        return False
+    if len(loc_chkpnt_files) == 1:
+        loc_chkpnt_file = os.path.join(var_choose_folder.get(), loc_chkpnt_files[0])
+    elif len(loc_chkpnt_files) > 1:
+        loc_chkpnt_file = os.path.join(var_choose_folder.get(), sort_checkpoint_files(loc_chkpnt_files)[0])
+    return True
+    
 # browse directory
 def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky, source_dir = False):    
     # log
@@ -3114,7 +3240,7 @@ def view_results(frame):
         open_file_or_folder(var_output_dir.get())
 
 # open file or folder
-def open_file_or_folder(path):
+def open_file_or_folder(path, show_error = True):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     
@@ -3126,14 +3252,16 @@ def open_file_or_folder(path):
         try:
             subprocess.call(('open', path))
         except:
-            mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. You'll have to find it yourself...",
-                                                           f"No se ha podido abrir '{path}'. Tendrás que encontrarlo tú mismo..."][lang_idx])
+            if show_error:
+                mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. You'll have to find it yourself...",
+                                                            f"No se ha podido abrir '{path}'. Tendrás que encontrarlo tú mismo..."][lang_idx])
     elif platform.system() == 'Windows': # windows
         try:
             os.startfile(path)
         except:
-            mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. You'll have to find it yourself...",
-                                                           f"No se ha podido abrir '{path}'. Tendrás que encontrarlo tú mismo..."][lang_idx])
+            if show_error:
+                mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. You'll have to find it yourself...",
+                                                            f"No se ha podido abrir '{path}'. Tendrás que encontrarlo tú mismo..."][lang_idx])
     else: # linux
         try:
             subprocess.call(('xdg-open', path))
@@ -3141,10 +3269,11 @@ def open_file_or_folder(path):
             try:
                 subprocess.call(('gnome-open', path))
             except:
-                mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. Neither the 'xdg-open' nor 'gnome-open' command worked. "
-                                                               "You'll have to find it yourself...",
-                                                               f"No se ha podido abrir '{path}'. Ni el comando 'xdg-open' ni el 'gnome-open' funcionaron. "
-                                                               "Tendrá que encontrarlo usted mismo..."][lang_idx])
+                if show_error:
+                    mb.showerror(error_opening_results_txt[lang_idx], [f"Could not open '{path}'. Neither the 'xdg-open' nor 'gnome-open' command worked. "
+                                                                "You'll have to find it yourself...",
+                                                                f"No se ha podido abrir '{path}'. Ni el comando 'xdg-open' ni el 'gnome-open' funcionaron. "
+                                                                "Tendrá que encontrarlo usted mismo..."][lang_idx])
 
 # retrieve model specific vaiables from file 
 def load_model_vars(model_type = "cls"):
@@ -3561,7 +3690,6 @@ def open_species_selection():
     # create window
     ss_root = customtkinter.CTkToplevel(root)
     ss_root.title("Species selection")
-    # ss_root.attributes('-topmost',1)
     bring_window_to_top_but_not_for_ever(ss_root)
     spp_frm_1 = customtkinter.CTkFrame(master=ss_root)
     spp_frm_1.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
@@ -3977,6 +4105,8 @@ class TextButtonWindow:
     def __init__(self, title, text, buttons):
         self.root = Toplevel(root)
         self.root.title(title)
+        bring_window_to_top_but_not_for_ever(self.root)
+        self.root.protocol("WM_DELETE_WINDOW", self.user_close)
         
         self.text_label = tk.Label(self.root, text=text)
         self.text_label.pack(padx=10, pady=10)
@@ -3996,9 +4126,11 @@ class TextButtonWindow:
     def open(self):
         self.root.mainloop()
         
-    def close(self):
+    def user_close(self):
+        self.selected_button = "EXIT"
+        self.root.quit()
         self.root.destroy()
-        
+
     def run(self):
         self.open()
         self.root.destroy()
@@ -4159,6 +4291,7 @@ class ProgressWindow:
 
         # language settings
         in_queue_txt = ['In queue', 'En cola']
+        checking_fpaths_txt = ['Checking file paths', 'Comprobación de rutas de archivos']
         processing_image_txt = ['Processing image', 'Procesamiento de imágenes']
         processing_animal_txt = ['Processing animal', 'Procesamiento de animales']
         processing_frame_txt = ['Processing frame', 'Procesamiento de fotogramas']
@@ -4199,7 +4332,7 @@ class ProgressWindow:
             self.img_det_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
             self.img_det_per = customtkinter.CTkLabel(self.img_det_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
             self.img_det_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
-            self.img_det_wai_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
+            self.img_det_wai_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=checking_fpaths_txt[lang_idx])
             self.img_det_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
             self.img_det_num_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{processing_image_txt[lang_idx]}:")
             self.img_det_num_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
@@ -4902,6 +5035,7 @@ def set_language():
 
     # simple mode
     sim_dir_lbl.configure(text = sim_dir_lbl_txt[lang_idx])
+    sim_dir_btn.configure(text = browse_txt[lang_idx])
     sim_dir_pth.configure(text = sim_dir_pth_txt[lang_idx])
     sim_mdl_lbl.configure(text = sim_mdl_lbl_txt[lang_idx])
     update_sim_mdl_dpd()
