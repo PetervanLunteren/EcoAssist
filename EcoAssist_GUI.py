@@ -1,7 +1,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 12 Feb 2024
+# Latest edit by Peter van Lunteren on 21 Feb 2024
 
 # TODO: M2 - test on M2
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -300,22 +300,51 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             else:
                 vid = cv2.VideoCapture(os.path.join(src_dir, file))
 
-            # try to read exif data
+            # read image dates etc
             if exp:
+
+                # try to read metadata
                 try:
                     img_for_exif = PIL.Image.open(os.path.join(src_dir, file))
-                    exif_data = {
+                    metadata = {
                         PIL.ExifTags.TAGS[k]: v
                         for k, v in img_for_exif._getexif().items()
                         if k in PIL.ExifTags.TAGS
                     }
                     img_for_exif.close()
+                except:
+                    metadata = {'GPSInfo': None,
+                                 'ResolutionUnit': None,
+                                 'ExifOffset': None,
+                                 'Make': None,
+                                 'Model': None,
+                                 'DateTime': None,
+                                 'YCbCrPositioning': None,
+                                 'XResolution': None,
+                                 'YResolution': None,
+                                 'ExifVersion': None,
+                                 'ComponentsConfiguration': None,
+                                 'ShutterSpeedValue': None,
+                                 'DateTimeOriginal': None,
+                                 'DateTimeDigitized': None,
+                                 'FlashPixVersion': None,
+                                 'UserComment': None,
+                                 'ColorSpace': None,
+                                 'ExifImageWidth': None,
+                                 'ExifImageHeight': None}
+
+                # try to add GPS data
+                try:
                     gpsinfo = gpsphoto.getGPSData(os.path.join(src_dir, file))
                     if 'Latitude' in gpsinfo and 'Longitude' in gpsinfo:
                         gpsinfo['GPSLink'] = f"https://maps.google.com/?q={gpsinfo['Latitude']},{gpsinfo['Longitude']}"
-                    exif_data = {**exif_data, **gpsinfo}
                 except:
-                    exif_data = None
+                    gpsinfo = {'Latitude': None,
+                               'Longitude': None,
+                               'GPSLink': None}
+                
+                # combine metadata and gps data
+                exif_data = {**metadata, **gpsinfo} 
 
                 # check if datetime values can be found
                 exif_params = []
