@@ -542,6 +542,10 @@ def start_postprocess():
     exp = var_exp.get()
     exp_format = var_exp_format.get()
 
+    # init cancel variable
+    global cancel_var
+    cancel_var = False
+
     # check which json files are present
     img_json = False
     if os.path.isfile(os.path.join(src_dir, "image_recognition_file.json")):
@@ -614,6 +618,9 @@ def start_postprocess():
 
         # close progress window
         progress_window.close()
+
+        # check window transparency
+        reset_window_transparency()
     
     except Exception as error:
         # log error
@@ -693,7 +700,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
         print("hitl_settings_window not defined -> nothing to destroy()")
         
     # init window
-    hitl_progress_window = Toplevel(root)
+    # hitl_progress_window = Toplevel(root) # DEBUG
+    hitl_progress_window = customtkinter.CTkToplevel(root)
     hitl_progress_window.title(["Manual check overview", "Verificación manual"][lang_idx])
     hitl_progress_window.geometry("+1+1")
 
@@ -917,7 +925,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             fig = produce_graph(file_list_txt = file_list_txt)
 
             # init window
-            hitl_final_window = Toplevel(root)
+            # hitl_final_window = Toplevel(root) # DEBUG
+            hitl_final_window = customtkinter.CTkToplevel(root)
             hitl_final_window.title("Overview")
             hitl_final_window.geometry()
 
@@ -2050,6 +2059,9 @@ def start_deploy(simple_mode = False):
         # show results
         if simple_mode:
             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
+        
+        # check window transparency
+        reset_window_transparency()
 
     except Exception as error:
 
@@ -2072,6 +2084,26 @@ def start_deploy(simple_mode = False):
             # enable button
             btn_start_deploy.configure(state=NORMAL)
             sim_run_btn.configure(state=NORMAL)
+
+# due to a weird bug on some windows devices the windows get rescaled and transparent after deployment
+def reset_window_transparency():
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    start_time = time.time()
+    print(f"check_dpi_scaling: {customtkinter.ScalingTracker.check_dpi_scaling()}")
+    for i, window in enumerate([advanc_mode_win, simple_mode_win]):
+        root.update_idletasks()
+        window_name = 'advanc_mode_win' if i == 1 else 'simple_mode_win'
+        print(f"Debug report for {window_name}:")
+        transparency = window.attributes('-alpha')
+        print(f"\t transparency:   {transparency}")
+        if transparency < 1:
+            print("\t\t transparency is not 1, adjusting...")
+            window.attributes('-alpha', 1)
+            root.update_idletasks()
+        print(f"\t widget_scaling: {customtkinter.ScalingTracker.get_widget_scaling(window)}")
+        print(f"\t window_scaling: {customtkinter.ScalingTracker.get_window_scaling(window)}")
+        print("\n")
+    print(f"Time taken: {time.time() - start_time:.6f} seconds")
 
 # get data from file list and create graph
 def produce_graph(file_list_txt = None, dir = None):
@@ -2462,7 +2494,8 @@ def open_hitl_settings_window():
     recognition_file = os.path.join(selected_dir, 'image_recognition_file.json')
 
     # init window
-    hitl_settings_window = Toplevel(root)
+    # hitl_settings_window = Toplevel(root) # DEBUG
+    hitl_settings_window = customtkinter.CTkToplevel(root)
     hitl_settings_window.title(["Verification selection settings", "Configuración de selección de verificación"][lang_idx])
     hitl_settings_window.geometry()
     hitl_settings_window.maxsize(width=ADV_WINDOW_WIDTH, height=800)
@@ -4102,7 +4135,8 @@ def show_result_info(file_path):
 # class for simple question with buttons
 class TextButtonWindow:
     def __init__(self, title, text, buttons):
-        self.root = Toplevel(root)
+        # self.root = Toplevel(root) # DEBUG
+        self.root = customtkinter.CTkToplevel(root)
         self.root.title(title)
         bring_window_to_top_but_not_for_ever(self.root)
         self.root.protocol("WM_DELETE_WINDOW", self.user_close)
@@ -4138,7 +4172,8 @@ class TextButtonWindow:
 # simple window to show progressbar
 class PatienceDialog:
     def __init__(self, total, text):
-        self.root = Toplevel(root)
+        # self.root = Toplevel(root) # DEBUG
+        self.root = customtkinter.CTkToplevel(root)
         self.root.title("Have patience")
         self.total = total
         self.text = text
@@ -4174,7 +4209,8 @@ class CustomWindow:
         self.root = None
 
     def open(self):
-        self.root = Toplevel(root)
+        # self.root = Toplevel(root)
+        self.root = customtkinter.CTkToplevel(root)
         self.root.title(self.title)
 
         label = tk.Label(self.root, text=self.text)
@@ -5082,6 +5118,9 @@ def update_frame_states():
     else:
         disable_frame(trd_step)
 
+    # check windows transparencies and sizes
+    
+
 # check if user entered text in entry widget
 def no_user_input(var):
     if var.get() == "" or var.get().startswith("E.g.:") or var.get().startswith("Ejem.:"):
@@ -5471,11 +5510,11 @@ def switch_mode():
 
     # switch
     if advanced_mode:
-        advanc_mode.withdraw()
-        simple_mode.deiconify()         
+        advanc_mode_win.withdraw()
+        simple_mode_win.deiconify()         
     else:
-        advanc_mode.deiconify()
-        simple_mode.withdraw()
+        advanc_mode_win.deiconify()
+        simple_mode_win.withdraw()
 
     # save
     write_global_vars({
@@ -5658,7 +5697,8 @@ else: # macOS
     GREY_BUTTON_BORDER_WIDTH = 0
 
 # TKINTER MAIN WINDOW 
-root = Tk()
+# root = Tk() # DEBUG
+root = customtkinter.CTk()
 EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
 root.iconphoto(True, EcoAssist_icon_image)
 s = ttk.Style(root)
@@ -5668,17 +5708,18 @@ main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bol
 url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 
 # ADVANCED MODE WINDOW 
-advanc_mode = Toplevel(root)
-advanc_mode.title(f"EcoAssist v{current_EA_version} - Advanced mode")
-advanc_mode.geometry("+10+20")
-advanc_mode.protocol("WM_DELETE_WINDOW", on_toplevel_close)
+# advanc_mode_win = Toplevel(root) # DEBUG
+advanc_mode_win = customtkinter.CTkToplevel(root)
+advanc_mode_win.title(f"EcoAssist v{current_EA_version} - Advanced mode")
+advanc_mode_win.geometry("+10+20")
+advanc_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
 advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, 10))
-advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode, image=advanc_bg_image)
+advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode_win, image=advanc_bg_image)
 advanc_bg_image_label.grid(row=0, column=0)
-advanc_main_frame = customtkinter.CTkFrame(advanc_mode, corner_radius=0, fg_color = 'transparent')
+advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent')
 advanc_main_frame.grid(row=0, column=0, sticky="ns")
 tabControl = ttk.Notebook(advanc_main_frame)
-advanc_mode.withdraw() # only show when all widgets are loaded
+advanc_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
 logoImage = customtkinter.CTkImage(PIL_logo, size=(LOGO_SIZE, LOGO_SIZE))
@@ -6230,9 +6271,6 @@ def bind_scroll_to_deploy_canvas():
     deploy_canvas.bind_all("<Button-5>", deploy_canvas_mousewheel)
 bind_scroll_to_deploy_canvas()
 
-# resize deploy tab to content
-resize_canvas_to_content()
-
 # help tab
 scroll = Scrollbar(help_tab)
 help_text = Text(help_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.set) 
@@ -6629,18 +6667,19 @@ spp_image = customtkinter.CTkImage(PIL_spp_image, size=(ICON_SIZE, ICON_SIZE))
 run_image = customtkinter.CTkImage(PIL_run_image, size=(ICON_SIZE, ICON_SIZE))
 
 # set up window
-simple_mode = Toplevel(root)
-simple_mode.title(f"EcoAssist v{current_EA_version} - Simple mode")
-simple_mode.geometry("+10+20")
-simple_mode.protocol("WM_DELETE_WINDOW", on_toplevel_close)
-simple_mode.columnconfigure(0, weight=1, minsize=500)
+# simple_mode_win = Toplevel(root) # DEBUG
+simple_mode_win = customtkinter.CTkToplevel(root)
+simple_mode_win.title(f"EcoAssist v{current_EA_version} - Simple mode")
+simple_mode_win.geometry("+10+20")
+simple_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
+simple_mode_win.columnconfigure(0, weight=1, minsize=500)
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
 simple_bg_image = customtkinter.CTkImage(PIL_gradient, size=(SIM_WINDOW_WIDTH, SIM_WINDOW_HEIGHT))
-simple_bg_image_label = customtkinter.CTkLabel(simple_mode, image=simple_bg_image)
+simple_bg_image_label = customtkinter.CTkLabel(simple_mode_win, image=simple_bg_image)
 simple_bg_image_label.grid(row=0, column=0)
-simple_main_frame = customtkinter.CTkFrame(simple_mode, corner_radius=0, fg_color = 'transparent')
+simple_main_frame = customtkinter.CTkFrame(simple_mode_win, corner_radius=0, fg_color = 'transparent')
 simple_main_frame.grid(row=0, column=0, sticky="ns")
-simple_mode.withdraw() # only show when all widgets are loaded
+simple_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
 sim_top_banner = customtkinter.CTkImage(PIL_simple_top_banner, size=(LOGO_SIZE * SIM_TOP_BANNER_WIDTH_FACTOR, LOGO_SIZE))
@@ -6729,6 +6768,9 @@ sim_abo_lbl.grid(row=5, column=0, columnspan = 2, sticky="")
 sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
 sim_abo_lbl_link.grid(row=6, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 sim_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
+
+# resize deploy tab to content
+resize_canvas_to_content()
 
 # main function
 def main():
