@@ -3446,63 +3446,75 @@ def remove_first_startup_file():
     first_startup_file = os.path.join(EcoAssist_files, "first-startup.txt")
     os.remove(first_startup_file)
 
-# this function downloads a json with model info and tells the user is there is something new
+# read existing model info and distribute separate jsons to all models
+# will only be executed once: at frist startup
+def distribute_individual_model_jsons(model_info_fpath):
+    # log
+    print(f"EXECUTED : {sys._getframe().f_code.co_name}({locals()})\n")
+
+    model_info = json.load(open(model_info_fpath))
+    for typ in ["det", "cls"]:
+        model_dicts = model_info[typ] 
+        all_models = list(model_dicts.keys())
+        for model_id in all_models:
+            model_dict = model_dicts[model_id]
+            set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
+
+# this function downloads a json with model info and tells the user is there is a new model
 def fetch_latest_model_info():
-    start_time = time.time()
-    model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/EcoAssist-model-info/main/model_info_v{corresponding_model_info_version}.json"
-    model_info_local = os.path.join(EcoAssist_files, "EcoAssist", "model_info.json")
+    # log
+    print(f"EXECUTED : {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # try downloading latest model info
-    try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
-            "Accept-Encoding": "*",
-            "Connection": "keep-alive"
-        }
-        response = requests.get(model_info_url, timeout=1, headers=headers)
-        if response.status_code == 200:
-            with open(model_info_local, 'wb') as file:
-                file.write(response.content)
+    # if this is the first time starting, take the existing model info file in the repo and use that
+    # no need to download th same file again
+    model_info_fpath = os.path.join(EcoAssist_files, "EcoAssist", "model_info", f"model_info_v{corresponding_model_info_version}.json")
+    if is_first_startup():
+        distribute_individual_model_jsons(model_info_fpath)
+        remove_first_startup_file()
+        update_model_dropdowns()
 
-            # log success
-            print(f"Updated model_info.json successfully.")
+    # if this is not the first startup, it should try to download the latest model json version
+    # and check if there are any new models the user should know about
+    else:
+        start_time = time.time()
+        model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/EcoAssist/main/model_info/model_info_v{corresponding_model_info_version}.json"
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
+                "Accept-Encoding": "*",
+                "Connection": "keep-alive"
+            }
+            response = requests.get(model_info_url, timeout=1, headers=headers)
+            if response.status_code == 200:
+                with open(model_info_fpath, 'wb') as file:
+                    file.write(response.content)
+                print(f"Updated model_info.json successfully.")
 
-            # check if there is a new model available
-            model_info = json.load(open(model_info_local))
-            for typ in ["det", "cls"]:
-                model_dicts = model_info[typ] 
-                all_models = list(model_dicts.keys())
-                known_models = fetch_known_models(CLS_DIR if typ == "cls" else DET_DIR)
-                unknown_models = [e for e in all_models if e not in known_models]
-                
-                # all models are treated unknown during first startup
-                if is_first_startup():
-                    unknown_models = all_models
+                # check if there is a new model available
+                model_info = json.load(open(model_info_fpath))
+                for typ in ["det", "cls"]:
+                    model_dicts = model_info[typ] 
+                    all_models = list(model_dicts.keys())
+                    known_models = fetch_known_models(CLS_DIR if typ == "cls" else DET_DIR)
+                    unknown_models = [e for e in all_models if e not in known_models]
 
-                # show a description of all the unknown models, except if first startup
-                if unknown_models != []:
-                    for model_id in unknown_models:
-                        model_dict = model_dicts[model_id]
-                        if not is_first_startup():
+                    # show a description of all the unknown models, except if first startup
+                    if unknown_models != []:
+                        for model_id in unknown_models:
+                            model_dict = model_dicts[model_id]
                             show_model_info(title = model_id, model_dict = model_dict, new_model = True)
-                        set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
-                
-            # remove first startup file when its done
-            if is_first_startup():
-                remove_first_startup_file()
+                            set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
 
-            # update root so that the new models show up in the dropdown menu
-            update_model_dropdowns()
+                # update root so that the new models show up in the dropdown menu
+                update_model_dropdowns()
 
-    except requests.exceptions.Timeout:
-        print("Request timed out. File download stopped.")
+        except requests.exceptions.Timeout:
+            print("Request timed out. File download stopped.")
 
-    except Exception as e:
-        print(f"Could not update model info: {e}")
+        except Exception as e:
+            print(f"Could not update model info: {e}")
 
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"model info updated in {round(elapsed_time, 2)} seconds")
+        print(f"model info updated in {round(time.time() - start_time, 2)} seconds")
 
 # check if the user needs an update
 def needs_EA_update(required_version):
