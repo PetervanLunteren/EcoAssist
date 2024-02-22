@@ -1,4 +1,7 @@
-# Script to further identify MD animal detections using a mewc classification model
+# Script to further identify MD animal detections using classification models trained via MEWC
+# MEWC - Mega Efficient Wildlife Classifier - University of Tasmania
+# https://github.com/zaandahl/mewc
+
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Written by Peter van Lunteren
