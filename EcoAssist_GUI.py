@@ -4,6 +4,7 @@
 # Latest edit by Peter van Lunteren on 21 Feb 2024
 
 # TODO: DTYPES - specify dtypes for excel: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
+# TODO: EARLY EXIT - count the number of expected rows when exporting to excel: ValueError: This sheet is too large! Your sheet size is: 7152123, 1 Max sheet size is: 1048576, 16384
 # TODO: M2 - test on M2
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
