@@ -153,3 +153,7 @@ It looks like you have two conda distributions on your machine, namely "C:\Prog
 4. It will probably find your anaconda3 installation automatically, but perhaps you'll have to provide the path when prompted: "C:\ProgramData\anaconda3".
 
 Hope this works! Let me know how it goes.
+
+## `PermissionError: [Errno 13] Permission denied: 'C:\\Users\\<>username\\AppData\\Local\\conda\\conda\\Cache\\notices\\notices.cache'`
+
+This looks like conda can't access a certain file, which might be due to the fact that it is being used by another program. Could you restart your computer and try again? Make sure you are executing the latest install file: https://addaxdatascience.com/ecoassist/#install
