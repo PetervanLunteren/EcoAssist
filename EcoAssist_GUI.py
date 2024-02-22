@@ -1843,6 +1843,114 @@ def start_deploy(simple_mode = False):
         "var_cls_model_idx": dpd_options_cls_model[lang_idx].index(var_cls_model.get())
     })
 
+    # start building the command
+    additional_img_options = ["--output_relative_filenames"]
+
+    # if user deployed from simple mode everything will be default, so easy
+    if simple_mode:
+        additional_img_options.append("--recursive")
+
+    # if the user comes from the advanced mode, there are more settings to be checked
+    else:
+        # save advanced settings for next time
+        write_global_vars({
+            "var_det_model_idx": dpd_options_model[lang_idx].index(var_det_model.get()),
+            "var_det_model_path": var_det_model_path.get(),
+            "var_det_model_short": var_det_model_short.get(),
+            "var_exclude_subs": var_exclude_subs.get(),
+            "var_use_custom_img_size_for_deploy": var_use_custom_img_size_for_deploy.get(),
+            "var_image_size_for_deploy": var_image_size_for_deploy.get() if var_image_size_for_deploy.get().isdigit() else "",
+            "var_abs_paths": var_abs_paths.get(),
+            "var_disable_GPU": var_disable_GPU.get(),
+            "var_process_img": var_process_img.get(),
+            "var_use_checkpnts": var_use_checkpnts.get(),
+            "var_checkpoint_freq": var_checkpoint_freq.get() if var_checkpoint_freq.get().isdecimal() else "",
+            "var_cont_checkpnt": var_cont_checkpnt.get(),
+            "var_process_vid": var_process_vid.get(),
+            "var_not_all_frames": var_not_all_frames.get(),
+            "var_nth_frame": var_nth_frame.get() if var_nth_frame.get().isdecimal() else ""
+        })
+        
+        # check if user selected to process either images or videos
+        if not var_process_img.get() and not var_process_vid.get():
+            mb.showerror(["Nothing selected to be processed", "No se ha seleccionado nada para procesar"][lang_idx],
+                            message=[f"Neither the '{lbl_process_img_txt[lang_idx]}' nor '{lbl_process_vid_txt[lang_idx]}' "
+                                     "options are selected. You must select at least one of these.", "No están seleccionadas "
+                                     f"las opciones '{lbl_process_img_txt[lang_idx]}' ni '{lbl_process_vid_txt[lang_idx]}'. "
+                                     "Debe seleccionar al menos una de ellas."][lang_idx])
+            btn_start_deploy.configure(state=NORMAL)
+            sim_run_btn.configure(state=NORMAL)
+            return
+        
+        # check if checkpoint entry is valid
+        if var_use_custom_img_size_for_deploy.get() and not var_image_size_for_deploy.get().isdecimal():
+            mb.showerror(invalid_value_txt[lang_idx],
+                        ["You either entered an invalid value for the image size, or none at all. You can only "
+                        "enter numberic characters.",
+                        "Ha introducido un valor no válido para el tamaño de la imagen o no ha introducido ninguno. "
+                        "Sólo puede introducir caracteres numéricos."][lang_idx])
+            btn_start_deploy.configure(state=NORMAL)
+            sim_run_btn.configure(state=NORMAL)
+            return
+
+        # check if checkpoint entry is valid
+        if var_use_checkpnts.get() and not var_checkpoint_freq.get().isdecimal():
+            if mb.askyesno(invalid_value_txt[lang_idx],
+                            ["You either entered an invalid value for the checkpoint frequency, or none at all. You can only "
+                            "enter numberic characters.\n\nDo you want to proceed with the default value 500?",
+                            "Ha introducido un valor no válido para la frecuencia del punto de control o no ha introducido ninguno. "
+                            "Sólo puede introducir caracteres numéricos.\n\n¿Desea continuar con el valor por defecto 500?"][lang_idx]):
+                var_checkpoint_freq.set("500")
+                ent_checkpoint_freq.configure(fg='black')
+            else:
+                btn_start_deploy.configure(state=NORMAL)
+                sim_run_btn.configure(state=NORMAL)
+                
+                return
+        
+        # check if the nth frame entry is valid
+        if var_not_all_frames.get() and not var_nth_frame.get().isdecimal():
+            if mb.askyesno(invalid_value_txt[lang_idx],
+                            [f"You either entered an invalid value for '{lbl_nth_frame_txt[lang_idx]}', or none at all. You can only "
+                            "enter numberic characters.\n\nDo you want to proceed with the default value 10?\n\n"
+                            "That means you process only 1 out of 10 frames, making the process time 10 times faster.",
+                            f"Ha introducido un valor no válido para '{lbl_nth_frame_txt[lang_idx]}', o no ha introducido ninguno. Sólo "
+                            "puede introducir caracteres numéricos.\n\n¿Desea continuar con el valor por defecto 10?. Eso significa "
+                            "que sólo se procesa 1 de cada 10 fotogramas, con lo que el tiempo de proceso es 10 veces más rápido."][lang_idx]):
+                var_nth_frame.set("10")
+                ent_nth_frame.configure(fg='black')
+            else:
+                btn_start_deploy.configure(state=NORMAL)
+                sim_run_btn.configure(state=NORMAL)
+                return
+
+        # create command for the image process to be passed on to run_detector_batch.py
+        if not var_exclude_subs.get():
+            additional_img_options.append("--recursive")
+        if var_use_checkpnts.get():
+            additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
+        if var_cont_checkpnt.get() and check_checkpnt():
+            additional_img_options.append("--resume_from_checkpoint=" + loc_chkpnt_file)
+        if var_use_custom_img_size_for_deploy.get():
+            additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
+
+        # create command for the video process to be passed on to process_video.py
+        additional_vid_options = []
+        additional_vid_options.append("--json_confidence_threshold=0.01")
+        if not var_exclude_subs.get():
+            additional_vid_options.append("--recursive")
+        if var_not_all_frames.get():
+            additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
+        temp_frame_folder_created = False
+        if var_process_vid.get():
+            if var_cls_model.get() not in none_txt:
+                global temp_frame_folder
+                temp_frame_folder_obj = tempfile.TemporaryDirectory()
+                temp_frame_folder_created = True
+                temp_frame_folder = temp_frame_folder_obj.name
+                additional_vid_options.append("--frame_folder=" + temp_frame_folder)
+                additional_vid_options.append("--keep_extracted_frames")
+    
     # open progress window with frames for each process that needs to be done
     global progress_window
     progress_window = ProgressWindow(processes = processes)
@@ -1919,111 +2027,6 @@ def start_deploy(simple_mode = False):
             progress_window.close()
             return
 
-    # start building the command
-    additional_img_options = ["--output_relative_filenames"]
-
-    # if user deployed from simple mode everything will be default, so easy
-    if simple_mode:
-        additional_img_options.append("--recursive")
-
-    # if the user comes from the advanced mode, there are more settings to be checked
-    else:
-        # save advanced settings for next time
-        write_global_vars({
-            "var_det_model_idx": dpd_options_model[lang_idx].index(var_det_model.get()),
-            "var_det_model_path": var_det_model_path.get(),
-            "var_det_model_short": var_det_model_short.get(),
-            "var_exclude_subs": var_exclude_subs.get(),
-            "var_use_custom_img_size_for_deploy": var_use_custom_img_size_for_deploy.get(),
-            "var_image_size_for_deploy": var_image_size_for_deploy.get() if var_image_size_for_deploy.get().isdigit() else "",
-            "var_abs_paths": var_abs_paths.get(),
-            "var_disable_GPU": var_disable_GPU.get(),
-            "var_process_img": var_process_img.get(),
-            "var_use_checkpnts": var_use_checkpnts.get(),
-            "var_checkpoint_freq": var_checkpoint_freq.get() if var_checkpoint_freq.get().isdecimal() else "",
-            "var_cont_checkpnt": var_cont_checkpnt.get(),
-            "var_process_vid": var_process_vid.get(),
-            "var_not_all_frames": var_not_all_frames.get(),
-            "var_nth_frame": var_nth_frame.get() if var_nth_frame.get().isdecimal() else ""
-        })
-        
-        # check if user selected to process either images or videos
-        if not var_process_img.get() and not var_process_vid.get():
-            mb.showerror(["Nothing selected to be processed", "No se ha seleccionado nada para procesar"][lang_idx],
-                            message=["You selected neither images nor videos to be processed.",
-                                    "No ha seleccionado ni imágenes ni vídeos para procesar."][lang_idx])
-            btn_start_deploy.configure(state=NORMAL)
-            sim_run_btn.configure(state=NORMAL)
-            return
-        
-        # check if checkpoint entry is valid
-        if var_use_custom_img_size_for_deploy.get() and not var_image_size_for_deploy.get().isdecimal():
-            mb.showerror(invalid_value_txt[lang_idx],
-                        ["You either entered an invalid value for the image size, or none at all. You can only "
-                        "enter numberic characters.",
-                        "Ha introducido un valor no válido para el tamaño de la imagen o no ha introducido ninguno. "
-                        "Sólo puede introducir caracteres numéricos."][lang_idx])
-            btn_start_deploy.configure(state=NORMAL)
-            sim_run_btn.configure(state=NORMAL)
-            return
-
-        # check if checkpoint entry is valid
-        if var_use_checkpnts.get() and not var_checkpoint_freq.get().isdecimal():
-            if mb.askyesno(invalid_value_txt[lang_idx],
-                            ["You either entered an invalid value for the checkpoint frequency, or none at all. You can only "
-                            "enter numberic characters.\n\nDo you want to proceed with the default value 500?",
-                            "Ha introducido un valor no válido para la frecuencia del punto de control o no ha introducido ninguno. "
-                            "Sólo puede introducir caracteres numéricos.\n\n¿Desea continuar con el valor por defecto 500?"][lang_idx]):
-                var_checkpoint_freq.set("500")
-                ent_checkpoint_freq.configure(fg='black')
-            else:
-                btn_start_deploy.configure(state=NORMAL)
-                sim_run_btn.configure(state=NORMAL)
-                return
-        
-        # check if the nth frame entry is valid
-        if var_not_all_frames.get() and not var_nth_frame.get().isdecimal():
-            if mb.askyesno(invalid_value_txt[lang_idx],
-                            [f"You either entered an invalid value for '{lbl_nth_frame_txt[lang_idx]}', or none at all. You can only "
-                            "enter numberic characters.\n\nDo you want to proceed with the default value 10?\n\n"
-                            "That means you process only 1 out of 10 frames, making the process time 10 times faster.",
-                            f"Ha introducido un valor no válido para '{lbl_nth_frame_txt[lang_idx]}', o no ha introducido ninguno. Sólo "
-                            "puede introducir caracteres numéricos.\n\n¿Desea continuar con el valor por defecto 10?. Eso significa "
-                            "que sólo se procesa 1 de cada 10 fotogramas, con lo que el tiempo de proceso es 10 veces más rápido."][lang_idx]):
-                var_nth_frame.set("10")
-                ent_nth_frame.configure(fg='black')
-            else:
-                btn_start_deploy.configure(state=NORMAL)
-                sim_run_btn.configure(state=NORMAL)
-                return
-
-        # create command for the image process to be passed on to run_detector_batch.py
-        if not var_exclude_subs.get():
-            additional_img_options.append("--recursive")
-        if var_use_checkpnts.get():
-            additional_img_options.append("--checkpoint_frequency=" + var_checkpoint_freq.get())
-        if var_cont_checkpnt.get() and check_checkpnt():
-            additional_img_options.append("--resume_from_checkpoint=" + loc_chkpnt_file)
-        if var_use_custom_img_size_for_deploy.get():
-            additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
-
-        # create command for the video process to be passed on to process_video.py
-        additional_vid_options = []
-        additional_vid_options.append("--json_confidence_threshold=0.01")
-        if not var_exclude_subs.get():
-            additional_vid_options.append("--recursive")
-        if var_not_all_frames.get():
-            additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
-        temp_frame_folder_created = False
-        if var_process_vid.get():
-            if var_cls_model.get() not in none_txt:
-                global temp_frame_folder
-                temp_frame_folder_obj = tempfile.TemporaryDirectory()
-                temp_frame_folder_created = True
-                temp_frame_folder = temp_frame_folder_obj.name
-                additional_vid_options.append("--frame_folder=" + temp_frame_folder)
-                additional_vid_options.append("--keep_extracted_frames")
-    
     try:
 
         # if not deployed through simple mode, check the input values
@@ -6113,7 +6116,7 @@ ent_nth_frame.bind("<FocusIn>", nth_frame_focus_in)
 ent_nth_frame.configure(state=DISABLED)
 
 # button start deploy
-btn_start_deploy_txt = ["Deploy model", "Desplegar modelo"]
+btn_start_deploy_txt = ["Start processing", "Empezar a procesar"]
 row_btn_start_deploy = 12
 btn_start_deploy = Button(snd_step, text=btn_start_deploy_txt[lang_idx], command=start_deploy)
 btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='ew')
@@ -6264,7 +6267,7 @@ dsp_thresh.configure(fg=EA_blue_color)
 dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
-btn_start_postprocess_txt = ["Post-process files", "Post-procesar archivos"]
+btn_start_postprocess_txt = ["Start post-processing", "Iniciar el postprocesamiento"]
 row_start_postprocess = 8
 btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang_idx], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
