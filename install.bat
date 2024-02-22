@@ -1,13 +1,20 @@
 @REM ### Windows install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 20 Feb 2024 (latest edit)
+@REM ### Peter van Lunteren, set date for latest edit at DATE_OF_LAST_EDIT below.
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
+@REM log the install file version
+set DATE_OF_LAST_EDIT="22 Feb 2024"
+
 @REM print header
 echo:
 echo ^|--------------------------- ECOASSIST INSTALLATION ---------------------------^|
+echo:
+
+@REM print the install file version
+echo Latest edit to this install file was on %DATE_OF_LAST_EDIT%.
 echo:
 
 @REM check admin rights
@@ -345,10 +352,10 @@ call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALL
 call %EA_CONDA_EXE% config --set notify_outdated_conda false
 
 @REM remove all old ecoassist conda evironments, if present
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 
 @REM create conda env and install packages for MegaDetector
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
