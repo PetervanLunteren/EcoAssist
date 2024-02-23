@@ -1,7 +1,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 21 Feb 2024
+# Latest edit by Peter van Lunteren on 23 Feb 2024
 
 # TODO: DTYPES - specify dtypes for excel: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
 # TODO: EARLY EXIT - count the number of expected rows when exporting to excel: ValueError: This sheet is too large! Your sheet size is: 7152123, 1 Max sheet size is: 1048576, 16384
@@ -1198,9 +1198,7 @@ def convert_xml_to_coco(xml_path, inverted_label_map):
         name = obj.findtext('name')
 
         # check if new class
-        if name in inverted_label_map:
-            new_class = False
-        else:
+        if name not in inverted_label_map:
             new_class = True
             highest_index = 0
             for key, value in inverted_label_map.items():
@@ -1246,7 +1244,6 @@ def update_json_from_img_list(verified_images, inverted_label_map, recognition_f
             json_paths_are_relative = False
 
         # open
-        print(recognition_file)
         with open(recognition_file, "r") as image_recognition_file_content:
             data = json.load(image_recognition_file_content)
 
