@@ -133,13 +133,18 @@ Solution comming up...
 
 ## Example email for faulty installation
 
-Thanks for your email. I'm sorry to hear that you're experiencing difficulties with installing EcoAssist.
+Seems like there was an issue during the installation. Nine times out of ten, these issues are due to security settings blocking certain downloads. This may be attributed to security software such as VPNs, proxy servers, firewall, or antivirus applications, which are known to be particularly strict on company computers. Could you please check if any of these security settings are enabled on your computer?
 
-In many cases, installation issues stem from incomplete dependency downloads, often blocked by security settings on the destination computer. This may be attributed to security software such as VPNs, proxy servers, or antivirus applications, which are known to be particularly strict on company computers.
+In order to debug, could you please:
+1. Reboot your computer.
+2. If possible, temporarily disable the protection software.
+3. Repeat the EcoAssist installation using the latest installation file: https://addaxdatascience.com/ecoassist/#install.
+4. Copy-paste the entire console output and save it to a text file. You might need to send it to me, if it turns out EcoAssist won’t function properly.
+5. Double-click the shortcut file to open EcoAssist. Have some patience. The first time opening might take about a minute due to script compiling.
+6. If that doesn’t work, try opening it in debug mode: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/errors.md#how-to-run-ecoassist-in-debug-mode
+7. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
 
-Could you please check if any of these security settings are enabled on your computer? If so, would it be possible to temporarily disable them during the EcoAssist installation process?
-
-If the problem persists, please copy-paste the console output and share it with me. This will allow me to investigate the issue further and provide you with a solution.
+I’ll take a look and help you to get EcoAssist running!
 
 ## `ImportError: DLL load failed while importing _ctypes: The specified module could not be found.`
 ### Option 1
