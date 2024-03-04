@@ -3,8 +3,6 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 4 March 2024
 
-# TODO: DTYPES - specify dtypes for excel: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
-# TODO: EARLY EXIT - count the number of expected rows when exporting to excel: ValueError: This sheet is too large! Your sheet size is: 7152123, 1 Max sheet size is: 1048576, 16384
 # TODO: M2 - test on M2
 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -218,6 +216,28 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     # set global vars
     global postprocessing_error_log
     postprocessing_error_log = os.path.join(dst_dir, "postprocessing_error_log.txt")
+
+    # count the number of rows to make sure it doesn't exceed the limit for an excel sheet
+    if exp and exp_format == dpd_options_exp_format[lang_idx][0]: # if exp_format is the first option in the dropdown menu -> XLSX
+        n_rows_files = 1
+        n_rows_detections = 1
+        for image in data['images']:
+            n_rows_files += 1
+            if 'detections' in image:
+                for detection in image['detections']:
+                    if detection["conf"] >= thresh:
+                        n_rows_detections += 1
+        if n_rows_detections > 1048576 or n_rows_files > 1048576:
+            mb.showerror(["To many rows", "Demasiadas filas"][lang_idx],
+                         ["The XLSX file you are trying to create is too large!\n\nThe maximum number of rows in an XSLX file is "
+                          f"1048576, while you are trying to create a sheet with {max(n_rows_files, n_rows_detections)} rows.\n\nIf"
+                          " you require the results in XLSX format, please run the process on smaller chunks so that it doesn't "
+                          f"exceed Microsoft's row limit. Or choose CSV as {lbl_exp_format_txt[lang_idx]} in advanced mode.", 
+                          "¡El archivo XLSX que está intentando crear es demasiado grande!\n\nEl número máximo de filas en un archivo"
+                          f" XSLX es 1048576, mientras que usted está intentando crear una hoja con {max(n_rows_files, n_rows_detections)}"
+                          " filas.\n\nSi necesita los resultados en formato XLSX, ejecute el proceso en trozos más pequeños para que no "
+                          f"supere el límite de filas de Microsoft. O elija CSV como {lbl_exp_format_txt[lang_idx]} en modo avanzado."][lang_idx])
+            return
 
     # loop through images
     for image in data['images']:
