@@ -1,13 +1,13 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 23 Feb 2024
+# Latest edit by Peter van Lunteren on 4 March 2024
 
-# TODO: MD5A INSTALL - see email Matt. Fix manual MDv5a and b download if install was unsuccesful. 
 # TODO: WINDOW RESIZE - see email Saul. Fix window resize after switch_mode() and deploy_model()
 # TODO: DTYPES - specify dtypes for excel: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
 # TODO: EARLY EXIT - count the number of expected rows when exporting to excel: ValueError: This sheet is too large! Your sheet size is: 7152123, 1 Max sheet size is: 1048576, 16384
 # TODO: M2 - test on M2
+
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -733,7 +733,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
         print("hitl_settings_window not defined -> nothing to destroy()")
         
     # init window
-    # hitl_progress_window = Toplevel(root) # DEBUG
     hitl_progress_window = customtkinter.CTkToplevel(root)
     hitl_progress_window.title(["Manual check overview", "Verificación manual"][lang_idx])
     hitl_progress_window.geometry("+1+1")
@@ -958,7 +957,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             fig = produce_graph(file_list_txt = file_list_txt)
 
             # init window
-            # hitl_final_window = Toplevel(root) # DEBUG
             hitl_final_window = customtkinter.CTkToplevel(root)
             hitl_final_window.title("Overview")
             hitl_final_window.geometry()
@@ -1810,9 +1808,9 @@ def start_deploy(simple_mode = False):
     root.update()
 
     # check if models need to be downloaded
-    types_to_check = ["cls"] if simple_mode else ["cls", "det"]
-    # no need to check the selected detection model for simple mode, because it will take MD5a which is installed by default
-    for model_type in types_to_check:
+    if simple_mode:
+        var_det_model.set("MegaDetector 5a")
+    for model_type in ["cls", "det"]:
         model_vars = load_model_vars(model_type = model_type)
         if model_vars == {}: # if selected model is None
             continue
@@ -2527,7 +2525,6 @@ def open_hitl_settings_window():
     recognition_file = os.path.join(selected_dir, 'image_recognition_file.json')
 
     # init window
-    # hitl_settings_window = Toplevel(root) # DEBUG
     hitl_settings_window = customtkinter.CTkToplevel(root)
     hitl_settings_window.title(["Verification selection settings", "Configuración de selección de verificación"][lang_idx])
     hitl_settings_window.geometry()
@@ -3567,7 +3564,7 @@ def download_model(model_dir, skip_ask=False):
         # check the total size first
         total_size = 0
         for download_url, _ in download_info:
-            response = requests.get(download_url, stream=True, timeout=5, headers=headers)
+            response = requests.get(download_url, stream=True, timeout=30, headers=headers)
             response.raise_for_status()
             total_size += int(response.headers.get('content-length', 0))
 
@@ -3577,7 +3574,7 @@ def download_model(model_dir, skip_ask=False):
         download_popup.open()
         for download_url, fname in download_info:
             file_path = os.path.join(model_dir, fname)
-            response = requests.get(download_url, stream=True, timeout=5, headers=headers)
+            response = requests.get(download_url, stream=True, timeout=30, headers=headers)
             response.raise_for_status()
             
             with open(file_path, 'wb') as file:
@@ -3595,6 +3592,8 @@ def download_model(model_dir, skip_ask=False):
     # catch errors
     except Exception as error:
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
+        if os.path.isfile(file_path): # remove incomplete download
+            os.remove(file_path)
         show_download_error_window(model_title, model_dir, model_vars)
 
 ##############################################
@@ -3711,6 +3710,17 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl6 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[1][1]}'.",
                                                            f" {step_n}. Descarga el archivo '{download_info[1][1]}'."][lang_idx]);step_n += 1
         pro_lbl6.grid(row=5, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif model_title == "MegaDetector 5a" or model_title == "MegaDetector 5b":
+        main_url = "https://github.com/agentmorris/MegaDetector/releases/tag/v5.0"
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
     else:
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" (!) No manual steps provided. Please take a screenshot of this"
                                                            " window and send an email to", f" (!) No se proporcionan pasos "
@@ -4180,7 +4190,6 @@ def show_result_info(file_path):
 # class for simple question with buttons
 class TextButtonWindow:
     def __init__(self, title, text, buttons):
-        # self.root = Toplevel(root) # DEBUG
         self.root = customtkinter.CTkToplevel(root)
         self.root.title(title)
         bring_window_to_top_but_not_for_ever(self.root)
@@ -4217,7 +4226,6 @@ class TextButtonWindow:
 # simple window to show progressbar
 class PatienceDialog:
     def __init__(self, total, text):
-        # self.root = Toplevel(root) # DEBUG
         self.root = customtkinter.CTkToplevel(root)
         self.root.title("Have patience")
         self.total = total
@@ -5742,7 +5750,6 @@ else: # macOS
     GREY_BUTTON_BORDER_WIDTH = 0
 
 # TKINTER MAIN WINDOW 
-# root = Tk() # DEBUG
 root = customtkinter.CTk()
 EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
 root.iconphoto(True, EcoAssist_icon_image)
@@ -5753,7 +5760,6 @@ main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bol
 url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 
 # ADVANCED MODE WINDOW 
-# advanc_mode_win = Toplevel(root) # DEBUG
 advanc_mode_win = customtkinter.CTkToplevel(root)
 advanc_mode_win.title(f"EcoAssist v{current_EA_version} - Advanced mode")
 advanc_mode_win.geometry("+10+20")
@@ -6712,7 +6718,6 @@ spp_image = customtkinter.CTkImage(PIL_spp_image, size=(ICON_SIZE, ICON_SIZE))
 run_image = customtkinter.CTkImage(PIL_run_image, size=(ICON_SIZE, ICON_SIZE))
 
 # set up window
-# simple_mode_win = Toplevel(root) # DEBUG
 simple_mode_win = customtkinter.CTkToplevel(root)
 simple_mode_win.title(f"EcoAssist v{current_EA_version} - Simple mode")
 simple_mode_win.geometry("+10+20")
