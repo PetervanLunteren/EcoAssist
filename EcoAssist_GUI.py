@@ -3,7 +3,6 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 4 March 2024
 
-# TODO: WINDOW RESIZE - see email Saul. Fix window resize after switch_mode() and deploy_model()
 # TODO: DTYPES - specify dtypes for excel: https://stackoverflow.com/questions/24251219/pandas-read-csv-low-memory-and-dtype-options
 # TODO: EARLY EXIT - count the number of expected rows when exporting to excel: ValueError: This sheet is too large! Your sheet size is: 7152123, 1 Max sheet size is: 1048576, 16384
 # TODO: M2 - test on M2
@@ -2120,20 +2119,44 @@ def start_deploy(simple_mode = False):
 def reset_window_transparency():
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
     start_time = time.time()
+    scaling_adjusted = False
     print(f"check_dpi_scaling: {customtkinter.ScalingTracker.check_dpi_scaling()}")
-    for i, window in enumerate([advanc_mode_win, simple_mode_win]):
+
+    # reset transparency
+    transparency_sim = simple_mode_win.attributes('-alpha')
+    transparency_adv = advanc_mode_win.attributes('-alpha')
+    print(f"\t transparency:   {transparency_sim} & {transparency_adv}")
+    if transparency_sim != 1 or transparency_adv != 1:
+        print("\t\t transparency is not 1, adjusting...")
+        simple_mode_win.attributes('-alpha', 1)
+        advanc_mode_win.attributes('-alpha', 1)
         root.update_idletasks()
-        window_name = 'advanc_mode_win' if i == 1 else 'simple_mode_win'
-        print(f"Debug report for {window_name}:")
-        transparency = window.attributes('-alpha')
-        print(f"\t transparency:   {transparency}")
-        if transparency < 1:
-            print("\t\t transparency is not 1, adjusting...")
-            window.attributes('-alpha', 1)
-            root.update_idletasks()
-        print(f"\t widget_scaling: {customtkinter.ScalingTracker.get_widget_scaling(window)}")
-        print(f"\t window_scaling: {customtkinter.ScalingTracker.get_window_scaling(window)}")
-        print("\n")
+
+    # reset widget scaling
+    widget_scaling_sim = customtkinter.ScalingTracker.get_widget_scaling(simple_mode_win)
+    widget_scaling_adv = customtkinter.ScalingTracker.get_widget_scaling(advanc_mode_win)
+    print(f"\t widget_scaling: {widget_scaling_sim} & {widget_scaling_adv}")
+    if widget_scaling_sim != 1 or widget_scaling_adv != 1:
+        print("\t\t widget_scaling is not 1, adjusting...")
+        customtkinter.set_widget_scaling(1)
+        scaling_adjusted = True
+
+    # reset window scaling
+    window_scaling_sim = customtkinter.ScalingTracker.get_window_scaling(simple_mode_win)
+    window_scaling_adv = customtkinter.ScalingTracker.get_window_scaling(advanc_mode_win)
+    print(f"\t window_scaling: {window_scaling_sim} & {window_scaling_adv}")
+    if window_scaling_sim != 1 or window_scaling_adv != 1:
+        print("\t\t window_scaling is not 1, adjusting...")
+        customtkinter.set_window_scaling(1)
+        scaling_adjusted = True
+
+    # update geometry
+    if scaling_adjusted:
+        simple_mode_win.geometry(f"{SIM_WINDOW_WIDTH}x{SIM_WINDOW_HEIGHT}+10+20")
+        advanc_mode_win.geometry(f"{advanc_bg_image_label.winfo_reqwidth()}x{advanc_bg_image_label.winfo_reqheight()}+10+20")
+        root.update_idletasks()
+
+    print("\n")
     print(f"Time taken: {time.time() - start_time:.6f} seconds")
 
 # get data from file list and create graph
