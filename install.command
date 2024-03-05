@@ -240,28 +240,27 @@ conda config --set notify_outdated_conda false
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
-  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
+
   # requirements for Human-in-the-loop
-  $PIP_BASE install pyqt5==5.15.2 lxml libxcb-xinerama0
-  echo "We need to install libxcb-xinerama0 (https://packages.ubuntu.com/bionic/libxcb-xinerama0) and libgl1 (https://www.opengl.org/sdk/libs/). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
+  echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
   { # first try without sudo
-    apt install libxcb-xinerama0 
+    add-apt-repository universe
+    apt-get update
+    apt-get install libxcb-cursor-dev
+    apt-get install libxcb-cursor0
   } || { # otherwise with sudo
-    sudo apt install libxcb-xinerama0 
-    }
-  { # first try without sudo
-    apt install libgl1 
-  } || { # otherwise with sudo
-    sudo apt install libgl1 
+    sudo add-apt-repository universe
+    sudo apt-get update
+    sudo apt-get install libxcb-cursor-dev
+    sudo apt-get install libxcb-cursor0
     }
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
   conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
-  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
@@ -269,7 +268,6 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
   conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
-  # source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
@@ -278,8 +276,6 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   } || { # if the first try didn't work
     conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
   }
-  # install lxml
-  $PIP_BASE install lxml
   # for some reason conda-installed opencv decided it doesn't work on silicon macs anymore
   conda uninstall opencv -y
   pip install opencv-python
@@ -302,16 +298,15 @@ $PIP_BASE install "protobuf<=3.20.1"
 $PIP_BASE install "setuptools>=65.5.1"
 
 # requirements for human-in-the-loop
+cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+$PIP_BASE install PySide6
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-  $PIP_BASE install pyside6
   $PIP_BASE install "lxml==4.9.0"
+  make pyside6
 elif [ "$PLATFORM" = "Linux" ]; then
   $PIP_BASE install "lxml==4.6.3"
-  $PIP_BASE install "PySide6==6.2.0"
-  $PIP_BASE install "shiboken6==6.2.0"
+  pyside6-rcc -o libs/resources.py resources.qrc
 fi
-cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-make pyside6
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # log env info
