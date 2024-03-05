@@ -1,10 +1,9 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 4 March 2024
+# Latest edit by Peter van Lunteren on 5 March 2024
 
-# TODO: M2 - test on M2
-
+# TODO: M2 - test on M2 MAX
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -12,7 +11,9 @@
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: ANNOTATION - improve annotation experience
     # - make one progress windows in stead of all separate pbars when using large jsons
-    # - convert pyqt5 to pyqt6 for apple silicon so we don't need to install it via homebrew
+    # - I've converted pyqt5 to pyside6 for apple silicon so we don't need to install it via homebrew
+    #         the unix install clones a pyside6 branch of my human-in-the-loop fork. Test windows on this
+    #         on this version too and make it the default
     # - implement image progress status into main labelimg window, so you don't have two separate windows
     # - apparently you still get images in which a class is found under the annotation threshold,
     #         it should count only the images that have classes above the set annotation threshold,
