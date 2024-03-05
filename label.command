@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open Human-in-the-loop from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 19 Oct 2023 (latest edit)
+### Peter van Lunteren, 5 March 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -40,7 +40,7 @@ fi
 
 # open Human-in-the-loop with arguments given by EcoAssist_GUI.py
 cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory to Human-in-the-loop. Command could not be run."; exit 1; }
-pyrcc5 -o libs/resources.py resources.qrc
+# pyrcc5 -o libs/resources.py resources.qrc # not nessecary anymore since we use the pyside6 variant of labelimg? 
 echo "python3 labelImg.py '${1}' '${2}'"
 if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   arch -arm64 python3 labelImg.py "${1}" "${2}"
