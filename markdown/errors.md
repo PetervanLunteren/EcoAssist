@@ -39,7 +39,7 @@ Now try to recreate the error and check the console output for its message.
 4. Start EcoAssist as you would do normally and recreate the error.
 </details>
 
-This will show you EcoAssist's output during runtime. If there are any errors, they will most probably show up here. If you want you can copy-paste it and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
+This will show you EcoAssist's output during runtime. If there are any errors, they will most probably show up here. Please copy-paste the entire console output and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
 
 ## How to create logfiles?
 If there is an error during runtime, it is important to give the program the opportunity to write out its logs. First thing you'll need to do is recreate the error in EcoAssist. After that, close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last. If there is an error during the installation or opening, you don't have to worry about this - in that case the logfiles are automatically created. 
