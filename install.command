@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 20 Feb 2023 (latest edit)
+### Peter van Lunteren, 5 March 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -42,7 +42,6 @@ ECOASSISTCONDAENV_MEWC="${CONDA_DIR}/envs/ecoassistcondaenv-mewc"
 PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
 PIP_YOLOV8="${ECOASSISTCONDAENV_YOLOV8}/bin/pip"
 PIP_MEWC="${ECOASSISTCONDAENV_MEWC}/bin/pip"
-HOMEBREW_DIR="/opt/homebrew"
 
 # check for sandbox argument and specify branch 
 if [ "$1" == "sandbox" ]; then
@@ -186,7 +185,8 @@ if [ -d "$HIT" ]; then
   echo "Dir ${HIT} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${HIT} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git 2>&1 | tee -a "$LOG_FILE"
+  # for mac and linux we use the pyside6 branch which doesn't need PyQt5
+  git clone --branch pyside6 --progress --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
@@ -257,9 +257,6 @@ if [ "$PLATFORM" = "Linux" ]; then
   } || { # otherwise with sudo
     sudo apt install libgl1 
     }
-  cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Exiting installation. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  pyrcc5 -o libs/resources.py resources.qrc
-  python3 -m pip install --pre --upgrade lxml
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
@@ -268,8 +265,6 @@ elif [ "$PLATFORM" = "Intel Mac" ]; then
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
-  # requirements for Human-in-the-loop
-  $PIP_BASE install pyqt5==5.15.2 lxml
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
@@ -285,30 +280,9 @@ elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   }
   # install lxml
   $PIP_BASE install lxml
-
-  # we need homebrew to install PyQt5 for Apple Silicon macs
-  echo "In order to enable the pyQt5 package for Apple Silicon (required for the the " 2>&1 | tee -a "$LOG_FILE"
-  echo "annotation and human-in-the-loop feature), we need to install it via Homebrew." 2>&1 | tee -a "$LOG_FILE"
-  BREW="${HOMEBREW_DIR}/bin/brew"
-  export PATH="${HOMEBREW_DIR}/bin:$PATH"
-
-  # check if it is already installed
-  if test -f $BREW; then
-    echo "Homebrew already exists on the default location ($BREW). Skipping install." 2>&1 | tee -a "$LOG_FILE"
-  else
-    echo "Homebrew does not exist on the default location ($BREW). Proceeding to install." 2>&1 | tee -a "$LOG_FILE"
-    echo "The script will check for sudo permissions and might prompt you for a password." 2>&1 | tee -a "$LOG_FILE"
-    echo "If you don't know the sudo password, you can skip this by pressing Ctrl+D." 2>&1 | tee -a "$LOG_FILE"
-    echo "EcoAssist will still work fine without it, but the annotation and " 2>&1 | tee -a "$LOG_FILE"
-    echo "human-in-the-loop feature will not work." 2>&1 | tee -a "$LOG_FILE"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" 2>&1 | tee -a "$LOG_FILE"
-  fi
-
-  # further requirements for Human-in-the-loop
-  arch -arm64 $BREW install pyqt@5
-  cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  make qt5py3
-  python3 -m pip install --pre --upgrade lxml
+  # for some reason conda-installed opencv decided it doesn't work on silicon macs anymore
+  conda uninstall opencv -y
+  pip install opencv-python
 fi
 
 # requirements for EcoAssist
@@ -326,6 +300,19 @@ $PIP_BASE install "tensorboard>=2.4.1"
 $PIP_BASE install "thop>=0.1.1"
 $PIP_BASE install "protobuf<=3.20.1"
 $PIP_BASE install "setuptools>=65.5.1"
+
+# requirements for human-in-the-loop
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  $PIP_BASE install pyside6
+  $PIP_BASE install "lxml==4.9.0"
+elif [ "$PLATFORM" = "Linux" ]; then
+  $PIP_BASE install "lxml==4.6.3"
+  $PIP_BASE install "PySide6==6.2.0"
+  $PIP_BASE install "shiboken6==6.2.0"
+fi
+cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
+make pyside6
+cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # log env info
 conda info --envs >> "$LOG_FILE"
