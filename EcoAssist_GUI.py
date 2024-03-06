@@ -1,9 +1,8 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 5 March 2024
+# Latest edit by Peter van Lunteren on 6 March 2024
 
-# TODO: M2 - test on M2 MAX
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -523,7 +522,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         csv_for_summary = os.path.join(dst_dir, "results_summary.csv")
         if os.path.exists(csv_for_summary):
             os.remove(csv_for_summary)
-        det_info = pd.DataFrame(pd.read_csv(csv_for_detections))
+        det_info = pd.DataFrame(pd.read_csv(csv_for_detections, dtype=dtypes, low_memory=False))
         summary = pd.DataFrame(det_info.groupby(['label', 'data_type']).size().sort_values(ascending=False).reset_index(name='n_detections'))
         summary.to_csv(csv_for_summary, encoding='utf-8', mode='w', index=False, header=True)
 
@@ -539,10 +538,10 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
                 #  if so, add new rows to existing ones
                 df_xlsx = pd.read_excel(xlsx_path, sheet_name=result_type)
-                df_csv = pd.read_csv(os.path.join(dst_dir, f"results_{result_type}.csv"))
+                df_csv = pd.read_csv(os.path.join(dst_dir, f"results_{result_type}.csv"), dtype=dtypes, low_memory=False)
                 df = pd.concat([df_xlsx, df_csv], ignore_index=True)
             else:
-                df = pd.read_csv(os.path.join(dst_dir, f"results_{result_type}.csv"))
+                df = pd.read_csv(os.path.join(dst_dir, f"results_{result_type}.csv"), dtype=dtypes, low_memory=False)
             dfs.append(df)
             if os.path.isfile(csv_path):
                 os.remove(csv_path)
@@ -564,6 +563,55 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     # let the user know it's done
     progress_window.update_values(process = f"{data_type}_pst", status = "done")
     root.update()
+
+# set data types for csv inport so that the machine doesn't run out of memory with large files (>0.5M rows)
+dtypes = {
+    'absolute_path': 'str',
+    'relative_path': 'str',
+    'data_type': 'str',
+    'label': 'str',
+    'confidence': 'float64',
+    'human_verified': 'bool',
+    'bbox_left': 'str',
+    'bbox_top': 'str',
+    'bbox_right': 'str',
+    'bbox_bottom': 'str',
+    'file_height': 'str',
+    'file_width': 'str',
+    'DateTimeOriginal': 'str',
+    'DateTime': 'str',
+    'DateTimeDigitized': 'str',
+    'Latitude': 'str',
+    'Longitude': 'str',
+    'GPSLink': 'str',
+    'Altitude': 'str',
+    'Make': 'str',
+    'Model': 'str',
+    'Flash': 'str',
+    'ExifOffset': 'str',
+    'ResolutionUnit': 'str',
+    'YCbCrPositioning': 'str',
+    'XResolution': 'str',
+    'YResolution': 'str',
+    'ExifVersion': 'str',
+    'ComponentsConfiguration': 'str',
+    'FlashPixVersion': 'str',
+    'ColorSpace': 'str',
+    'ExifImageWidth': 'str',
+    'ISOSpeedRatings': 'str',
+    'ExifImageHeight': 'str',
+    'ExposureMode': 'str',
+    'WhiteBalance': 'str',
+    'SceneCaptureType': 'str',
+    'ExposureTime': 'str',
+    'Software': 'str',
+    'Sharpness': 'str',
+    'Saturation': 'str',
+    'ReferenceBlackWhite': 'str',
+    'n_detections': 'int64',
+    'max_confidence': 'float64',
+}
+
 
 # open progress window and initiate the post-process progress window
 def start_postprocess():
