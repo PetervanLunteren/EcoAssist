@@ -1,14 +1,28 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 5 March 2023 (latest edit)
+### Peter van Lunteren, 6 March 2023 (latest edit)
 
 # check the OS and set var
+CHIP_VERSION=""
 if [ "$(uname)" == "Darwin" ]; then
   echo "This is an OSX computer..."
   if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Apple" ]]; then
-    echo "   ...with an Apple Silicon processor."
+    echo "   ...with an Apple Silicon processor..."
     PLATFORM="Apple Silicon Mac"
+    if [[ $(sysctl -n machdep.cpu.brand_string) =~ "M1" ]]; then
+      echo "      ...of the type M1."
+      CHIP_VERSION="M1"
+    elif [[ $(sysctl -n machdep.cpu.brand_string) =~ "M2" ]]; then
+      echo "      ...of the type M2..."
+      CHIP_VERSION="M2"
+      if [[ $(sysctl -n machdep.cpu.brand_string) =~ "Pro" ]]; then
+        echo "         ...Pro."
+        CHIP_VERSION="M2 Pro"
+      fi
+    else
+      echo "      ...with an unkown chip version."
+    fi
   else
     echo "   ...with an Intel processor."
     PLATFORM="Intel Mac"
@@ -17,6 +31,10 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
   echo "This is an Linux computer."
   PLATFORM="Linux"
 fi
+
+# log
+echo "PLATFORM     = "$PLATFORM""
+echo "CHIP_VERSION = "$CHIP_VERSION""
 
 # timestamp the start of installation
 START_DATE=`date`
@@ -301,7 +319,11 @@ $PIP_BASE install "setuptools>=65.5.1"
 cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 $PIP_BASE install PySide6
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-  $PIP_BASE install "lxml==4.9.0"
+  if [ "$CHIP_VERSION" = "M2 Pro" ]; then
+    conda install lxml -y
+  else
+    $PIP_BASE install "lxml==4.9.0"
+  fi
   make pyside6
 elif [ "$PLATFORM" = "Linux" ]; then
   $PIP_BASE install "lxml==4.6.3"
