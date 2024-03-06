@@ -4452,7 +4452,7 @@ class ProgressWindow:
         if "img_det" in processes:
             self.img_det_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
             self.img_det_frm.grid(row=0, padx=PADX, pady=PADY, sticky="nswe")
-            img_det_ttl_txt = [f'Localizing animals{img_det_extra_string}...', f'Localización de animales{img_det_extra_string}...']
+            img_det_ttl_txt = [f'Locating animals{img_det_extra_string}...', f'Localización de animales{img_det_extra_string}...']
             self.img_det_ttl = customtkinter.CTkLabel(self.img_det_frm, text=img_det_ttl_txt[lang_idx], 
                                             font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
             self.img_det_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
@@ -4556,7 +4556,7 @@ class ProgressWindow:
         if "vid_det" in processes:
             self.vid_det_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
             self.vid_det_frm.grid(row=2, padx=PADX, pady=PADY, sticky="nswe")
-            vid_det_ttl_txt = [f'Localizing animals{vid_det_extra_string}...', f'Localización de animales{vid_det_extra_string}...']
+            vid_det_ttl_txt = [f'Locating animals{vid_det_extra_string}...', f'Localización de animales{vid_det_extra_string}...']
             self.vid_det_ttl = customtkinter.CTkLabel(self.vid_det_frm, text=vid_det_ttl_txt[lang_idx], 
                                             font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
             self.vid_det_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
