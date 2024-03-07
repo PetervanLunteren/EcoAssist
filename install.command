@@ -55,10 +55,10 @@ fi
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
 ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
-ECOASSISTCONDAENV_YOLOV8="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
+ECOASSISTCONDAENV_PYTORCH="${CONDA_DIR}/envs/ecoassistcondaenv-pytorch"
 ECOASSISTCONDAENV_MEWC="${CONDA_DIR}/envs/ecoassistcondaenv-mewc"
 PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
-PIP_YOLOV8="${ECOASSISTCONDAENV_YOLOV8}/bin/pip"
+PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
 PIP_MEWC="${ECOASSISTCONDAENV_MEWC}/bin/pip"
 
 # check for sandbox argument and specify branch 
@@ -346,11 +346,11 @@ elif [ "$PLATFORM" = "Linux" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-linux-windows.yml"
 fi
 
-# create dedicated yolov8 classification environment
+# create dedicated pytorch classification environment
 if [ "$PLATFORM" = "Intel Mac" ]; then
-  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
-  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_YOLOV8
+  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
+  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_PYTORCH
   conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
   conda install -c conda-forge ultralytics=8.0.191 -y
   conda install -c conda-forge numpy==1.24.1 -y
@@ -358,21 +358,21 @@ if [ "$PLATFORM" = "Intel Mac" ]; then
   conda install -c conda-forge jsonpickle==3.0.2 -y
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
-  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 else
   # apple silicon and linux
-  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
-  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_YOLOV8
-  $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-  $PIP_YOLOV8 install "ultralytics==8.0.191"
-  $PIP_YOLOV8 install "numpy==1.24.1"
-  $PIP_YOLOV8 install "humanfriendly==10.0"
-  $PIP_YOLOV8 install "jsonpickle==3.0.2"
+  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
+  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_PYTORCH
+  $PIP_PYTORCH install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+  $PIP_PYTORCH install "ultralytics==8.0.191"
+  $PIP_PYTORCH install "numpy==1.24.1"
+  $PIP_PYTORCH install "humanfriendly==10.0"
+  $PIP_PYTORCH install "jsonpickle==3.0.2"
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
-  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 fi
 

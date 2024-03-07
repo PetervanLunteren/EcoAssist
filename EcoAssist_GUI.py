@@ -1388,6 +1388,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     # load model specific variables
     model_vars = load_model_vars() 
     cls_model_fname = model_vars["model_fname"]
+    cls_model_env = model_vars["env"]
     cls_model_type = model_vars["type"]
     cls_model_fpath = os.path.join(EcoAssist_files, "models", "cls", var_cls_model.get(), cls_model_fname)
 
@@ -1407,6 +1408,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     command_args = []
     command_args.append(classify_detections_script)
     command_args.append(str(cls_disable_GPU))
+    command_args.append(cls_model_env)
     command_args.append(cls_model_type)
     command_args.append(EcoAssist_files)
     command_args.append(cls_model_fpath)
