@@ -4,7 +4,8 @@
             "model_fname": "namib_desert_v1.pt",
             "description": "Model to identify 30 species or higher level taxons present in the desert biome of the Skeleton Coast National Park, North Namibia. The model was trained on a set of more than 850,000 images.",
             "developer": "Addax Data Science",
-            "type": "yolov8",
+            "env": "pytorch",
+            "type": "addax-yolov8",
             "download_info": [
                 [
                     "https://huggingface.co/Addax-Data-Science/Namib-Desert-v1/resolve/main/namib_desert_v1.pt?download=true",
@@ -88,6 +89,7 @@
             "model_fname": "mewc_model_224px_best.h5",
             "description": "Model trained on a camera-trap dataset collected and curated by Barry Brook and Jessie Buettel, from Tasmania, Australia. These images are drawn from a variety of environmental contexts (dry and wet temperate eucalypt forest, woodland, and grasslands) using white-, infra-red (IR) and no-glow flash types from Cuddeback, Reconyx, Swift and Bushnell cameras. The following species or aggregated classes are represented in the dataset: Tasmanian Pademelon (Thylogale billardierii), Bennetts Wallaby (Notamacropus rufogriseus), Tasmanian Devil (Sarcophilus harrisii), Feral Cat (Felis catus), Bare-nosed Wombat (Vombatus ursinus), Brushtail Possum (Trichosurus vulpecula), Fallow Deer (Dama dama), Southern Brown Bandicoot (Isoodon obesulus), Currawong (Black: Strepera fuliginosa, Grey: S. versicolor) and Bronzewing (Brush: Phaps elegans, Common: P. chalcoptera). The latter two classes are birds, each of which consist of an aggregation of two species within a genus; the former eight are mammals. ",
             "developer": "University of Tasmania",
+            "env": "tensorflow",
             "type": "mewc",
             "download_info": [
                 [
@@ -138,7 +140,8 @@
             "model_fname": "md_v5a.0.0.pt",
             "description": "MegaDetector is an object detection model that identifies animals, people, and vehicles in camera trap images (which also makes it useful for eliminating blank images). This model is trained on several hundred thousand bounding boxes from a variety of ecosystems. The animals located by this model with be further identified by the species recognition models.",
             "developer": "Microsoft AI for Earth",
-            "type": "base",
+            "env": "base",
+            "type": "megadetector5",
             "download_info": [
                 [
                     "https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt",
@@ -159,7 +162,8 @@
             "model_fname": "md_v5b.0.0.pt",
             "description": "MegaDetector 5b differs from 5a only in its training data and is also an object detection model that identifies animals, people, and vehicles in camera trap images (which also makes it useful for eliminating blank images). This model is trained on several hundred thousand bounding boxes from a variety of ecosystems. The animals located by this model with be further identified by the species recognition models.",
             "developer": "Microsoft AI for Earth",
-            "type": "base",
+            "env": "base",
+            "type": "megadetector5",
             "download_info": [
                 [
                     "https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt",
