@@ -1,4 +1,4 @@
-name: ecoassistcondaenv-yolov8
+name: ecoassistcondaenv-pytorch
 
 channels:
   - conda-forge
