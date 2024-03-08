@@ -352,8 +352,9 @@ call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALL
 call %EA_CONDA_EXE% config --set notify_outdated_conda false
 
 @REM remove all old ecoassist conda evironments, if present
-@REM TODO: add old envs too yolov8 and mewc
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-pytorch || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-tensorflow || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
@@ -384,6 +385,7 @@ call %EA_CONDA_EXE% deactivate
 call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\pytorch.yml
 call activate ecoassistcondaenv-pytorch
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.191
+"%EA_PIP_EXE_PYTORCH%" install timm
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for tensorflow classification

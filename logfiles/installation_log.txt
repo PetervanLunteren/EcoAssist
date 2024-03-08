@@ -1,0 +1,699 @@
+LOG_FILE does not exist. Logging to /Applications/.EcoAssist_files/installation_log.txt
+This installation started at: Fri Mar  8 07:27:33 CET 2024
+This installation is using platform: Apple Silicon Mac
+uname -a:
+Darwin Peters-MacBook-Pro-2.local 22.3.0 Darwin Kernel Version 22.3.0: Mon Jan 30 20:38:37 PST 2023; root:xnu-8792.81.3~2/RELEASE_ARM64_T6000 arm64
+
+System information:
+Software:
+
+    System Software Overview:
+
+      System Version: macOS 13.2.1 (22D68)
+      Kernel Version: Darwin 22.3.0
+      Boot Volume: Macintosh HD
+      Boot Mode: Normal
+      Computer Name: Peter’s MacBook Pro
+      User Name: Peter van Lunteren (peter)
+      Secure Virtual Memory: Enabled
+      System Integrity Protection: Enabled
+      Time since boot: 1 hour, 41 minutes
+
+Hardware:
+
+    Hardware Overview:
+
+      Model Name: MacBook Pro
+      Model Identifier: MacBookPro18,3
+      Model Number: MKGP3X/A
+      Chip: Apple M1 Pro
+      Total Number of Cores: 8 (6 performance and 2 efficiency)
+      Memory: 16 GB
+      System Firmware Version: 8419.80.7
+      OS Loader Version: 8419.80.7
+      Serial Number (system): JH34GMYGWJ
+      Hardware UUID: 505A3936-620E-5504-9D7F-8559EE3AE4C6
+      Provisioning UDID: 00006000-001C65CC3E92401E
+      Activation Lock Status: Disabled
+
+Memory:
+
+      Memory: 16 GB
+      Type: LPDDR5
+      Manufacturer: Samsung
+
+Storage:
+
+    Macintosh HD:
+
+      Free: 160,4 GB (160.397.369.344 bytes)
+      Capacity: 494,38 GB (494.384.795.648 bytes)
+      Mount Point: /System/Volumes/Update/mnt1
+      File System: APFS
+      Writable: Yes
+      Ignore Ownership: No
+      BSD Name: disk3s1
+      Volume UUID: D1F6D788-E070-46B6-AE5D-1FAB5BC97FA3
+      Physical Drive:
+          Device Name: APPLE SSD AP0512R
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: Apple Fabric
+          Internal: Yes
+          Partition Map Type: Unknown
+          S.M.A.R.T. Status: Verified
+
+    Macintosh HD - Data:
+
+      Free: 160,4 GB (160.397.369.344 bytes)
+      Capacity: 494,38 GB (494.384.795.648 bytes)
+      Mount Point: /System/Volumes/Data
+      File System: APFS
+      Writable: Yes
+      Ignore Ownership: No
+      BSD Name: disk3s5
+      Volume UUID: EA85FD5D-EE42-4C45-8532-92E8593331E1
+      Physical Drive:
+          Device Name: APPLE SSD AP0512R
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: Apple Fabric
+          Internal: Yes
+          Partition Map Type: Unknown
+          S.M.A.R.T. Status: Verified
+
+    Macintosh HD:
+
+      Free: 160,4 GB (160.397.369.344 bytes)
+      Capacity: 494,38 GB (494.384.795.648 bytes)
+      Mount Point: /
+      File System: APFS
+      Writable: No
+      Ignore Ownership: No
+      BSD Name: disk3s1s1
+      Volume UUID: 6463840A-B39F-4390-8007-1EA8E1066FEB
+      Physical Drive:
+          Device Name: APPLE SSD AP0512R
+          Media Name: AppleAPFSMedia
+          Medium Type: SSD
+          Protocol: Apple Fabric
+          Internal: Yes
+          Partition Map Type: Unknown
+          S.M.A.R.T. Status: Verified
+
+Command-line tools already installed.
+Dir EcoAssist does not exist! Clone repo...
+Cloning into 'EcoAssist'...
+remote: Enumerating objects: 84, done.        
+remote: Counting objects:   1% (1/84)        remote: Counting objects:   2% (2/84)        remote: Counting objects:   3% (3/84)        remote: Counting objects:   4% (4/84)        remote: Counting objects:   5% (5/84)        remote: Counting objects:   7% (6/84)        remote: Counting objects:   8% (7/84)        remote: Counting objects:   9% (8/84)        remote: Counting objects:  10% (9/84)        remote: Counting objects:  11% (10/84)        remote: Counting objects:  13% (11/84)        remote: Counting objects:  14% (12/84)        remote: Counting objects:  15% (13/84)        remote: Counting objects:  16% (14/84)        remote: Counting objects:  17% (15/84)        remote: Counting objects:  19% (16/84)        remote: Counting objects:  20% (17/84)        remote: Counting objects:  21% (18/84)        remote: Counting objects:  22% (19/84)        remote: Counting objects:  23% (20/84)        remote: Counting objects:  25% (21/84)        remote: Counting objects:  26% (22/84)        remote: Counting objects:  27% (23/84)        remote: Counting objects:  28% (24/84)        remote: Counting objects:  29% (25/84)        remote: Counting objects:  30% (26/84)        remote: Counting objects:  32% (27/84)        remote: Counting objects:  33% (28/84)        remote: Counting objects:  34% (29/84)        remote: Counting objects:  35% (30/84)        remote: Counting objects:  36% (31/84)        remote: Counting objects:  38% (32/84)        remote: Counting objects:  39% (33/84)        remote: Counting objects:  40% (34/84)        remote: Counting objects:  41% (35/84)        remote: Counting objects:  42% (36/84)        remote: Counting objects:  44% (37/84)        remote: Counting objects:  45% (38/84)        remote: Counting objects:  46% (39/84)        remote: Counting objects:  47% (40/84)        remote: Counting objects:  48% (41/84)        remote: Counting objects:  50% (42/84)        remote: Counting objects:  51% (43/84)        remote: Counting objects:  52% (44/84)        remote: Counting objects:  53% (45/84)        remote: Counting objects:  54% (46/84)        remote: Counting objects:  55% (47/84)        remote: Counting objects:  57% (48/84)        remote: Counting objects:  58% (49/84)        remote: Counting objects:  59% (50/84)        remote: Counting objects:  60% (51/84)        remote: Counting objects:  61% (52/84)        remote: Counting objects:  63% (53/84)        remote: Counting objects:  64% (54/84)        remote: Counting objects:  65% (55/84)        remote: Counting objects:  66% (56/84)        remote: Counting objects:  67% (57/84)        remote: Counting objects:  69% (58/84)        remote: Counting objects:  70% (59/84)        remote: Counting objects:  71% (60/84)        remote: Counting objects:  72% (61/84)        remote: Counting objects:  73% (62/84)        remote: Counting objects:  75% (63/84)        remote: Counting objects:  76% (64/84)        remote: Counting objects:  77% (65/84)        remote: Counting objects:  78% (66/84)        remote: Counting objects:  79% (67/84)        remote: Counting objects:  80% (68/84)        remote: Counting objects:  82% (69/84)        remote: Counting objects:  83% (70/84)        remote: Counting objects:  84% (71/84)        remote: Counting objects:  85% (72/84)        remote: Counting objects:  86% (73/84)        remote: Counting objects:  88% (74/84)        remote: Counting objects:  89% (75/84)        remote: Counting objects:  90% (76/84)        remote: Counting objects:  91% (77/84)        remote: Counting objects:  92% (78/84)        remote: Counting objects:  94% (79/84)        remote: Counting objects:  95% (80/84)        remote: Counting objects:  96% (81/84)        remote: Counting objects:  97% (82/84)        remote: Counting objects:  98% (83/84)        remote: Counting objects: 100% (84/84)        remote: Counting objects: 100% (84/84), done.        
+remote: Compressing objects:   1% (1/79)        remote: Compressing objects:   2% (2/79)        remote: Compressing objects:   3% (3/79)        remote: Compressing objects:   5% (4/79)        remote: Compressing objects:   6% (5/79)        remote: Compressing objects:   7% (6/79)        remote: Compressing objects:   8% (7/79)        remote: Compressing objects:  10% (8/79)        remote: Compressing objects:  11% (9/79)        remote: Compressing objects:  12% (10/79)        remote: Compressing objects:  13% (11/79)        remote: Compressing objects:  15% (12/79)        remote: Compressing objects:  16% (13/79)        remote: Compressing objects:  17% (14/79)        remote: Compressing objects:  18% (15/79)        remote: Compressing objects:  20% (16/79)        remote: Compressing objects:  21% (17/79)        remote: Compressing objects:  22% (18/79)        remote: Compressing objects:  24% (19/79)        remote: Compressing objects:  25% (20/79)        remote: Compressing objects:  26% (21/79)        remote: Compressing objects:  27% (22/79)        remote: Compressing objects:  29% (23/79)        remote: Compressing objects:  30% (24/79)        remote: Compressing objects:  31% (25/79)        remote: Compressing objects:  32% (26/79)        remote: Compressing objects:  34% (27/79)        remote: Compressing objects:  35% (28/79)        remote: Compressing objects:  36% (29/79)        remote: Compressing objects:  37% (30/79)        remote: Compressing objects:  39% (31/79)        remote: Compressing objects:  40% (32/79)        remote: Compressing objects:  41% (33/79)        remote: Compressing objects:  43% (34/79)        remote: Compressing objects:  44% (35/79)        remote: Compressing objects:  45% (36/79)        remote: Compressing objects:  46% (37/79)        remote: Compressing objects:  48% (38/79)        remote: Compressing objects:  49% (39/79)        remote: Compressing objects:  50% (40/79)        remote: Compressing objects:  51% (41/79)        remote: Compressing objects:  53% (42/79)        remote: Compressing objects:  54% (43/79)        remote: Compressing objects:  55% (44/79)        remote: Compressing objects:  56% (45/79)        remote: Compressing objects:  58% (46/79)        remote: Compressing objects:  59% (47/79)        remote: Compressing objects:  60% (48/79)        remote: Compressing objects:  62% (49/79)        remote: Compressing objects:  63% (50/79)        remote: Compressing objects:  64% (51/79)        remote: Compressing objects:  65% (52/79)        remote: Compressing objects:  67% (53/79)        remote: Compressing objects:  68% (54/79)        remote: Compressing objects:  69% (55/79)        remote: Compressing objects:  70% (56/79)        remote: Compressing objects:  72% (57/79)        remote: Compressing objects:  73% (58/79)        remote: Compressing objects:  74% (59/79)        remote: Compressing objects:  75% (60/79)        remote: Compressing objects:  77% (61/79)        remote: Compressing objects:  78% (62/79)        remote: Compressing objects:  79% (63/79)        remote: Compressing objects:  81% (64/79)        remote: Compressing objects:  82% (65/79)        remote: Compressing objects:  83% (66/79)        remote: Compressing objects:  84% (67/79)        remote: Compressing objects:  86% (68/79)        remote: Compressing objects:  87% (69/79)        remote: Compressing objects:  88% (70/79)        remote: Compressing objects:  89% (71/79)        remote: Compressing objects:  91% (72/79)        remote: Compressing objects:  92% (73/79)        remote: Compressing objects:  93% (74/79)        remote: Compressing objects:  94% (75/79)        remote: Compressing objects:  96% (76/79)        remote: Compressing objects:  97% (77/79)        remote: Compressing objects:  98% (78/79)        remote: Compressing objects: 100% (79/79)        remote: Compressing objects: 100% (79/79), done.        
+Receiving objects:   1% (1/84)Receiving objects:   2% (2/84)Receiving objects:   3% (3/84)Receiving objects:   4% (4/84)Receiving objects:   5% (5/84)Receiving objects:   7% (6/84)Receiving objects:   8% (7/84)Receiving objects:   9% (8/84)Receiving objects:  10% (9/84)Receiving objects:  11% (10/84)Receiving objects:  13% (11/84)Receiving objects:  14% (12/84)Receiving objects:  15% (13/84)Receiving objects:  16% (14/84)Receiving objects:  17% (15/84)Receiving objects:  19% (16/84)Receiving objects:  20% (17/84)Receiving objects:  21% (18/84)Receiving objects:  22% (19/84)Receiving objects:  23% (20/84)Receiving objects:  25% (21/84)Receiving objects:  26% (22/84)Receiving objects:  27% (23/84)Receiving objects:  28% (24/84)Receiving objects:  29% (25/84)Receiving objects:  30% (26/84)Receiving objects:  32% (27/84)Receiving objects:  33% (28/84)Receiving objects:  34% (29/84)Receiving objects:  35% (30/84)Receiving objects:  36% (31/84)Receiving objects:  38% (32/84)Receiving objects:  39% (33/84)Receiving objects:  40% (34/84)Receiving objects:  41% (35/84)Receiving objects:  42% (36/84)Receiving objects:  44% (37/84)Receiving objects:  45% (38/84)Receiving objects:  46% (39/84)Receiving objects:  47% (40/84)Receiving objects:  48% (41/84)Receiving objects:  50% (42/84)Receiving objects:  51% (43/84)Receiving objects:  52% (44/84)Receiving objects:  53% (45/84)Receiving objects:  54% (46/84)Receiving objects:  55% (47/84)Receiving objects:  57% (48/84)Receiving objects:  58% (49/84)Receiving objects:  59% (50/84)Receiving objects:  60% (51/84)Receiving objects:  61% (52/84)Receiving objects:  63% (53/84)Receiving objects:  64% (54/84)Receiving objects:  65% (55/84)Receiving objects:  66% (56/84)Receiving objects:  67% (57/84)Receiving objects:  69% (58/84)Receiving objects:  70% (59/84)Receiving objects:  71% (60/84)Receiving objects:  72% (61/84)Receiving objects:  73% (62/84)Receiving objects:  75% (63/84)Receiving objects:  76% (64/84)Receiving objects:  77% (65/84)Receiving objects:  78% (66/84)Receiving objects:  79% (67/84)Receiving objects:  80% (68/84)Receiving objects:  82% (69/84)Receiving objects:  83% (70/84)Receiving objects:  84% (71/84)Receiving objects:  85% (72/84)Receiving objects:  86% (73/84)Receiving objects:  88% (74/84)Receiving objects:  89% (75/84)Receiving objects:  90% (76/84)Receiving objects:  91% (77/84)Receiving objects:  92% (78/84)Receiving objects:  94% (79/84)Receiving objects:  95% (80/84)Receiving objects:  96% (81/84)Receiving objects:  97% (82/84)Receiving objects:  98% (83/84)remote: Total 84 (delta 10), reused 50 (delta 0), pack-reused 0        
+Receiving objects: 100% (84/84)Receiving objects: 100% (84/84), 1.49 MiB | 3.24 MiB/s, done.
+Resolving deltas:   0% (0/10)Resolving deltas:  10% (1/10)Resolving deltas:  20% (2/10)Resolving deltas:  30% (3/10)Resolving deltas:  40% (4/10)Resolving deltas:  50% (5/10)Resolving deltas:  60% (6/10)Resolving deltas:  70% (7/10)Resolving deltas:  80% (8/10)Resolving deltas:  90% (9/10)Resolving deltas: 100% (10/10)Resolving deltas: 100% (10/10), done.
+Custom icon assigned to '/Applications/.EcoAssist_files/EcoAssist/open.command' based on '/Applications/.EcoAssist_files/EcoAssist/imgs/logo_small_bg.icns'.
+Dir cameratraps does not exist! Clone repo...
+Cloning into 'cameratraps'...
+remote: Enumerating objects: 18759, done.        
+remote: Counting objects:   0% (1/3605)        remote: Counting objects:   1% (37/3605)        remote: Counting objects:   2% (73/3605)        remote: Counting objects:   3% (109/3605)        remote: Counting objects:   4% (145/3605)        remote: Counting objects:   5% (181/3605)        remote: Counting objects:   6% (217/3605)        remote: Counting objects:   7% (253/3605)        remote: Counting objects:   8% (289/3605)        remote: Counting objects:   9% (325/3605)        remote: Counting objects:  10% (361/3605)        remote: Counting objects:  11% (397/3605)        remote: Counting objects:  12% (433/3605)        remote: Counting objects:  13% (469/3605)        remote: Counting objects:  14% (505/3605)        remote: Counting objects:  15% (541/3605)        remote: Counting objects:  16% (577/3605)        remote: Counting objects:  17% (613/3605)        remote: Counting objects:  18% (649/3605)        remote: Counting objects:  19% (685/3605)        remote: Counting objects:  20% (721/3605)        remote: Counting objects:  21% (758/3605)        remote: Counting objects:  22% (794/3605)        remote: Counting objects:  23% (830/3605)        remote: Counting objects:  24% (866/3605)        remote: Counting objects:  25% (902/3605)        remote: Counting objects:  26% (938/3605)        remote: Counting objects:  27% (974/3605)        remote: Counting objects:  28% (1010/3605)        remote: Counting objects:  29% (1046/3605)        remote: Counting objects:  30% (1082/3605)        remote: Counting objects:  31% (1118/3605)        remote: Counting objects:  32% (1154/3605)        remote: Counting objects:  33% (1190/3605)        remote: Counting objects:  34% (1226/3605)        remote: Counting objects:  35% (1262/3605)        remote: Counting objects:  36% (1298/3605)        remote: Counting objects:  37% (1334/3605)        remote: Counting objects:  38% (1370/3605)        remote: Counting objects:  39% (1406/3605)        remote: Counting objects:  40% (1442/3605)        remote: Counting objects:  41% (1479/3605)        remote: Counting objects:  42% (1515/3605)        remote: Counting objects:  43% (1551/3605)        remote: Counting objects:  44% (1587/3605)        remote: Counting objects:  45% (1623/3605)        remote: Counting objects:  46% (1659/3605)        remote: Counting objects:  47% (1695/3605)        remote: Counting objects:  48% (1731/3605)        remote: Counting objects:  49% (1767/3605)        remote: Counting objects:  50% (1803/3605)        remote: Counting objects:  51% (1839/3605)        remote: Counting objects:  52% (1875/3605)        remote: Counting objects:  53% (1911/3605)        remote: Counting objects:  54% (1947/3605)        remote: Counting objects:  55% (1983/3605)        remote: Counting objects:  56% (2019/3605)        remote: Counting objects:  57% (2055/3605)        remote: Counting objects:  58% (2091/3605)        remote: Counting objects:  59% (2127/3605)        remote: Counting objects:  60% (2163/3605)        remote: Counting objects:  61% (2200/3605)        remote: Counting objects:  62% (2236/3605)        remote: Counting objects:  63% (2272/3605)        remote: Counting objects:  64% (2308/3605)        remote: Counting objects:  65% (2344/3605)        remote: Counting objects:  66% (2380/3605)        remote: Counting objects:  67% (2416/3605)        remote: Counting objects:  68% (2452/3605)        remote: Counting objects:  69% (2488/3605)        remote: Counting objects:  70% (2524/3605)        remote: Counting objects:  71% (2560/3605)        remote: Counting objects:  72% (2596/3605)        remote: Counting objects:  73% (2632/3605)        remote: Counting objects:  74% (2668/3605)        remote: Counting objects:  75% (2704/3605)        remote: Counting objects:  76% (2740/3605)        remote: Counting objects:  77% (2776/3605)        remote: Counting objects:  78% (2812/3605)        remote: Counting objects:  79% (2848/3605)        remote: Counting objects:  80% (2884/3605)        remote: Counting objects:  81% (2921/3605)        remote: Counting objects:  82% (2957/3605)        remote: Counting objects:  83% (2993/3605)        remote: Counting objects:  84% (3029/3605)        remote: Counting objects:  85% (3065/3605)        remote: Counting objects:  86% (3101/3605)        remote: Counting objects:  87% (3137/3605)        remote: Counting objects:  88% (3173/3605)        remote: Counting objects:  89% (3209/3605)        remote: Counting objects:  90% (3245/3605)        remote: Counting objects:  91% (3281/3605)        remote: Counting objects:  92% (3317/3605)        remote: Counting objects:  93% (3353/3605)        remote: Counting objects:  94% (3389/3605)        remote: Counting objects:  95% (3425/3605)        remote: Counting objects:  96% (3461/3605)        remote: Counting objects:  97% (3497/3605)        remote: Counting objects:  98% (3533/3605)        remote: Counting objects:  99% (3569/3605)        remote: Counting objects: 100% (3605/3605)        remote: Counting objects: 100% (3605/3605), done.        
+remote: Compressing objects:   0% (1/1154)        remote: Compressing objects:   1% (12/1154)        remote: Compressing objects:   2% (24/1154)        remote: Compressing objects:   3% (35/1154)        remote: Compressing objects:   4% (47/1154)        remote: Compressing objects:   5% (58/1154)        remote: Compressing objects:   6% (70/1154)        remote: Compressing objects:   7% (81/1154)        remote: Compressing objects:   8% (93/1154)        remote: Compressing objects:   9% (104/1154)        remote: Compressing objects:  10% (116/1154)        remote: Compressing objects:  11% (127/1154)        remote: Compressing objects:  12% (139/1154)        remote: Compressing objects:  13% (151/1154)        remote: Compressing objects:  14% (162/1154)        remote: Compressing objects:  15% (174/1154)        remote: Compressing objects:  16% (185/1154)        remote: Compressing objects:  17% (197/1154)        remote: Compressing objects:  18% (208/1154)        remote: Compressing objects:  19% (220/1154)        remote: Compressing objects:  20% (231/1154)        remote: Compressing objects:  21% (243/1154)        remote: Compressing objects:  22% (254/1154)        remote: Compressing objects:  23% (266/1154)        remote: Compressing objects:  24% (277/1154)        remote: Compressing objects:  25% (289/1154)        remote: Compressing objects:  26% (301/1154)        remote: Compressing objects:  27% (312/1154)        remote: Compressing objects:  28% (324/1154)        remote: Compressing objects:  29% (335/1154)        remote: Compressing objects:  30% (347/1154)        remote: Compressing objects:  31% (358/1154)        remote: Compressing objects:  32% (370/1154)        remote: Compressing objects:  33% (381/1154)        remote: Compressing objects:  34% (393/1154)        remote: Compressing objects:  35% (404/1154)        remote: Compressing objects:  36% (416/1154)        remote: Compressing objects:  37% (427/1154)        remote: Compressing objects:  38% (439/1154)        remote: Compressing objects:  39% (451/1154)        remote: Compressing objects:  40% (462/1154)        remote: Compressing objects:  41% (474/1154)        remote: Compressing objects:  42% (485/1154)        remote: Compressing objects:  43% (497/1154)        remote: Compressing objects:  44% (508/1154)        remote: Compressing objects:  45% (520/1154)        remote: Compressing objects:  46% (531/1154)        remote: Compressing objects:  47% (543/1154)        remote: Compressing objects:  48% (554/1154)        remote: Compressing objects:  49% (566/1154)        remote: Compressing objects:  50% (577/1154)        remote: Compressing objects:  51% (589/1154)        remote: Compressing objects:  52% (601/1154)        remote: Compressing objects:  53% (612/1154)        remote: Compressing objects:  54% (624/1154)        remote: Compressing objects:  55% (635/1154)        remote: Compressing objects:  56% (647/1154)        remote: Compressing objects:  57% (658/1154)        remote: Compressing objects:  58% (670/1154)        remote: Compressing objects:  59% (681/1154)        remote: Compressing objects:  60% (693/1154)        remote: Compressing objects:  61% (704/1154)        remote: Compressing objects:  62% (716/1154)        remote: Compressing objects:  63% (728/1154)        remote: Compressing objects:  64% (739/1154)        remote: Compressing objects:  65% (751/1154)        remote: Compressing objects:  66% (762/1154)        remote: Compressing objects:  67% (774/1154)        remote: Compressing objects:  68% (785/1154)        remote: Compressing objects:  69% (797/1154)        remote: Compressing objects:  70% (808/1154)        remote: Compressing objects:  71% (820/1154)        remote: Compressing objects:  72% (831/1154)        remote: Compressing objects:  73% (843/1154)        remote: Compressing objects:  74% (854/1154)        remote: Compressing objects:  75% (866/1154)        remote: Compressing objects:  76% (878/1154)        remote: Compressing objects:  77% (889/1154)        remote: Compressing objects:  78% (901/1154)        remote: Compressing objects:  79% (912/1154)        remote: Compressing objects:  80% (924/1154)        remote: Compressing objects:  81% (935/1154)        remote: Compressing objects:  82% (947/1154)        remote: Compressing objects:  83% (958/1154)        remote: Compressing objects:  84% (970/1154)        remote: Compressing objects:  85% (981/1154)        remote: Compressing objects:  86% (993/1154)        remote: Compressing objects:  87% (1004/1154)        remote: Compressing objects:  88% (1016/1154)        remote: Compressing objects:  89% (1028/1154)        remote: Compressing objects:  90% (1039/1154)        remote: Compressing objects:  91% (1051/1154)        remote: Compressing objects:  92% (1062/1154)        remote: Compressing objects:  93% (1074/1154)        remote: Compressing objects:  94% (1085/1154)        remote: Compressing objects:  95% (1097/1154)        remote: Compressing objects:  96% (1108/1154)        remote: Compressing objects:  97% (1120/1154)        remote: Compressing objects:  98% (1131/1154)        remote: Compressing objects:  99% (1143/1154)        remote: Compressing objects: 100% (1154/1154)        remote: Compressing objects: 100% (1154/1154), done.        
+Receiving objects:   0% (1/18759)Receiving objects:   1% (188/18759)Receiving objects:   2% (376/18759)Receiving objects:   3% (563/18759)Receiving objects:   4% (751/18759)Receiving objects:   5% (938/18759)Receiving objects:   6% (1126/18759)Receiving objects:   7% (1314/18759)Receiving objects:   8% (1501/18759)Receiving objects:   9% (1689/18759)Receiving objects:  10% (1876/18759)Receiving objects:  11% (2064/18759)Receiving objects:  12% (2252/18759)Receiving objects:  13% (2439/18759)Receiving objects:  14% (2627/18759)Receiving objects:  15% (2814/18759)Receiving objects:  16% (3002/18759)Receiving objects:  17% (3190/18759)Receiving objects:  18% (3377/18759)Receiving objects:  19% (3565/18759)Receiving objects:  20% (3752/18759)Receiving objects:  21% (3940/18759)Receiving objects:  22% (4127/18759)Receiving objects:  23% (4315/18759)Receiving objects:  24% (4503/18759)Receiving objects:  25% (4690/18759)Receiving objects:  26% (4878/18759)Receiving objects:  26% (5059/18759), 1.54 MiB | 3.02 MiB/sReceiving objects:  27% (5065/18759), 3.24 MiB | 3.21 MiB/sReceiving objects:  27% (5165/18759), 4.64 MiB | 3.07 MiB/sReceiving objects:  28% (5253/18759), 5.99 MiB | 2.98 MiB/sReceiving objects:  29% (5441/18759), 7.31 MiB | 2.91 MiB/sReceiving objects:  29% (5501/18759), 7.31 MiB | 2.91 MiB/sReceiving objects:  30% (5628/18759), 8.41 MiB | 2.79 MiB/sReceiving objects:  31% (5816/18759), 8.41 MiB | 2.79 MiB/sReceiving objects:  32% (6003/18759), 8.41 MiB | 2.79 MiB/sReceiving objects:  33% (6191/18759), 9.73 MiB | 2.77 MiB/sReceiving objects:  33% (6234/18759), 9.73 MiB | 2.77 MiB/sReceiving objects:  34% (6379/18759), 12.49 MiB | 2.76 MiB/sReceiving objects:  35% (6566/18759), 12.49 MiB | 2.76 MiB/sReceiving objects:  35% (6620/18759), 14.04 MiB | 2.77 MiB/sReceiving objects:  35% (6644/18759), 17.20 MiB | 2.78 MiB/sReceiving objects:  35% (6652/18759), 18.63 MiB | 2.80 MiB/sReceiving objects:  36% (6754/18759), 21.71 MiB | 2.94 MiB/sReceiving objects:  37% (6941/18759), 21.71 MiB | 2.94 MiB/sReceiving objects:  37% (6994/18759), 22.96 MiB | 2.92 MiB/sReceiving objects:  37% (7004/18759), 25.29 MiB | 2.83 MiB/sReceiving objects:  38% (7129/18759), 26.65 MiB | 2.79 MiB/sReceiving objects:  38% (7211/18759), 28.03 MiB | 2.75 MiB/sReceiving objects:  38% (7220/18759), 29.63 MiB | 2.74 MiB/sReceiving objects:  38% (7224/18759), 34.59 MiB | 2.83 MiB/sReceiving objects:  38% (7226/18759), 37.54 MiB | 2.95 MiB/sReceiving objects:  38% (7229/18759), 38.80 MiB | 2.96 MiB/sReceiving objects:  38% (7230/18759), 43.07 MiB | 2.95 MiB/sReceiving objects:  38% (7231/18759), 45.84 MiB | 2.86 MiB/sReceiving objects:  38% (7233/18759), 48.62 MiB | 2.73 MiB/sReceiving objects:  38% (7235/18759), 50.21 MiB | 2.74 MiB/sReceiving objects:  39% (7317/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  40% (7504/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  41% (7692/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  42% (7879/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  43% (8067/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  43% (8248/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  44% (8254/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  45% (8442/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  46% (8630/18759), 52.87 MiB | 2.76 MiB/sReceiving objects:  47% (8817/18759), 54.46 MiB | 2.81 MiB/sReceiving objects:  48% (9005/18759), 54.46 MiB | 2.81 MiB/sReceiving objects:  49% (9192/18759), 54.46 MiB | 2.81 MiB/sReceiving objects:  49% (9216/18759), 57.65 MiB | 2.87 MiB/sReceiving objects:  49% (9217/18759), 59.08 MiB | 2.88 MiB/sReceiving objects:  49% (9219/18759), 62.07 MiB | 2.92 MiB/sReceiving objects:  49% (9221/18759), 66.25 MiB | 2.95 MiB/sReceiving objects:  49% (9222/18759), 67.75 MiB | 2.93 MiB/sReceiving objects:  49% (9223/18759), 72.32 MiB | 2.89 MiB/sReceiving objects:  49% (9224/18759), 73.79 MiB | 2.88 MiB/sReceiving objects:  49% (9231/18759), 76.69 MiB | 2.85 MiB/sReceiving objects:  50% (9380/18759), 76.69 MiB | 2.85 MiB/sReceiving objects:  50% (9481/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  51% (9568/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  52% (9755/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  53% (9943/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  54% (10130/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  55% (10318/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  56% (10506/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  57% (10693/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  58% (10881/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  59% (11068/18759), 80.99 MiB | 2.89 MiB/sReceiving objects:  59% (11089/18759), 84.26 MiB | 2.94 MiB/sReceiving objects:  59% (11089/18759), 87.12 MiB | 2.93 MiB/sReceiving objects:  59% (11089/18759), 90.50 MiB | 3.04 MiB/sReceiving objects:  59% (11089/18759), 93.39 MiB | 3.08 MiB/sReceiving objects:  59% (11089/18759), 96.40 MiB | 3.01 MiB/sReceiving objects:  59% (11089/18759), 99.34 MiB | 3.03 MiB/sReceiving objects:  59% (11090/18759), 100.82 MiB | 3.02 MiB/sReceiving objects:  60% (11256/18759), 102.29 MiB | 2.98 MiB/sReceiving objects:  61% (11443/18759), 102.29 MiB | 2.98 MiB/sReceiving objects:  62% (11631/18759), 102.29 MiB | 2.98 MiB/sReceiving objects:  63% (11819/18759), 102.29 MiB | 2.98 MiB/sReceiving objects:  64% (12006/18759), 102.29 MiB | 2.98 MiB/sReceiving objects:  64% (12013/18759), 105.77 MiB | 3.01 MiB/sReceiving objects:  64% (12013/18759), 108.82 MiB | 3.08 MiB/sReceiving objects:  64% (12013/18759), 111.16 MiB | 2.91 MiB/sReceiving objects:  64% (12013/18759), 113.94 MiB | 2.88 MiB/sReceiving objects:  64% (12013/18759), 115.59 MiB | 2.92 MiB/sReceiving objects:  64% (12013/18759), 118.57 MiB | 2.81 MiB/sReceiving objects:  64% (12013/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  65% (12194/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  66% (12381/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  67% (12569/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  68% (12757/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  69% (12944/18759), 121.42 MiB | 2.77 MiB/sReceiving objects:  70% (13132/18759), 122.84 MiB | 2.81 MiB/sReceiving objects:  70% (13237/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  71% (13319/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  72% (13507/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  73% (13695/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  74% (13882/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  75% (14070/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  76% (14257/18759), 124.11 MiB | 2.85 MiB/sReceiving objects:  76% (14388/18759), 126.93 MiB | 2.87 MiB/sReceiving objects:  76% (14388/18759), 129.79 MiB | 2.80 MiB/sReceiving objects:  76% (14388/18759), 132.79 MiB | 2.83 MiB/sReceiving objects:  77% (14445/18759), 134.37 MiB | 2.86 MiB/sReceiving objects:  78% (14633/18759), 134.37 MiB | 2.86 MiB/sReceiving objects:  78% (14743/18759), 135.61 MiB | 2.82 MiB/sReceiving objects:  79% (14820/18759), 135.61 MiB | 2.82 MiB/sReceiving objects:  80% (15008/18759), 135.61 MiB | 2.82 MiB/sReceiving objects:  80% (15067/18759), 138.53 MiB | 2.88 MiB/sReceiving objects:  80% (15077/18759), 140.04 MiB | 2.88 MiB/sReceiving objects:  80% (15079/18759), 144.30 MiB | 2.84 MiB/sReceiving objects:  80% (15082/18759), 147.43 MiB | 2.86 MiB/sReceiving objects:  80% (15150/18759), 150.36 MiB | 2.92 MiB/sReceiving objects:  80% (15150/18759), 153.08 MiB | 2.87 MiB/sReceiving objects:  80% (15150/18759), 155.84 MiB | 2.86 MiB/sReceiving objects:  80% (15150/18759), 159.03 MiB | 2.90 MiB/sReceiving objects:  80% (15150/18759), 162.24 MiB | 2.92 MiB/sReceiving objects:  80% (15150/18759), 165.37 MiB | 2.99 MiB/sReceiving objects:  80% (15150/18759), 168.67 MiB | 3.13 MiB/sReceiving objects:  80% (15150/18759), 171.61 MiB | 3.13 MiB/sReceiving objects:  80% (15150/18759), 174.64 MiB | 3.06 MiB/sReceiving objects:  80% (15151/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  81% (15195/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  82% (15383/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  83% (15570/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  84% (15758/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  85% (15946/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  86% (16133/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  87% (16321/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  88% (16508/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  89% (16696/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  90% (16884/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  91% (17071/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  92% (17259/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  93% (17446/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  94% (17634/18759), 176.19 MiB | 3.07 MiB/sReceiving objects:  95% (17822/18759), 177.76 MiB | 3.08 MiB/sReceiving objects:  96% (18009/18759), 177.76 MiB | 3.08 MiB/sReceiving objects:  97% (18197/18759), 177.76 MiB | 3.08 MiB/sReceiving objects:  98% (18384/18759), 179.39 MiB | 3.08 MiB/sReceiving objects:  98% (18517/18759), 179.39 MiB | 3.08 MiB/sReceiving objects:  98% (18522/18759), 184.04 MiB | 3.07 MiB/sReceiving objects:  99% (18572/18759), 184.04 MiB | 3.07 MiB/sReceiving objects:  99% (18680/18759), 187.00 MiB | 3.03 MiB/sReceiving objects: 100% (18759/18759), 188.44 MiB | 3.04 MiB/sReceiving objects: 100% (18759/18759), 188.99 MiB | 2.91 MiB/s, done.
+Resolving deltas:   0% (0/11701)remote: Total 18759 (delta 2505), reused 3540 (delta 2448), pack-reused 15154        
+Resolving deltas:   1% (118/11701)Resolving deltas:   2% (236/11701)Resolving deltas:   3% (352/11701)Resolving deltas:   4% (470/11701)Resolving deltas:   5% (586/11701)Resolving deltas:   6% (703/11701)Resolving deltas:   7% (820/11701)Resolving deltas:   8% (938/11701)Resolving deltas:   9% (1054/11701)Resolving deltas:  10% (1171/11701)Resolving deltas:  11% (1288/11701)Resolving deltas:  12% (1405/11701)Resolving deltas:  13% (1522/11701)Resolving deltas:  14% (1639/11701)Resolving deltas:  15% (1756/11701)Resolving deltas:  16% (1873/11701)Resolving deltas:  17% (1990/11701)Resolving deltas:  18% (2107/11701)Resolving deltas:  19% (2224/11701)Resolving deltas:  20% (2341/11701)Resolving deltas:  21% (2458/11701)Resolving deltas:  22% (2575/11701)Resolving deltas:  23% (2694/11701)Resolving deltas:  24% (2811/11701)Resolving deltas:  25% (2926/11701)Resolving deltas:  26% (3043/11701)Resolving deltas:  27% (3160/11701)Resolving deltas:  28% (3278/11701)Resolving deltas:  29% (3394/11701)Resolving deltas:  30% (3511/11701)Resolving deltas:  31% (3631/11701)Resolving deltas:  32% (3745/11701)Resolving deltas:  33% (3862/11701)Resolving deltas:  34% (3980/11701)Resolving deltas:  35% (4096/11701)Resolving deltas:  36% (4213/11701)Resolving deltas:  37% (4330/11701)Resolving deltas:  38% (4447/11701)Resolving deltas:  39% (4564/11701)Resolving deltas:  40% (4681/11701)Resolving deltas:  41% (4798/11701)Resolving deltas:  42% (4915/11701)Resolving deltas:  43% (5032/11701)Resolving deltas:  44% (5150/11701)Resolving deltas:  45% (5266/11701)Resolving deltas:  46% (5384/11701)Resolving deltas:  47% (5500/11701)Resolving deltas:  48% (5618/11701)Resolving deltas:  49% (5734/11701)Resolving deltas:  50% (5851/11701)Resolving deltas:  51% (5968/11701)Resolving deltas:  52% (6085/11701)Resolving deltas:  53% (6202/11701)Resolving deltas:  54% (6319/11701)Resolving deltas:  55% (6436/11701)Resolving deltas:  56% (6553/11701)Resolving deltas:  57% (6671/11701)Resolving deltas:  58% (6787/11701)Resolving deltas:  59% (6904/11701)Resolving deltas:  60% (7021/11701)Resolving deltas:  61% (7138/11701)Resolving deltas:  62% (7255/11701)Resolving deltas:  63% (7372/11701)Resolving deltas:  64% (7489/11701)Resolving deltas:  65% (7607/11701)Resolving deltas:  66% (7723/11701)Resolving deltas:  67% (7841/11701)Resolving deltas:  68% (7958/11701)Resolving deltas:  69% (8074/11701)Resolving deltas:  70% (8191/11701)Resolving deltas:  71% (8308/11701)Resolving deltas:  72% (8425/11701)Resolving deltas:  73% (8542/11701)Resolving deltas:  74% (8659/11701)Resolving deltas:  75% (8776/11701)Resolving deltas:  76% (8894/11701)Resolving deltas:  77% (9010/11701)Resolving deltas:  78% (9127/11701)Resolving deltas:  79% (9244/11701)Resolving deltas:  80% (9362/11701)Resolving deltas:  81% (9478/11701)Resolving deltas:  82% (9595/11701)Resolving deltas:  83% (9712/11701)Resolving deltas:  84% (9829/11701)Resolving deltas:  85% (9946/11701)Resolving deltas:  86% (10063/11701)Resolving deltas:  87% (10180/11701)Resolving deltas:  88% (10297/11701)Resolving deltas:  89% (10414/11701)Resolving deltas:  90% (10531/11701)Resolving deltas:  91% (10648/11701)Resolving deltas:  92% (10765/11701)Resolving deltas:  93% (10882/11701)Resolving deltas:  94% (10999/11701)Resolving deltas:  95% (11116/11701)Resolving deltas:  96% (11233/11701)Resolving deltas:  97% (11350/11701)Resolving deltas:  98% (11467/11701)Resolving deltas:  99% (11584/11701)Resolving deltas: 100% (11701/11701)Resolving deltas: 100% (11701/11701), done.
+Note: switching to 'f72f36f7511a8da7673d52fc3692bd10ec69eb28'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at f72f36f7 Merge branch 'main' of github.com:agentmorris/MegaDetector
+Dir yolov5 does not exist! Clone repo...
+Cloning into 'yolov5'...
+remote: Enumerating objects: 16512, done.        
+remote: Counting objects:   0% (1/104)        remote: Counting objects:   1% (2/104)        remote: Counting objects:   2% (3/104)        remote: Counting objects:   3% (4/104)        remote: Counting objects:   4% (5/104)        remote: Counting objects:   5% (6/104)        remote: Counting objects:   6% (7/104)        remote: Counting objects:   7% (8/104)        remote: Counting objects:   8% (9/104)        remote: Counting objects:   9% (10/104)        remote: Counting objects:  10% (11/104)        remote: Counting objects:  11% (12/104)        remote: Counting objects:  12% (13/104)        remote: Counting objects:  13% (14/104)        remote: Counting objects:  14% (15/104)        remote: Counting objects:  15% (16/104)        remote: Counting objects:  16% (17/104)        remote: Counting objects:  17% (18/104)        remote: Counting objects:  18% (19/104)        remote: Counting objects:  19% (20/104)        remote: Counting objects:  20% (21/104)        remote: Counting objects:  21% (22/104)        remote: Counting objects:  22% (23/104)        remote: Counting objects:  23% (24/104)        remote: Counting objects:  24% (25/104)        remote: Counting objects:  25% (26/104)        remote: Counting objects:  26% (28/104)        remote: Counting objects:  27% (29/104)        remote: Counting objects:  28% (30/104)        remote: Counting objects:  29% (31/104)        remote: Counting objects:  30% (32/104)        remote: Counting objects:  31% (33/104)        remote: Counting objects:  32% (34/104)        remote: Counting objects:  33% (35/104)        remote: Counting objects:  34% (36/104)        remote: Counting objects:  35% (37/104)        remote: Counting objects:  36% (38/104)        remote: Counting objects:  37% (39/104)        remote: Counting objects:  38% (40/104)        remote: Counting objects:  39% (41/104)        remote: Counting objects:  40% (42/104)        remote: Counting objects:  41% (43/104)        remote: Counting objects:  42% (44/104)        remote: Counting objects:  43% (45/104)        remote: Counting objects:  44% (46/104)        remote: Counting objects:  45% (47/104)        remote: Counting objects:  46% (48/104)        remote: Counting objects:  47% (49/104)        remote: Counting objects:  48% (50/104)        remote: Counting objects:  49% (51/104)        remote: Counting objects:  50% (52/104)        remote: Counting objects:  51% (54/104)        remote: Counting objects:  52% (55/104)        remote: Counting objects:  53% (56/104)        remote: Counting objects:  54% (57/104)        remote: Counting objects:  55% (58/104)        remote: Counting objects:  56% (59/104)        remote: Counting objects:  57% (60/104)        remote: Counting objects:  58% (61/104)        remote: Counting objects:  59% (62/104)        remote: Counting objects:  60% (63/104)        remote: Counting objects:  61% (64/104)        remote: Counting objects:  62% (65/104)        remote: Counting objects:  63% (66/104)        remote: Counting objects:  64% (67/104)        remote: Counting objects:  65% (68/104)        remote: Counting objects:  66% (69/104)        remote: Counting objects:  67% (70/104)        remote: Counting objects:  68% (71/104)        remote: Counting objects:  69% (72/104)        remote: Counting objects:  70% (73/104)        remote: Counting objects:  71% (74/104)        remote: Counting objects:  72% (75/104)        remote: Counting objects:  73% (76/104)        remote: Counting objects:  74% (77/104)        remote: Counting objects:  75% (78/104)        remote: Counting objects:  76% (80/104)        remote: Counting objects:  77% (81/104)        remote: Counting objects:  78% (82/104)        remote: Counting objects:  79% (83/104)        remote: Counting objects:  80% (84/104)        remote: Counting objects:  81% (85/104)        remote: Counting objects:  82% (86/104)        remote: Counting objects:  83% (87/104)        remote: Counting objects:  84% (88/104)        remote: Counting objects:  85% (89/104)        remote: Counting objects:  86% (90/104)        remote: Counting objects:  87% (91/104)        remote: Counting objects:  88% (92/104)        remote: Counting objects:  89% (93/104)        remote: Counting objects:  90% (94/104)        remote: Counting objects:  91% (95/104)        remote: Counting objects:  92% (96/104)        remote: Counting objects:  93% (97/104)        remote: Counting objects:  94% (98/104)        remote: Counting objects:  95% (99/104)        remote: Counting objects:  96% (100/104)        remote: Counting objects:  97% (101/104)        remote: Counting objects:  98% (102/104)        remote: Counting objects:  99% (103/104)        remote: Counting objects: 100% (104/104)        remote: Counting objects: 100% (104/104), done.        
+remote: Compressing objects:   1% (1/89)        remote: Compressing objects:   2% (2/89)        remote: Compressing objects:   3% (3/89)        remote: Compressing objects:   4% (4/89)        remote: Compressing objects:   5% (5/89)        remote: Compressing objects:   6% (6/89)        remote: Compressing objects:   7% (7/89)        remote: Compressing objects:   8% (8/89)        remote: Compressing objects:  10% (9/89)        remote: Compressing objects:  11% (10/89)        remote: Compressing objects:  12% (11/89)        remote: Compressing objects:  13% (12/89)        remote: Compressing objects:  14% (13/89)        remote: Compressing objects:  15% (14/89)        remote: Compressing objects:  16% (15/89)        remote: Compressing objects:  17% (16/89)        remote: Compressing objects:  19% (17/89)        remote: Compressing objects:  20% (18/89)        remote: Compressing objects:  21% (19/89)        remote: Compressing objects:  22% (20/89)        remote: Compressing objects:  23% (21/89)        remote: Compressing objects:  24% (22/89)        remote: Compressing objects:  25% (23/89)        remote: Compressing objects:  26% (24/89)        remote: Compressing objects:  28% (25/89)        remote: Compressing objects:  29% (26/89)        remote: Compressing objects:  30% (27/89)        remote: Compressing objects:  31% (28/89)        remote: Compressing objects:  32% (29/89)        remote: Compressing objects:  33% (30/89)        remote: Compressing objects:  34% (31/89)        remote: Compressing objects:  35% (32/89)        remote: Compressing objects:  37% (33/89)        remote: Compressing objects:  38% (34/89)        remote: Compressing objects:  39% (35/89)        remote: Compressing objects:  40% (36/89)        remote: Compressing objects:  41% (37/89)        remote: Compressing objects:  42% (38/89)        remote: Compressing objects:  43% (39/89)        remote: Compressing objects:  44% (40/89)        remote: Compressing objects:  46% (41/89)        remote: Compressing objects:  47% (42/89)        remote: Compressing objects:  48% (43/89)        remote: Compressing objects:  49% (44/89)        remote: Compressing objects:  50% (45/89)        remote: Compressing objects:  51% (46/89)        remote: Compressing objects:  52% (47/89)        remote: Compressing objects:  53% (48/89)        remote: Compressing objects:  55% (49/89)        remote: Compressing objects:  56% (50/89)        remote: Compressing objects:  57% (51/89)        remote: Compressing objects:  58% (52/89)        remote: Compressing objects:  59% (53/89)        remote: Compressing objects:  60% (54/89)        remote: Compressing objects:  61% (55/89)        remote: Compressing objects:  62% (56/89)        remote: Compressing objects:  64% (57/89)        remote: Compressing objects:  65% (58/89)        remote: Compressing objects:  66% (59/89)        remote: Compressing objects:  67% (60/89)        remote: Compressing objects:  68% (61/89)        remote: Compressing objects:  69% (62/89)        remote: Compressing objects:  70% (63/89)        remote: Compressing objects:  71% (64/89)        remote: Compressing objects:  73% (65/89)        remote: Compressing objects:  74% (66/89)        remote: Compressing objects:  75% (67/89)        remote: Compressing objects:  76% (68/89)        remote: Compressing objects:  77% (69/89)        remote: Compressing objects:  78% (70/89)        remote: Compressing objects:  79% (71/89)        remote: Compressing objects:  80% (72/89)        remote: Compressing objects:  82% (73/89)        remote: Compressing objects:  83% (74/89)        remote: Compressing objects:  84% (75/89)        remote: Compressing objects:  85% (76/89)        remote: Compressing objects:  86% (77/89)        remote: Compressing objects:  87% (78/89)        remote: Compressing objects:  88% (79/89)        remote: Compressing objects:  89% (80/89)        remote: Compressing objects:  91% (81/89)        remote: Compressing objects:  92% (82/89)        remote: Compressing objects:  93% (83/89)        remote: Compressing objects:  94% (84/89)        remote: Compressing objects:  95% (85/89)        remote: Compressing objects:  96% (86/89)        remote: Compressing objects:  97% (87/89)        remote: Compressing objects:  98% (88/89)        remote: Compressing objects: 100% (89/89)        remote: Compressing objects: 100% (89/89), done.        
+Receiving objects:   0% (1/16512)Receiving objects:   1% (166/16512)Receiving objects:   2% (331/16512)Receiving objects:   3% (496/16512)Receiving objects:   4% (661/16512)Receiving objects:   5% (826/16512)Receiving objects:   6% (991/16512)Receiving objects:   7% (1156/16512)Receiving objects:   8% (1321/16512)Receiving objects:   9% (1487/16512)Receiving objects:  10% (1652/16512)Receiving objects:  11% (1817/16512)Receiving objects:  12% (1982/16512)Receiving objects:  13% (2147/16512)Receiving objects:  14% (2312/16512)Receiving objects:  15% (2477/16512)Receiving objects:  16% (2642/16512)Receiving objects:  17% (2808/16512)Receiving objects:  18% (2973/16512)Receiving objects:  19% (3138/16512)Receiving objects:  20% (3303/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  21% (3468/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  22% (3633/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  23% (3798/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  24% (3963/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  25% (4128/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  26% (4294/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  27% (4459/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  28% (4624/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  29% (4789/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  30% (4954/16512), 1.50 MiB | 2.95 MiB/sReceiving objects:  30% (4967/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  31% (5119/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  32% (5284/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  33% (5449/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  34% (5615/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  35% (5780/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  36% (5945/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  37% (6110/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  38% (6275/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  39% (6440/16512), 3.47 MiB | 3.43 MiB/sReceiving objects:  40% (6605/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  41% (6770/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  42% (6936/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  43% (7101/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  44% (7266/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  45% (7431/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  46% (7596/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  47% (7761/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  48% (7926/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  49% (8091/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  49% (8113/16512), 5.06 MiB | 3.34 MiB/sReceiving objects:  50% (8256/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  51% (8422/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  52% (8587/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  53% (8752/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  54% (8917/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  55% (9082/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  56% (9247/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  57% (9412/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  58% (9577/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  59% (9743/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  60% (9908/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  61% (10073/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  62% (10238/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  63% (10403/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  64% (10568/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  65% (10733/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  66% (10898/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  67% (11064/16512), 6.71 MiB | 3.30 MiB/sReceiving objects:  67% (11166/16512), 10.28 MiB | 3.39 MiB/sReceiving objects:  68% (11229/16512), 10.28 MiB | 3.39 MiB/sReceiving objects:  69% (11394/16512), 10.28 MiB | 3.39 MiB/sReceiving objects:  70% (11559/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  71% (11724/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  72% (11889/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  73% (12054/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  74% (12219/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  75% (12384/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  76% (12550/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  77% (12715/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  78% (12880/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  79% (13045/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  80% (13210/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  81% (13375/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  82% (13540/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  83% (13705/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  84% (13871/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  85% (14036/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  86% (14201/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  87% (14366/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  88% (14531/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  89% (14696/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  89% (14720/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  90% (14861/16512), 12.14 MiB | 3.44 MiB/sReceiving objects:  91% (15026/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  92% (15192/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  93% (15357/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  94% (15522/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  95% (15687/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  96% (15852/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  97% (16017/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  98% (16182/16512), 13.58 MiB | 3.37 MiB/sReceiving objects:  99% (16347/16512), 13.58 MiB | 3.37 MiB/sremote: Total 16512 (delta 41), reused 49 (delta 15), pack-reused 16408        
+Receiving objects: 100% (16512/16512), 13.58 MiB | 3.37 MiB/sReceiving objects: 100% (16512/16512), 15.12 MiB | 3.37 MiB/s, done.
+Resolving deltas:   0% (0/11306)Resolving deltas:   1% (114/11306)Resolving deltas:   2% (227/11306)Resolving deltas:   3% (342/11306)Resolving deltas:   4% (453/11306)Resolving deltas:   5% (567/11306)Resolving deltas:   6% (680/11306)Resolving deltas:   7% (792/11306)Resolving deltas:   8% (905/11306)Resolving deltas:   9% (1018/11306)Resolving deltas:  10% (1131/11306)Resolving deltas:  11% (1244/11306)Resolving deltas:  12% (1358/11306)Resolving deltas:  13% (1470/11306)Resolving deltas:  14% (1583/11306)Resolving deltas:  15% (1697/11306)Resolving deltas:  16% (1809/11306)Resolving deltas:  17% (1924/11306)Resolving deltas:  18% (2036/11306)Resolving deltas:  19% (2149/11306)Resolving deltas:  20% (2262/11306)Resolving deltas:  21% (2375/11306)Resolving deltas:  22% (2488/11306)Resolving deltas:  23% (2601/11306)Resolving deltas:  24% (2714/11306)Resolving deltas:  25% (2827/11306)Resolving deltas:  26% (2940/11306)Resolving deltas:  27% (3055/11306)Resolving deltas:  28% (3166/11306)Resolving deltas:  29% (3279/11306)Resolving deltas:  30% (3392/11306)Resolving deltas:  31% (3505/11306)Resolving deltas:  32% (3618/11306)Resolving deltas:  33% (3732/11306)Resolving deltas:  34% (3845/11306)Resolving deltas:  35% (3958/11306)Resolving deltas:  36% (4071/11306)Resolving deltas:  37% (4184/11306)Resolving deltas:  38% (4297/11306)Resolving deltas:  39% (4410/11306)Resolving deltas:  40% (4523/11306)Resolving deltas:  41% (4636/11306)Resolving deltas:  42% (4749/11306)Resolving deltas:  43% (4863/11306)Resolving deltas:  44% (4975/11306)Resolving deltas:  45% (5088/11306)Resolving deltas:  46% (5201/11306)Resolving deltas:  47% (5314/11306)Resolving deltas:  48% (5427/11306)Resolving deltas:  49% (5541/11306)Resolving deltas:  50% (5653/11306)Resolving deltas:  51% (5767/11306)Resolving deltas:  52% (5880/11306)Resolving deltas:  53% (5993/11306)Resolving deltas:  54% (6106/11306)Resolving deltas:  55% (6219/11306)Resolving deltas:  56% (6332/11306)Resolving deltas:  57% (6445/11306)Resolving deltas:  58% (6558/11306)Resolving deltas:  59% (6671/11306)Resolving deltas:  60% (6784/11306)Resolving deltas:  61% (6897/11306)Resolving deltas:  62% (7011/11306)Resolving deltas:  63% (7123/11306)Resolving deltas:  64% (7236/11306)Resolving deltas:  65% (7350/11306)Resolving deltas:  66% (7462/11306)Resolving deltas:  67% (7576/11306)Resolving deltas:  68% (7690/11306)Resolving deltas:  69% (7802/11306)Resolving deltas:  70% (7915/11306)Resolving deltas:  71% (8028/11306)Resolving deltas:  72% (8143/11306)Resolving deltas:  73% (8254/11306)Resolving deltas:  74% (8367/11306)Resolving deltas:  75% (8480/11306)Resolving deltas:  76% (8595/11306)Resolving deltas:  77% (8706/11306)Resolving deltas:  78% (8819/11306)Resolving deltas:  79% (8932/11306)Resolving deltas:  80% (9045/11306)Resolving deltas:  81% (9159/11306)Resolving deltas:  82% (9271/11306)Resolving deltas:  83% (9384/11306)Resolving deltas:  84% (9498/11306)Resolving deltas:  85% (9611/11306)Resolving deltas:  86% (9725/11306)Resolving deltas:  87% (9837/11306)Resolving deltas:  88% (9950/11306)Resolving deltas:  89% (10064/11306)Resolving deltas:  90% (10176/11306)Resolving deltas:  91% (10289/11306)Resolving deltas:  92% (10402/11306)Resolving deltas:  93% (10515/11306)Resolving deltas:  94% (10628/11306)Resolving deltas:  95% (10741/11306)Resolving deltas:  96% (10854/11306)Resolving deltas:  97% (10967/11306)Resolving deltas:  98% (11080/11306)Resolving deltas:  99% (11194/11306)Resolving deltas: 100% (11306/11306)Resolving deltas: 100% (11306/11306), done.
+Dir Human-in-the-loop does not exist! Clone repo...
+Cloning into 'Human-in-the-loop'...
+remote: Enumerating objects: 120, done.        
+remote: Counting objects:   0% (1/120)        remote: Counting objects:   1% (2/120)        remote: Counting objects:   2% (3/120)        remote: Counting objects:   3% (4/120)        remote: Counting objects:   4% (5/120)        remote: Counting objects:   5% (6/120)        remote: Counting objects:   6% (8/120)        remote: Counting objects:   7% (9/120)        remote: Counting objects:   8% (10/120)        remote: Counting objects:   9% (11/120)        remote: Counting objects:  10% (12/120)        remote: Counting objects:  11% (14/120)        remote: Counting objects:  12% (15/120)        remote: Counting objects:  13% (16/120)        remote: Counting objects:  14% (17/120)        remote: Counting objects:  15% (18/120)        remote: Counting objects:  16% (20/120)        remote: Counting objects:  17% (21/120)        remote: Counting objects:  18% (22/120)        remote: Counting objects:  19% (23/120)        remote: Counting objects:  20% (24/120)        remote: Counting objects:  21% (26/120)        remote: Counting objects:  22% (27/120)        remote: Counting objects:  23% (28/120)        remote: Counting objects:  24% (29/120)        remote: Counting objects:  25% (30/120)        remote: Counting objects:  26% (32/120)        remote: Counting objects:  27% (33/120)        remote: Counting objects:  28% (34/120)        remote: Counting objects:  29% (35/120)        remote: Counting objects:  30% (36/120)        remote: Counting objects:  31% (38/120)        remote: Counting objects:  32% (39/120)        remote: Counting objects:  33% (40/120)        remote: Counting objects:  34% (41/120)        remote: Counting objects:  35% (42/120)        remote: Counting objects:  36% (44/120)        remote: Counting objects:  37% (45/120)        remote: Counting objects:  38% (46/120)        remote: Counting objects:  39% (47/120)        remote: Counting objects:  40% (48/120)        remote: Counting objects:  41% (50/120)        remote: Counting objects:  42% (51/120)        remote: Counting objects:  43% (52/120)        remote: Counting objects:  44% (53/120)        remote: Counting objects:  45% (54/120)        remote: Counting objects:  46% (56/120)        remote: Counting objects:  47% (57/120)        remote: Counting objects:  48% (58/120)        remote: Counting objects:  49% (59/120)        remote: Counting objects:  50% (60/120)        remote: Counting objects:  51% (62/120)        remote: Counting objects:  52% (63/120)        remote: Counting objects:  53% (64/120)        remote: Counting objects:  54% (65/120)        remote: Counting objects:  55% (66/120)        remote: Counting objects:  56% (68/120)        remote: Counting objects:  57% (69/120)        remote: Counting objects:  58% (70/120)        remote: Counting objects:  59% (71/120)        remote: Counting objects:  60% (72/120)        remote: Counting objects:  61% (74/120)        remote: Counting objects:  62% (75/120)        remote: Counting objects:  63% (76/120)        remote: Counting objects:  64% (77/120)        remote: Counting objects:  65% (78/120)        remote: Counting objects:  66% (80/120)        remote: Counting objects:  67% (81/120)        remote: Counting objects:  68% (82/120)        remote: Counting objects:  69% (83/120)        remote: Counting objects:  70% (84/120)        remote: Counting objects:  71% (86/120)        remote: Counting objects:  72% (87/120)        remote: Counting objects:  73% (88/120)        remote: Counting objects:  74% (89/120)        remote: Counting objects:  75% (90/120)        remote: Counting objects:  76% (92/120)        remote: Counting objects:  77% (93/120)        remote: Counting objects:  78% (94/120)        remote: Counting objects:  79% (95/120)        remote: Counting objects:  80% (96/120)        remote: Counting objects:  81% (98/120)        remote: Counting objects:  82% (99/120)        remote: Counting objects:  83% (100/120)        remote: Counting objects:  84% (101/120)        remote: Counting objects:  85% (102/120)        remote: Counting objects:  86% (104/120)        remote: Counting objects:  87% (105/120)        remote: Counting objects:  88% (106/120)        remote: Counting objects:  89% (107/120)        remote: Counting objects:  90% (108/120)        remote: Counting objects:  91% (110/120)        remote: Counting objects:  92% (111/120)        remote: Counting objects:  93% (112/120)        remote: Counting objects:  94% (113/120)        remote: Counting objects:  95% (114/120)        remote: Counting objects:  96% (116/120)        remote: Counting objects:  97% (117/120)        remote: Counting objects:  98% (118/120)        remote: Counting objects:  99% (119/120)        remote: Counting objects: 100% (120/120)        remote: Counting objects: 100% (120/120), done.        
+remote: Compressing objects:   0% (1/114)        remote: Compressing objects:   1% (2/114)        remote: Compressing objects:   2% (3/114)        remote: Compressing objects:   3% (4/114)        remote: Compressing objects:   4% (5/114)        remote: Compressing objects:   5% (6/114)        remote: Compressing objects:   6% (7/114)        remote: Compressing objects:   7% (8/114)        remote: Compressing objects:   8% (10/114)        remote: Compressing objects:   9% (11/114)        remote: Compressing objects:  10% (12/114)        remote: Compressing objects:  11% (13/114)        remote: Compressing objects:  12% (14/114)        remote: Compressing objects:  13% (15/114)        remote: Compressing objects:  14% (16/114)        remote: Compressing objects:  15% (18/114)        remote: Compressing objects:  16% (19/114)        remote: Compressing objects:  17% (20/114)        remote: Compressing objects:  18% (21/114)        remote: Compressing objects:  19% (22/114)        remote: Compressing objects:  20% (23/114)        remote: Compressing objects:  21% (24/114)        remote: Compressing objects:  22% (26/114)        remote: Compressing objects:  23% (27/114)        remote: Compressing objects:  24% (28/114)        remote: Compressing objects:  25% (29/114)        remote: Compressing objects:  26% (30/114)        remote: Compressing objects:  27% (31/114)        remote: Compressing objects:  28% (32/114)        remote: Compressing objects:  29% (34/114)        remote: Compressing objects:  30% (35/114)        remote: Compressing objects:  31% (36/114)        remote: Compressing objects:  32% (37/114)        remote: Compressing objects:  33% (38/114)        remote: Compressing objects:  34% (39/114)        remote: Compressing objects:  35% (40/114)        remote: Compressing objects:  36% (42/114)        remote: Compressing objects:  37% (43/114)        remote: Compressing objects:  38% (44/114)        remote: Compressing objects:  39% (45/114)        remote: Compressing objects:  40% (46/114)        remote: Compressing objects:  41% (47/114)        remote: Compressing objects:  42% (48/114)        remote: Compressing objects:  43% (50/114)        remote: Compressing objects:  44% (51/114)        remote: Compressing objects:  45% (52/114)        remote: Compressing objects:  46% (53/114)        remote: Compressing objects:  47% (54/114)        remote: Compressing objects:  48% (55/114)        remote: Compressing objects:  49% (56/114)        remote: Compressing objects:  50% (57/114)        remote: Compressing objects:  51% (59/114)        remote: Compressing objects:  52% (60/114)        remote: Compressing objects:  53% (61/114)        remote: Compressing objects:  54% (62/114)        remote: Compressing objects:  55% (63/114)        remote: Compressing objects:  56% (64/114)        remote: Compressing objects:  57% (65/114)        remote: Compressing objects:  58% (67/114)        remote: Compressing objects:  59% (68/114)        remote: Compressing objects:  60% (69/114)        remote: Compressing objects:  61% (70/114)        remote: Compressing objects:  62% (71/114)        remote: Compressing objects:  63% (72/114)        remote: Compressing objects:  64% (73/114)        remote: Compressing objects:  65% (75/114)        remote: Compressing objects:  66% (76/114)        remote: Compressing objects:  67% (77/114)        remote: Compressing objects:  68% (78/114)        remote: Compressing objects:  69% (79/114)        remote: Compressing objects:  70% (80/114)        remote: Compressing objects:  71% (81/114)        remote: Compressing objects:  72% (83/114)        remote: Compressing objects:  73% (84/114)        remote: Compressing objects:  74% (85/114)        remote: Compressing objects:  75% (86/114)        remote: Compressing objects:  76% (87/114)        remote: Compressing objects:  77% (88/114)        remote: Compressing objects:  78% (89/114)        remote: Compressing objects:  79% (91/114)        remote: Compressing objects:  80% (92/114)        remote: Compressing objects:  81% (93/114)        remote: Compressing objects:  82% (94/114)        remote: Compressing objects:  83% (95/114)        remote: Compressing objects:  84% (96/114)        remote: Compressing objects:  85% (97/114)        remote: Compressing objects:  86% (99/114)        remote: Compressing objects:  87% (100/114)        remote: Compressing objects:  88% (101/114)        remote: Compressing objects:  89% (102/114)        remote: Compressing objects:  90% (103/114)        remote: Compressing objects:  91% (104/114)        remote: Compressing objects:  92% (105/114)        remote: Compressing objects:  93% (107/114)        remote: Compressing objects:  94% (108/114)        remote: Compressing objects:  95% (109/114)        remote: Compressing objects:  96% (110/114)        remote: Compressing objects:  97% (111/114)        remote: Compressing objects:  98% (112/114)        remote: Compressing objects:  99% (113/114)        remote: Compressing objects: 100% (114/114)        remote: Compressing objects: 100% (114/114), done.        
+Receiving objects:   0% (1/120)Receiving objects:   1% (2/120)Receiving objects:   2% (3/120)Receiving objects:   3% (4/120)Receiving objects:   4% (5/120)Receiving objects:   5% (6/120)Receiving objects:   6% (8/120)Receiving objects:   7% (9/120)Receiving objects:   8% (10/120)Receiving objects:   9% (11/120)Receiving objects:  10% (12/120)Receiving objects:  11% (14/120)Receiving objects:  12% (15/120)Receiving objects:  13% (16/120)Receiving objects:  14% (17/120)Receiving objects:  15% (18/120)Receiving objects:  16% (20/120)Receiving objects:  17% (21/120)Receiving objects:  18% (22/120)Receiving objects:  19% (23/120)Receiving objects:  20% (24/120)Receiving objects:  21% (26/120)Receiving objects:  22% (27/120)Receiving objects:  22% (27/120), 2.42 MiB | 2.37 MiB/sReceiving objects:  23% (28/120), 2.42 MiB | 2.37 MiB/sReceiving objects:  23% (28/120), 4.74 MiB | 2.33 MiB/sReceiving objects:  24% (29/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  25% (30/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  26% (32/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  27% (33/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  28% (34/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  29% (35/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  30% (36/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  31% (38/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  32% (39/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  33% (40/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  34% (41/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  35% (42/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  36% (44/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  37% (45/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  38% (46/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  39% (47/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  40% (48/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  41% (50/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  42% (51/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  43% (52/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  44% (53/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  45% (54/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  46% (56/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  47% (57/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  48% (58/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  49% (59/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  50% (60/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  51% (62/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  52% (63/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  53% (64/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  54% (65/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  55% (66/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  56% (68/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  57% (69/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  58% (70/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  59% (71/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  60% (72/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  61% (74/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  62% (75/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  63% (76/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  64% (77/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  65% (78/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  66% (80/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  67% (81/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  68% (82/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  69% (83/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  70% (84/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  71% (86/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  72% (87/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  73% (88/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  74% (89/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  75% (90/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  76% (92/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  77% (93/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  78% (94/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  79% (95/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  80% (96/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  81% (98/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  82% (99/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  83% (100/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  84% (101/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  85% (102/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  86% (104/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  87% (105/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  88% (106/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  89% (107/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  90% (108/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  91% (110/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  92% (111/120), 5.66 MiB | 2.24 MiB/sremote: Total 120 (delta 3), reused 67 (delta 1), pack-reused 0        
+Receiving objects:  93% (112/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  94% (113/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  95% (114/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  96% (116/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  97% (117/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  98% (118/120), 5.66 MiB | 2.24 MiB/sReceiving objects:  99% (119/120), 5.66 MiB | 2.24 MiB/sReceiving objects: 100% (120/120), 5.66 MiB | 2.24 MiB/sReceiving objects: 100% (120/120), 6.26 MiB | 2.19 MiB/s, done.
+Resolving deltas:   0% (0/3)Resolving deltas:  33% (1/3)Resolving deltas:  66% (2/3)Resolving deltas: 100% (3/3)Resolving deltas: 100% (3/3), done.
+Dir visualise_detection does not exist! Clone repo...
+Cloning into 'visualise_detection'...
+remote: Enumerating objects: 30, done.        
+remote: Counting objects:   3% (1/30)        remote: Counting objects:   6% (2/30)        remote: Counting objects:  10% (3/30)        remote: Counting objects:  13% (4/30)        remote: Counting objects:  16% (5/30)        remote: Counting objects:  20% (6/30)        remote: Counting objects:  23% (7/30)        remote: Counting objects:  26% (8/30)        remote: Counting objects:  30% (9/30)        remote: Counting objects:  33% (10/30)        remote: Counting objects:  36% (11/30)        remote: Counting objects:  40% (12/30)        remote: Counting objects:  43% (13/30)        remote: Counting objects:  46% (14/30)        remote: Counting objects:  50% (15/30)        remote: Counting objects:  53% (16/30)        remote: Counting objects:  56% (17/30)        remote: Counting objects:  60% (18/30)        remote: Counting objects:  63% (19/30)        remote: Counting objects:  66% (20/30)        remote: Counting objects:  70% (21/30)        remote: Counting objects:  73% (22/30)        remote: Counting objects:  76% (23/30)        remote: Counting objects:  80% (24/30)        remote: Counting objects:  83% (25/30)        remote: Counting objects:  86% (26/30)        remote: Counting objects:  90% (27/30)        remote: Counting objects:  93% (28/30)        remote: Counting objects:  96% (29/30)        remote: Counting objects: 100% (30/30)        remote: Counting objects: 100% (30/30), done.        
+remote: Compressing objects:   3% (1/27)        remote: Compressing objects:   7% (2/27)        remote: Compressing objects:  11% (3/27)        remote: Compressing objects:  14% (4/27)        remote: Compressing objects:  18% (5/27)        remote: Compressing objects:  22% (6/27)        remote: Compressing objects:  25% (7/27)        remote: Compressing objects:  29% (8/27)        remote: Compressing objects:  33% (9/27)        remote: Compressing objects:  37% (10/27)        remote: Compressing objects:  40% (11/27)        remote: Compressing objects:  44% (12/27)        remote: Compressing objects:  48% (13/27)        remote: Compressing objects:  51% (14/27)        remote: Compressing objects:  55% (15/27)        remote: Compressing objects:  59% (16/27)        remote: Compressing objects:  62% (17/27)        remote: Compressing objects:  66% (18/27)        remote: Compressing objects:  70% (19/27)        remote: Compressing objects:  74% (20/27)        remote: Compressing objects:  77% (21/27)        remote: Compressing objects:  81% (22/27)        remote: Compressing objects:  85% (23/27)        remote: Compressing objects:  88% (24/27)        remote: Compressing objects:  92% (25/27)        remote: Compressing objects:  96% (26/27)        remote: Compressing objects: 100% (27/27)        remote: Compressing objects: 100% (27/27), done.        
+Receiving objects:   3% (1/30)Receiving objects:   6% (2/30)Receiving objects:  10% (3/30)Receiving objects:  13% (4/30)Receiving objects:  16% (5/30)Receiving objects:  20% (6/30)Receiving objects:  23% (7/30)Receiving objects:  26% (8/30)Receiving objects:  30% (9/30)Receiving objects:  33% (10/30)Receiving objects:  36% (11/30)Receiving objects:  40% (12/30)Receiving objects:  43% (13/30)Receiving objects:  46% (14/30)Receiving objects:  50% (15/30)Receiving objects:  53% (16/30)Receiving objects:  56% (17/30)Receiving objects:  60% (18/30)Receiving objects:  63% (19/30)Receiving objects:  66% (20/30)Receiving objects:  70% (21/30), 1.44 MiB | 2.87 MiB/sReceiving objects:  73% (22/30), 1.44 MiB | 2.87 MiB/sReceiving objects:  76% (23/30), 1.44 MiB | 2.87 MiB/sReceiving objects:  80% (24/30), 1.44 MiB | 2.87 MiB/sReceiving objects:  80% (24/30), 2.75 MiB | 2.71 MiB/sReceiving objects:  83% (25/30), 2.75 MiB | 2.71 MiB/sReceiving objects:  86% (26/30), 2.75 MiB | 2.71 MiB/sReceiving objects:  90% (27/30), 2.75 MiB | 2.71 MiB/sReceiving objects:  93% (28/30), 2.75 MiB | 2.71 MiB/sremote: Total 30 (delta 0), reused 24 (delta 0), pack-reused 0        
+Receiving objects:  96% (29/30), 2.75 MiB | 2.71 MiB/sReceiving objects: 100% (30/30), 2.75 MiB | 2.71 MiB/sReceiving objects: 100% (30/30), 3.69 MiB | 2.76 MiB/s, done.
+File md_v5a.0.0.pt does not exist! Downloading file...
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+  0  267M    0 45304    0     0  40601      0  1:55:15  0:00:01  1:55:14 40601  0  267M    0 1449k    0     0   686k      0  0:06:39  0:00:02  0:06:37 1412k  1  267M    1 4009k    0     0  1288k      0  0:03:32  0:00:03  0:03:29 1985k  2  267M    2 7177k    0     0  1743k      0  0:02:37  0:00:04  0:02:33 2376k  4  267M    4 10.9M    0     0  2191k      0  0:02:05  0:00:05  0:02:00 2792k  5  267M    5 15.4M    0     0  2589k      0  0:01:45  0:00:06  0:01:39 3157k  7  267M    7 20.9M    0     0  3014k      0  0:01:30  0:00:07  0:01:23 3996k 10  267M   10 26.8M    0     0  3394k      0  0:01:20  0:00:08  0:01:12 4704k 12  267M   12 32.6M    0     0  3669k      0  0:01:14  0:00:09  0:01:05 5256k 14  267M   14 38.3M    0     0  3879k      0  0:01:10  0:00:10  0:01:00 5606k 16  267M   16 44.1M    0     0  4067k      0  0:01:07  0:00:11  0:00:56 5875k 18  267M   18 50.0M    0     0  4227k      0  0:01:04  0:00:12  0:00:52 5954k 20  267M   20 55.7M    0     0  4356k      0  0:01:02  0:00:13  0:00:49 5916k 22  267M   22 61.4M    0     0  4457k      0  0:01:01  0:00:14  0:00:47 5894k 25  267M   25 67.3M    0     0  4561k      0  0:01:00  0:00:15  0:00:45 5939k 27  267M   27 73.7M    0     0  4686k      0  0:00:58  0:00:16  0:00:42 6061k 29  267M   29 78.5M    0     0  4701k      0  0:00:58  0:00:17  0:00:41 5847k 31  267M   31 83.6M    0     0  4727k      0  0:00:57  0:00:18  0:00:39 5701k 32  267M   32 88.3M    0     0  4731k      0  0:00:57  0:00:19  0:00:38 5506k 33  267M   33 90.0M    0     0  4584k      0  0:00:59  0:00:20  0:00:39 4652k 34  267M   34 92.5M    0     0  4486k      0  0:01:01  0:00:21  0:00:40 3841k 35  267M   35 95.4M    0     0  4422k      0  0:01:01  0:00:22  0:00:39 3468k 36  267M   36 98.9M    0     0  4385k      0  0:01:02  0:00:23  0:00:39 3148k 38  267M   38  102M    0     0  4363k      0  0:01:02  0:00:24  0:00:38 2954k 39  267M   39  106M    0     0  4323k      0  0:01:03  0:00:25  0:00:38 3274k 41  267M   41  110M    0     0  4311k      0  0:01:03  0:00:26  0:00:37 3575k 42  267M   42  113M    0     0  4287k      0  0:01:03  0:00:27  0:00:36 3695k 44  267M   44  118M    0     0  4316k      0  0:01:03  0:00:28  0:00:35 3996k 46  267M   46  123M    0     0  4355k      0  0:01:02  0:00:29  0:00:33 4314k 48  267M   48  129M    0     0  4398k      0  0:01:02  0:00:30  0:00:32 4775k 49  267M   49  132M    0     0  4361k      0  0:01:02  0:00:31  0:00:31 4623k 51  267M   51  138M    0     0  4408k      0  0:01:02  0:00:32  0:00:30 5065k 53  267M   53  143M    0     0  4437k      0  0:01:01  0:00:33  0:00:28 5113k 56  267M   56  150M    0     0  4510k      0  0:01:00  0:00:34  0:00:26 5415k 58  267M   58  155M    0     0  4543k      0  0:01:00  0:00:35  0:00:25 5417k 60  267M   60  161M    0     0  4592k      0  0:00:59  0:00:36  0:00:23 6032k 63  267M   63  169M    0     0  4683k      0  0:00:58  0:00:37  0:00:21 6445k 65  267M   65  176M    0     0  4734k      0  0:00:57  0:00:38  0:00:19 6704k 68  267M   68  183M    0     0  4816k      0  0:00:56  0:00:39  0:00:17 6902k 70  267M   70  189M    0     0  4845k      0  0:00:56  0:00:40  0:00:16 6962k 72  267M   72  194M    0     0  4845k      0  0:00:56  0:00:41  0:00:15 6678k 74  267M   74  200M    0     0  4878k      0  0:00:56  0:00:42  0:00:14 6325k 77  267M   77  207M    0     0  4916k      0  0:00:55  0:00:43  0:00:12 6307k 79  267M   79  211M    0     0  4916k      0  0:00:55  0:00:44  0:00:11 5697k 81  267M   81  217M    0     0  4940k      0  0:00:55  0:00:45  0:00:10 5702k 83  267M   83  223M    0     0  4966k      0  0:00:55  0:00:46  0:00:09 5956k 85  267M   85  229M    0     0  4984k      0  0:00:55  0:00:47  0:00:08 5883k 87  267M   87  234M    0     0  4982k      0  0:00:55  0:00:48  0:00:07 5548k 89  267M   89  240M    0     0  5007k      0  0:00:54  0:00:49  0:00:05 5811k 92  267M   92  246M    0     0  5046k      0  0:00:54  0:00:50  0:00:04 6007k 94  267M   94  251M    0     0  5046k      0  0:00:54  0:00:51  0:00:03 5787k 96  267M   96  257M    0     0  5055k      0  0:00:54  0:00:52  0:00:02 5715k 98  267M   98  263M    0     0  5077k      0  0:00:54  0:00:53  0:00:01 5987k100  267M  100  267M    0     0  5102k      0  0:00:53  0:00:53 --:--:-- 6113k
+# conda environments:
+#
+base                     /Applications/.EcoAssist_files/miniforge
+ecoassistcondaenv-base  *  /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-base
+
+# packages in environment at /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-base:
+#
+# Name                    Version                   Build  Channel
+absl-py                   2.1.0                    pypi_0    pypi
+appnope                   0.1.4              pyhd8ed1ab_0    conda-forge
+asttokens                 2.4.1              pyhd8ed1ab_0    conda-forge
+backcall                  0.2.0              pyh9f0ad1d_0    conda-forge
+brotli                    1.1.0                hb547adb_1    conda-forge
+brotli-bin                1.1.0                hb547adb_1    conda-forge
+brotli-python             1.1.0            py38he333c0f_1    conda-forge
+bzip2                     1.0.8                h93a5062_5    conda-forge
+ca-certificates           2024.2.2             hf0a4a13_0    conda-forge
+cachetools                5.3.3                    pypi_0    pypi
+certifi                   2024.2.2           pyhd8ed1ab_0    conda-forge
+charset-normalizer        3.3.2              pyhd8ed1ab_0    conda-forge
+colorama                  0.4.6              pyhd8ed1ab_0    conda-forge
+comm                      0.2.1              pyhd8ed1ab_0    conda-forge
+contourpy                 1.1.1            py38h9afee92_1    conda-forge
+ctktable                  1.1                      pypi_0    pypi
+customtkinter             5.2.2                    pypi_0    pypi
+cycler                    0.12.1             pyhd8ed1ab_0    conda-forge
+darkdetect                0.8.0                    pypi_0    pypi
+debugpy                   1.8.1            py38hb9fa5a8_0    conda-forge
+decorator                 5.1.1              pyhd8ed1ab_0    conda-forge
+et-xmlfile                1.1.0                    pypi_0    pypi
+executing                 2.0.1              pyhd8ed1ab_0    conda-forge
+exifread                  3.0.0                    pypi_0    pypi
+filelock                  3.13.1             pyhd8ed1ab_0    conda-forge
+fonttools                 4.49.0           py38h336bac9_0    conda-forge
+freetype                  2.12.1               hadb7bae_2    conda-forge
+giflib                    5.2.1                h1a8c8d9_3    conda-forge
+gitdb                     4.0.11                   pypi_0    pypi
+gitpython                 3.1.42                   pypi_0    pypi
+gmp                       6.3.0                h965bd2d_0    conda-forge
+gmpy2                     2.1.2            py38h904d018_1    conda-forge
+google-auth               2.28.1                   pypi_0    pypi
+google-auth-oauthlib      1.0.0                    pypi_0    pypi
+gpsphoto                  2.2.3                    pypi_0    pypi
+grpcio                    1.62.0                   pypi_0    pypi
+humanfriendly             10.0               pyhd8ed1ab_6    conda-forge
+icu                       73.2                 hc8870d7_0    conda-forge
+idna                      3.6                pyhd8ed1ab_0    conda-forge
+importlib-metadata        7.0.2              pyha770c72_0    conda-forge
+importlib-resources       6.1.3              pyhd8ed1ab_0    conda-forge
+importlib_metadata        7.0.2                hd8ed1ab_0    conda-forge
+importlib_resources       6.1.3              pyhd8ed1ab_0    conda-forge
+ipykernel                 6.29.3             pyh3cd1d5f_0    conda-forge
+ipython                   8.12.2             pyhd1c38e8_0    conda-forge
+jedi                      0.19.1             pyhd8ed1ab_0    conda-forge
+jinja2                    3.1.3              pyhd8ed1ab_0    conda-forge
+joblib                    1.3.2              pyhd8ed1ab_0    conda-forge
+jpeg                      9e                   he4db4b2_2    conda-forge
+jsonpickle                3.0.2              pyhd8ed1ab_1    conda-forge
+jupyter_client            8.6.0              pyhd8ed1ab_0    conda-forge
+jupyter_core              5.7.1            py38h10201cd_0    conda-forge
+kiwisolver                1.4.5            py38h9afee92_1    conda-forge
+lcms2                     2.12                 had6a04f_0    conda-forge
+lerc                      3.0                  hbdafb3b_0    conda-forge
+libblas                   3.9.0           20_osxarm64_openblas    conda-forge
+libbrotlicommon           1.1.0                hb547adb_1    conda-forge
+libbrotlidec              1.1.0                hb547adb_1    conda-forge
+libbrotlienc              1.1.0                hb547adb_1    conda-forge
+libcblas                  3.9.0           20_osxarm64_openblas    conda-forge
+libcxx                    16.0.6               h4653b0c_0    conda-forge
+libdeflate                1.10                 h3422bc3_0    conda-forge
+libffi                    3.4.2                h3422bc3_5    conda-forge
+libgfortran               5.0.0           13_2_0_hd922786_3    conda-forge
+libgfortran5              13.2.0               hf226fd6_3    conda-forge
+libiconv                  1.17                 h0d3ecfb_2    conda-forge
+libjpeg-turbo             2.1.4                h1a8c8d9_0    conda-forge
+liblapack                 3.9.0           20_osxarm64_openblas    conda-forge
+libopenblas               0.3.25          openmp_h6c19121_0    conda-forge
+libpng                    1.6.43               h091b4b1_0    conda-forge
+libsodium                 1.0.18               h27ca646_1    conda-forge
+libsqlite                 3.45.1               h091b4b1_0    conda-forge
+libtiff                   4.3.0                h2810ee2_4    conda-forge
+libwebp                   1.2.2                h0d20362_0    conda-forge
+libwebp-base              1.2.2                h3422bc3_1    conda-forge
+libxcb                    1.13              h9b22ae9_1004    conda-forge
+libxml2                   2.12.5               h0d0cfa8_0    conda-forge
+libxslt                   1.1.39               h223e5b9_0    conda-forge
+libzlib                   1.2.13               h53f4e23_5    conda-forge
+llvm-openmp               17.0.6               hcd81f8e_0    conda-forge
+lxml                      5.1.0            py38h9bc2e36_0    conda-forge
+markdown                  3.5.2                    pypi_0    pypi
+markupsafe                2.1.5            py38h336bac9_0    conda-forge
+matplotlib                3.7.3            py38h150bfb4_0    conda-forge
+matplotlib-base           3.7.3            py38hef9d0d7_0    conda-forge
+matplotlib-inline         0.1.6              pyhd8ed1ab_0    conda-forge
+mpc                       1.3.1                h91ba8db_0    conda-forge
+mpfr                      4.2.1                h9546428_0    conda-forge
+mpmath                    1.3.0              pyhd8ed1ab_0    conda-forge
+munkres                   1.1.4              pyh9f0ad1d_0    conda-forge
+nb_conda_kernels          2.3.1              pyh707e725_4    conda-forge
+ncurses                   6.4                  h463b476_2    conda-forge
+nest-asyncio              1.6.0              pyhd8ed1ab_0    conda-forge
+networkx                  3.1                pyhd8ed1ab_0    conda-forge
+nomkl                     1.0                  h5ca1d4c_0    conda-forge
+numpy                     1.24.4           py38ha84db1f_0    conda-forge
+oauthlib                  3.2.2                    pypi_0    pypi
+opencv-python             4.9.0.80                 pypi_0    pypi
+openjpeg                  2.5.0                hd370e0e_0    conda-forge
+openpyxl                  3.1.2                    pypi_0    pypi
+openssl                   3.2.1                h0d3ecfb_0    conda-forge
+packaging                 23.2               pyhd8ed1ab_0    conda-forge
+pandas                    2.0.3            py38hefb543e_1    conda-forge
+parso                     0.8.3              pyhd8ed1ab_0    conda-forge
+patsy                     0.5.6              pyhd8ed1ab_0    conda-forge
+pexpect                   4.9.0              pyhd8ed1ab_0    conda-forge
+pickleshare               0.7.5                   py_1003    conda-forge
+piexif                    1.1.3                    pypi_0    pypi
+pillow                    9.1.0            py38h7ff1586_2    conda-forge
+pip                       24.0               pyhd8ed1ab_0    conda-forge
+platformdirs              4.2.0              pyhd8ed1ab_0    conda-forge
+pooch                     1.8.1              pyhd8ed1ab_0    conda-forge
+prompt-toolkit            3.0.42             pyha770c72_0    conda-forge
+prompt_toolkit            3.0.42               hd8ed1ab_0    conda-forge
+protobuf                  3.20.1                   pypi_0    pypi
+psutil                    5.9.8            py38h336bac9_0    conda-forge
+pthread-stubs             0.4               h27ca646_1001    conda-forge
+ptyprocess                0.7.0              pyhd3deb0d_0    conda-forge
+pure_eval                 0.2.2              pyhd8ed1ab_0    conda-forge
+pyasn1                    0.5.1                    pypi_0    pypi
+pyasn1-modules            0.3.0                    pypi_0    pypi
+pygments                  2.17.2             pyhd8ed1ab_0    conda-forge
+pyparsing                 3.1.2              pyhd8ed1ab_0    conda-forge
+pyqtree                   1.0.0              pyhd8ed1ab_0    conda-forge
+pyside6                   6.6.2                    pypi_0    pypi
+pyside6-addons            6.6.2                    pypi_0    pypi
+pyside6-essentials        6.6.2                    pypi_0    pypi
+pysocks                   1.7.1              pyha2e5f31_6    conda-forge
+python                    3.8.18          h2469fbe_1_cpython    conda-forge
+python-dateutil           2.9.0              pyhd8ed1ab_0    conda-forge
+python-tzdata             2024.1             pyhd8ed1ab_0    conda-forge
+python_abi                3.8                      4_cp38    conda-forge
+pytz                      2024.1             pyhd8ed1ab_0    conda-forge
+pyyaml                    6.0.1            py38hb192615_1    conda-forge
+pyzmq                     25.1.2           py38hbbed6fd_0    conda-forge
+rangeslider               2023.7.2                 pypi_0    pypi
+readline                  8.2                  h92ec313_1    conda-forge
+requests                  2.31.0             pyhd8ed1ab_0    conda-forge
+requests-oauthlib         1.3.1                    pypi_0    pypi
+rsa                       4.9                      pypi_0    pypi
+scikit-learn              1.3.2            py38he1bc1c9_2    conda-forge
+scipy                     1.10.1           py38h038e806_3    conda-forge
+seaborn                   0.13.2               hd8ed1ab_0    conda-forge
+seaborn-base              0.13.2             pyhd8ed1ab_0    conda-forge
+setuptools                69.1.1             pyhd8ed1ab_0    conda-forge
+shiboken6                 6.6.2                    pypi_0    pypi
+six                       1.16.0             pyh6c4a22f_0    conda-forge
+smmap                     5.0.1                    pypi_0    pypi
+stack_data                0.6.2              pyhd8ed1ab_0    conda-forge
+statsmodels               0.14.1           py38hd97cf01_0    conda-forge
+sympy                     1.12            pypyh9d50eac_103    conda-forge
+tensorboard               2.14.0                   pypi_0    pypi
+tensorboard-data-server   0.7.2                    pypi_0    pypi
+thop                      0.1.1-2209072238          pypi_0    pypi
+threadpoolctl             3.3.0              pyhc1e730c_0    conda-forge
+tk                        8.6.13               h5083fa2_1    conda-forge
+torch                     1.13.1                   pypi_0    pypi
+torchaudio                0.13.1                   pypi_0    pypi
+torchvision               0.14.1                   pypi_0    pypi
+tornado                   6.4              py38h336bac9_0    conda-forge
+tqdm                      4.66.2             pyhd8ed1ab_0    conda-forge
+traitlets                 5.14.1             pyhd8ed1ab_0    conda-forge
+typing_extensions         4.10.0             pyha770c72_0    conda-forge
+unicodedata2              15.1.0           py38hb192615_0    conda-forge
+urllib3                   2.2.1              pyhd8ed1ab_0    conda-forge
+wcwidth                   0.2.13             pyhd8ed1ab_0    conda-forge
+werkzeug                  3.0.1                    pypi_0    pypi
+wheel                     0.42.0             pyhd8ed1ab_0    conda-forge
+xorg-libxau               1.0.11               hb547adb_0    conda-forge
+xorg-libxdmcp             1.1.3                h27ca646_0    conda-forge
+xz                        5.2.6                h57fd34a_0    conda-forge
+yaml                      0.2.5                h3422bc3_2    conda-forge
+zeromq                    4.3.5                hebf3989_1    conda-forge
+zipp                      3.17.0             pyhd8ed1ab_0    conda-forge
+zlib                      1.2.13               h53f4e23_5    conda-forge
+zstd                      1.5.5                h4f39d0f_0    conda-forge
+absl-py==2.1.0
+appnope @ file:///home/conda/feedstock_root/build_artifacts/appnope_1707233003401/work
+asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1698341106958/work
+backcall @ file:///home/conda/feedstock_root/build_artifacts/backcall_1592338393461/work
+Brotli @ file:///Users/runner/miniforge3/conda-bld/brotli-split_1695989934239/work
+cachetools==5.3.3
+certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1707022139797/work/certifi
+charset-normalizer @ file:///home/conda/feedstock_root/build_artifacts/charset-normalizer_1698833585322/work
+colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1666700638685/work
+comm @ file:///home/conda/feedstock_root/build_artifacts/comm_1704278392174/work
+contourpy @ file:///Users/runner/miniforge3/conda-bld/contourpy_1695554217566/work
+CTkTable==1.1
+customtkinter==5.2.2
+cycler @ file:///home/conda/feedstock_root/build_artifacts/cycler_1696677705766/work
+darkdetect==0.8.0
+debugpy @ file:///Users/runner/miniforge3/conda-bld/debugpy_1707444582221/work
+decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
+et-xmlfile==1.1.0
+executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1698579936712/work
+ExifRead==3.0.0
+filelock @ file:///home/conda/feedstock_root/build_artifacts/filelock_1698714947081/work
+fonttools @ file:///Users/runner/miniforge3/conda-bld/fonttools_1708049162460/work
+gitdb==4.0.11
+GitPython==3.1.42
+gmpy2 @ file:///Users/runner/miniforge3/conda-bld/gmpy2_1666808701622/work
+google-auth==2.28.1
+google-auth-oauthlib==1.0.0
+gpsphoto==2.2.3
+grpcio==1.62.0
+humanfriendly @ file:///home/conda/feedstock_root/build_artifacts/humanfriendly_1696765224545/work
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1701026962277/work
+importlib_metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1709821103657/work
+importlib_resources @ file:///home/conda/feedstock_root/build_artifacts/importlib_resources_1709821111795/work
+ipykernel @ file:///Users/runner/miniforge3/conda-bld/ipykernel_1708996616394/work
+ipython @ file:///Users/runner/miniforge3/conda-bld/ipython_1683289207929/work
+jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1696326070614/work
+Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1704966972576/work
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1691577114857/work
+jsonpickle @ file:///home/conda/feedstock_root/build_artifacts/jsonpickle_1697667537447/work
+jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1699283905679/work
+jupyter_core @ file:///Users/runner/miniforge3/conda-bld/jupyter_core_1704727268242/work
+kiwisolver @ file:///Users/runner/miniforge3/conda-bld/kiwisolver_1695380066007/work
+lxml @ file:///Users/runner/miniforge3/conda-bld/lxml_1704724588081/work
+Markdown==3.5.2
+MarkupSafe @ file:///Users/runner/miniforge3/conda-bld/markupsafe_1706899993502/work
+matplotlib @ file:///Users/runner/miniforge3/conda-bld/matplotlib-suite_1695076736962/work
+matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1660814786464/work
+mpmath @ file:///home/conda/feedstock_root/build_artifacts/mpmath_1678228039184/work
+munkres==1.1.4
+nb_conda_kernels @ file:///home/conda/feedstock_root/build_artifacts/nb_conda_kernels_1708439411368/work
+nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1705850609492/work
+networkx @ file:///home/conda/feedstock_root/build_artifacts/networkx_1680692919326/work
+numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1687808433287/work
+oauthlib==3.2.2
+opencv-python==4.9.0.80
+openpyxl==3.1.2
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1696202382185/work
+pandas @ file:///Users/runner/miniforge3/conda-bld/pandas_1688740593370/work
+parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1638334955874/work
+patsy @ file:///home/conda/feedstock_root/build_artifacts/patsy_1704469236901/work
+pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1706113125309/work
+pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
+piexif==1.1.3
+Pillow @ file:///Users/runner/miniforge3/conda-bld/pillow_1649818082882/work
+platformdirs @ file:///home/conda/feedstock_root/build_artifacts/platformdirs_1706713388748/work
+pooch @ file:///home/conda/feedstock_root/build_artifacts/pooch_1708448481555/work
+prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1702399386289/work
+protobuf==3.20.1
+psutil @ file:///Users/runner/miniforge3/conda-bld/psutil_1705722458105/work
+ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1609419310487/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
+pure-eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_1642875951954/work
+pyasn1==0.5.1
+pyasn1-modules==0.3.0
+Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1700607939962/work
+pyparsing @ file:///home/conda/feedstock_root/build_artifacts/pyparsing_1709721012883/work
+Pyqtree @ file:///home/conda/feedstock_root/build_artifacts/pyqtree_1605191217077/work
+PySide6==6.6.2
+PySide6_Addons==6.6.2
+PySide6_Essentials==6.6.2
+PySocks @ file:///home/conda/feedstock_root/build_artifacts/pysocks_1661604839144/work
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1709299778482/work
+pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1706886791323/work
+PyYAML @ file:///Users/runner/miniforge3/conda-bld/pyyaml_1695373506986/work
+pyzmq @ file:///Users/runner/miniforge3/conda-bld/pyzmq_1701783255367/work
+RangeSlider==2023.7.2
+requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1684774241324/work
+requests-oauthlib==1.3.1
+rsa==4.9
+scikit-learn @ file:///Users/runner/miniforge3/conda-bld/scikit-learn_1701932108500/work
+scipy @ file:///Users/runner/miniforge3/conda-bld/scipy-split_1683900453702/work/base/dist/scipy-1.10.1-cp38-cp38-macosx_11_0_arm64.whl#sha256=06d649e33fd400c8608c1083a7bb6f490989227277eae7f65577d925d87848e8
+seaborn @ file:///home/conda/feedstock_root/build_artifacts/seaborn-split_1706340836595/work
+shiboken6==6.6.2
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+smmap==5.0.1
+stack-data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1669632077133/work
+statsmodels @ file:///Users/runner/miniforge3/conda-bld/statsmodels_1702575471475/work
+sympy @ file:///home/conda/feedstock_root/build_artifacts/sympy_1684180540116/work
+tensorboard==2.14.0
+tensorboard-data-server==0.7.2
+thop==0.1.1.post2209072238
+threadpoolctl @ file:///home/conda/feedstock_root/build_artifacts/threadpoolctl_1707930541534/work
+torch==1.13.1
+torchaudio==0.13.1
+torchvision==0.14.1
+tornado @ file:///Users/runner/miniforge3/conda-bld/tornado_1708363362308/work
+tqdm @ file:///home/conda/feedstock_root/build_artifacts/tqdm_1707598593068/work
+traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_1704212992681/work
+typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1708904622550/work
+tzdata @ file:///home/conda/feedstock_root/build_artifacts/python-tzdata_1707747584337/work
+unicodedata2 @ file:///Users/runner/miniforge3/conda-bld/unicodedata2_1695848146711/work
+urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1708239446578/work
+wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1704731205417/work
+Werkzeug==3.0.1
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1695255097490/work
+# conda environments:
+#
+base                     /Applications/.EcoAssist_files/miniforge
+ecoassistcondaenv-base     /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-base
+ecoassistcondaenv-mewc     /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-mewc
+ecoassistcondaenv-pytorch  *  /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-pytorch
+
+# packages in environment at /Applications/.EcoAssist_files/miniforge/envs/ecoassistcondaenv-pytorch:
+#
+# Name                    Version                   Build  Channel
+bzip2                     1.0.8                h93a5062_5    conda-forge
+ca-certificates           2024.2.2             hf0a4a13_0    conda-forge
+certifi                   2024.2.2                 pypi_0    pypi
+charset-normalizer        3.3.2                    pypi_0    pypi
+contourpy                 1.1.1                    pypi_0    pypi
+cycler                    0.12.1                   pypi_0    pypi
+filelock                  3.13.1                   pypi_0    pypi
+fonttools                 4.49.0                   pypi_0    pypi
+humanfriendly             10.0                     pypi_0    pypi
+idna                      3.6                      pypi_0    pypi
+importlib-resources       6.1.3                    pypi_0    pypi
+jinja2                    3.1.3                    pypi_0    pypi
+jsonpickle                3.0.2                    pypi_0    pypi
+kiwisolver                1.4.5                    pypi_0    pypi
+libffi                    3.4.2                h3422bc3_5    conda-forge
+libsqlite                 3.45.1               h091b4b1_0    conda-forge
+libzlib                   1.2.13               h53f4e23_5    conda-forge
+markupsafe                2.1.5                    pypi_0    pypi
+matplotlib                3.7.5                    pypi_0    pypi
+mpmath                    1.3.0                    pypi_0    pypi
+ncurses                   6.4                  h463b476_2    conda-forge
+networkx                  3.1                      pypi_0    pypi
+numpy                     1.24.1                   pypi_0    pypi
+opencv-python             4.9.0.80                 pypi_0    pypi
+openssl                   3.2.1                h0d3ecfb_0    conda-forge
+packaging                 23.2                     pypi_0    pypi
+pandas                    2.0.3                    pypi_0    pypi
+pillow                    10.2.0                   pypi_0    pypi
+pip                       24.0               pyhd8ed1ab_0    conda-forge
+psutil                    5.9.8                    pypi_0    pypi
+py-cpuinfo                9.0.0                    pypi_0    pypi
+pyparsing                 3.1.2                    pypi_0    pypi
+python                    3.8.18          h2469fbe_1_cpython    conda-forge
+python-dateutil           2.9.0.post0              pypi_0    pypi
+pytz                      2024.1                   pypi_0    pypi
+pyyaml                    6.0.1                    pypi_0    pypi
+readline                  8.2                  h92ec313_1    conda-forge
+requests                  2.31.0                   pypi_0    pypi
+scipy                     1.10.1                   pypi_0    pypi
+seaborn                   0.13.2                   pypi_0    pypi
+setuptools                69.1.1             pyhd8ed1ab_0    conda-forge
+six                       1.16.0                   pypi_0    pypi
+sympy                     1.12                     pypi_0    pypi
+thop                      0.1.1-2209072238          pypi_0    pypi
+tk                        8.6.13               h5083fa2_1    conda-forge
+torch                     2.0.1                    pypi_0    pypi
+torchaudio                2.0.2                    pypi_0    pypi
+torchvision               0.15.2                   pypi_0    pypi
+tqdm                      4.66.2                   pypi_0    pypi
+typing-extensions         4.10.0                   pypi_0    pypi
+tzdata                    2024.1                   pypi_0    pypi
+ultralytics               8.0.191                  pypi_0    pypi
+urllib3                   2.2.1                    pypi_0    pypi
+wheel                     0.42.0             pyhd8ed1ab_0    conda-forge
+xz                        5.2.6                h57fd34a_0    conda-forge
+zipp                      3.17.0                   pypi_0    pypi
+certifi==2024.2.2
+charset-normalizer==3.3.2
+contourpy==1.1.1
+cycler==0.12.1
+filelock==3.13.1
+fonttools==4.49.0
+humanfriendly==10.0
+idna==3.6
+importlib_resources==6.1.3
+Jinja2==3.1.3
+jsonpickle==3.0.2
+kiwisolver==1.4.5
+MarkupSafe==2.1.5
+matplotlib==3.7.5
+mpmath==1.3.0
+networkx==3.1
+numpy==1.24.1
+opencv-python==4.9.0.80
+packaging==23.2
+pandas==2.0.3
+pillow==10.2.0
+psutil==5.9.8
+py-cpuinfo==9.0.0
+pyparsing==3.1.2
+python-dateutil==2.9.0.post0
+pytz==2024.1
+PyYAML==6.0.1
+requests==2.31.0
+scipy==1.10.1
+seaborn==0.13.2
+six==1.16.0
+sympy==1.12
+thop==0.1.1.post2209072238
+torch==2.0.1
+torchaudio==2.0.2
+torchvision==0.15.2
+tqdm==4.66.2
+typing_extensions==4.10.0
+tzdata==2024.1
+ultralytics==8.0.191
+urllib3==2.2.1
+zipp==3.17.0
+File sizes with depth 0:
+
+6.4G	/Applications/.EcoAssist_files
+
+File sizes with depth 1:
+
+3.9M	/Applications/.EcoAssist_files/EcoAssist
+ 14M	/Applications/.EcoAssist_files/Human-in-the-loop
+231M	/Applications/.EcoAssist_files/cameratraps
+4.0K	/Applications/.EcoAssist_files/first-startup.txt
+132K	/Applications/.EcoAssist_files/installation_log.txt
+5.9G	/Applications/.EcoAssist_files/miniforge
+268M	/Applications/.EcoAssist_files/models
+7.9M	/Applications/.EcoAssist_files/visualise_detection
+ 18M	/Applications/.EcoAssist_files/yolov5
+
+File sizes with depth 2:
+
+4.0K	/Applications/.EcoAssist_files/EcoAssist/CODE_OF_CONDUCT.md
+8.0K	/Applications/.EcoAssist_files/EcoAssist/CONTRIBUTING.md
+376K	/Applications/.EcoAssist_files/EcoAssist/EcoAssist_GUI.py
+4.0K	/Applications/.EcoAssist_files/EcoAssist/LICENSE
+ 24K	/Applications/.EcoAssist_files/EcoAssist/README.md
+4.0K	/Applications/.EcoAssist_files/EcoAssist/_config.yml
+4.0K	/Applications/.EcoAssist_files/EcoAssist/citation.cff
+100K	/Applications/.EcoAssist_files/EcoAssist/classification_utils
+ 20K	/Applications/.EcoAssist_files/EcoAssist/crop_detections.py
+ 28K	/Applications/.EcoAssist_files/EcoAssist/fileicon
+4.0K	/Applications/.EcoAssist_files/EcoAssist/global_vars.json
+700K	/Applications/.EcoAssist_files/EcoAssist/imgs
+4.0K	/Applications/.EcoAssist_files/EcoAssist/index.md
+ 28K	/Applications/.EcoAssist_files/EcoAssist/install.bat
+ 20K	/Applications/.EcoAssist_files/EcoAssist/install.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/label.bat
+4.0K	/Applications/.EcoAssist_files/EcoAssist/label.command
+4.0K	/Applications/.EcoAssist_files/EcoAssist/logfiles
+ 40K	/Applications/.EcoAssist_files/EcoAssist/markdown
+ 20K	/Applications/.EcoAssist_files/EcoAssist/model_info
+8.0K	/Applications/.EcoAssist_files/EcoAssist/open.bat
+ 92K	/Applications/.EcoAssist_files/EcoAssist/previous_versions
+8.0K	/Applications/.EcoAssist_files/EcoAssist/smooth_params.py
+864K	/Applications/.EcoAssist_files/EcoAssist/test_images
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/CONTRIBUTING.rst
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/HISTORY.rst
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/LICENSE
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/MANIFEST.in
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/Makefile
+ 12K	/Applications/.EcoAssist_files/Human-in-the-loop/README.rst
+  0B	/Applications/.EcoAssist_files/Human-in-the-loop/__init__.py
+ 32K	/Applications/.EcoAssist_files/Human-in-the-loop/build-tools
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/data
+6.0M	/Applications/.EcoAssist_files/Human-in-the-loop/demo
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/issue_template.md
+ 92K	/Applications/.EcoAssist_files/Human-in-the-loop/labelImg.py
+556K	/Applications/.EcoAssist_files/Human-in-the-loop/libs
+ 16K	/Applications/.EcoAssist_files/Human-in-the-loop/readme
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/requirements
+440K	/Applications/.EcoAssist_files/Human-in-the-loop/resources
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/resources.qrc
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/setup.cfg
+4.0K	/Applications/.EcoAssist_files/Human-in-the-loop/setup.py
+288K	/Applications/.EcoAssist_files/Human-in-the-loop/tests
+ 12K	/Applications/.EcoAssist_files/Human-in-the-loop/tools
+4.0K	/Applications/.EcoAssist_files/cameratraps/LICENSE
+8.0K	/Applications/.EcoAssist_files/cameratraps/README-package.md
+ 20K	/Applications/.EcoAssist_files/cameratraps/README.md
+9.6M	/Applications/.EcoAssist_files/cameratraps/api
+ 14M	/Applications/.EcoAssist_files/cameratraps/archive
+4.0K	/Applications/.EcoAssist_files/cameratraps/citation.cff
+488K	/Applications/.EcoAssist_files/cameratraps/classification
+ 12K	/Applications/.EcoAssist_files/cameratraps/collaborations.md
+2.0M	/Applications/.EcoAssist_files/cameratraps/data_management
+384K	/Applications/.EcoAssist_files/cameratraps/detection
+ 52K	/Applications/.EcoAssist_files/cameratraps/envs
+ 14M	/Applications/.EcoAssist_files/cameratraps/images
+120K	/Applications/.EcoAssist_files/cameratraps/md_utils
+100K	/Applications/.EcoAssist_files/cameratraps/md_visualization
+ 16K	/Applications/.EcoAssist_files/cameratraps/megadetector-challenges.md
+ 56K	/Applications/.EcoAssist_files/cameratraps/megadetector.md
+4.0K	/Applications/.EcoAssist_files/cameratraps/pyproject.toml
+104K	/Applications/.EcoAssist_files/cameratraps/sandbox
+140K	/Applications/.EcoAssist_files/cameratraps/taxonomy_mapping
+4.0K	/Applications/.EcoAssist_files/miniforge/LICENSE.txt
+ 13M	/Applications/.EcoAssist_files/miniforge/bin
+4.7M	/Applications/.EcoAssist_files/miniforge/conda-meta
+4.0K	/Applications/.EcoAssist_files/miniforge/condabin
+4.5G	/Applications/.EcoAssist_files/miniforge/envs
+ 28K	/Applications/.EcoAssist_files/miniforge/etc
+7.9M	/Applications/.EcoAssist_files/miniforge/include
+101M	/Applications/.EcoAssist_files/miniforge/lib
+524K	/Applications/.EcoAssist_files/miniforge/libexec
+  0B	/Applications/.EcoAssist_files/miniforge/man
+1.3G	/Applications/.EcoAssist_files/miniforge/pkgs
+336K	/Applications/.EcoAssist_files/miniforge/sbin
+680K	/Applications/.EcoAssist_files/miniforge/share
+4.0K	/Applications/.EcoAssist_files/miniforge/shell
+  0B	/Applications/.EcoAssist_files/miniforge/ssl
+  0B	/Applications/.EcoAssist_files/models/cls
+268M	/Applications/.EcoAssist_files/models/det
+4.0K	/Applications/.EcoAssist_files/visualise_detection/LICENSE
+4.0K	/Applications/.EcoAssist_files/visualise_detection/MANIFEST.in
+4.0K	/Applications/.EcoAssist_files/visualise_detection/README.md
+340K	/Applications/.EcoAssist_files/visualise_detection/bounding_box
+3.7M	/Applications/.EcoAssist_files/visualise_detection/docs
+4.0K	/Applications/.EcoAssist_files/visualise_detection/setup.py
+4.0K	/Applications/.EcoAssist_files/yolov5/CITATION.cff
+8.0K	/Applications/.EcoAssist_files/yolov5/CONTRIBUTING.md
+ 36K	/Applications/.EcoAssist_files/yolov5/LICENSE
+ 44K	/Applications/.EcoAssist_files/yolov5/README.md
+ 44K	/Applications/.EcoAssist_files/yolov5/README.zh-CN.md
+8.0K	/Applications/.EcoAssist_files/yolov5/benchmarks.py
+140K	/Applications/.EcoAssist_files/yolov5/classify
+800K	/Applications/.EcoAssist_files/yolov5/data
+ 16K	/Applications/.EcoAssist_files/yolov5/detect.py
+ 44K	/Applications/.EcoAssist_files/yolov5/export.py
+ 12K	/Applications/.EcoAssist_files/yolov5/hubconf.py
+232K	/Applications/.EcoAssist_files/yolov5/models
+8.0K	/Applications/.EcoAssist_files/yolov5/pyproject.toml
+4.0K	/Applications/.EcoAssist_files/yolov5/requirements.txt
+120K	/Applications/.EcoAssist_files/yolov5/segment
+ 40K	/Applications/.EcoAssist_files/yolov5/train.py
+ 44K	/Applications/.EcoAssist_files/yolov5/tutorial.ipynb
+468K	/Applications/.EcoAssist_files/yolov5/utils
+ 24K	/Applications/.EcoAssist_files/yolov5/val.py
+
+This installation ended at: Fri Mar  8 07:34:00 CET 2024

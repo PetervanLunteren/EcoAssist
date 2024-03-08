@@ -337,6 +337,7 @@ if [ "$PLATFORM" = "Intel Mac" ]; then
   conda install -c conda-forge numpy==1.24.1 -y
   conda install -c conda-forge humanfriendly==10.0 -y
   conda install -c conda-forge jsonpickle==3.0.2 -y
+  conda install -c conda-forge timm
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
   $PIP_PYTORCH freeze >> "$LOG_FILE" 
@@ -351,6 +352,7 @@ else
   $PIP_PYTORCH install "numpy==1.24.1"
   $PIP_PYTORCH install "humanfriendly==10.0"
   $PIP_PYTORCH install "jsonpickle==3.0.2"
+  $PIP_PYTORCH install timm
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
   $PIP_PYTORCH freeze >> "$LOG_FILE" 

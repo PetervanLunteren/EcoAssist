@@ -3,6 +3,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 8 March 2024
 
+# TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -3596,15 +3597,15 @@ def fetch_latest_model_info():
                             show_model_info(title = model_id, model_dict = model_dict, new_model = True)
                             set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
 
-                # update root so that the new models show up in the dropdown menu
-                update_model_dropdowns()
-
         except requests.exceptions.Timeout:
             print("Request timed out. File download stopped.")
 
         except Exception as e:
             print(f"Could not update model info: {e}")
 
+        # update root so that the new models show up in the dropdown menu, 
+        # but also the correct species for the existing models
+        update_model_dropdowns()
         print(f"model info updated in {round(time.time() - start_time, 2)} seconds")
 
 # check if the user needs an update
@@ -3686,8 +3687,13 @@ def download_model(model_dir, skip_ask=False):
     # catch errors
     except Exception as error:
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        if os.path.isfile(file_path): # remove incomplete download
-            os.remove(file_path)
+        try:
+            # remove incomplete download
+            if os.path.isfile(file_path): 
+                os.remove(file_path)
+        except UnboundLocalError:
+            # file_path is not set, meaning there is no incomplete download
+            pass
         show_download_error_window(model_title, model_dir, model_vars)
 
 ##############################################
@@ -3806,6 +3812,17 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl6.grid(row=5, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
     elif model_title == "MegaDetector 5a" or model_title == "MegaDetector 5b":
         main_url = "https://github.com/agentmorris/MegaDetector/releases/tag/v5.0"
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif model_title == "Europe - DeepFaune v1.1":
+        main_url = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1"
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
                                                            f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
         pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
@@ -4000,11 +4017,15 @@ class ModelDownloadProgressWindow:
         self.dm_root = customtkinter.CTkToplevel(root)
         self.dm_root.title("Download progress")
         self.frm = customtkinter.CTkFrame(master=self.dm_root)
-        self.frm.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+        self.frm.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
         self.frm.columnconfigure(0, weight=1, minsize=500)
-        self.lbl = customtkinter.CTkLabel(self.dm_root, text=f"Downloading model '{model_title}' ({total_size_str})", 
+        self.lbl = customtkinter.CTkLabel(self.dm_root, text=[f"Downloading model '{model_title}' ({total_size_str})",
+                                                              f"Descargar modelo '{model_title}' ({total_size_str})"][lang_idx], 
                                           font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
         self.lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, 0), sticky="nsew")
+        self.war = customtkinter.CTkLabel(self.dm_root, text=["Please prevent computer from sleeping during the download.",
+                                                          "Por favor, evite que el ordenador se duerma durante la descarga."][lang_idx])
+        self.war.grid(row=1, column=0, padx=PADX, pady=0, sticky="nsew")
         self.pbr = customtkinter.CTkProgressBar(self.frm, orientation="horizontal", height=28, corner_radius=5, width=1)
         self.pbr.set(0)
         self.pbr.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nsew")
