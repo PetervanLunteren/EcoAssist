@@ -333,7 +333,7 @@ if [ "$PLATFORM" = "Intel Mac" ]; then
   conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
   conda activate $ECOASSISTCONDAENV_PYTORCH
   conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
-  conda install -c conda-forge ultralytics=8.0.191 -y
+  $PIP_YOLOV8 install "ultralytics==8.0.191"
   conda install -c conda-forge numpy==1.24.1 -y
   conda install -c conda-forge humanfriendly==10.0 -y
   conda install -c conda-forge jsonpickle==3.0.2 -y
