@@ -6,7 +6,7 @@
 import json
 import os
 from tqdm import tqdm
-from PIL import Image, ImageOps
+from PIL import Image
 from collections import defaultdict 
 from cameratraps.detection.video_utils import frame_results_to_video_results
 from cameratraps.md_utils.ct_utils import is_list_sorted
@@ -18,6 +18,7 @@ def classify_MD_json(json_path,
                      cls_detec_thresh,
                      cls_class_thresh,
                      smooth_bool,
+                     crop_function,
                      inference_function,
                      temp_frame_folder,
                      cls_model_fpath):
@@ -38,6 +39,7 @@ def classify_MD_json(json_path,
                                             cls_detec_thresh = cls_detec_thresh,
                                             cls_class_thresh = cls_class_thresh,
                                             smooth_bool = smooth_bool,
+                                            crop_function = crop_function,
                                             inference_function = inference_function,
                                             cls_model_fpath = cls_model_fpath)
         
@@ -61,6 +63,7 @@ def classify_MD_json(json_path,
                                             cls_detec_thresh = cls_detec_thresh,
                                             cls_class_thresh = cls_class_thresh,
                                             smooth_bool = smooth_bool,
+                                            crop_function = crop_function,
                                             inference_function = inference_function,
                                             cls_model_fpath = cls_model_fpath)
 
@@ -81,28 +84,6 @@ def fetch_label_map_from_json(path_to_json):
     label_map = data['detection_categories']
     return label_map
 
-# crop detection with equal sides (Thanks Dan Morris)
-def remove_background(img, bbox_norm):
-    img_w, img_h = img.size
-    xmin = int(bbox_norm[0] * img_w)
-    ymin = int(bbox_norm[1] * img_h)
-    box_w = int(bbox_norm[2] * img_w)
-    box_h = int(bbox_norm[3] * img_h)
-    box_size = max(box_w, box_h)
-    xmin = max(0, min(
-        xmin - int((box_size - box_w) / 2),
-        img_w - box_w))
-    ymin = max(0, min(
-        ymin - int((box_size - box_h) / 2),
-        img_h - box_h))
-    box_w = min(img_w, box_size)
-    box_h = min(img_h, box_size)
-    if box_w == 0 or box_h == 0:
-        return
-    crop = img.crop(box=[xmin, ymin, xmin + box_w, ymin + box_h])
-    crop = ImageOps.pad(crop, size=(box_size, box_size), color=0)
-    return crop
-
 # set confidence scores of forbidden classes to 0 and normalize the rest
 def remove_forbidden_classes(name_classifications, forbidden_classes):
     name_classifications = [[name, 0] if name in forbidden_classes else [name, score] for name, score in name_classifications]
@@ -117,6 +98,7 @@ def convert_detections_to_classification(json_path,
                                          cls_detec_thresh,
                                          cls_class_thresh,
                                          smooth_bool,
+                                         crop_function,
                                          inference_function,
                                          cls_model_fpath):
 
@@ -163,7 +145,7 @@ def convert_detections_to_classification(json_path,
                         if category == 'animal' and conf >= cls_detec_thresh:
                             img_fpath = os.path.join(img_dir, fname)
                             bbox = detection['bbox']
-                            crop = remove_background(Image.open(img_fpath), bbox)
+                            crop = crop_function(Image.open(img_fpath), bbox)
                             name_classifications = inference_function(crop)
                             name_classifications = remove_forbidden_classes(name_classifications, forbidden_classes)
                             
