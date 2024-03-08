@@ -21,21 +21,10 @@ MODEL_TYPE=${3}
 LOCATION_ECOASSIST_FILES=${4}
 MODEL_FPATH=${5}
 DET_THRESH=${6}
-CLS_THRESH=$76}
+CLS_THRESH=${7}
 SMOOTH_BOOL=${8}
 JSON_FPATH=${9}
 FRAME_DIR=${10}
-
-echo GPU_DISABLED = $GPU_DISABLED # DEBUG
-echo MODEL_ENV = $MODEL_ENV # DEBUG
-echo MODEL_TYPE = $MODEL_TYPE # DEBUG
-echo LOCATION_ECOASSIST_FILES = $LOCATION_ECOASSIST_FILES # DEBUG
-echo MODEL_FPATH = $MODEL_FPATH # DEBUG
-echo DET_THRESH = $DET_THRESH # DEBUG
-echo CLS_THRESH = $CLS_THRESH # DEBUG
-echo SMOOTH_BOOL = $SMOOTH_BOOL # DEBUG
-echo JSON_FPATH = $JSON_FPATH # DEBUG
-echo FRAME_DIR = $FRAME_DIR # DEBUG
 
 # set variables
 INF_SCRIPT="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/model_types/${MODEL_TYPE}/classify_detections.py"
@@ -52,7 +41,6 @@ source "${CONDA_DIR}/bin/activate" base
 export PATH="${CONDA_DIR}/bin":$PATH
 conda deactivate
 conda activate "${CLS_ENV}"
-echo CONDA_DEFAULT_ENV = $CONDA_DEFAULT_ENV # DEBUG
 
 # change directory
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
