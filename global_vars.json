@@ -2,7 +2,7 @@
     "lang_idx": 0,
     "advanced_mode": false,
     "var_det_model_idx": 0,
-    "var_cls_model_idx": 1,
+    "var_cls_model_idx": 0,
     "var_det_model_path": "",
     "var_det_model_short": "",
     "var_exclude_subs": false,
@@ -24,6 +24,6 @@
     "var_crp_files": false,
     "var_exp": true,
     "var_exp_format_idx": 0,
-    "var_thresh": 0.2,
-    "var_thresh_default": 0.2
+    "var_thresh": 0.3,
+    "var_thresh_default": 0.3
 }
