@@ -1,4 +1,4 @@
-name: ecoassistcondaenv-mewc
+name: ecoassistcondaenv-tensorflow
 
 channels:
   - conda-forge
