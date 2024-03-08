@@ -23,6 +23,7 @@ temp_frame_folder =  None if str(sys.argv[7]) == 'None' else str(sys.argv[7])
 # imports
 from ultralytics import YOLO
 import torch
+from PIL import ImageOps
 
 # load model
 animal_model = YOLO(cls_model_fpath)
@@ -53,6 +54,33 @@ def get_classification(PIL_crop):
         classifications.append([v, probs[idx]])
     return classifications
 
+# method of removing background
+# input: image = full image PIL.Image.open(img_fpath) <class 'PIL.JpegImagePlugin.JpegImageFile'>
+# input: bbox = the bbox coordinates as read from the MD json - detection['bbox'] - [xmin, ymin, xmax, ymax]
+# output: cropped image <class 'PIL.Image.Image'>
+# each developer has its own way of padding, squaring, cropping, resizing etc
+# it needs to happen exactly the same as on which the model was trained
+def get_crop(img, bbox_norm): # created by Dan Morris
+    img_w, img_h = img.size
+    xmin = int(bbox_norm[0] * img_w)
+    ymin = int(bbox_norm[1] * img_h)
+    box_w = int(bbox_norm[2] * img_w)
+    box_h = int(bbox_norm[3] * img_h)
+    box_size = max(box_w, box_h)
+    xmin = max(0, min(
+        xmin - int((box_size - box_w) / 2),
+        img_w - box_w))
+    ymin = max(0, min(
+        ymin - int((box_size - box_h) / 2),
+        img_h - box_h))
+    box_w = min(img_w, box_size)
+    box_h = min(img_h, box_size)
+    if box_w == 0 or box_h == 0:
+        return
+    crop = img.crop(box=[xmin, ymin, xmin + box_w, ymin + box_h])
+    crop = ImageOps.pad(crop, size=(box_size, box_size), color=0)
+    return crop
+
 #############################################
 ############### MODEL GENERIC ###############
 #############################################
@@ -63,6 +91,7 @@ ea.classify_MD_json(json_path = json_path,
                     cls_detec_thresh = cls_detec_thresh,
                     cls_class_thresh = cls_class_thresh,
                     smooth_bool = smooth_bool,
+                    crop_function = get_crop,
                     inference_function = get_classification,
                     temp_frame_folder = temp_frame_folder,
                     cls_model_fpath = cls_model_fpath)
