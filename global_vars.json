@@ -2,7 +2,7 @@
     "lang_idx": 0,
     "advanced_mode": false,
     "var_det_model_idx": 0,
-    "var_cls_model_idx": 1,
+    "var_cls_model_idx": 0,
     "var_det_model_path": "",
     "var_det_model_short": "",
     "var_exclude_subs": false,
