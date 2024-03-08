@@ -1,7 +1,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 6 March 2024
+# Latest edit by Peter van Lunteren on 8 March 2024
 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
@@ -61,8 +61,8 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.1"
-corresponding_model_info_version = "1"
+current_EA_version = "5.2"
+corresponding_model_info_version = "2"
 
 # set global variables
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -4053,6 +4053,8 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     min_version = model_dict.get("min_version", "1000.1")
     citation = model_dict.get("citation", "")
     citation_present = False if citation == "" else True
+    license = model_dict.get("license", "")
+    liscense_present = False if license == "" else True
     needs_EA_update_bool = needs_EA_update(min_version)
     if needs_EA_update_bool:
         update_var = f"Your current EcoAssist version (v{current_EA_version}) will not be able to run this model. An update is required."
@@ -4068,6 +4070,8 @@ def show_model_info(title = None, model_dict = None, new_model = False):
         webbrowser.open("https://addaxdatascience.com/ecoassist/")
     def cite():
         webbrowser.open(citation)
+    def see_license():
+        webbrowser.open(license)
 
     # create window
     nm_root = customtkinter.CTkToplevel(root)
@@ -4138,6 +4142,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     n_btns = 2
     if needs_EA_update_bool: n_btns += 1
     if citation_present: n_btns += 1
+    if liscense_present: n_btns += 1
     btns_frm = customtkinter.CTkFrame(master=nm_root)
     for col in range(0, n_btns):
         btns_frm.columnconfigure(col, weight=1, minsize=10)
@@ -4154,6 +4159,10 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     if citation_present:
         citat_btn = customtkinter.CTkButton(btns_frm, text="Cite", command=cite)
         citat_btn.grid(row=0, column=ncol, padx=(0, PADX), pady=PADY, sticky="nwse")
+        ncol += 1
+    if liscense_present:
+        licen_btn = customtkinter.CTkButton(btns_frm, text="License", command=see_license)
+        licen_btn.grid(row=0, column=ncol, padx=(0, PADX), pady=PADY, sticky="nwse")
         ncol += 1
 
 # class frame for model window
