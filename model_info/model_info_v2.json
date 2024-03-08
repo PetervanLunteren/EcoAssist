@@ -12,6 +12,8 @@
                     "namib_desert_v1.pt"
                 ]
             ],
+            "citation": "https://joss.theoj.org/papers/10.21105/joss.05581",
+            "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
             "total_download_size": "107 MB",
             "info_url": "https://addaxdatascience.com/projects/2023-01-dlc/",
             "all_classes": [
@@ -85,54 +87,84 @@
             "var_smooth_cls_animal": false,
             "min_version": "4.4"
         },
-        "Tasmania - University of Tasmania": {
-            "model_fname": "mewc_model_224px_best.h5",
-            "description": "Model trained on a camera-trap dataset collected and curated by Barry Brook and Jessie Buettel, from Tasmania, Australia. These images are drawn from a variety of environmental contexts (dry and wet temperate eucalypt forest, woodland, and grasslands) using white-, infra-red (IR) and no-glow flash types from Cuddeback, Reconyx, Swift and Bushnell cameras. The following species or aggregated classes are represented in the dataset: Tasmanian Pademelon (Thylogale billardierii), Bennetts Wallaby (Notamacropus rufogriseus), Tasmanian Devil (Sarcophilus harrisii), Feral Cat (Felis catus), Bare-nosed Wombat (Vombatus ursinus), Brushtail Possum (Trichosurus vulpecula), Fallow Deer (Dama dama), Southern Brown Bandicoot (Isoodon obesulus), Currawong (Black: Strepera fuliginosa, Grey: S. versicolor) and Bronzewing (Brush: Phaps elegans, Common: P. chalcoptera). The latter two classes are birds, each of which consist of an aggregation of two species within a genus; the former eight are mammals. ",
-            "developer": "University of Tasmania",
-            "env": "tensorflow",
-            "type": "mewc",
+        "Europe - DeepFaune v1.1": {
+            "model_fname": "deepfaune-vit_large_patch14_dinov2.lvd142m.pt",
+            "description": "Camera traps have revolutionized how ecologists monitor wildlife, but their full potential is realized only when the hundreds of thousands of collected images can be readily classified with minimal human intervention. Deep-learning classification models have allowed extraordinary progress towards this end, but trained models remain rare and are only now emerging for European fauna. We report on the first milestone of the DeepFaune initiative (https://www.deepfaune.cnrs.fr), a large-scale collaboration between more than 50 partners involved in wildlife research, conservation and management in France. We developed a classification model trained to recognize 26 species or higher-level taxa. The classification model achieved 0.97 validation accuracy and often >0.95 precision and recall for many classes.",
+            "developer": "The DeepFaune initiative",
+            "env": "pytorch",
+            "type": "deepfaune",
             "download_info": [
                 [
-                    "https://huggingface.co/Addax-Data-Science/dummy-model/resolve/main/mewc_model_224px_best.h5?download=true",
-                    "mewc_model_224px_best.h5"
-                ],
-                [
-                    "https://huggingface.co/Addax-Data-Science/dummy-model/resolve/main/class_list.yaml?download=true",
-                    "class_list.yaml"
+                    "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt",
+                    "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
                 ]
             ],
-            "total_download_size": "71 MB",
-            "info_url": "https://github.com/zaandahl/mewc",
+            "citation": "https://www.biorxiv.org/content/10.1101/2022.03.15.484324v3",
+            "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "total_download_size": "1.22 GB",
+            "info_url": "https://www.deepfaune.cnrs.fr/en/",
             "all_classes": [
-                "bare-nosed wombat",
-                "bennetts wallaby",
-                "bronzewing",
-                "brushtail possum",
-                "currawong",
-                "fallow deer",
-                "feral cat",
-                "southern brown bandicoot",
-                "tasmanian devil",
-                "tasmanian pademelon"
+                "badger",
+                "ibex",
+                "red deer",
+                "chamois",
+                "cat",
+                "goat",
+                "roe deer",
+                "dog",
+                "squirrel",
+                "equid",
+                "genet",
+                "hedgehog",
+                "lagomorph",
+                "wolf",
+                "lynx",
+                "marmot",
+                "micromammal",
+                "mouflon",
+                "sheep",
+                "mustelid",
+                "bird",
+                "bear",
+                "nutria",
+                "fox",
+                "wild boar",
+                "cow"
             ],
             "selected_classes": [
-                "bare-nosed wombat",
-                "bennetts wallaby",
-                "bronzewing",
-                "brushtail possum",
-                "currawong",
-                "fallow deer",
-                "feral cat",
-                "southern brown bandicoot",
-                "tasmanian devil",
-                "tasmanian pademelon"
+                "badger",
+                "ibex",
+                "red deer",
+                "chamois",
+                "cat",
+                "goat",
+                "roe deer",
+                "dog",
+                "squirrel",
+                "equid",
+                "genet",
+                "hedgehog",
+                "lagomorph",
+                "wolf",
+                "lynx",
+                "marmot",
+                "micromammal",
+                "mouflon",
+                "sheep",
+                "mustelid",
+                "bird",
+                "bear",
+                "nutria",
+                "fox",
+                "wild boar",
+                "cow"
             ],
             "var_cls_detec_thresh": "0.60",
             "var_cls_detec_thresh_default": "0.60",
             "var_cls_class_thresh": "0.50",
             "var_cls_class_thresh_default": "0.50",
             "var_smooth_cls_animal": false,
-            "min_version": "4.4"
+            "min_version": "5.2"
         }
     },
     "det": {
@@ -148,6 +180,7 @@
                     "md_v5a.0.0.pt"
                 ]
             ],
+            "license": "https://github.com/agentmorris/MegaDetector/blob/main/LICENSE",
             "total_download_size": "281 MB",
             "info_url": "https://github.com/agentmorris/MegaDetector",
             "citation": "https://arxiv.org/abs/1907.06772",
@@ -170,6 +203,7 @@
                     "md_v5b.0.0.pt"
                 ]
             ],
+            "license": "https://github.com/agentmorris/MegaDetector/blob/main/LICENSE",
             "total_download_size": "281 MB",
             "info_url": "https://github.com/agentmorris/MegaDetector",
             "citation": "https://arxiv.org/abs/1907.06772",
