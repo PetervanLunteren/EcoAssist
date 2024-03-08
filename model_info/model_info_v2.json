@@ -83,54 +83,6 @@
             "var_cls_class_thresh_default": "0.50",
             "var_smooth_cls_animal": false,
             "min_version": "4.4"
-        },
-        "Tasmania - University of Tasmania": {
-            "model_fname": "mewc_model_224px_best.h5",
-            "description": "Model trained on a camera-trap dataset collected and curated by Barry Brook and Jessie Buettel, from Tasmania, Australia. These images are drawn from a variety of environmental contexts (dry and wet temperate eucalypt forest, woodland, and grasslands) using white-, infra-red (IR) and no-glow flash types from Cuddeback, Reconyx, Swift and Bushnell cameras. The following species or aggregated classes are represented in the dataset: Tasmanian Pademelon (Thylogale billardierii), Bennetts Wallaby (Notamacropus rufogriseus), Tasmanian Devil (Sarcophilus harrisii), Feral Cat (Felis catus), Bare-nosed Wombat (Vombatus ursinus), Brushtail Possum (Trichosurus vulpecula), Fallow Deer (Dama dama), Southern Brown Bandicoot (Isoodon obesulus), Currawong (Black: Strepera fuliginosa, Grey: S. versicolor) and Bronzewing (Brush: Phaps elegans, Common: P. chalcoptera). The latter two classes are birds, each of which consist of an aggregation of two species within a genus; the former eight are mammals. ",
-            "developer": "University of Tasmania",
-            "type": "mewc",
-            "download_info": [
-                [
-                    "https://huggingface.co/Addax-Data-Science/dummy-model/resolve/main/mewc_model_224px_best.h5?download=true",
-                    "mewc_model_224px_best.h5"
-                ],
-                [
-                    "https://huggingface.co/Addax-Data-Science/dummy-model/resolve/main/class_list.yaml?download=true",
-                    "class_list.yaml"
-                ]
-            ],
-            "total_download_size": "71 MB",
-            "info_url": "https://github.com/zaandahl/mewc",
-            "all_classes": [
-                "bare-nosed wombat",
-                "bennetts wallaby",
-                "bronzewing",
-                "brushtail possum",
-                "currawong",
-                "fallow deer",
-                "feral cat",
-                "southern brown bandicoot",
-                "tasmanian devil",
-                "tasmanian pademelon"
-            ],
-            "selected_classes": [
-                "bare-nosed wombat",
-                "bennetts wallaby",
-                "bronzewing",
-                "brushtail possum",
-                "currawong",
-                "fallow deer",
-                "feral cat",
-                "southern brown bandicoot",
-                "tasmanian devil",
-                "tasmanian pademelon"
-            ],
-            "var_cls_detec_thresh": "0.60",
-            "var_cls_detec_thresh_default": "0.60",
-            "var_cls_class_thresh": "0.50",
-            "var_cls_class_thresh_default": "0.50",
-            "var_smooth_cls_animal": false,
-            "min_version": "4.4"
         }
     },
     "det": {
