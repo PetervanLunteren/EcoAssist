@@ -163,6 +163,14 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps 2>&1 | tee -a "$LOG_FILE"
+
+  # some users experience timeout issues due to the large size of this repository
+  # if it fails here, we'll try again with a larger timeout value and less checks during cloning
+  if [ $? -ne 0 ]; then
+      echo "First attempt failed. Retrying with extended timeout..."
+      GIT_SSH_COMMAND="ssh -o ConnectTimeout=200" git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+  fi
+
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
