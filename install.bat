@@ -284,6 +284,15 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone https://github.com/agentmorris/MegaDetector.git cameratraps
+
+    @REM Some users experience timeout issues due to the large size of this repository
+    @REM If it fails here, we'll try again with a larger timeout value and fewer checks during cloning
+    if not !errorlevel! == 0 (
+        echo First attempt failed. Retrying with extended timeout... | wtee -a "%LOG_FILE%"
+        set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+    )
+
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
