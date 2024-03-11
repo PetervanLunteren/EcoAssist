@@ -159,10 +159,10 @@
                 "wild boar",
                 "cow"
             ],
-            "var_cls_detec_thresh": "0.80",
-            "var_cls_detec_thresh_default": "0.80",
-            "var_cls_class_thresh": "0.50",
-            "var_cls_class_thresh_default": "0.50",
+            "var_cls_detec_thresh": "0.30",
+            "var_cls_detec_thresh_default": "0.30",
+            "var_cls_class_thresh": "0.80",
+            "var_cls_class_thresh_default": "0.80",
             "var_smooth_cls_animal": false,
             "min_version": "5.2"
         }
