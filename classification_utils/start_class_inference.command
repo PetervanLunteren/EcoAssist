@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### Unix commands to execute the classification inference in a specific conda env
-### Peter van Lunteren, 13 Feb 2024 (latest edit)
+### Peter van Lunteren, 11 Mar 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -49,6 +49,7 @@ cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_
 if [ "$GPU_DISABLED" == "True" ] && [ "$PLATFORM" == "Linux" ]; then
     CUDA_VISIBLE_DEVICES='' python "${INF_SCRIPT}" "${LOCATION_ECOASSIST_FILES}" "${MODEL_FPATH}" "${DET_THRESH}" "${CLS_THRESH}" "${SMOOTH_BOOL}" "${JSON_FPATH}" "${FRAME_DIR}"
 else
+    export PYTORCH_ENABLE_MPS_FALLBACK=1
     python "${INF_SCRIPT}" "${LOCATION_ECOASSIST_FILES}" "${MODEL_FPATH}" "${DET_THRESH}" "${CLS_THRESH}" "${SMOOTH_BOOL}" "${JSON_FPATH}" "${FRAME_DIR}"
 fi
 
