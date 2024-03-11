@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="22 Feb 2024 - v2"
+set DATE_OF_LAST_EDIT="11 Mar 2024"
 
 @REM print header
 echo:
@@ -382,10 +382,19 @@ call activate ecoassistcondaenv-base
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for pytorch classification
-call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\pytorch.yml
+call %EA_CONDA_EXE% env create -n ecoassistcondaenv-pytorch python=3.8 -y
 call activate ecoassistcondaenv-pytorch
-"%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.191
+call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+"%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
 "%EA_PIP_EXE_PYTORCH%" install timm
+"%EA_PIP_EXE_PYTORCH%" install pandas
+"%EA_PIP_EXE_PYTORCH%" install numpy
+"%EA_PIP_EXE_PYTORCH%" install opencv-python
+"%EA_PIP_EXE_PYTORCH%" install pillow
+"%EA_PIP_EXE_PYTORCH%" install dill
+"%EA_PIP_EXE_PYTORCH%" install hachoir
+"%EA_PIP_EXE_PYTORCH%" install versions
+"%EA_PIP_EXE_PYTORCH%" install jsonpickle
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for tensorflow classification
