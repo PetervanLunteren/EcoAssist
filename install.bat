@@ -382,7 +382,7 @@ call activate ecoassistcondaenv-base
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for pytorch classification
-call %EA_CONDA_EXE% env create -n ecoassistcondaenv-pytorch python=3.8 -y
+call %EA_CONDA_EXE% create -n ecoassistcondaenv-pytorch python=3.8 -y
 call activate ecoassistcondaenv-pytorch
 call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
