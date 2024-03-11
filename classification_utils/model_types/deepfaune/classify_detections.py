@@ -5,7 +5,7 @@
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Script created by Peter van Lunteren
 # Some code is created by the DeepFaune team and is indicated as so 
-# Latest edit by Peter van Lunteren on 7 March 2024
+# Latest edit by Peter van Lunteren on 11 March 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -28,17 +28,28 @@ import sys
 import numpy as np
 import timm
 import torch
-from PIL import Image
 from torch import tensor
 import torch.nn as nn
-import cv2
 from torchvision.transforms import InterpolationMode, transforms
 
-# The folowing code snippet is created by the DeepFaune team
-# origin: https://plmlab.math.cnrs.fr/deepfaune/software/-/blob/master/classifTools.py
-# it is exactly the same, but with one minor adjustment to accomodate for a non 
-# standard location of the model -> weight_path = cls_model_fpath
-# orignal license is shown below
+# check on and on which GPU the process should run
+def fetch_device():
+    device = torch.device('cpu')
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    try:
+        if torch.backends.mps.is_built and torch.backends.mps.is_available():
+            device = torch.device('mps')
+    except AttributeError:
+        pass
+    return device
+
+# The following ClassifTools code snippet is created by the DeepFaune team.
+# Orignal license is shown below.
+# Source: https://plmlab.math.cnrs.fr/deepfaune/software/-/blob/master/classifTools.py
+# The code is unaltered, except for two minor adjustments:
+# 1. Accomodate for a non standard location of the model
+# 2. Run on Apple Silicon GPU via MPS Metal GPU
 
 ################################################
 ############## CLASSIFTOOLS START ##############
@@ -79,7 +90,8 @@ from torchvision.transforms import InterpolationMode, transforms
 
 CROP_SIZE = 182
 BACKBONE = "vit_large_patch14_dinov2.lvd142m"
-weight_path = cls_model_fpath # ADJUSTMENT
+# weight_path = "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
+weight_path = cls_model_fpath # ADJUSTMENT 1
 
 txt_animalclasses = {
     'fr': ["blaireau", "bouquetin", "cerf", "chamois", "chat", "chevre", "chevreuil", "chien", "ecureuil", "equide", "genette",
@@ -98,7 +110,6 @@ txt_animalclasses = {
 }
 
 class Classifier:
-
     def __init__(self):
         self.model = Model()
         self.model.loadWeights(weight_path)
@@ -138,7 +149,8 @@ class Model(nn.Module):
         :return: numpy array of predictions without soft max
         """
         self.eval()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = fetch_device() # ADJUSTMENT 2
         self.to(device)
         total_output = []
         with torch.no_grad():
@@ -155,7 +167,8 @@ class Model(nn.Module):
         """
         :param path: path of .pt save of model
         """
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = fetch_device() # ADJUSTMENT 2
 
         if path[-3:] != ".pt":
             path += ".pt"
