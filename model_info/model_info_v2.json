@@ -80,8 +80,8 @@
                 "steenbok",
                 "zebra"
             ],
-            "var_cls_detec_thresh": "0.60",
-            "var_cls_detec_thresh_default": "0.60",
+            "var_cls_detec_thresh": "0.40",
+            "var_cls_detec_thresh_default": "0.40",
             "var_cls_class_thresh": "0.50",
             "var_cls_class_thresh_default": "0.50",
             "var_smooth_cls_animal": false,
@@ -89,7 +89,7 @@
         },
         "Europe - DeepFaune v1.1": {
             "model_fname": "deepfaune-vit_large_patch14_dinov2.lvd142m.pt",
-            "description": "Camera traps have revolutionized how ecologists monitor wildlife, but their full potential is realized only when the hundreds of thousands of collected images can be readily classified with minimal human intervention. Deep-learning classification models have allowed extraordinary progress towards this end, but trained models remain rare and are only now emerging for European fauna. We report on the first milestone of the DeepFaune initiative (https://www.deepfaune.cnrs.fr), a large-scale collaboration between more than 50 partners involved in wildlife research, conservation and management in France. We developed a classification model trained to recognize 26 species or higher-level taxa. The classification model achieved 0.97 validation accuracy and often >0.95 precision and recall for many classes.",
+            "description": "The Deepfaune initiative aims at developing 'artificial intelligence' models to automatically classify species in images and videos collected using camera-traps. The initiative is led by a core academic team from the French 'Centre National de la Recherche Scientifique' (CNRS), in collaboration with more than 50 European partners involved in wildlife research, conservation and management. The Deepfaune models can be run through a custom software freely available on the website, or through other software packages or platforms like EcoAssist. New versions of the model are published regularly, increasing classification accuracy or adding new species to the list of species that can be recognized. More information is available at: https://www.deepfaune.cnrs.fr",
             "developer": "The DeepFaune initiative",
             "env": "pytorch",
             "type": "deepfaune",
@@ -99,7 +99,7 @@
                     "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
                 ]
             ],
-            "citation": "https://www.biorxiv.org/content/10.1101/2022.03.15.484324v3",
+            "citation": "https://doi.org/10.1007/s10344-023-01742-7",
             "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
             "total_download_size": "1.22 GB",
             "info_url": "https://www.deepfaune.cnrs.fr/en/",
@@ -159,8 +159,8 @@
                 "wild boar",
                 "cow"
             ],
-            "var_cls_detec_thresh": "0.30",
-            "var_cls_detec_thresh_default": "0.30",
+            "var_cls_detec_thresh": "0.35",
+            "var_cls_detec_thresh_default": "0.35",
             "var_cls_class_thresh": "0.80",
             "var_cls_class_thresh_default": "0.80",
             "var_smooth_cls_animal": false,
