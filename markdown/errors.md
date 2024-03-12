@@ -108,25 +108,31 @@ Let me know if this doesn't work!
 ## `PackagesNotFoundError: The following packages are not available from current channels`
 I'm not sure what causes conda to not find certain packages on your device, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking Conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
 
-You can check if the computer has access to the Conda channels by attempting to access the channels. Here's how:
+Can you check if you have access to the conda website? You can do so by visiting https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json. If you have access, you should see a white screen with text like so:
 
-**Using a Web Browser:**
-Open a web browser and try to access the Conda channels directly. Can you open the following websites? You should see a list of hyperlinks (see screenshot).
-* [https://conda.anaconda.org/conda-forge/win-64](https://conda.anaconda.org/conda-forge/win-64)
-* [https://conda.anaconda.org/pytorch/win-64](https://conda.anaconda.org/pytorch/win-64)
+```
+{
+  "info": {
+    "subdir": "win-64"
+  },
+  "packages": {
+    "cuda100-1.0-0.tar.bz2": {
+      "build": "0",
+      "build_number": 0,
+      "depends": [],
+      "md5": "f0f11be74e3d0a57b23b5e066e20155e",
+      "name": "cuda100",
+      "sha256": "79997bad0cc6ca7c2ec7c6f214d8a8361d4bcefdbc81114a75084b7b7d928bf8",
+      "size": 1943,
+      "subdir": "win-64",
+      "timestamp": 1544163846173,
+      "track_features": "cuda100",
+      "version": "1.0"
+    },
+```
 
-**Using the command line:**
-Open a new command prompt window and copy-paste the following commands and press enter. It will download a text file from the Conda channels to check if something is blocking the connection. This can be done using the following commands:
-```
-curl -O https://conda.anaconda.org/conda-forge/win-64/patch_instructions.json
-```
-```
-curl -O https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json
-```
+Let me know how that goes!
 
-The text files (`.json`) are downloaded to your root folder (if the download succeeded), and can be deleted afterward. We don't need them, It's just to check the connection. 
-
-Let me know how this goes!
 
 ## `Exception: '>=' not supported between instances of 'RuntimeError' and 'int'`
 Solution comming up...
