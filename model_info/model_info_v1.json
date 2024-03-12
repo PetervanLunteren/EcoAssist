@@ -4,8 +4,7 @@
             "model_fname": "namib_desert_v1.pt",
             "description": "Model to identify 30 species or higher level taxons present in the desert biome of the Skeleton Coast National Park, North Namibia. The model was trained on a set of more than 850,000 images.",
             "developer": "Addax Data Science",
-            "env": "pytorch",
-            "type": "addax-yolov8",
+            "type": "yolov8",
             "download_info": [
                 [
                     "https://huggingface.co/Addax-Data-Science/Namib-Desert-v1/resolve/main/namib_desert_v1.pt?download=true",
@@ -91,8 +90,7 @@
             "model_fname": "md_v5a.0.0.pt",
             "description": "MegaDetector is an object detection model that identifies animals, people, and vehicles in camera trap images (which also makes it useful for eliminating blank images). This model is trained on several hundred thousand bounding boxes from a variety of ecosystems. The animals located by this model with be further identified by the species recognition models.",
             "developer": "Microsoft AI for Earth",
-            "env": "base",
-            "type": "megadetector5",
+            "type": "base",
             "download_info": [
                 [
                     "https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt",
@@ -113,8 +111,7 @@
             "model_fname": "md_v5b.0.0.pt",
             "description": "MegaDetector 5b differs from 5a only in its training data and is also an object detection model that identifies animals, people, and vehicles in camera trap images (which also makes it useful for eliminating blank images). This model is trained on several hundred thousand bounding boxes from a variety of ecosystems. The animals located by this model with be further identified by the species recognition models.",
             "developer": "Microsoft AI for Earth",
-            "env": "base",
-            "type": "megadetector5",
+            "type": "base",
             "download_info": [
                 [
                     "https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5b.0.0.pt",
