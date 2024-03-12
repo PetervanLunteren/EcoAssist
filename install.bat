@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="22 Feb 2024 - v2"
+set DATE_OF_LAST_EDIT="11 Mar 2024"
 
 @REM print header
 echo:
@@ -181,8 +181,8 @@ for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
 if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
 @REM set pip path
 set EA_PIP_EXE_BASE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base\Scripts\pip3
-set EA_PIP_EXE_YOLOV8=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8\Scripts\pip3
-set EA_PIP_EXE_MEWC=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc\Scripts\pip3
+set EA_PIP_EXE_PYTORCH=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch\Scripts\pip3
+set EA_PIP_EXE_TENSORFLOW=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow\Scripts\pip3
 
 @REM set git cmds
 @REM check the default locations for a Git install
@@ -284,6 +284,15 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     echo Dir cameratraps does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" clone https://github.com/agentmorris/MegaDetector.git cameratraps
+
+    @REM Some users experience timeout issues due to the large size of this repository
+    @REM If it fails here, we'll try again with a larger timeout value and fewer checks during cloning
+    if not !errorlevel! == 0 (
+        echo First attempt failed. Retrying with extended timeout... | wtee -a "%LOG_FILE%"
+        set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+    )
+
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
@@ -353,9 +362,11 @@ call %EA_CONDA_EXE% config --set notify_outdated_conda false
 
 @REM remove all old ecoassist conda evironments, if present
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-pytorch || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-tensorflow || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 
 @REM create conda env and install packages for MegaDetector
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
@@ -379,14 +390,24 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
 call %EA_CONDA_EXE% deactivate
 
-@REM create and log dedicated environment for yolov8 classification
-call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\yolov8.yml
-call activate ecoassistcondaenv-yolov8
-"%EA_PIP_EXE_YOLOV8%" install ultralytics==8.0.191
+@REM create and log dedicated environment for pytorch classification
+call %EA_CONDA_EXE% create -n ecoassistcondaenv-pytorch python=3.8 -y
+call activate ecoassistcondaenv-pytorch
+call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+"%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
+"%EA_PIP_EXE_PYTORCH%" install timm
+"%EA_PIP_EXE_PYTORCH%" install pandas
+"%EA_PIP_EXE_PYTORCH%" install numpy
+"%EA_PIP_EXE_PYTORCH%" install opencv-python
+"%EA_PIP_EXE_PYTORCH%" install pillow
+"%EA_PIP_EXE_PYTORCH%" install dill
+"%EA_PIP_EXE_PYTORCH%" install hachoir
+"%EA_PIP_EXE_PYTORCH%" install versions
+"%EA_PIP_EXE_PYTORCH%" install jsonpickle
 call %EA_CONDA_EXE% deactivate
 
-@REM create and log dedicated environment for mewc classification
-call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\mewc-linux-windows.yml
+@REM create and log dedicated environment for tensorflow classification
+call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"

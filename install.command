@@ -37,11 +37,11 @@ fi
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
 ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
-ECOASSISTCONDAENV_YOLOV8="${CONDA_DIR}/envs/ecoassistcondaenv-yolov8"
-ECOASSISTCONDAENV_MEWC="${CONDA_DIR}/envs/ecoassistcondaenv-mewc"
+ECOASSISTCONDAENV_PYTORCH="${CONDA_DIR}/envs/ecoassistcondaenv-pytorch"
+ECOASSISTCONDAENV_TENSORFLOW="${CONDA_DIR}/envs/ecoassistcondaenv-tensorflow"
 PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
-PIP_YOLOV8="${ECOASSISTCONDAENV_YOLOV8}/bin/pip"
-PIP_MEWC="${ECOASSISTCONDAENV_MEWC}/bin/pip"
+PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
+PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
 
 # check for sandbox argument and specify branch 
 if [ "$1" == "sandbox" ]; then
@@ -163,6 +163,14 @@ if [ -d "$CAM" ]; then
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps 2>&1 | tee -a "$LOG_FILE"
+
+  # some users experience timeout issues due to the large size of this repository
+  # if it fails here, we'll try again with a larger timeout value and less checks during cloning
+  if [ $? -ne 0 ]; then
+      echo "First attempt failed. Retrying with extended timeout..."
+      GIT_SSH_COMMAND="ssh -o ConnectTimeout=200" git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+  fi
+
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout f72f36f7511a8da7673d52fc3692bd10ec69eb28 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
@@ -318,42 +326,44 @@ conda list >> "$LOG_FILE"
 $PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
-# create dedicated mewc classification environment
+# create dedicated tensorflow classification environment
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-silicon.yml"
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml"
 elif [ "$PLATFORM" = "Intel Mac" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-macos-intel.yml"
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml"
 elif [ "$PLATFORM" = "Linux" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/mewc-linux-windows.yml"
+  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml"
 fi
 
-# create dedicated yolov8 classification environment
+# create dedicated pytorch classification environment
 if [ "$PLATFORM" = "Intel Mac" ]; then
-  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
-  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_YOLOV8
+  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
+  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_PYTORCH
   conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
   $PIP_YOLOV8 install "ultralytics==8.0.191"
   conda install -c conda-forge numpy==1.24.1 -y
   conda install -c conda-forge humanfriendly==10.0 -y
   conda install -c conda-forge jsonpickle==3.0.2 -y
+  conda install -c conda-forge timm
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
-  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 else
   # apple silicon and linux
-  conda env remove -p $ECOASSISTCONDAENV_YOLOV8
-  conda create -p $ECOASSISTCONDAENV_YOLOV8 python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_YOLOV8
-  $PIP_YOLOV8 install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-  $PIP_YOLOV8 install "ultralytics==8.0.191"
-  $PIP_YOLOV8 install "numpy==1.24.1"
-  $PIP_YOLOV8 install "humanfriendly==10.0"
-  $PIP_YOLOV8 install "jsonpickle==3.0.2"
+  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
+  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  conda activate $ECOASSISTCONDAENV_PYTORCH
+  $PIP_PYTORCH install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
+  $PIP_PYTORCH install "ultralytics==8.0.191"
+  $PIP_PYTORCH install "numpy==1.24.1"
+  $PIP_PYTORCH install "humanfriendly==10.0"
+  $PIP_PYTORCH install "jsonpickle==3.0.2"
+  $PIP_PYTORCH install timm
   conda info --envs >> "$LOG_FILE"
   conda list >> "$LOG_FILE"
-  $PIP_YOLOV8 freeze >> "$LOG_FILE" 
+  $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 fi
 

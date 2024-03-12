@@ -7,13 +7,15 @@ echo off
 
 @REM catch arguments
 set "GPU_DISABLED=%1"
-set "MODEL_TYPE=%2"
-set "LOCATION_ECOASSIST_FILES=%3"
-set "MODEL_FPATH=%4"
-set "DET_THRESH=%5"
-set "CLS_THRESH=%6"
-set "SMOOTH_BOOL=%7"
-set "JSON_FPATH=%8"
+set "MODEL_ENV=%2"
+set "MODEL_TYPE=%3"
+set "LOCATION_ECOASSIST_FILES=%4"
+set "MODEL_FPATH=%5"
+set "DET_THRESH=%6"
+set "CLS_THRESH=%7"
+set "SMOOTH_BOOL=%8"
+set "JSON_FPATH=%9"
+shift
 set "FRAME_DIR=%9"
 if "%FRAME_DIR%" == "" ( set "FRAME_DIR=dummy-variable" )
 
@@ -42,7 +44,7 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( cmd /k & exit )
 @REM set variables
 set "INF_SCRIPT=%LOCATION_ECOASSIST_FILES%\EcoAssist\classification_utils\model_types\%MODEL_TYPE%\classify_detections.py"
 set BASE_ENV=ecoassistcondaenv-base
-set CLS_ENV=ecoassistcondaenv-%MODEL_TYPE%
+set CLS_ENV=ecoassistcondaenv-%MODEL_ENV%
 
 @REM activate dedicated environment
 call %EA_CONDA_EXE% deactivate

@@ -1,4 +1,4 @@
-name: ecoassistcondaenv-mewc
+name: ecoassistcondaenv-tensorflow
 
 dependencies:
   - python=3.8.15

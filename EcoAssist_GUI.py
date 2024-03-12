@@ -1,8 +1,9 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 6 March 2024
+# Latest edit by Peter van Lunteren on 11 March 2024
 
+# TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -61,8 +62,8 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.1"
-corresponding_model_info_version = "1"
+current_EA_version = "5.2"
+corresponding_model_info_version = "2"
 
 # set global variables
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -803,7 +804,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     # init window
     hitl_progress_window = customtkinter.CTkToplevel(root)
     hitl_progress_window.title(["Manual check overview", "Verificación manual"][lang_idx])
-    hitl_progress_window.geometry("+1+1")
+    hitl_progress_window.geometry("+10+10")
 
     # explenation frame
     hitl_explenation_frame = LabelFrame(hitl_progress_window, text=[" Explanation ", " Explicación "][lang_idx],
@@ -1027,7 +1028,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             # init window
             hitl_final_window = customtkinter.CTkToplevel(root)
             hitl_final_window.title("Overview")
-            hitl_final_window.geometry()
+            hitl_final_window.geometry("+10+10")
 
             # add plot
             chart_type = FigureCanvasTkAgg(fig, hitl_final_window)
@@ -1388,6 +1389,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     # load model specific variables
     model_vars = load_model_vars() 
     cls_model_fname = model_vars["model_fname"]
+    cls_model_env = model_vars["env"]
     cls_model_type = model_vars["type"]
     cls_model_fpath = os.path.join(EcoAssist_files, "models", "cls", var_cls_model.get(), cls_model_fname)
 
@@ -1407,6 +1409,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     command_args = []
     command_args.append(classify_detections_script)
     command_args.append(str(cls_disable_GPU))
+    command_args.append(cls_model_env)
     command_args.append(cls_model_type)
     command_args.append(EcoAssist_files)
     command_args.append(cls_model_fpath)
@@ -1782,6 +1785,7 @@ def show_update_info(model_vars, model_name):
     # create window
     su_root = customtkinter.CTkToplevel(root)
     su_root.title("Update required")
+    su_root.geometry("+10+10")
     su_root.columnconfigure(0, weight=1, minsize=300)
     su_root.columnconfigure(1, weight=1, minsize=300)
     lbl1 = customtkinter.CTkLabel(su_root, text=f"Update required for model {model_name}", font = main_label_font)
@@ -2619,7 +2623,7 @@ def open_hitl_settings_window():
     # init window
     hitl_settings_window = customtkinter.CTkToplevel(root)
     hitl_settings_window.title(["Verification selection settings", "Configuración de selección de verificación"][lang_idx])
-    hitl_settings_window.geometry()
+    hitl_settings_window.geometry("+10+10")
     hitl_settings_window.maxsize(width=ADV_WINDOW_WIDTH, height=800)
 
     # set scrollable frame
@@ -3594,15 +3598,15 @@ def fetch_latest_model_info():
                             show_model_info(title = model_id, model_dict = model_dict, new_model = True)
                             set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
 
-                # update root so that the new models show up in the dropdown menu
-                update_model_dropdowns()
-
         except requests.exceptions.Timeout:
             print("Request timed out. File download stopped.")
 
         except Exception as e:
             print(f"Could not update model info: {e}")
 
+        # update root so that the new models show up in the dropdown menu, 
+        # but also the correct species for the existing models
+        update_model_dropdowns()
         print(f"model info updated in {round(time.time() - start_time, 2)} seconds")
 
 # check if the user needs an update
@@ -3684,8 +3688,13 @@ def download_model(model_dir, skip_ask=False):
     # catch errors
     except Exception as error:
         print("ERROR:\n" + str(error) + "\n\nDETAILS:\n" + str(traceback.format_exc()) + "\n\n")
-        if os.path.isfile(file_path): # remove incomplete download
-            os.remove(file_path)
+        try:
+            # remove incomplete download
+            if os.path.isfile(file_path): 
+                os.remove(file_path)
+        except UnboundLocalError:
+            # file_path is not set, meaning there is no incomplete download
+            pass
         show_download_error_window(model_title, model_dir, model_vars)
 
 ##############################################
@@ -3707,6 +3716,7 @@ def show_download_error_window(model_title, model_dir, model_vars):
     # create window
     de_root = customtkinter.CTkToplevel(root)
     de_root.title(["Download error", "Error de descarga"][lang_idx])
+    de_root.geometry("+10+10")
     bring_window_to_top_but_not_for_ever(de_root)
 
     # main label
@@ -3813,6 +3823,17 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
                                                            f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
         pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif model_title == "Europe - DeepFaune v1.1":
+        main_url = "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1"
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
     else:
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" (!) No manual steps provided. Please take a screenshot of this"
                                                            " window and send an email to", f" (!) No se proporcionan pasos "
@@ -3869,6 +3890,7 @@ def open_species_selection():
     # create window
     ss_root = customtkinter.CTkToplevel(root)
     ss_root.title("Species selection")
+    ss_root.geometry("+10+10")
     bring_window_to_top_but_not_for_ever(ss_root)
     spp_frm_1 = customtkinter.CTkFrame(master=ss_root)
     spp_frm_1.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
@@ -3997,12 +4019,17 @@ class ModelDownloadProgressWindow:
     def __init__(self, model_title, total_size_str):
         self.dm_root = customtkinter.CTkToplevel(root)
         self.dm_root.title("Download progress")
+        self.dm_root.geometry("+10+10")
         self.frm = customtkinter.CTkFrame(master=self.dm_root)
-        self.frm.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+        self.frm.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
         self.frm.columnconfigure(0, weight=1, minsize=500)
-        self.lbl = customtkinter.CTkLabel(self.dm_root, text=f"Downloading model '{model_title}' ({total_size_str})", 
+        self.lbl = customtkinter.CTkLabel(self.dm_root, text=[f"Downloading model '{model_title}' ({total_size_str})",
+                                                              f"Descargar modelo '{model_title}' ({total_size_str})"][lang_idx], 
                                           font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
         self.lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, 0), sticky="nsew")
+        self.war = customtkinter.CTkLabel(self.dm_root, text=["Please prevent computer from sleeping during the download.",
+                                                          "Por favor, evite que el ordenador se duerma durante la descarga."][lang_idx])
+        self.war.grid(row=1, column=0, padx=PADX, pady=0, sticky="nsew")
         self.pbr = customtkinter.CTkProgressBar(self.frm, orientation="horizontal", height=28, corner_radius=5, width=1)
         self.pbr.set(0)
         self.pbr.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nsew")
@@ -4051,6 +4078,8 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     min_version = model_dict.get("min_version", "1000.1")
     citation = model_dict.get("citation", "")
     citation_present = False if citation == "" else True
+    license = model_dict.get("license", "")
+    liscense_present = False if license == "" else True
     needs_EA_update_bool = needs_EA_update(min_version)
     if needs_EA_update_bool:
         update_var = f"Your current EcoAssist version (v{current_EA_version}) will not be able to run this model. An update is required."
@@ -4066,10 +4095,13 @@ def show_model_info(title = None, model_dict = None, new_model = False):
         webbrowser.open("https://addaxdatascience.com/ecoassist/")
     def cite():
         webbrowser.open(citation)
+    def see_license():
+        webbrowser.open(license)
 
     # create window
     nm_root = customtkinter.CTkToplevel(root)
     nm_root.title("Model information")
+    nm_root.geometry("+10+10")
     bring_window_to_top_but_not_for_ever(nm_root)
 
     # new model label
@@ -4136,6 +4168,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     n_btns = 2
     if needs_EA_update_bool: n_btns += 1
     if citation_present: n_btns += 1
+    if liscense_present: n_btns += 1
     btns_frm = customtkinter.CTkFrame(master=nm_root)
     for col in range(0, n_btns):
         btns_frm.columnconfigure(col, weight=1, minsize=10)
@@ -4152,6 +4185,10 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     if citation_present:
         citat_btn = customtkinter.CTkButton(btns_frm, text="Cite", command=cite)
         citat_btn.grid(row=0, column=ncol, padx=(0, PADX), pady=PADY, sticky="nwse")
+        ncol += 1
+    if liscense_present:
+        licen_btn = customtkinter.CTkButton(btns_frm, text="License", command=see_license)
+        licen_btn.grid(row=0, column=ncol, padx=(0, PADX), pady=PADY, sticky="nwse")
         ncol += 1
 
 # class frame for model window
@@ -4218,6 +4255,7 @@ def show_result_info(file_path):
     # create window
     rs_root = customtkinter.CTkToplevel(root)
     rs_root.title("Results - quick view")
+    rs_root.geometry("+10+10")
     result_bg_image = customtkinter.CTkImage(PIL_gradient, size=(RESULTS_WINDOW_WIDTH, RESULTS_WINDOW_HEIGHT))
     result_bg_image_label = customtkinter.CTkLabel(rs_root, image=result_bg_image)
     result_bg_image_label.grid(row=0, column=0)
@@ -4284,6 +4322,7 @@ class TextButtonWindow:
     def __init__(self, title, text, buttons):
         self.root = customtkinter.CTkToplevel(root)
         self.root.title(title)
+        self.root.geometry("+10+10")
         bring_window_to_top_but_not_for_ever(self.root)
         self.root.protocol("WM_DELETE_WINDOW", self.user_close)
         
@@ -4320,6 +4359,7 @@ class PatienceDialog:
     def __init__(self, total, text):
         self.root = customtkinter.CTkToplevel(root)
         self.root.title("Have patience")
+        self.root.geometry("+10+10")
         self.total = total
         self.text = text
         self.label = tk.Label(self.root, text=text)
@@ -4354,9 +4394,9 @@ class CustomWindow:
         self.root = None
 
     def open(self):
-        # self.root = Toplevel(root)
         self.root = customtkinter.CTkToplevel(root)
         self.root.title(self.title)
+        self.root.geometry("+10+10")
 
         label = tk.Label(self.root, text=self.text)
         label.pack(padx=10, pady=10)
@@ -4467,6 +4507,7 @@ class ProgressWindow:
     def __init__(self, processes):
         self.progress_top_level_window = customtkinter.CTkToplevel()
         self.progress_top_level_window.title("Analysis progress")
+        self.progress_top_level_window.geometry("+10+10")
         lbl_height = 20
 
         # language settings
@@ -5854,7 +5895,7 @@ url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 # ADVANCED MODE WINDOW 
 advanc_mode_win = customtkinter.CTkToplevel(root)
 advanc_mode_win.title(f"EcoAssist v{current_EA_version} - Advanced mode")
-advanc_mode_win.geometry("+10+20")
+advanc_mode_win.geometry("+20+20")
 advanc_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
 advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, 10))
 advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode_win, image=advanc_bg_image)
@@ -6812,7 +6853,7 @@ run_image = customtkinter.CTkImage(PIL_run_image, size=(ICON_SIZE, ICON_SIZE))
 # set up window
 simple_mode_win = customtkinter.CTkToplevel(root)
 simple_mode_win.title(f"EcoAssist v{current_EA_version} - Simple mode")
-simple_mode_win.geometry("+10+20")
+simple_mode_win.geometry("+20+20")
 simple_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
 simple_mode_win.columnconfigure(0, weight=1, minsize=500)
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
