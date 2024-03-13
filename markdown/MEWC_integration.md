@@ -68,27 +68,24 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 
 
 ### Adjust JSON values
-Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc) and replace the exisiting values. Please note that not all fields are required at this time. If you decide to move forward and publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
+1. Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc) and replace the exisiting values. Please note that not all fields are required at this time. If you decide to move forward and publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
+* `model_fname`  - The filename of your model. E.g.: `"model_file.h5"`.
+* `description`  - Leave blank. I.e., `""`.
+* `developer`  - Leave blank. I.e., `""`.
+* `env`  - The virtual environment inside which the model should run. Fill in: `"tensorflow"`.
+* `type`  - The type of model inferencing. Fill in: `"mewc"`.
+* `download_info`  - Leave blank. I.e., `["", ""]`.
+* `citation`  - Leave blank. I.e., `""`.
+* `license`  - Leave blank. I.e., `""`.
+* `total_download_size`  - Leave blank. I.e., `""`.
+* `info_url`  - Leave blank. I.e., `""`.
+* `all_classes`  - Your model's species categories. Fill them in in the format `["species 1", "species 2", "species 3", ... ]` with _exactly_ the same names as in your `class_list.yaml`.  
+* `selected_classes`  - The categories that will show up selected inside the GUI. Should be exactly the same as what you filled in above for `all_classes`. 
+* `var_cls_detec_thresh`  - Leave unaltered. 
+* `var_cls_detec_thresh_default`  - Leave unaltered. 
+* `var_cls_class_thresh`  - Leave unaltered. 
+* `var_cls_class_thresh_default`  - Leave unaltered. 
+* `var_smooth_cls_animal`  - Leave unaltered. 
+* `min_version`  - The minimum version of EcoAssist that is able to run this model. Fill in: `"5.2"`.
 
-Please note that only the fields below have to be adjusted at this time. The rest can be left blank. 
-
-
-* `model_fname` - The filename of your model. E.g.: `"model_file.h5"`.
-* `description` - Leave blank. I.e., `""`.
-* `developer` - Leave blank. I.e., `""`.
-* `env` - The virtual environment inside which the model should run. Fill in: `"tensorflow"`.
-* `type` - The type of model inferencing. Fill in: `"mewc"`.
-* `download_info` - Leave blank. I.e., `["", ""]`.
-* `citation` - Leave blank. I.e., `""`.
-* `license` - Leave blank. I.e., `""`.
-* `total_download_size` - Leave blank. I.e., `""`.
-* `info_url` - Leave blank. I.e., `""`.
-* `all_classes` - Your model's species categories. Fill them in in the format `["species 1", "species 2", "species 3", ... ]` with _exactly_ the same names as in your `class_list.yaml`.  
-* `selected_classes` - The categories that will show up selected inside the GUI. Should be exactly the same as what you filled in above for `all_classes`. 
-* `var_cls_detec_thresh` - Leave unaltered. 
-* `var_cls_detec_thresh_default` - Leave unaltered. 
-* `var_cls_class_thresh` - Leave unaltered. 
-* `var_cls_class_thresh_default` - Leave unaltered. 
-* `var_smooth_cls_animal` - Leave unaltered. 
-* `min_version` - Them minimum version of EcoAssist that is able to run this model. Fill in: `"5.2"`.
-  
+2. 
