@@ -1,9 +1,9 @@
 ## Make inference with MEWC models through EcoAssist GUI
-Below is a step-by-step tutorial on how to  deploy a custom trained Mega Efficient Wildlife Classifier model (MEWC) throurgh EcoAssist. It assumes that you have succesfully completed the phases [mewc-detect](https://github.com/zaandahl/mewc-detect), [mewc-snip](https://github.com/zaandahl/mewc-snip), and [mewc-train](https://github.com/zaandahl/mewc-train). At the end of this tutorial you will be able to make inference via EcoAssist's graphical user interface (GUI) and optionally publish your model open-source using EcoAssist's network.
+Below is a step-by-step tutorial on how to  deploy a custom trained Mega Efficient Wildlife Classifier model (MEWC) through EcoAssist. It assumes that you have successfully completed the phases [mewc-detect](https://github.com/zaandahl/mewc-detect), [mewc-snip](https://github.com/zaandahl/mewc-snip), and [mewc-train](https://github.com/zaandahl/mewc-train). At the end of this tutorial, you will be able to make inference via EcoAssist's graphical user interface (GUI) and optionally publish your model open-source using EcoAssist's network.
 
 Learn more about the EcoAssist software: https://addaxdatascience.com/ecoassist/
 
-Learn more about Mega Efficient Wildlife Classifier: https://github.com/zaandahl/mewc
+Learn more about Mega Efficient Wildlife Classifiers: https://github.com/zaandahl/mewc
 
 If anything is unclear, let me know: peter@addaxdatascience.com
 
@@ -53,7 +53,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 </details>
 
 ### III - Prepare a new model folder
-1. Navigate to `/EcoAssist_files/models/cls`. If you don't see the subfolder `Namibian Desert - Addax Data Science`, you might need to open and close the EcoAssist application in order to create the neccesary file structure.
+1. Navigate to `/EcoAssist_files/models/cls`. If you don't see the subfolder `Namibian Desert - Addax Data Science`, you might need to open and close the EcoAssist application in order to create the necessary file structure.
 2. Create a folder inside `cls` with a descriptive name for your model. For example: `Arctic fauna`.
 3. Copy-paste the `variables.json` from `Namibian Desert - Addax Data Science` to your model folder.
 4. Place your model file (`.h5`) and classes list (`.yaml`) inside your model folder. Always make sure you have a backup - just in case.
@@ -76,7 +76,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 
 
 ### IV - Adjust JSON values
-1. Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc) and replace the exisiting values. Please note that not all fields are required at this time. If you decide to publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
+1. Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc.) and replace the existing values. Please note that not all fields are required at this time. If you decide to publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
     * `model_fname`  - The filename of your model. Make sure you check if you have the right extension. E.g.: `"model_file.h5"`.
     * `description`  - Leave blank. I.e., `""`.
     * `developer`  - Leave blank. I.e., `""`.
@@ -87,11 +87,11 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
     * `license`  - Leave blank. I.e., `""`.
     * `total_download_size`  - Leave blank. I.e., `""`.
     * `info_url`  - Leave blank. I.e., `""`.
-    * `all_classes`  - Your model's species categories. Fill them in in the format `["species 1", "species 2", "species 3", ... ]` with _exactly_ the same classnames as in your `class_list.yaml`.  
+    * `all_classes`  - Your model's species categories. Fill them in the format `["species 1", "species 2", "species 3", ... ]` with _exactly_ the same class names as in your `class_list.yaml`.  
     * `selected_classes`  - The categories that will show up selected inside the GUI. Fill in the same as you did for `all_classes`. 
-    * `var_cls_detec_thresh`  - This is the detection threhsold. Only above this detection confidence provided by MegaDetector, the animal will be further classified. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
+    * `var_cls_detec_thresh`  - This is the detection threshold. Only above this detection confidence provided by MegaDetector, the animal will be further classified. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
     * `var_cls_detec_thresh_default`  - Match `var_cls_detec_thresh`.
-    * `var_cls_class_thresh`  - This is the classification threhsold.  Below this classification confidence, the model will label the animal with “unidentified animal”. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
+    * `var_cls_class_thresh`  - This is the classification threshold.  Below this classification confidence, the model will label the animal with “unidentified animal”. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
     * `var_cls_class_thresh_default`  - Match `var_cls_class_thresh`.
     * `var_smooth_cls_animal`  - This is a feature that is temporarily disabled. Keep as `false`.
     * `min_version`  - The minimum version of EcoAssist that is able to run this model. I.e., `"5.2"`.
@@ -143,9 +143,9 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 <img width="742" alt="Screenshot 2024-03-14 at 11 28 30" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/b564feae-9024-4582-bc98-f2f4881f403e">
 
 ### V - Host on HuggingFace (optional)
-Addax Data Science supports open-source principles, aiming to facilitate the distribution of free conservation technology. As part of this commitment, Addax provides the functionality to publish the resulting model open-source via the EcoAssist. You can use this network to share your model with other conservationists. You will retain ownership of the model, receive proper attribution, and can select an appropriate open-source license. Should you desire to do so, please proceed with the steps below.
+Addax Data Science supports open-source principles, aiming to facilitate the distribution of free conservation technology. As part of this commitment, Addax provides the functionality to publish your open-source via EcoAssist. You can use this network to share your model with other conservationists. You will retain ownership of the model, receive proper attribution, and can select an appropriate open-source license. Should you desire to do so, please proceed with the steps below.
 1. Log in or sign up for the HuggingFace model hosting platform: https://huggingface.co/login
-2. Once logged in, choose to add a new model: top left click "Add" > "Model".
+2. Once logged in, choose to add a new model: top left click "New" > "Model".
 
 <img width="596" alt="Screenshot 2024-03-14 at 12 42 41" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/a59d81a2-6ef1-463c-96eb-f6f01c712d8d">
 
@@ -169,13 +169,13 @@ Addax Data Science supports open-source principles, aiming to facilitate the dis
 
 9. Once uploaded, open your `variables.json` and fill in the remaining fields.
 
-    * `description`  - Fill in a short description about the model, on how many images it was trained, which purpose it serves, etc.
-    * `developer`  - Fill in the organisation which has developed the model. 
-    * `download_info`  - Provide the links and filenames of the model file and classes list in the format `[["url", "filename"], ["url", "filename"]]`. You can retrieve the download url by right-clicking the download button and selecting "Copy link address".
-    * `citation`  - If you want users to cite, provide the url to your paper. Otherwise leave blank.
-    * `license`  - Provide a url to your license. 
-    * `total_download_size`  - Fill in the size of you model file, e.g. "107 MB".
-    * `info_url`  - Provide a url to a webpage for users to find more information, or leave blank. 
+    * `description`  -  Fill in a short description about the model, on how many images it was trained, which purpose it serves, etc.
+    * `developer`  - Fill in the organization which has developed the model. 
+    * `download_info`  - Provide the links and filenames of the model file and classes list in the format `[["url", "filename"], ["url", "filename"]]`. You can retrieve the download URL by right-clicking the download button and selecting "Copy link address". See below for an example. 
+    * `citation`  - If you want users to cite, provide the URL to your paper. Otherwise, leave blank.
+    * `license`  - Provide a URL to your license, or leave blank.
+    * `total_download_size`  -  Fill in the size of your model file, e.g. "107 MB".
+    * `info_url`  -  Provide a URL to a webpage for users to find more information, or leave blank. 
   
 10. After adjusting the JSON values, your `variables.json` should look something like this:
 ```json
@@ -225,6 +225,6 @@ Addax Data Science supports open-source principles, aiming to facilitate the dis
 ```
 
 ### VI - Publish via EcoAssist (optional)
-Everything is ready for the model to be published. You can either send your `variables.json` via email to peter@addaxdatascience.com, or create a pull request and add `variables.json` as an `key:value` pair in the `cls` dictionary in the latest `model_info.json` file: https://github.com/PetervanLunteren/EcoAssist/tree/main/model_info
+Everything is ready for the model to be published. You can either send your `variables.json` via email to peter@addaxdatascience.com, or create a pull request and add `variables.json` as a `key:value` pair to the `cls` dictionary in the latest `model_info.json` file: https://github.com/PetervanLunteren/EcoAssist/tree/main/model_info
 
 You're done! Peter van Lunteren will review the information and take it from here.
