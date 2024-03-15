@@ -8,9 +8,7 @@ Learn more about Mega Efficient Wildlife Classifiers: https://github.com/zaandah
 If anything is unclear, let me know: peter@addaxdatascience.com
 
 ### I - Install EcoAssist
-Use the latest installation file for your operating system and follow the associated steps to install EcoAssist on your device.
-
-EcoAssist installation: https://addaxdatascience.com/ecoassist/#install
+Make sure you have the latest version of EcoAssist. To install or update, follow the steps for your operating system as described here: https://addaxdatascience.com/ecoassist/#install
 
 ### II - Navigate to the root folder
 All EcoAssist files are located in one folder, called `EcoAssist_files`. Please be aware that it's hidden, so you might have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)).
