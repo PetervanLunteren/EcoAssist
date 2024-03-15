@@ -5,7 +5,7 @@
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 13 Feb 2024
+# Latest edit by Peter van Lunteren on 15 Mar 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -61,6 +61,28 @@ def get_classification(PIL_crop):
         classifications.append([class_ids[i], float(pred[i])])
     return classifications
 
+# method of removing background
+# input: image = full image PIL.Image.open(img_fpath) <class 'PIL.JpegImagePlugin.JpegImageFile'>
+# input: bbox = the bbox coordinates as read from the MD json - detection['bbox'] - [xmin, ymin, xmax, ymax]
+# output: cropped image <class 'PIL.Image.Image'>
+# each developer has its own way of padding, squaring, cropping, resizing etc
+# it needs to happen exactly the same as on which the model was trained
+# thanks Dan Morris: https://github.com/agentmorris/MegaDetector/blob/main/md_visualization/visualization_utils.py
+def crop_image(image, bbox): 
+    x1, y1, w_box, h_box = bbox
+    ymin,xmin,ymax,xmax = y1, x1, y1 + h_box, x1 + w_box
+    im_width, im_height = image.size
+    (left, right, top, bottom) = (xmin * im_width, xmax * im_width,
+                                    ymin * im_height, ymax * im_height)
+    left = max(left,0); right = max(right,0)
+    top = max(top,0); bottom = max(bottom,0)
+    left = min(left,im_width-1); right = min(right,im_width-1)
+    top = min(top,im_height-1); bottom = min(bottom,im_height-1)
+    image_cropped = image.crop((left, top, right, bottom))
+    # resizing will be done in get_classification()
+    return image_cropped
+
+
 #############################################
 ############### MODEL GENERIC ###############
 #############################################
@@ -71,6 +93,7 @@ ea.classify_MD_json(json_path = json_path,
                     cls_detec_thresh = cls_detec_thresh,
                     cls_class_thresh = cls_class_thresh,
                     smooth_bool = smooth_bool,
+                    crop_function = crop_image,
                     inference_function = get_classification,
                     temp_frame_folder = temp_frame_folder,
                     cls_model_fpath = cls_model_fpath)
