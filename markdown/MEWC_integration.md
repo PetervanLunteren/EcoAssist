@@ -3,6 +3,8 @@ Below is a step-by-step tutorial on how to  deploy a custom trained Mega Efficie
 
 Learn more about the EcoAssist software: https://addaxdatascience.com/ecoassist/
 
+If anything is unclear, let me know: peter@addaxdatascience.com
+
 ### I - Install EcoAssist
 Use the latest installation file for your operating system and follow the associated steps to install EcoAssist on your device.
 
@@ -52,26 +54,28 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 1. Navigate to `/EcoAssist_files/models/cls`. If you don't see the subfolder `Namibian Desert - Addax Data Science`, you might need to open and close the EcoAssist application in order to create the neccesary file structure.
 2. Create a folder inside `cls` with a descriptive name for your model. For example: `Arctic fauna`.
 3. Copy-paste the `variables.json` from `Namibian Desert - Addax Data Science` to your model folder.
-4. Place your model file (`.h5`) and classes list (`.yaml`) inside your model folder.
-5. The model file can have a custom filename, but make sure your classes list is called `class_list.yaml`. Any other filename will not work. 
+4. Place your model file (`.h5`) and classes list (`.yaml`) inside your model folder. Always make sure you have a backup - just in case.
+5. The model file can have a custom filename, but make sure your classes list is called `class_list.yaml`. 
 6. After completing this section, the folder structure should look something like this:
 
 ```raw
 ─── 📁 EcoAssist_files
     └── 📁 models
         └── 📁 cls
+            |── 📁 Arctic fauna
+            |   |── variables.json
+            |   |── class_list.yaml
+            |   └── model_file.h5
             |── 📁 Namibian Desert - Addax Data Science
             |   └── variables.json
-            └── 📁 Arctic fauna
-                |── variables.json
-                |── class_list.yaml
-                └── model_file.h5
+            |── 📁 ...
+            └── 📁 ...
 ```
 
 
 ### IV - Adjust JSON values
-1. Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc) and replace the exisiting values. Please note that not all fields are required at this time. If you decide to move forward and publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
-    * `model_fname`  - The filename of your model. E.g.: `"model_file.h5"`.
+1. Open your `variables.json` in any text editor (Notepad, TextEdit, VSCode, etc) and replace the exisiting values. Please note that not all fields are required at this time. If you decide to publish your model open-source, you will need to fill in the remaining fields. More about that later in this tutorial. 
+    * `model_fname`  - The filename of your model. Make sure you check if you have the right extension. E.g.: `"model_file.h5"`.
     * `description`  - Leave blank. I.e., `""`.
     * `developer`  - Leave blank. I.e., `""`.
     * `env`  - The virtual environment inside which the model should run. I.e., `"tensorflow"`.
@@ -87,6 +91,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
     * `var_cls_detec_thresh_default`  - Match `var_cls_detec_thresh`.
     * `var_cls_class_thresh`  - This is the classification threhsold.  Below this classification confidence, the model will label the animal with “unidentified animal”. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
     * `var_cls_class_thresh_default`  - Match `var_cls_class_thresh`.
+    * `var_smooth_cls_animal`  - This is a feature that is temporarily disabled. Keep as `false`.
     * `min_version`  - The minimum version of EcoAssist that is able to run this model. I.e., `"5.2"`.
 
 2. After adjusting the JSON values, your `variables.json` should look something like this:
@@ -133,6 +138,8 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 ```
 3. Save `variables.json` and open EcoAssist. Your model should now be deployable and visible in the model dropdown menu.
 
+<img width="742" alt="Screenshot 2024-03-14 at 11 28 30" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/b564feae-9024-4582-bc98-f2f4881f403e">
+
 ### V - Host on HuggingFace (optional)
 Addax Data Science supports open-source principles, aiming to facilitate the distribution of free conservation technology. As part of this commitment, Addax provides the functionality to publish the resulting model open-source via the EcoAssist. You can use this network to share your model with other conservationists. You will retain ownership of the model, receive proper attribution, and can select an appropriate open-source license. Should you desire to do so, please proceed with the steps below.
 1. Log in or sign up for the HuggingFace model hosting platform: https://huggingface.co/login
@@ -167,7 +174,6 @@ Addax Data Science supports open-source principles, aiming to facilitate the dis
     * `license`  - Provide a url to your license. 
     * `total_download_size`  - Fill in the size of you model file, e.g. "107 MB".
     * `info_url`  - Provide a url to a webpage for users to find more information, or leave blank. 
-    * `var_smooth_cls_animal`  - This is a feature that was removed from EcoAssist. Keep as `false`.
   
 10. After adjusting the JSON values, your `variables.json` should look something like this:
 ```json
