@@ -1,7 +1,9 @@
 ## Make inference with MEWC models through EcoAssist GUI
-Below is a step-by-step tutorial on how to  deploy a custom trained Mega Efficient Wildlife Classifier model (MEWC) throurgh EcoAssist. It assumes that the MEWC training has completed succesfully. At the end of this tutorial you will be able to make inference via EcoAssist's graphical user interface (GUI) and optionally publish your model open-source using EcoAssist's network.
+Below is a step-by-step tutorial on how to  deploy a custom trained Mega Efficient Wildlife Classifier model (MEWC) throurgh EcoAssist. It assumes that you have succesfully completed the phases [mewc-detect](https://github.com/zaandahl/mewc-detect), [mewc-snip](https://github.com/zaandahl/mewc-snip), and [mewc-train](https://github.com/zaandahl/mewc-train). At the end of this tutorial you will be able to make inference via EcoAssist's graphical user interface (GUI) and optionally publish your model open-source using EcoAssist's network.
 
 Learn more about the EcoAssist software: https://addaxdatascience.com/ecoassist/
+
+Learn more about Mega Efficient Wildlife Classifier: https://github.com/zaandahl/mewc
 
 If anything is unclear, let me know: peter@addaxdatascience.com
 
