@@ -141,7 +141,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 <img width="742" alt="Screenshot 2024-03-14 at 11 28 30" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/b564feae-9024-4582-bc98-f2f4881f403e">
 
 ### V - Host on HuggingFace (optional)
-Addax Data Science supports open-source principles, aiming to facilitate the distribution of free conservation technology. As part of this commitment, Addax provides the functionality to publish your open-source via EcoAssist. You can use this network to share your model with other conservationists. You will retain ownership of the model, receive proper attribution, and can select an appropriate open-source license. Should you desire to do so, please proceed with the steps below.
+Addax Data Science supports open-source principles, aiming to facilitate the distribution of free conservation technology. As part of this commitment, Addax provides the functionality to publish your model open-source via EcoAssist. You can use this network to share your model with other conservationists. You will retain ownership of the model, receive proper attribution, and can select an appropriate open-source license. Should you desire to do so, please proceed with the steps below.
 1. Log in or sign up for the HuggingFace model hosting platform: https://huggingface.co/login
 2. Once logged in, choose to add a new model: top left click "New" > "Model".
 
