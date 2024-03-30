@@ -78,6 +78,14 @@ Please use the following citations if you used EcoAssist in your research.
 ```
 </details>
 
+## Contribute
+Interested in contributing to this project? There are always things to do. Do you feel comfortable handling one of the tasks below? [Let me know](mailto:peter@addaxdatascience.com)! And I will guide you in the right direction. Thanks!
+- [ ] **Improve installation** - At the moment users still have to install dependeceies and use CLI. Perferably, we would like to package EcoAssist as a standalone folder with all dependencies. _Python + shell_. 
+- [ ] **Camtrap DP format** - Add a postprocess option to export results to camtrap DP format: https://camtrap-dp.tdwg.org/. _Python + data science_.
+- [ ] **Improve human-in-loop** - At the moment the human-in-the-loop feature works with two separate windows. Perferably, we would like to merge these two. _Python + PyQt_.
+- [ ] **Sequence smoothing** - There is no option to smoothen results based on sequences, yet. Dan Morris has already created [the code to do so](https://github.com/agentmorris/MegaDetector/blob/main/api/batch_processing/data_preparation/manage_local_batch.py#L1302). This needs to be implemented into the existing workflow. _Python_.
+- [ ] **Sequence ID** - Add column for unique sequence_id in CSV export. _Python + data science_.
+
 ## Uninstall
 All files are located in one folder, called `EcoAssist_files`. You can uninstall EcoAssist by simply deleting this folder. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)). If you're planning on updating EcoAssist, there is no need to uninstall it first. It will do that automatically. 
 
