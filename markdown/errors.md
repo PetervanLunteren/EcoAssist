@@ -152,6 +152,9 @@ In order to debug, could you please:
 
 I’ll take a look and help you to get EcoAssist running!
 
+## `ModuleNotFoundError: No module named 'git'`
+So, I managed to get it to install. Not entirely sure what it was but it is now working. I think what I did was uninstall everything and manually delete everything to do with miniforge, anaconda etc. that wasn’t removed during uninstall. As this is a work laptop I was unable to disable security. (see email Sam, Apr 4, 2024, 10:54 PM)
+
 ## `ImportError: DLL load failed while importing _ctypes: The specified module could not be found.`
 ### Option 1
 It looks like your miniforge installation was corrupted in one way or another. Perhaps due to an unstable internet connection, but who knows. A reinstall with stable internet should do the trick, but please note that all virtual environments created through miniforge will be lost. That is, if you installed miniforge just for EcoAssist, there is nothing to worry about. I'm just saying that if you're using miniforge for other applications too, you should double check before uninstalling it. 
