@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 19 Oct 2023 (latest edit)
+### Peter van Lunteren, 9 Apr 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -106,7 +106,7 @@ echo "python location: $PYLOCATION"
 echo ""
 
 # run script
-python EcoAssist/EcoAssist_GUI.py
+"${PATH_TO_PYTHON}/python" EcoAssist/EcoAssist_GUI.py
 
 # timestamp and log the end
 END_DATE=`date`
