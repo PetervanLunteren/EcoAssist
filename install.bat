@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="11 Mar 2024"
+set DATE_OF_LAST_EDIT="10 Apr 2024"
 
 @REM print header
 echo:
@@ -359,6 +359,9 @@ call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALL
 
 @REM suppress conda warnings about updates
 call %EA_CONDA_EXE% config --set notify_outdated_conda false
+
+@REM remove index cache, lock files, unused cache packages, and tarballs
+call %EA_CONDA_EXE% clean --all
 
 @REM remove all old ecoassist conda evironments, if present
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
