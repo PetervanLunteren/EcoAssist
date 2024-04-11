@@ -5,7 +5,7 @@
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Script created by Peter van Lunteren
 # Some code is created by the DeepFaune team and is indicated as so 
-# Latest edit by Peter van Lunteren on 11 March 2024
+# Latest edit by Peter van Lunteren on 11 Apr 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -211,6 +211,7 @@ if not GPU_availability:
 # no need to remove forbidden classes from the predictions, that will happen in infrence_lib.py
 # this is also the place to preprocess the image if that need to happen
 def get_classification(PIL_crop):
+    PIL_crop = PIL_crop.convert('RGB')
     tensor_cropped = classifier.preprocessImage(PIL_crop)
     confs = classifier.predictOnBatch(tensor_cropped)[0,]
     lbls = txt_animalclasses['en']
