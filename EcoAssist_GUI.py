@@ -4075,6 +4075,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     # read vars from json
     description_var = model_dict.get("description", "")
     developer_var = model_dict.get("developer", "")
+    owner_var = model_dict.get("owner", "")
     classes_list = model_dict.get("all_classes", [])
     url_var = model_dict.get("info_url", "")
     min_version = model_dict.get("min_version", "1000.1")
@@ -4112,8 +4113,9 @@ def show_model_info(title = None, model_dict = None, new_model = False):
         lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/4), columnspan = 2, sticky="nswe")
 
     # title frame
+    row_idx = 1
     title_frm_1 = model_info_frame(master=nm_root)
-    title_frm_1.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+    title_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=PADY, sticky="nswe")
     title_frm_2 = model_info_frame(master=title_frm_1)
     title_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
     title_lbl_1 = customtkinter.CTkLabel(title_frm_1, text="Title", font = main_label_font)
@@ -4121,9 +4123,22 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     title_lbl_2 = customtkinter.CTkLabel(title_frm_2, text=title)
     title_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
 
+    # owner frame
+    if owner_var != "":
+        row_idx += 1
+        owner_frm_1 = model_info_frame(master=nm_root)
+        owner_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+        owner_frm_2 = model_info_frame(master=owner_frm_1)
+        owner_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
+        owner_lbl_1 = customtkinter.CTkLabel(owner_frm_1, text="Owner", font = main_label_font)
+        owner_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
+        owner_lbl_2 = customtkinter.CTkLabel(owner_frm_2, text=owner_var)
+        owner_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
+
     # developer frame
+    row_idx += 1
     devop_frm_1 = model_info_frame(master=nm_root)
-    devop_frm_1.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    devop_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     devop_frm_2 = model_info_frame(master=devop_frm_1)
     devop_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
     devop_lbl_1 = customtkinter.CTkLabel(devop_frm_1, text="Developer", font = main_label_font)
@@ -4132,8 +4147,9 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     devop_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
 
     # description frame
+    row_idx += 1
     descr_frm_1 = model_info_frame(master=nm_root)
-    descr_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    descr_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     descr_frm_2 = model_info_frame(master=descr_frm_1)
     descr_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
     descr_lbl_1 = customtkinter.CTkLabel(descr_frm_1, text="Description", font = main_label_font)
@@ -4144,8 +4160,9 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     descr_txt_1.configure(state="disabled")
 
     # classes frame
+    row_idx += 1
     class_frm_1 = model_info_frame(master=nm_root)
-    class_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    class_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     class_frm_2 = model_info_frame(master=class_frm_1)
     class_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
     class_lbl_1 = customtkinter.CTkLabel(class_frm_1, text="Classes", font = main_label_font)
@@ -4157,8 +4174,9 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     class_txt_1.configure(state="disabled")
 
     # update frame
+    row_idx += 1
     updat_frm_1 = model_info_frame(master=nm_root)
-    updat_frm_1.grid(row=5, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    updat_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     updat_frm_2 = model_info_frame(master=updat_frm_1)
     updat_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
     updat_lbl_1 = customtkinter.CTkLabel(updat_frm_1, text="Update", font = main_label_font)
@@ -4167,6 +4185,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     updat_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
 
     # buttons frame
+    row_idx += 1
     n_btns = 2
     if needs_EA_update_bool: n_btns += 1
     if citation_present: n_btns += 1
@@ -4174,7 +4193,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     btns_frm = customtkinter.CTkFrame(master=nm_root)
     for col in range(0, n_btns):
         btns_frm.columnconfigure(col, weight=1, minsize=10)
-    btns_frm.grid(row=6, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    btns_frm.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     close_btn = customtkinter.CTkButton(btns_frm, text="Close", command=close)
     close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
     lmore_btn = customtkinter.CTkButton(btns_frm, text="Learn more", command=read_more)
