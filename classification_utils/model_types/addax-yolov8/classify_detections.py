@@ -25,6 +25,12 @@ from ultralytics import YOLO
 import torch
 from PIL import ImageOps
 
+# make sure windows trained models work on unix too
+import pathlib
+import platform
+plt = platform.system()
+if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
+
 # load model
 animal_model = YOLO(cls_model_fpath)
 
@@ -67,6 +73,7 @@ def get_crop(img, bbox_norm): # created by Dan Morris
     box_w = int(bbox_norm[2] * img_w)
     box_h = int(bbox_norm[3] * img_h)
     box_size = max(box_w, box_h)
+    box_size = pad_crop(box_size)
     xmin = max(0, min(
         xmin - int((box_size - box_w) / 2),
         img_w - box_w))
@@ -80,6 +87,20 @@ def get_crop(img, bbox_norm): # created by Dan Morris
     crop = img.crop(box=[xmin, ymin, xmin + box_w, ymin + box_h])
     crop = ImageOps.pad(crop, size=(box_size, box_size), color=0)
     return crop
+
+# make sure small animals are not overly enlarged
+def pad_crop(box_size):
+    input_size_network = 224
+    default_padding = 30
+    diff_size = input_size_network - box_size
+    if box_size >= input_size_network:
+        box_size = box_size + default_padding
+    else:
+        if diff_size < default_padding:
+            box_size = box_size + default_padding
+        else:
+            box_size = input_size_network    
+    return box_size
 
 #############################################
 ############### MODEL GENERIC ###############
