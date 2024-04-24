@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 9 Apr 2024
+# Latest edit by Peter van Lunteren on 24 Apr 2024
 
 # TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -5752,7 +5752,7 @@ def reset_values():
     var_image_size_for_deploy.set("")
     var_abs_paths.set(False)
     var_disable_GPU.set(False)
-    var_process_img.set(False)
+    var_process_img.set(True)
     var_use_checkpnts.set(False)
     var_checkpoint_freq.set("")
     var_cont_checkpnt.set(False)
@@ -5764,7 +5764,7 @@ def reset_values():
     var_sep_conf.set(False)
     var_vis_files.set(False)
     var_crp_files.set(False)
-    var_exp.set(False)
+    var_exp.set(True)
     var_exp_format.set(dpd_options_exp_format[lang_idx][global_vars['var_exp_format_idx']])
     write_global_vars({
         "var_det_model_idx": dpd_options_model[lang_idx].index(var_det_model.get()),
