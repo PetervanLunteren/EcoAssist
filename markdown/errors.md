@@ -106,7 +106,7 @@ This error usually occurs when the internet signal speed is too slow or unstable
 Let me know if this doesn't work!
 
 ## `PackagesNotFoundError: The following packages are not available from current channels`
-I'm not sure what causes conda to not find certain packages on your device, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking Conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
+It looks like it crashes because it can't access certain package repositories. I'm not sure, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
 
 Can you check if you have access to the conda website? You can do so by visiting https://conda.anaconda.org/pytorch/win-64/repodata_from_packages.json. If you have access, you should see a white screen with text like so:
 
