@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="23 Apr 2024"
+set DATE_OF_LAST_EDIT="1 May 2024"
 
 @REM print header
 echo:
@@ -123,17 +123,32 @@ echo Location:                              '%LOCATION_ECOASSIST_FILES%'
 set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
 if exist "%NO_ADMIN_INSTALL%" (
     rd /q /s "%NO_ADMIN_INSTALL%"
-    echo Removed:                               '%NO_ADMIN_INSTALL%'
+    if not exist "%NO_ADMIN_INSTALL%" (
+        echo Succesfully removed:                   '%NO_ADMIN_INSTALL%'
+    ) else (
+        echo "Cannot remove the folder '%NO_ADMIN_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        cmd /k & exit
+    )
 )
 set ADMIN_INSTALL=%ProgramFiles%\EcoAssist_files
 if exist "%ADMIN_INSTALL%" (
     rd /q /s "%ADMIN_INSTALL%"
-    echo Removed:                               '%ADMIN_INSTALL%'
+    if not exist "%ADMIN_INSTALL%" (
+        echo Succesfully removed:                   '%ADMIN_INSTALL%'
+    ) else (
+        echo "Cannot remove the folder '%ADMIN_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        cmd /k & exit
+    )
 )
 set CURRENT_INSTALL=%LOCATION_ECOASSIST_FILES%
 if exist "%CURRENT_INSTALL%" (
     rd /q /s "%CURRENT_INSTALL%"
-    echo Removed:                               '%CURRENT_INSTALL%'
+    if not exist "%CURRENT_INSTALL%" (
+        echo Succesfully removed:                   '%CURRENT_INSTALL%'
+    ) else (
+        echo "Cannot remove the folder '%CURRENT_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        cmd /k & exit
+    )
 )
 
 @REM make dir
@@ -363,13 +378,36 @@ call %EA_CONDA_EXE% config --set notify_outdated_conda false
 @REM remove index cache, lock files, unused cache packages, and tarballs
 call %EA_CONDA_EXE% clean --all -y
 
-@REM remove all old ecoassist conda evironments, if present
+@REM remove all old ecoassist conda evironments on the conda way, if present
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-pytorch || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-tensorflow || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+
+@REM loop over common locations for old ecoassist conda environments and remove them the hard way (rd)
+for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
+    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%") do ( 
+        set CHECK_DIR=%%y\%%x\
+        set CHECK_DIR=!CHECK_DIR:"=!
+        echo Checking conda dir:                  '!CHECK_DIR!'
+        if exist !CHECK_DIR! (
+            set PATH_TO_CONDA_INSTALLATION=!CHECK_DIR!
+            echo Found conda dir:                        '!PATH_TO_CONDA_INSTALLATION!'
+            for %%z in ("", "-yolov8", "-mewc", "-base", "-pytorch", "-tensorflow") do ( 
+                set ENV_DIR_PATH=!CHECK_DIR!envs\ecoassistcondaenv%%z\
+                set ENV_DIR_PATH=!ENV_DIR_PATH:"=!
+                echo Checking env dir:                         '!ENV_DIR_PATH!'
+                if exist !ENV_DIR_PATH! (
+                    echo Found existing old conda env:                 '!ENV_DIR_PATH!'
+                    echo Removing existing old conda env:                 '!ENV_DIR_PATH!'
+                    rd /q /s "!ENV_DIR_PATH!"
+                    )
+                ) 
+            )
+        ) 
+    )
 
 @REM create conda env and install packages for MegaDetector
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
