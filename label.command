@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open Human-in-the-loop from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 5 March 2024 (latest edit)
+### Peter van Lunteren, 1 May 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -27,16 +27,22 @@ fi
 
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv"
-PIP="${ECOASSISTCONDAENV}/bin/pip"
-HOMEBREW_DIR="/opt/homebrew"
+ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
+ECOASSISTCONDAENV_PYTORCH="${CONDA_DIR}/envs/ecoassistcondaenv-pytorch"
+ECOASSISTCONDAENV_TENSORFLOW="${CONDA_DIR}/envs/ecoassistcondaenv-tensorflow"
+PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
+PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
+PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
 
 # add paths
 export PYTHONPATH="$PYTHONPATH:$LOCATION_ECOASSIST_FILES"
-export PATH="$CONDA_DIR/envs/ecoassistcondaenv/lib/python3.8/site-packages:$PATH"
+export PATH="${ECOASSISTCONDAENV_BASE}/lib/python3.8/site-packages:$PATH"
 if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   export PATH="$HOMEBREW_DIR/bin:$PATH"
 fi
+
+# activate env
+conda activate $ECOASSISTCONDAENV_BASE
 
 # open Human-in-the-loop with arguments given by EcoAssist_GUI.py
 cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory to Human-in-the-loop. Command could not be run."; exit 1; }
@@ -47,3 +53,6 @@ if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
 else
   python3 labelImg.py "${1}" "${2}"
 fi
+
+# activate env for main script
+conda activate $ECOASSISTCONDAENV_BASE
