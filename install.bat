@@ -126,7 +126,7 @@ if exist "%NO_ADMIN_INSTALL%" (
     if not exist "%NO_ADMIN_INSTALL%" (
         echo Succesfully removed:                   '%NO_ADMIN_INSTALL%'
     ) else (
-        echo "Cannot remove the folder '%NO_ADMIN_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        echo "Cannot remove the folder '%NO_ADMIN_INSTALL%'. Perhaps a permission issue? Restart your compupter try this installation again. If the error persists, try deleting the folder manually. If that still doens't work: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
         cmd /k & exit
     )
 )
@@ -136,7 +136,7 @@ if exist "%ADMIN_INSTALL%" (
     if not exist "%ADMIN_INSTALL%" (
         echo Succesfully removed:                   '%ADMIN_INSTALL%'
     ) else (
-        echo "Cannot remove the folder '%ADMIN_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        echo "Cannot remove the folder '%ADMIN_INSTALL%'. Perhaps a permission issue? Restart your compupter try this installation again. If the error persists, try deleting the folder manually. If that still doens't work: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
         cmd /k & exit
     )
 )
@@ -146,7 +146,7 @@ if exist "%CURRENT_INSTALL%" (
     if not exist "%CURRENT_INSTALL%" (
         echo Succesfully removed:                   '%CURRENT_INSTALL%'
     ) else (
-        echo "Cannot remove the folder '%CURRENT_INSTALL%'. Perhaps a permission issue? Try to remove this folder manually and try the installation again. If the error persists: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        echo "Cannot remove the folder '%CURRENT_INSTALL%'. Perhaps a permission issue? Restart your compupter try this installation again. If the error persists, try deleting the folder manually. If that still doens't work: copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
         cmd /k & exit
     )
 )
