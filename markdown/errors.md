@@ -171,3 +171,16 @@ Hope this works! Let me know how it goes.
 ## `PermissionError: [Errno 13] Permission denied: 'C:\\Users\\<>username\\AppData\\Local\\conda\\conda\\Cache\\notices\\notices.cache'`
 
 This looks like conda can't access a certain file, which might be due to the fact that it is being used by another program. Could you restart your computer and try again? Make sure you are executing the latest install file: https://addaxdatascience.com/ecoassist/#install
+
+## `RuntimeError: CUDA error: no kernel image is available for execution on the device CUDA kernel errors might be asynchronously reported at some other API call so the stacktrace below might be incorrect.`
+Not sure what the solution is yet, but it looks like there might be a package conflict with CUDA and TORCH. See: https://stackoverflow.com/questions/69968477/runtimeerror-cuda-error-no-kernel-image-is-available-for-execution-on-the-devi
+
+Possible solution is running the commands below in a command prompt window:
+1. `<path to conda dir>\Scripts\conda --version`
+2. `<path to conda dir>\Scripts\conda activate ecoassistcondaenv-base`
+3. `pip install --upgrade torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html`
+
+Or the following in an anaconda or miniforge prompt:
+1. `conda --version`
+2. `conda activate ecoassistcondaenv-base`
+3. `pip install --upgrade torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html`
