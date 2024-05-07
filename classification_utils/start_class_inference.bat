@@ -1,5 +1,5 @@
 @REM ### Windows commands to execute classify_detections.py script in different conda environment
-@REM ### Peter van Lunteren, 13 Feb 2024 (latest edit)
+@REM ### Peter van Lunteren, 7 May 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -33,6 +33,12 @@ set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
 echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
+
+@REM conda init for this session only
+set "CONDA_INIT_SCRIPT=%PATH_TO_CONDA_INSTALLATION%\condabin\conda.bat"
+call "%CONDA_INIT_SCRIPT%" activate base
+
+@REM conda activate
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 
 @REM check if conda install is mambaforge and set conda command accordingly
