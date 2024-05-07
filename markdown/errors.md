@@ -184,3 +184,8 @@ Or the following in an anaconda or miniforge prompt:
 1. `conda --version`
 2. `conda activate ecoassistcondaenv-base`
 3. `pip install --upgrade torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html`
+
+## `undefined symbol: iJIT_NotifyEvent`
+This is a bug that Dan Morris warned me about. See email from May 7th. This is what he wrote about it:
+
+_[This recent PyTorch bug](https://github.com/pytorch/pytorch/issues/123097) may impact you, even if you don't change anything about your dependencies.  Worse, it may not impact you on any machines you regularly test on, but still impact user machines.  It appears that some packages (e.g. numpy and pytorch) take an unpinned dependency on mkl, so even if you pin every package (like the MD conda env file does), on a new machine, you might get a new version of the mkl package, which suddenly became incompatible with even older versions of PyTorch, when certain functions are called.  The solution, if it comes up, is to pin mkl <= 2024.0 at the beginning of any environment file; I've made this change to the MD environment file [here](https://github.com/agentmorris/MegaDetector/blob/main/envs/environment-detector.yml#L13).  I don't know that you need to rush to do anything, but if users report "undefined symbol: iJIT_NotifyEvent" errors, this is the fix._
