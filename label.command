@@ -43,8 +43,6 @@ fi
 
 # source conda executable
 source "${CONDA_DIR}/etc/profile.d/conda.sh"
-source "${CONDA_DIR}/bin/activate"
-export PATH="${CONDA_DIR}/bin":$PATH
 
 # activate env
 conda activate $ECOASSISTCONDAENV_BASE
