@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open Human-in-the-loop from EcoAssist https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 1 May 2024 (latest edit)
+### Peter van Lunteren, 7 May 2024 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -40,6 +40,11 @@ export PATH="${ECOASSISTCONDAENV_BASE}/lib/python3.8/site-packages:$PATH"
 if [ "$PLATFORM" = "Apple Silicon Mac" ] ; then
   export PATH="$HOMEBREW_DIR/bin:$PATH"
 fi
+
+# source conda executable
+source "${CONDA_DIR}/etc/profile.d/conda.sh"
+source "${CONDA_DIR}/bin/activate"
+export PATH="${CONDA_DIR}/bin":$PATH
 
 # activate env
 conda activate $ECOASSISTCONDAENV_BASE
