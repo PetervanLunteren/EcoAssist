@@ -194,3 +194,15 @@ Or the following in an anaconda or miniforge prompt:
 This is a bug that Dan Morris warned me about. See email from May 7th. This is what he wrote about it:
 
 _[This recent PyTorch bug](https://github.com/pytorch/pytorch/issues/123097) may impact you, even if you don't change anything about your dependencies.  Worse, it may not impact you on any machines you regularly test on, but still impact user machines.  It appears that some packages (e.g. numpy and pytorch) take an unpinned dependency on mkl, so even if you pin every package (like the MD conda env file does), on a new machine, you might get a new version of the mkl package, which suddenly became incompatible with even older versions of PyTorch, when certain functions are called.  The solution, if it comes up, is to pin mkl <= 2024.0 at the beginning of any environment file; I've made this change to the MD environment file [here](https://github.com/agentmorris/MegaDetector/blob/main/envs/environment-detector.yml#L13).  I don't know that you need to rush to do anything, but if users report "undefined symbol: iJIT_NotifyEvent" errors, this is the fix._
+
+## `Runtimetrror: CODA error: no kernel image is available for execution on the device CUDA kernel errors might be asynchronously reported at some other API call,so the stacktrace below might be incorred.`
+This has to do with CUDA not being compatible with PyTorch in some mystical way. There are a few things we can try to dial in on the problem. 
+
+1. Does EcoAssist work when you disable the GPU (see attached screenshot)?
+2. Perhaps this has to do with your GPU version or driver. What kind of GPU do you have? Make sure you have a recent driver installed, then reboot.
+3. Does it work on a different computer?
+
+Let me know how that goes!
+
+<img width="1306" alt="Screenshot 2024-05-09 at 09 08 27" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/993dff48-f90c-4eb0-9590-0a3c930d8536">
+
