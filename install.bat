@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="14 May 2024 (3)"
+set DATE_OF_LAST_EDIT="14 May 2024 (4)"
 
 @REM print header
 echo:
@@ -184,8 +184,8 @@ where mamba /q  && (for /f "tokens=*" %%a in ('where mamba') do (for %%b in ("%%
 :set_conda_install
 echo:
 echo:
-@REM echo REQUIREMENT^: MINIFORGE
-@REM echo:
+echo REQUIREMENT: MINIFORGE
+echo:
 echo EcoAssist requires miniforge ^(or any other conda distribution^) to be installed on your device. It seems like this is not the case. To install Miniforge, simply download and execute the Miniforge installer via the link below. You can leave all settings as the default values. If you see a 'Windows protected your PC' warning, you may need to click 'More info' and 'Run anyway'.
 echo:
 echo:
@@ -233,8 +233,8 @@ where git /q  && (for /f "tokens=*" %%a in ('where git') do (for %%b in ("%%~dpa
 :set_git_install
 echo:
 echo:
-@REM echo REQUIREMENT^: GIT
-@REM echo:
+echo REQUIREMENT: GIT
+echo:
 echo EcoAssist requires Git to be installed on your device. It seems like this is not the case. To install Git, simply download and execute the Git installer via the link below. You can leave all settings as the default values. If you see a 'Windows protected your PC' warning, you may need to click 'More info' and 'Run anyway'.
 echo:
 echo:
