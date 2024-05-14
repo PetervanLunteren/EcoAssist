@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="14 May 2024 (4)"
+set DATE_OF_LAST_EDIT="14 May 2024"
 
 @REM print header
 echo:
