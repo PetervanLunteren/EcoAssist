@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="14 May 2024"
+set DATE_OF_LAST_EDIT="14 May 2024 (2)"
 
 @REM print header
 echo:
@@ -175,15 +175,27 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
             )
         ) 
     )
+
 @REM check if conda or mamba is added to PATH
 where conda /q  && (for /f "tokens=*" %%a in ('where conda') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
 where mamba /q  && (for /f "tokens=*" %%a in ('where mamba') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
+
+@REM provide miniforge link if not found
 :set_conda_install
 echo:
-@REM ask user if not found
-set /p PATH_TO_CONDA_INSTALLATION=Unable to automatically find the folder containing your conda files. The EcoAssist instalation needs to know this path in order to proceed. The required folder is likely called 'miniforge3', 'mambaforge', 'miniconda3', 'anaconda3' and contains the subfolders 'condabin', 'conda-meta', 'DLLs', 'envs' and more. Please provide this path ^(or drag and drop^): 
-:check_conda_install
+echo:
+echo REQUIREMENT^: MINIFORGE
+echo:
+echo EcoAssist requires miniforge ^(or any other conda distribution^) to be installed on your device. It seems like this is not the case. To install Miniforge, simply download and execute the Miniforge installer via the link below. You can leave all settings as the default values. If you see a "Windows protected your PC" warning, you may need to click "More info" and "Run anyway".
+echo:
+echo:
+echo https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+echo:
+echo:
+cmd /k & exit
+
 @REM clean path
+:check_conda_install
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:"=%
 set PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:'=%
 IF %PATH_TO_CONDA_INSTALLATION:~-1%==\ SET PATH_TO_CONDA_INSTALLATION=%PATH_TO_CONDA_INSTALLATION:~0,-1%
@@ -215,12 +227,23 @@ for %%x in (Git, git) do (
     )
 @REM check if Git is added to PATH
 where git /q  && (for /f "tokens=*" %%a in ('where git') do (for %%b in ("%%~dpa\.") do set PATH_TO_GIT_INSTALLATION=%%~dpb)) && goto check_git_install
+
+@REM ask user if not found
 :set_git_install
 echo:
-@REM ask user if not found
-set /p PATH_TO_GIT_INSTALLATION=Unable to automatically find the folder containing your Git files. The EcoAssist instalation needs to know this path in order to proceed. The required folder is likely called 'Git' and contains the subfolders 'bin', 'cmd', 'etc', 'tmp', 'usr' and more. Please provide this path ^(or drag and drop^): 
-:check_git_install
+echo:
+echo REQUIREMENT^: GIT
+echo:
+echo EcoAssist requires Git to be installed on your device. It seems like this is not the case. To install Git, simply download and execute the Git installer via the link below. You can leave all settings as the default values. If you see a "Windows protected your PC" warning, you may need to click "More info" and "Run anyway".
+echo:
+echo:
+echo https://github.com/git-for-windows/git/releases/download/v2.45.0.windows.1/Git-2.45.0-64-bit.exe
+echo:
+echo:
+cmd /k & exit
+
 @REM clean path
+:check_git_install
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:"=%
 set PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:'=%
 IF %PATH_TO_GIT_INSTALLATION:~-1%==\ SET PATH_TO_GIT_INSTALLATION=%PATH_TO_GIT_INSTALLATION:~0,-1%
