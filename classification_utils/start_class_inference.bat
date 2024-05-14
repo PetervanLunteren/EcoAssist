@@ -1,5 +1,5 @@
 @REM ### Windows commands to execute classify_detections.py script in different conda environment
-@REM ### Peter van Lunteren, 7 May 2024 (latest edit)
+@REM ### Peter van Lunteren, 14 May 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -34,13 +34,6 @@ set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\log
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
 echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
 
-@REM conda init for this session only
-set "CONDA_INIT_SCRIPT=%PATH_TO_CONDA_INSTALLATION%\condabin\conda.bat"
-call "%CONDA_INIT_SCRIPT%" activate base
-
-@REM conda activate
-call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-
 @REM check if conda install is mambaforge and set conda command accordingly
 for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
 if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
@@ -54,7 +47,8 @@ set BASE_ENV=ecoassistcondaenv-base
 set CLS_ENV=ecoassistcondaenv-%MODEL_ENV%
 
 @REM activate dedicated environment
-call %EA_CONDA_EXE% deactivate
+call %EA_CONDA_EXE% env list 
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% activate %CLS_ENV%
 call %EA_CONDA_EXE% env list 
 
@@ -67,8 +61,3 @@ if "%GPU_DISABLED%"=="True" (
 ) else (
     python %INF_SCRIPT% %LOCATION_ECOASSIST_FILES% %MODEL_FPATH% %DET_THRESH% %CLS_THRESH% %SMOOTH_BOOL% %JSON_FPATH% %FRAME_DIR%
 )
-
-@REM activate ecoassistcondaenv again
-call %EA_CONDA_EXE% deactivate
-call %EA_CONDA_EXE% activate %BASE_ENV%
-call %EA_CONDA_EXE% env list 
