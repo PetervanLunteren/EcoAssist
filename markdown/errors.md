@@ -206,3 +206,7 @@ Let me know how that goes!
 
 <img width="1306" alt="Screenshot 2024-05-09 at 09 08 27" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/993dff48-f90c-4eb0-9590-0a3c930d8536">
 
+## `The system cannot find the batch label specified <name_of_label>`
+As it turn out, if the end-of-line break types are not set to CRLF, the batch files can have unexpected behaviours. See https://stackoverflow.com/questions/232651/why-the-system-cannot-find-the-batch-label-specified-is-thrown-even-if-label-e
+
+Double check if the eol type is set to CRLF:  https://superuser.com/a/790319/1741678
