@@ -392,7 +392,6 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
         set CHECK_DIR=!CHECK_DIR:"=!
         echo Checking conda dir:                  '!CHECK_DIR!'
         if exist !CHECK_DIR! (
-            set PATH_TO_CONDA_INSTALLATION=!CHECK_DIR!
             for %%z in ("", "-yolov8", "-mewc", "-base", "-pytorch", "-tensorflow") do ( 
                 set ENV_DIR_PATH=!CHECK_DIR!envs\ecoassistcondaenv%%z\
                 set ENV_DIR_PATH=!ENV_DIR_PATH:"=!
