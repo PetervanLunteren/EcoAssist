@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 10 Sept 2023 (latest edit)
+@REM ### Peter van Lunteren, 14 May 2023 (latest edit)
 
 @REM set echo settings
 echo off
@@ -49,7 +49,6 @@ set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
 echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
-call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 
 @REM check if conda install is mambaforge and set conda command accordingly
 for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
@@ -74,6 +73,7 @@ set START_DATE=%date% %time%
 echo EcoAssist session started at %START_DATE% > "%LOG_FILE%"
 
 @REM activate environment
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% activate ecoassistcondaenv-base || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 call %EA_CONDA_EXE% info --envs >> "%LOG_FILE%" || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 
