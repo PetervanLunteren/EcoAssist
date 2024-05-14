@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="1 May 2024"
+set DATE_OF_LAST_EDIT="14 May 2024"
 
 @REM print header
 echo:
@@ -368,9 +368,8 @@ if not exist "%LOCATION_ECOASSIST_FILES%\models\cls" mkdir "%LOCATION_ECOASSIST_
 @REM create txt file to let EcoAssist know it will be the first startup since install
 echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
 
-@REM activate conda/mamba command
+@REM add conda dir to path
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
-call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 
 @REM suppress conda warnings about updates
 call %EA_CONDA_EXE% config --set notify_outdated_conda false
@@ -412,6 +411,7 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call %EA_CONDA_EXE% env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" install pyqt5==5.15.2 lxml
 "%EA_PIP_EXE_BASE%" install RangeSlider
@@ -428,10 +428,12 @@ call activate ecoassistcondaenv-base
 @REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
 @REM "%EA_PIP_EXE_BASE%" install setuptools==65.5.1
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for pytorch classification
 call %EA_CONDA_EXE% create -n ecoassistcondaenv-pytorch python=3.8 -y
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-pytorch
 call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
@@ -444,6 +446,7 @@ call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c 
 "%EA_PIP_EXE_PYTORCH%" install hachoir
 "%EA_PIP_EXE_PYTORCH%" install versions
 "%EA_PIP_EXE_PYTORCH%" install jsonpickle
+call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
 @REM create and log dedicated environment for tensorflow classification
