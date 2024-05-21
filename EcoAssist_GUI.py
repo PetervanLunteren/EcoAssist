@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 24 Apr 2024
+# Latest edit by Peter van Lunteren on 21 May 2024
 
 # TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -64,7 +64,7 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.3"
+current_EA_version = "5.4"
 corresponding_model_info_version = "2"
 
 # set global variables
