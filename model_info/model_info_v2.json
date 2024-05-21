@@ -165,6 +165,68 @@
             "var_cls_class_thresh_default": "0.80",
             "var_smooth_cls_animal": false,
             "min_version": "5.2"
+        },
+        "New Zealand Invasives - DOC NZ - Addax Data science": {
+            "model_fname": "new_zealand_v1.pt",
+            "description": "Model to identify 17 species or higher-level taxons present in New Zealand. The model was trained on a set of approximately 2 million camera trap images from various projects across the country. These projects were run by multiple organizations and took place in a diverse range of habitats, using a variety of trail camera brands and models. The model has an overall validation accuracy, precision, and recall of 98%. When tested on an out-of-sample test set, the model scored 95%, 96%, and 94%, respectively. The model was designed to expedite the monitoring of New Zealand's invasive species (deer, possum, pig, cat, rodent, and mustelid).",
+            "developer": "Addax Data Science",
+            "owner": "New Zealand Department of Conservation",
+            "env": "pytorch",
+            "type": "addax-yolov8",
+            "download_info": [
+                [
+                    "https://huggingface.co/Addax-Data-Science/New_Zealand_v1/resolve/main/new_zealand_v1.pt?download=true",
+                    "new_zealand_v1.pt"
+                ]
+            ],
+            "citation": "",
+            "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "total_download_size": "32 MB",
+            "info_url": "https://www.doc.govt.nz/",
+            "all_classes": [
+                "caprid",
+                "cat",
+                "cow",
+                "deer",
+                "dog",
+                "hedgehog",
+                "kea",
+                "kiwi",
+                "lagomorph",
+                "mustelid",
+                "other bird",
+                "pig",
+                "possum",
+                "rodent",
+                "sealion",
+                "wallaby",
+                "weka"
+            ],
+            "selected_classes": [
+                "caprid",
+                "cat",
+                "cow",
+                "deer",
+                "dog",
+                "hedgehog",
+                "kea",
+                "kiwi",
+                "lagomorph",
+                "mustelid",
+                "other bird",
+                "pig",
+                "possum",
+                "rodent",
+                "sealion",
+                "wallaby",
+                "weka"
+            ],
+            "var_cls_detec_thresh": "0.40",
+            "var_cls_detec_thresh_default": "0.40",
+            "var_cls_class_thresh": "0.50",
+            "var_cls_class_thresh_default": "0.50",
+            "var_smooth_cls_animal": false,
+            "min_version": "5.4"
         }
     },
     "det": {
