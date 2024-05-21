@@ -65,7 +65,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
 current_EA_version = "5.4"
-corresponding_model_info_version = "2"
+corresponding_model_info_version = "3"
 
 # set global variables
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -3791,6 +3791,17 @@ def show_download_error_window(model_title, model_dir, model_vars):
     show_next_steps = True
     if model_title == "Namibian Desert - Addax Data Science":
         main_url = download_info[0][0].replace("/resolve/main/namib_desert_v1.pt?download=true", "/tree/main")
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif download_info[0][0].startswith("https://huggingface.co/Addax-Data-Science/"):
+        main_url = download_info[0][0].replace(f"/resolve/main/{download_info[0][1]}?download=true", "/tree/main")
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
                                                            f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
         pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
