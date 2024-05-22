@@ -45,7 +45,7 @@ def read_yaml(file_path):
         return yaml.safe_load(f)
 class_map = read_yaml(os.path.join(os.path.dirname(cls_model_fpath), "class_list.yaml"))
 
-# convert key:values if neccesary
+# invert key:values if they are formatted as int:label 
 def can_all_keys_be_converted_to_int(d):
     for key in d.keys():
         try:
