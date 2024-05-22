@@ -95,11 +95,11 @@
             "type": "mewc",
             "download_info": [
                 [
-                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/blob/main/mewc_10class.h5?download=true",
+                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/resolve/main/mewc_10class.h5?download=true",
                     "mewc_10class.h5"
                 ],
                 [
-                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/blob/main/class_list.yaml?download=true",
+                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/resolve/main/class_list.yaml?download=true",
                     "class_list.yaml"
                 ]
             ],
