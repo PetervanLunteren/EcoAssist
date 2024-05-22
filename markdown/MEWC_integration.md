@@ -92,7 +92,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
     * `var_cls_class_thresh`  - This is the classification threshold.  Below this classification confidence, the model will label the animal with “unidentified animal”. Must be in the range 0.01 - 0.99. If unsure, leave unaltered. 
     * `var_cls_class_thresh_default`  - Match `var_cls_class_thresh`.
     * `var_smooth_cls_animal`  - This is a feature that is temporarily disabled. Keep as `false`.
-    * `min_version`  - The minimum version of EcoAssist that is able to run this model. I.e., `"5.2"`.
+    * `min_version`  - The minimum version of EcoAssist that is able to run this model. I.e., `"5.5"`.
 
 2. After adjusting the JSON values, your `variables.json` should look something like this:
 ```json
@@ -133,7 +133,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
   "var_cls_class_thresh": "0.50",
   "var_cls_class_thresh_default": "0.50",
   "var_smooth_cls_animal": false,
-  "min_version": "5.2"
+  "min_version": "5.5"
 }
 ```
 3. Save `variables.json` and open EcoAssist. Your model should now be deployable and visible in the model dropdown menu.
@@ -218,7 +218,7 @@ Addax Data Science supports open-source principles, aiming to facilitate the dis
   "var_cls_class_thresh": "0.50",
   "var_cls_class_thresh_default": "0.50",
   "var_smooth_cls_animal": false,
-  "min_version": "5.2"
+  "min_version": "5.5"
 }
 ```
 
