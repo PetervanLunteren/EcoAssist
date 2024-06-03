@@ -471,7 +471,7 @@ call %EA_CONDA_EXE% install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10
 "%EA_PIP_EXE_PYTORCH%" install hachoir
 "%EA_PIP_EXE_PYTORCH%" install versions
 "%EA_PIP_EXE_PYTORCH%" install jsonpickle
-"%EA_PIP_EXE_PYTORCH%" install 'setuptools<70'
+"%EA_PIP_EXE_PYTORCH%" install "setuptools<70"
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
