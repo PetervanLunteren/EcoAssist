@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="14 May 2024"
+set DATE_OF_LAST_EDIT="3 Jun 2024"
 
 @REM print header
 echo:
@@ -458,7 +458,9 @@ call %EA_CONDA_EXE% deactivate
 call %EA_CONDA_EXE% create -n ecoassistcondaenv-pytorch python=3.8 -y
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-pytorch
-call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+"%EA_PIP_EXE_PYTORCH%" install pytorchwildlife
+"%EA_PIP_EXE_PYTORCH%" uninstall torch torchvision torchaudio -y
+call %EA_CONDA_EXE% install pytorch==1.10.1 torchvision==0.11.2 torchaudio==0.10.1 cudatoolkit=11.3 -c pytorch -c conda-forge -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
 "%EA_PIP_EXE_PYTORCH%" install timm
 "%EA_PIP_EXE_PYTORCH%" install pandas
@@ -469,6 +471,7 @@ call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c 
 "%EA_PIP_EXE_PYTORCH%" install hachoir
 "%EA_PIP_EXE_PYTORCH%" install versions
 "%EA_PIP_EXE_PYTORCH%" install jsonpickle
+"%EA_PIP_EXE_PYTORCH%" install 'setuptools<70'
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
