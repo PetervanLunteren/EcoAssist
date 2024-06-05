@@ -284,8 +284,9 @@
             "description": "The model is trained to classify animals into their genus taxonomic group. The training data are collected by the Department of Biological sciences at Universidad de los Andes. All the images come from the 'Magdalena Medio' region in Colombia. The dataset contains 41,904 images across 36 labeled genera, and it is distributed into 33,569 images in the training set and 8,335 images in the validation set. In our inference of the Amazon Rainforest dataset, we implement a 98% confidence threshold as part of a human-in-the-loop procedure. We observe that the model predicts 90% of the data with recognition confidence exceeding this threshold. Furthermore, within this high-confidence subset, the model achieves an average classification accuracy of 92%. This means that, after filtering out empty images with MegaDetector, only 10% of the detected animal objects require human validation.",
             "developer": "AI For Good Lab, Microsoft",
             "owner": "AI For Good Lab, Microsoft",
-            "env": "pytorch",
-            "type": "pytorch-wildlife",
+            "env": "base",
+            "env-macos": "pywildlife",
+            "type": "pywildlife",
             "download_info": [
                 [
                     "https://zenodo.org/records/10041983/files/AI4GAmazonClassification_v0.0.0.ckpt?download=1",
