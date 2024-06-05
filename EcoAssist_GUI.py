@@ -3818,6 +3818,17 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
                                                            f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
         pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+    elif download_info[0][0].startswith("https://zenodo.org/records/"):
+        main_url = download_info[0][0].replace(f"/files/{download_info[0][1]}?download=1", "")
+        pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
+                                                           f" {step_n}. Ir al sitio web:"][lang_idx]);step_n += 1
+        pro_lbl3.grid(row=2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
+        pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
+        pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_info[0][1]}'.",
+                                                           f" {step_n}. Descarga el archivo '{download_info[0][1]}'."][lang_idx]);step_n += 1
+        pro_lbl5.grid(row=4, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
     elif model_title == "Tasmania - University of Tasmania":
         main_url = download_info[1][0].replace("/resolve/main/class_list.yaml?download=true", "/tree/main")
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
