@@ -64,8 +64,8 @@ from tkinter import filedialog, ttk, messagebox as mb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.4"
-corresponding_model_info_version = "3"
+current_EA_version = "5.5"
+corresponding_model_info_version = "5"
 
 # set global variables
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
