@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 6 March 2023 (latest edit)
+### Peter van Lunteren, 5 Jun 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -39,9 +39,11 @@ CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
 ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
 ECOASSISTCONDAENV_PYTORCH="${CONDA_DIR}/envs/ecoassistcondaenv-pytorch"
 ECOASSISTCONDAENV_TENSORFLOW="${CONDA_DIR}/envs/ecoassistcondaenv-tensorflow"
+ECOASSISTCONDAENV_PYWILDLIFE="${CONDA_DIR}/envs/ecoassistcondaenv-pywildlife"
 PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
 PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
 PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
+PIP_PYWILDLIFE="${ECOASSISTCONDAENV_PYWILDLIFE}/bin/pip"
 
 # check for sandbox argument and specify branch 
 if [ "$1" == "sandbox" ]; then
@@ -326,7 +328,7 @@ conda list >> "$LOG_FILE"
 $PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
-# create dedicated tensorflow classification environment
+# create dedicated tensorflow classification environment 
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml"
 elif [ "$PLATFORM" = "Intel Mac" ]; then
@@ -366,6 +368,15 @@ else
   $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 fi
+
+# create dedicated classification environment for the pytorchwildlife models
+conda env remove -p $ECOASSISTCONDAENV_PYWILDLIFE
+conda create -p $ECOASSISTCONDAENV_PYWILDLIFE python=3.8 -y
+conda activate $ECOASSISTCONDAENV_PYWILDLIFE
+$PIP_PYWILDLIFE install pytorchwildlife
+$PIP_PYWILDLIFE install "setuptools<70"
+$PIP_PYWILDLIFE install jsonpickle
+conda deactivate
 
 # log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
