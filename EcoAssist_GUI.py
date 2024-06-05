@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 21 May 2024
+# Latest edit by Peter van Lunteren on 5 Jun 2024
 
 # TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -1391,9 +1391,16 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     # load model specific variables
     model_vars = load_model_vars() 
     cls_model_fname = model_vars["model_fname"]
-    cls_model_env = model_vars["env"]
     cls_model_type = model_vars["type"]
     cls_model_fpath = os.path.join(EcoAssist_files, "models", "cls", var_cls_model.get(), cls_model_fname)
+
+    # if present take os-specific env else take general env
+    if os.name == 'nt': # windows
+        cls_model_env = model_vars.get("env-windows", model_vars["env"])
+    elif platform.system() == 'Darwin': # macos
+        cls_model_env = model_vars.get("env-macos", model_vars["env"])
+    else: # linux
+        cls_model_env = model_vars.get("env-linux", model_vars["env"])
 
     # get param values
     if simple_mode:
