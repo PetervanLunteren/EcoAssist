@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="4 Jun 2024"
+set DATE_OF_LAST_EDIT="5 Jun 2024"
 
 @REM print header
 echo:
@@ -451,6 +451,7 @@ call activate ecoassistcondaenv-base
 @REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
 @REM "%EA_PIP_EXE_BASE%" install setuptools==65.5.1
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
+"%EA_PIP_EXE_BASE%" install pytorchwildlife
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
