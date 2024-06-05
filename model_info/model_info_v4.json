@@ -87,57 +87,6 @@
             "var_smooth_cls_animal": false,
             "min_version": "4.4"
         },
-        "Tasmania - MEWC Team": {
-            "model_fname": "mewc_10class.h5",
-            "description": "A 10-species example classifier trained on Tasmanian species. More information is available at: https://ecoevorxiv.org/repository/view/6405/",
-            "developer": "MEWC Team",
-            "env": "tensorflow",
-            "type": "mewc",
-            "download_info": [
-                [
-                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/resolve/main/mewc_10class.h5?download=true",
-                    "mewc_10class.h5"
-                ],
-                [
-                    "https://huggingface.co/bwbrook/mewc_v2s_10sp/resolve/main/class_list.yaml?download=true",
-                    "class_list.yaml"
-                ]
-            ],
-            "citation": "https://doi.org/10.32942/X2ZW3D",
-            "license": "https://creativecommons.org/licenses/by-nc/4.0/",
-            "total_download_size": "236 MB",
-            "info_url": "https://huggingface.co/bwbrook/mewc_v2s_10sp",
-            "all_classes": [
-                "tasmanian_pademelon",
-                "bennetts_wallaby",
-                "tasmanian_devil",
-                "brushtail_possum",
-                "cat",
-                "bare_nosed_wombat",
-                "currawong",
-                "southern_brown_bandicoot",
-                "fallow_deer",
-                "bronzewing"
-            ],
-            "selected_classes": [
-                "tasmanian_pademelon",
-                "bennetts_wallaby",
-                "tasmanian_devil",
-                "brushtail_possum",
-                "cat",
-                "bare_nosed_wombat",
-                "currawong",
-                "southern_brown_bandicoot",
-                "fallow_deer",
-                "bronzewing"
-            ],
-            "var_cls_detec_thresh": "0.2",
-            "var_cls_detec_thresh_default": "0.2",
-            "var_cls_class_thresh": "0.50",
-            "var_cls_class_thresh_default": "0.50",
-            "var_smooth_cls_animal": false,
-            "min_version": "5.5"
-        },
         "Europe - DeepFaune v1.1": {
             "model_fname": "deepfaune-vit_large_patch14_dinov2.lvd142m.pt",
             "description": "The Deepfaune initiative aims at developing 'artificial intelligence' models to automatically classify species in images and videos collected using camera-traps. The initiative is led by a core academic team from the French 'Centre National de la Recherche Scientifique' (CNRS), in collaboration with more than 50 European partners involved in wildlife research, conservation and management. The Deepfaune models can be run through a custom software freely available on the website, or through other software packages or platforms like EcoAssist. New versions of the model are published regularly, increasing classification accuracy or adding new species to the list of species that can be recognized. More information is available at: https://www.deepfaune.cnrs.fr",
