@@ -5,7 +5,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 6 Jun 2024
 
-# TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
+# TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -1560,9 +1560,9 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
 
     # prepare variables
     chosen_folder = str(Path(path_to_image_folder))
-    run_detector_batch_py = os.path.join(EcoAssist_files, "cameratraps", "detection", "run_detector_batch.py")
+    run_detector_batch_py = os.path.join(EcoAssist_files, "cameratraps", "megadetector", "detection", "run_detector_batch.py")
     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
-    process_video_py = os.path.join(EcoAssist_files, "cameratraps", "detection", "process_video.py")
+    process_video_py = os.path.join(EcoAssist_files, "cameratraps", "megadetector", "detection", "process_video.py")
     video_recognition_file = "--output_json_file=" + os.path.join(chosen_folder, "video_recognition_file.json")
     GPU_param = "Unknown"
 
@@ -3057,7 +3057,7 @@ def extract_label_map_from_model(model_file):
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})")
 
     # import module from cameratraps dir
-    from cameratraps.detection.pytorch_detector import PTDetector
+    from cameratraps.megadetector.detection.pytorch_detector import PTDetector
 
     # load model
     label_map_detector = PTDetector(model_file, force_cpu = True)
