@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 5 Jun 2024
+# Latest edit by Peter van Lunteren on 6 Jun 2024
 
 # TODO: MANUAL INSTALL - recognise if model is hosted on hugging face and automatically make manual steps. Handy if people are gogin to use the MEWC - hugguingface pipeline. 
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -298,7 +298,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 # check if that image was able to be loaded
                 if im_to_vis is None:
                     with open(postprocessing_error_log, 'a+') as f:
-                        f.write(f"File '{image['file']}' was skipped by post processing features likely because of a special charachter in the file path \n")
+                        f.write(f"File '{image['file']}' was skipped by post processing features. This might be due to the file being moved or deleted after analysis, or because of a special character in the file path.\n")
                     f.close()
                     elapsed_time_sep = str(datetime.timedelta(seconds=round(time.time() - start_time)))
                     time_left_sep = str(datetime.timedelta(seconds=round(((time.time() - start_time) * n_images / nloop) - (time.time() - start_time))))
