@@ -1,6 +1,6 @@
 # library of inference functions to be used for classifying MD crops 
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 22 Jan 2024
+# Latest edit by Peter van Lunteren on 6 Jun 2024
 
 # # import packages
 import json
@@ -8,8 +8,8 @@ import os
 from tqdm import tqdm
 from PIL import Image
 from collections import defaultdict 
-from cameratraps.detection.video_utils import frame_results_to_video_results
-from cameratraps.md_utils.ct_utils import is_list_sorted
+from cameratraps.megadetector.detection.video_utils import frame_results_to_video_results
+from cameratraps.megadetector.utils.ct_utils import is_list_sorted
 from EcoAssist.smooth_params import *
 
 # MAIN FUNCTION different workflow for videos than for images
