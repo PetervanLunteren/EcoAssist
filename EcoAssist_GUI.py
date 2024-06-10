@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 6 Jun 2024
+# Latest edit by Peter van Lunteren on 10 Jun 2024
 
 # TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
@@ -1599,20 +1599,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     if os.name == 'nt':
         if selected_options == []:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, '--max_width=1280', '--quality=75', video_recognition_file, det_model_fpath, chosen_folder]
         else:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, *selected_options, chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, *selected_options, video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--quality=75', video_recognition_file, det_model_fpath, chosen_folder]
 
      # create command for MacOS and Linux
     else:
         if selected_options == []:
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--quality=75' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
         else:
             selected_options = "' '".join(selected_options)
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{selected_options}' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--quality=75' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
 
     # pick one command
     if data_type == "img":
