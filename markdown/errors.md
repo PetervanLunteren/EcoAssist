@@ -94,8 +94,25 @@ All files are located in one folder, called `EcoAssist_files`. Please be aware t
 ## `Local variable 'elapsed time' referenced before assignment`
 This error message can be thrown when trying to deploy a model. It basically means that the model outputs some unexpected text. First of all, try if the model deploys succesfully over the test images supplied [here](https://github.com/PetervanLunteren/EcoAssist#test-your-installation). Check if your preloaded models are correctly downloaded. Sometimes protection software prevent the download of the actual model files. There should be two files named `md_v5a.0.0.pt` and `md_v5b.0.0.pt` in `\EcoAssist_files\pretrained_models\`. You can find the location of the EcoAssist_files [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). If that isn't the problem, the logfiles should point you in the right direction.
 
-## `SSL certificate problem: unable to get local issuer certificate`
+## `SSL certificate problem: unable to get local issuer certificate` -> git
 If you see this message poping up somewhere, there is something going on with your SSL certificates. Most probably that is due to some secrurity setting (VPN, firewall, proxy, etc.) which prevents it from downloading the specific package. Most of the times this can be fixed by simply disabling the VPN/firewall/proxy and reinstalling EcoAssist. If that doesn't work, try switching internet networks, from WiFi to ethernet, or vice versa. If all that doesn't work, you can disable SSL verification temporarily. If you want that, open a new console window and execute `git config --global http.sslVerify false`, then drag and drop the `install.bat` file in the same window and press enter. Please note that this solution opens you to attacks like man-in-the-middle attacks. Therefore turn on verification again after installing EcoAssist, by executing `git config --global http.sslVerify true`. If you see `'git' is not recognized as an internal or external command`, you'll have to explicitly tell you computer where it can find the git executable, by changing the commands to `path\to\git\installation\cmd\git.exe config --global http.sslVerify false`. 
+
+## `CondaSSLError: OpenSSL appears to be unavailable on this machine.` -> conda
+If you see this message popping up somewhere, there is something going on with your SSL certificates. Most probably that is due to some security setting (VPN, firewall, proxy, etc.) which prevents it from downloading the specific package. Most of the time this can be fixed by simply disabling the VPN/firewall/proxy and reinstalling EcoAssist. If that doesn't work, try switching internet networks, from WiFi to ethernet, or vice versa. If this doesn't work, it would probably be better to have somebody from IT look at the situation. It's possible to disable SSL verification temporarily. If you want that, open a new console window and execute
+
+`conda config --set ssl_verify false`
+
+then drag and drop the install.bat file in the same window and press enter. Please note that this solution opens you to attacks like man-in-the-middle attacks. Therefore turn on verification again after installing EcoAssist, by executing
+
+`conda config --set ssl_verify true`
+
+If you see `'conda' is not recognized as an internal or external command`, you'll have to explicitly tell you computer where it can find the `conda` executable, by changing the commands to
+
+`path\to\conda\installation\Scripts\conda.exe config --set ssl_verify true`
+
+Hope this helps!
+
+Cheers,
 
 ## `ValueError: path is on mount '...', start on mount '...'`
 This is a Windows error message and means that your training data is located on a different drive than EcoAssist. For example, it would say `ValueError: path is on mount 'C:', start on mount 'F:'`, which means that the training data is located on your `F:` drive, while EcoAssist is located on the `C:` drive. The sollution is to get everything on the same drive. So either install EcoAssist on the `F:` drive, or move the training data to the `C:` drive. 
