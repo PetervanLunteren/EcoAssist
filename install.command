@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 7 Jun 2023 (latest edit)
+### Peter van Lunteren, 14 Jun 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -222,6 +222,7 @@ else
   } || { 
     echo "Curl could not be installed. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1;
     }
+  echo "curl successfuly installed."
 fi
 
 # download the MDv5a model 
