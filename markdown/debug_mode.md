@@ -4,7 +4,7 @@ It is possible to run EcoAssist in debug mode, where it'll print its output in a
 <summary><b>Windows</b></summary>
 <br>
  
-Open a fresh window of the command prompt and run the following.
+Open a fresh window of the command prompt (search start for "command prompt") and copy-paste the following line and press enter.
 ```
 ( "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%homedrive%\EcoAssist_files\EcoAssist\open.bat" debug )
 ```
