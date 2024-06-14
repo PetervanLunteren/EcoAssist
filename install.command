@@ -210,6 +210,20 @@ else
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
+# check if curl is installed
+if command -v curl &> /dev/null
+then
+    echo "curl is already installed."
+else
+    echo "curl is not installed. Trying to installing curl..."
+  { 
+    sudo apt update
+    sudo apt install -y curl
+  } || { 
+    echo "Curl could not be installed. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1;
+    }
+fi
+
 # download the MDv5a model 
 mkdir -p "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a"
 cd "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a" || { echo "Could not change directory to pretrained_models. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
