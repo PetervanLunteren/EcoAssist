@@ -3,12 +3,11 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 15 Jun 2024
+# Latest edit by Peter van Lunteren on 11 Jun 2024
 
-# TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
-# TODO: SMOOTH - either average or logit
 # TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
+# TODO: RESULTS - add dashboard feature with some graphs (map, piechart, dates, % empties, etc)
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
@@ -36,8 +35,6 @@ import random
 import signal
 import shutil
 import pickle
-import folium
-import calendar
 import platform
 import requests
 import tempfile
@@ -54,19 +51,16 @@ import seaborn as sns
 from tqdm import tqdm
 from tkinter import *
 from pathlib import Path
-import plotly.express as px
 from subprocess import Popen
 from functools import partial
 from tkinter.font import Font
 from GPSPhoto import gpsphoto
 from CTkTable import CTkTable
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 import xml.etree.cElementTree as ET
 from PIL import ImageTk, Image, ImageFile
 from RangeSlider.RangeSlider import RangeSliderH
 from tkinter import filedialog, ttk, messagebox as mb
-from folium.plugins import HeatMap, Draw, MarkerCluster
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
@@ -140,23 +134,12 @@ suffixes_for_sim_none = [" - just show me where the animals are",
 #############################################
 
 # post-process files
-def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, plt, exp_format, data_type):
+def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, exp_format, data_type):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
     # update progress window
     progress_window.update_values(process = f"{data_type}_pst", status = "load")
-
-    # plt needs csv files so make sure to produce them, even if the user didn't specify
-    # if the user didn't speficy to export to csv, make sure to remove them later on
-    remove_csv = False
-    if plt and not exp:
-        # except if the csv are already created ofcourse
-        if not (os.path.isfile(os.path.join(dst_dir, "results_detections.csv")) and 
-                os.path.isfile(os.path.join(dst_dir, "results_files.csv"))):
-            exp = True
-            exp_format = dpd_options_exp_format[lang_idx][1] # CSV
-            remove_csv = True
 
     # get correct json file
     if data_type == "img":
@@ -178,11 +161,11 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
     # warn user
     if data_type == "vid":
-        if vis or crp or plt:
-            check_json_presence_and_warn_user(["visualize, crop, or plot", "visualizar, recortar o trazar"][lang_idx],
-                                              ["visualizing, cropping, or plotting", "visualizando, recortando o trazando"][lang_idx],
-                                              ["visualization, cropping, and plotting", "visualización, recorte y trazado"][lang_idx])
-            vis, crp, plt = [False] * 3
+        if vis or crp:
+            check_json_presence_and_warn_user(["visualize or crop", "visualizar 0 recortar"][lang_idx],
+                                              ["visualizing or cropping", "visualizando o recortando"][lang_idx],
+                                              ["visualization and cropping", "visualización y recorte"][lang_idx])
+            vis, crp = [False] * 2
 
     # fetch label map
     label_map = fetch_label_map_from_json(recognition_file)
@@ -563,11 +546,8 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
             else:
                 df = pd.read_csv(os.path.join(dst_dir, f"results_{result_type}.csv"), dtype=dtypes, low_memory=False)
             dfs.append(df)
-
-            # plt needs the csv's, so don't remove just yet
-            if not plt:
-                if os.path.isfile(csv_path):
-                    os.remove(csv_path)
+            if os.path.isfile(csv_path):
+                os.remove(csv_path)
 
         # overwrite rows to xlsx file
         with pd.ExcelWriter(xlsx_path, engine='openpyxl') as writer:
@@ -582,22 +562,10 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     # change json paths back, if converted earlier
     if json_paths_converted:
         make_json_absolute(recognition_file)
-
+    
     # let the user know it's done
     progress_window.update_values(process = f"{data_type}_pst", status = "done")
     root.update()
-
-    # create graphs
-    if plt:
-        produce_plots(dst_dir)
-
-        # if user wants XLSX as output or if user didn't specify exp all-
-        # together but the files were created for plt -> remove CSV files
-        if exp and exp_format == dpd_options_exp_format[lang_idx][0] or remove_csv:
-            for result_type in ['detections', 'files', 'summary']:
-                csv_path = os.path.join(dst_dir, f"results_{result_type}.csv")
-                if os.path.isfile(csv_path):
-                    os.remove(csv_path)
 
 # set data types for csv inport so that the machine doesn't run out of memory with large files (>0.5M rows)
 dtypes = {
@@ -676,7 +644,6 @@ def start_postprocess():
     vis = var_vis_files.get()
     crp = var_crp_files.get()
     exp = var_exp.get()
-    plt = var_plt.get()
     exp_format = var_exp_format.get()
 
     # init cancel variable
@@ -727,8 +694,6 @@ def start_postprocess():
     processes = []
     if img_json:
         processes.append("img_pst")
-    if plt:
-        processes.append("plt")
     if vid_json:
         processes.append("vid_pst")
     global progress_window
@@ -738,12 +703,12 @@ def start_postprocess():
     try:
         # postprocess images
         if img_json:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, plt, exp_format, data_type = "img")
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, exp_format, data_type = "img")
 
         # postprocess videos
         if vid_json and not cancel_var:
-            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, plt, exp_format, data_type = "vid")
-            
+            postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, crp, exp, exp_format, data_type = "vid")
+        
         # complete
         complete_frame(fth_step)
 
@@ -772,634 +737,6 @@ def start_postprocess():
         
         # close window
         progress_window.close()
-
-# function to produce graphs and maps
-def produce_plots(results_dir):
-
-    # update internal progressbar via a tmdq stats
-    def update_pbar_plt():
-        pbar.update(1)
-        tqdm_stats = pbar.format_dict
-        progress_window.update_values(process = "plt",
-                                        status = "running",
-                                        cur_it = tqdm_stats['n'],
-                                        tot_it = tqdm_stats['total'],
-                                        time_ela = str(datetime.timedelta(seconds=round(tqdm_stats['elapsed']))),
-                                        time_rem = str(datetime.timedelta(seconds=round((tqdm_stats['total'] - tqdm_stats['n']) / tqdm_stats['n'] * tqdm_stats['elapsed'] if tqdm_stats['n'] else 0))),
-                                        cancel_func = cancel)
-
-    # create all time plots
-    def create_time_plots(data, save_path_base, temporal_units, pbar, counts_df):
-
-        # maximum number of ticks per x axis
-        max_n_ticks = 50
-
-        # define specific functions per plot type
-        def plot_obs_over_time_total_static(time_unit):
-            plt.figure(figsize=(10, 6))
-            combined_data = grouped_data.sum(axis=0).resample(time_format_mapping[time_unit]['freq']).sum()
-            plt.bar(combined_data.index.strftime(time_format_mapping[time_unit]['time_format']), combined_data, width=0.9)
-            plt.suptitle("")
-            plt.title(f'Total observations (grouped per {time_unit}, n = {counts_df["count"].sum()})')
-            plt.ylabel('Count')
-            plt.xlabel(time_unit)
-            plt.xticks(rotation=90)
-            x_vals = np.arange(len(combined_data))
-            tick_step = max(len(combined_data) // max_n_ticks, 1)
-            selected_ticks = x_vals[::tick_step]
-            while_iteration = 0 
-            while len(selected_ticks) >= max_n_ticks:
-                tick_step += 1
-                while_iteration += 1
-                selected_ticks = x_vals[::tick_step]
-                if while_iteration > 100:
-                    break
-            selected_labels = combined_data.index.strftime(time_format_mapping[time_unit]['time_format'])[::tick_step]
-            plt.xticks(selected_ticks, selected_labels)
-            plt.tight_layout()
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "combined-single-layer.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_total_interactive(time_unit):
-            combined_data = grouped_data.sum(axis=0).resample(time_format_mapping[time_unit]['freq']).sum()
-            hover_text = [f'Period: {date}<br>Count: {count}<extra></extra>' 
-                        for date, count in zip(combined_data.index.strftime(time_format_mapping[time_unit]['time_format']), 
-                                                combined_data)]
-            fig = go.Figure(data=[go.Bar(x=combined_data.index.strftime(time_format_mapping[time_unit]['time_format']), 
-                                        y=combined_data,
-                                        hovertext=hover_text,
-                                        hoverinfo='text')])
-            fig.update_traces(hovertemplate='%{hovertext}')
-            fig.update_layout(title=f'Total observations (grouped per {time_unit})',
-                            xaxis_title='Period',
-                            yaxis_title='Count',
-                            xaxis_tickangle=90)
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "combined-single-layer.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_combined_static(time_unit):
-            plt.figure(figsize=(10, 6))
-            for label in grouped_data.index:
-                grouped_data_indexed = grouped_data.loc[label].resample(time_format_mapping[time_unit]['freq']).sum()
-                plt.plot(grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format']), grouped_data_indexed, label=label)
-            plt.suptitle("")
-            plt.title(f'Observations over time (grouped per {time_unit}, n = {counts_df["count"].sum()})')
-            plt.ylabel('Count')
-            plt.xticks(rotation=90)
-            plt.xlabel(time_unit)
-            plt.legend(loc='upper right')
-            x_vals = np.arange(len(grouped_data_indexed))
-            tick_step = max(len(grouped_data_indexed) // max_n_ticks, 1)
-            selected_ticks = x_vals[::tick_step]
-            while_iteration = 0 
-            while len(selected_ticks) >= max_n_ticks:
-                tick_step += 1
-                while_iteration += 1
-                selected_ticks = x_vals[::tick_step]
-                if while_iteration > 100:
-                    break
-            selected_labels = grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format'])[::tick_step]
-            plt.xticks(selected_ticks, selected_labels)
-            plt.tight_layout()
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "combined-multi-layer.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_combined_interactive(time_unit):
-            fig = go.Figure()
-            for label in grouped_data.index:
-                grouped_data_indexed = grouped_data.loc[label].resample(time_format_mapping[time_unit]['freq']).sum()
-                fig.add_trace(go.Scatter(x=grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format']), 
-                                        y=grouped_data_indexed,
-                                        mode='lines',
-                                        name=label))
-            fig.update_layout(title=f'Observations over time (grouped per {time_unit})',
-                            xaxis_title='Period',
-                            yaxis_title='Count',
-                            xaxis_tickangle=90,
-                            legend=dict(x=0, y=1.0))
-            fig.update_layout(hovermode="x unified")
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "combined-multi-layer.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_separate_static(label, time_unit):
-            plt.figure(figsize=(10, 6))
-            grouped_data_indexed = grouped_data.loc[label].resample(time_format_mapping[time_unit]['freq']).sum()
-            plt.bar(grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format']), grouped_data_indexed, label=label, width=0.9)
-            plt.suptitle("")
-            plt.title(f'Observations over time for {label} (grouped per {time_unit}, n = {counts_df[counts_df["label"] == label]["count"].values[0]})')
-            plt.ylabel('Count')
-            plt.xticks(rotation=90)
-            plt.xlabel(time_unit)
-            x_vals = np.arange(len(grouped_data_indexed))
-            tick_step = max(len(grouped_data_indexed) // max_n_ticks, 1)
-            selected_ticks = x_vals[::tick_step]
-            while_iteration = 0 
-            while len(selected_ticks) >= max_n_ticks:
-                tick_step += 1
-                while_iteration += 1
-                selected_ticks = x_vals[::tick_step]
-                if while_iteration > 100:
-                    break
-            selected_labels = grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format'])[::tick_step]
-            plt.xticks(selected_ticks, selected_labels)
-            plt.tight_layout()
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "class-specific", f"{label}.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            plt.close()
-            update_pbar_plt()
-
-        def plot_obs_over_time_separate_interactive(label, time_unit):
-            grouped_data_indexed = grouped_data.loc[label].resample(time_format_mapping[time_unit]['freq']).sum()            
-            hover_text = [f'Period: {date}<br>Count: {count}<extra></extra>' 
-                        for date, count in zip(grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format']), 
-                                                grouped_data_indexed)]
-            fig = go.Figure(go.Bar(x=grouped_data_indexed.index.strftime(time_format_mapping[time_unit]['time_format']), 
-                                    y=grouped_data_indexed,
-                                    hovertext=hover_text,
-                                    hoverinfo='text'))
-            fig.update_traces(hovertemplate='%{hovertext}')
-            fig.update_layout(title=f'Observations over time for {label} (grouped per {time_unit})',
-                            xaxis_title='Period',
-                            yaxis_title='Count',
-                            xaxis_tickangle=90)
-            save_path = os.path.join(save_path_base, "graphs", "bar-charts", time_format_mapping[time_unit]['dir'], "class-specific", f"{label}.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_heatmap_static_absolute(time_unit):
-            data['Period'] = data['DateTimeOriginal'].dt.strftime(time_format_mapping[time_unit]['time_format'])
-            time_range = pd.Series(pd.date_range(data['DateTimeOriginal'].min(), data['DateTimeOriginal'].max(), freq=time_format_mapping[time_unit]['freq']))
-            df_time = pd.DataFrame({time_unit: time_range.dt.strftime(time_format_mapping[time_unit]['time_format'])})
-            heatmap_data = data.groupby(['Period', 'label']).size().unstack(fill_value=0)
-            merged_data = pd.merge(df_time, heatmap_data, left_on=time_unit, right_index=True, how='left').fillna(0)
-            merged_data.set_index(time_unit, inplace=True)
-            merged_data = merged_data.sort_index()
-            plt.figure(figsize=(14, 8))
-            ax = sns.heatmap(merged_data, cmap="Blues")
-            sorted_labels = sorted(merged_data.columns)
-            ax.set_xticks([i + 0.5 for i in range(len(sorted_labels))])
-            ax.set_xticklabels(sorted_labels)
-            plt.title(f'Temporal heatmap (absolute values, grouped per {time_unit}, n = {counts_df["count"].sum()})')
-            plt.tight_layout()
-            legend_text = 'Number of observations'
-            ax.collections[0].colorbar.set_label(legend_text)
-            save_path = os.path.join(save_path_base, "graphs", "temporal-heatmaps", time_format_mapping[time_unit]['dir'], "absolute", "temporal-heatmap.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_heatmap_static_relative(time_unit):
-            data['Period'] = data['DateTimeOriginal'].dt.strftime(time_format_mapping[time_unit]['time_format'])
-            time_range = pd.Series(pd.date_range(data['DateTimeOriginal'].min(), data['DateTimeOriginal'].max(), freq=time_format_mapping[time_unit]['freq']))
-            df_time = pd.DataFrame({time_unit: time_range.dt.strftime(time_format_mapping[time_unit]['time_format'])})
-            heatmap_data = data.groupby(['Period', 'label']).size().unstack(fill_value=0)
-            normalized_data = heatmap_data.div(heatmap_data.sum(axis=0), axis=1)
-            merged_data = pd.merge(df_time, normalized_data, left_on=time_unit, right_index=True, how='left').fillna(0)
-            merged_data.set_index(time_unit, inplace=True)
-            merged_data = merged_data.sort_index()
-            plt.figure(figsize=(14, 8))
-            ax = sns.heatmap(merged_data, cmap="Blues")
-            sorted_labels = sorted(normalized_data.columns)
-            ax.set_xticks([i + 0.5 for i in range(len(sorted_labels))])
-            ax.set_xticklabels(sorted_labels)
-            plt.title(f'Temporal heatmap (relative values, grouped per {time_unit}, n = {counts_df["count"].sum()})')
-            plt.tight_layout()
-            legend_text = 'Number of observations normalized per label'
-            ax.collections[0].colorbar.set_label(legend_text)
-            save_path = os.path.join(save_path_base, "graphs", "temporal-heatmaps", time_format_mapping[time_unit]['dir'], "relative", "temporal-heatmap.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_heatmap_interactive_absolute(time_unit):
-            data['Period'] = data['DateTimeOriginal'].dt.strftime(time_format_mapping[time_unit]['time_format'])
-            time_range = pd.Series(pd.date_range(data['DateTimeOriginal'].min(), data['DateTimeOriginal'].max(), freq=time_format_mapping[time_unit]['freq']))
-            df_time = pd.DataFrame({time_unit: time_range.dt.strftime(time_format_mapping[time_unit]['time_format'])})
-            heatmap_data = data.groupby(['Period', 'label']).size().unstack(fill_value=0)
-            merged_data = pd.merge(df_time, heatmap_data, left_on=time_unit, right_index=True, how='left').fillna(0)
-            merged_data.set_index(time_unit, inplace=True)
-            heatmap_trace = go.Heatmap(z=merged_data.values,
-                                    x=merged_data.columns,
-                                    y=merged_data.index,
-                                    customdata=merged_data.stack().reset_index().values.tolist(),
-                                    colorscale='Blues',
-                                    hovertemplate='Class: %{x}<br>Period: %{y}<br>Count: %{z}<extra></extra>',
-                                    colorbar=dict(title='Number of<br>observations'))
-            fig = go.Figure(data=heatmap_trace)
-            fig.update_layout(title=f'Temporal heatmap (absolute values, grouped per {time_unit}, n = {counts_df["count"].sum()})',
-                            xaxis_title='Label',
-                            yaxis_title='Period',
-                            yaxis={'autorange': 'reversed'})
-            save_path = os.path.join(save_path_base, "graphs", "temporal-heatmaps", time_format_mapping[time_unit]['dir'], "absolute", "temporal-heatmap.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        def plot_obs_over_time_heatmap_interactive_relative(time_unit):
-            data['Period'] = data['DateTimeOriginal'].dt.strftime(time_format_mapping[time_unit]['time_format'])
-            time_range = pd.date_range(data['DateTimeOriginal'].min(), data['DateTimeOriginal'].max(), freq=time_format_mapping[time_unit]['freq'])
-            df_time = pd.DataFrame({time_unit: time_range.strftime(time_format_mapping[time_unit]['time_format'])})
-            heatmap_data = data.groupby(['Period', 'label']).size().unstack(fill_value=0)
-            merged_data = pd.merge(df_time, heatmap_data, left_on=time_unit, right_index=True, how='left').fillna(0)
-            merged_data.set_index(time_unit, inplace=True)
-            normalized_data = merged_data.div(merged_data.sum(axis=0), axis=1)
-            heatmap_trace = go.Heatmap(
-                z=normalized_data.values,
-                x=normalized_data.columns,
-                y=normalized_data.index,
-                customdata=normalized_data.stack().reset_index().values.tolist(),
-                colorscale='Blues',
-                hovertemplate='Class: %{x}<br>Period: %{y}<br>Normalized count: %{z}<extra></extra>',
-                colorbar=dict(title='Number of<br>observations<br>normalized<br>per label'))
-            fig = go.Figure(data=heatmap_trace)
-            fig.update_layout(
-                title=f'Temporal heatmap (relative values, grouped per {time_unit}, n = {counts_df["count"].sum()}))',
-                xaxis_title='Label',
-                yaxis_title='Period',
-                yaxis={'autorange': 'reversed'})
-            save_path = os.path.join(save_path_base, "graphs", "temporal-heatmaps", time_format_mapping[time_unit]['dir'], "relative", "temporal-heatmap.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        # init vars
-        time_format_mapping = {
-            "year": {'freq': 'Y', 'time_format': '%Y', 'dir': "grouped-by-year"},
-            "month": {'freq': 'M', 'time_format': '%Y-%m', 'dir': "grouped-by-month"},
-            "week": {'freq': 'W', 'time_format': '%Y-wk %U', 'dir': "grouped-by-week"},
-            "day": {'freq': 'D', 'time_format': '%Y-%m-%d', 'dir': "grouped-by-day"}
-        }
-
-        # group data per label
-        grouped_data = data.groupby(['label', pd.Grouper(key='DateTimeOriginal', freq=f'1D')]).size().unstack(fill_value=0)
-
-        # create plots
-        for time_unit in temporal_units:
-            plot_obs_over_time_total_static(time_unit);plt.close('all')
-            plot_obs_over_time_total_interactive(time_unit);plt.close('all')
-            plot_obs_over_time_combined_static(time_unit);plt.close('all')
-            plot_obs_over_time_combined_interactive(time_unit);plt.close('all')
-            plot_obs_over_time_heatmap_static_absolute(time_unit);plt.close('all')
-            plot_obs_over_time_heatmap_static_relative(time_unit);plt.close('all')
-            plot_obs_over_time_heatmap_interactive_absolute(time_unit);plt.close('all')
-            plot_obs_over_time_heatmap_interactive_relative(time_unit);plt.close('all')
-            for label in grouped_data.index:
-                plot_obs_over_time_separate_static(label, time_unit);plt.close('all')
-                plot_obs_over_time_separate_interactive(label, time_unit);plt.close('all')
-
-    # activity plots
-    def create_activity_patterns(df, save_path_base, pbar):
-        
-        # format df
-        df['DateTimeOriginal'] = pd.to_datetime(df['DateTimeOriginal'])
-        grouped_data = df.groupby(['label', pd.Grouper(key='DateTimeOriginal', freq=f'1D')]).size().unstack(fill_value=0)
-        df['Hour'] = df['DateTimeOriginal'].dt.hour
-        hourly_df = df.groupby(['label', 'Hour']).size().reset_index(name='count')
-        df['Month'] = df['DateTimeOriginal'].dt.month
-        monthly_df = df.groupby(['label', 'Month']).size().reset_index(name='count')
-
-        # for static activity plots
-        def plot_static_activity_pattern(df, unit, label=''):
-            if label != '':
-                df = df[df['label'] == label]
-            total_observations = df['count'].sum()
-            plt.figure(figsize=(10, 6))
-
-            if unit == "Hour":
-                x_ticks = range(24)
-                x_tick_labels = [f'{x:02}-{(x + 1) % 24:02}' for x in x_ticks]
-            else:
-                x_ticks = range(1, 13)
-                x_tick_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            plt.bar(df[unit], df['count'], width=0.9, align='center')
-            plt.xlabel(unit)
-            plt.ylabel('Number of observations')
-            plt.title(f'Activity pattern of {label if label != "" else "all animals combined"} by {"hour of the day" if unit == "Hour" else "month of the year"} (n = {total_observations})')
-            plt.xticks(x_ticks, x_tick_labels, rotation=90)
-            plt.tight_layout()
-            if label != '':
-                save_path = os.path.join(save_path_base, "graphs", "activity-patterns", "hour-of-day" if unit == "Hour" else "month-of-year", "class-specific", f"{label}.png")
-            else:
-                save_path = os.path.join(save_path_base, "graphs", "activity-patterns", "hour-of-day" if unit == "Hour" else "month-of-year", f"combined.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            plt.savefig(save_path)
-            plt.close()
-            update_pbar_plt()
-
-        # for dynamic activity plots
-        def plot_dynamic_activity_pattern(df, unit, label=''):
-            if label != '':
-                df = df[df['label'] == label]
-            n_ticks = 24 if unit == "Hour" else 12
-            if unit == "Hour":
-                x_ticks = list(range(24))
-                x_tick_labels = [f'{x:02}-{(x + 1) % 24:02}' for x in x_ticks]
-            else:
-                x_ticks = list(range(12))
-                x_tick_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                df.loc[:, 'Month'] = df['Month'].map({i: calendar.month_abbr[i] for i in range(1, 13)})
-            df = df.groupby(unit, as_index=False)['count'].sum()
-            if unit == "Month":
-                all_months = pd.DataFrame({
-                    'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                })
-                merged_df = all_months.merge(df, on='Month', how='left')
-                merged_df['count'] = merged_df['count'].fillna(0)
-                merged_df['count'] = merged_df['count'].astype(int)
-                df = merged_df
-            else:
-                df = df.set_index(unit).reindex(range(n_ticks), fill_value=0).reset_index()
-            total_observations = df['count'].sum()            
-            fig = px.bar(df, x=unit, y='count', title=f'Activity pattern of {label if label != "" else "all animals combined"} by {"hour of the day" if unit == "Hour" else "month of the year"} (n = {total_observations})').update_traces(width = 0.7)
-            fig.update_layout(
-                xaxis=dict(
-                    tickmode='array',
-                    tickvals=x_ticks,
-                    ticktext=x_tick_labels
-                ),
-                xaxis_title=unit,
-                yaxis_title='Count',
-                bargap=0.1
-            )
-            if label != '':
-                save_path = os.path.join(save_path_base, "graphs", "activity-patterns", "hour-of-day" if unit == "Hour" else "month-of-year", "class-specific", f"{label}.html")
-            else:
-                save_path = os.path.join(save_path_base, "graphs", "activity-patterns", "hour-of-day" if unit == "Hour" else "month-of-year", f"combined.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            pbar.update(1)
-
-        # run class-specific
-        for label in grouped_data.index:
-            plot_static_activity_pattern(hourly_df, "Hour", label);plt.close('all')
-            plot_static_activity_pattern(monthly_df, "Month", label);plt.close('all')
-            plot_dynamic_activity_pattern(hourly_df, "Hour", label);plt.close('all')
-            plot_dynamic_activity_pattern(monthly_df, "Month", label);plt.close('all')
-        
-        # run combined
-        plot_static_activity_pattern(hourly_df, "Hour", "");plt.close('all')
-        plot_static_activity_pattern(monthly_df, "Month", "");plt.close('all')
-        plot_dynamic_activity_pattern(hourly_df, "Hour", "");plt.close('all')
-        plot_dynamic_activity_pattern(monthly_df, "Month", "");plt.close('all')
-
-    # heatmaps and markers
-    def create_geo_plots(data, save_path_base, pbar):
-
-        # define specific functions per plot type
-        def create_combined_multi_layer_clustermap(data, save_path_base):
-            if len(data) == 0:
-                return
-            map_path = os.path.join(save_path_base, "graphs", "maps")
-            unique_labels = data['label'].unique()
-            checkboxes = {label: folium.plugins.MarkerCluster(name=label) for label in unique_labels}
-            for label in unique_labels:
-                label_data = data[data['label'] == label]
-                max_lat, min_lat = label_data['Latitude'].max(), label_data['Latitude'].min()
-                max_lon, min_lon = label_data['Longitude'].max(), label_data['Longitude'].min()
-                center_lat, center_lon = label_data['Latitude'].mean(), label_data['Longitude'].mean()
-                m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
-                m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-                for _, row in label_data.iterrows():
-                    folium.Marker(location=[row['Latitude'], row['Longitude']]).add_to(checkboxes[label])
-                folium.TileLayer('openstreetmap').add_to(m)
-                folium.LayerControl().add_to(m)
-                Draw(export=True).add_to(m)
-            max_lat, min_lat = data['Latitude'].max(), data['Latitude'].min()
-            max_lon, min_lon = data['Longitude'].max(), data['Longitude'].min()
-            center_lat, center_lon = data['Latitude'].mean(), data['Longitude'].mean()
-            m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
-            m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-            for label, marker_cluster in checkboxes.items():
-                marker_cluster.add_to(m)
-            folium.LayerControl(collapsed=False).add_to(m)
-            Draw(export=True).add_to(m)
-            combined_multi_layer_file = os.path.join(map_path, "combined-multi-layer.html")
-            Path(os.path.dirname(combined_multi_layer_file)).mkdir(parents=True, exist_ok=True)
-            m.save(combined_multi_layer_file)
-            update_pbar_plt()
-
-        # this creates a heatmap layer and a clustermarker layer which can be dynamically enabled
-        def create_obs_over_geo_both_heat_and_mark(data, save_path_base, category = ''):
-            if category != '':
-                data = data[data['label'] == category]
-            data = data.dropna(subset=['Latitude', 'Longitude'])
-            if len(data) == 0:
-                return
-            map_path = os.path.join(save_path_base, "graphs", "maps")
-            max_lat, min_lat = data['Latitude'].max(), data['Latitude'].min()
-            max_lon, min_lon = data['Longitude'].max(), data['Longitude'].min()
-            center_lat, center_lon = data['Latitude'].mean(), data['Longitude'].mean()
-            m = folium.Map(location=[center_lat, center_lon], zoom_start=10)
-            m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-            folium.TileLayer('OpenStreetMap', overlay=False).add_to(m)
-            Draw(export=True).add_to(m)
-            heatmap_layer = folium.FeatureGroup(name='Heatmap', show=True, overlay=True).add_to(m)
-            cluster_layer = MarkerCluster(name='Markers', show=False, overlay=True).add_to(m)
-            HeatMap(data[['Latitude', 'Longitude']]).add_to(heatmap_layer)
-            for _, row in data.iterrows():
-                folium.Marker(location=[row['Latitude'], row['Longitude']]).add_to(cluster_layer)
-            folium.LayerControl(collapsed=False).add_to(m)
-            if category != '':
-                map_file = os.path.join(map_path, "class-specific", f"{category}.html")
-            else:
-                map_file = os.path.join(map_path, 'combined-single-layer.html')
-            Path(os.path.dirname(map_file)).mkdir(parents=True, exist_ok=True)
-            m.save(map_file)
-            update_pbar_plt()
-        
-        # create plots 
-        create_obs_over_geo_both_heat_and_mark(data, save_path_base);plt.close('all')
-        create_combined_multi_layer_clustermap(data, save_path_base);plt.close('all')
-        for label in data['label'].unique():
-            create_obs_over_geo_both_heat_and_mark(data, save_path_base, label);plt.close('all')
-
-    # create pie charts with distributions
-    def create_pie_plots_detections(df, results_dir, pbar):
-
-        # def nested function
-        def create_pie_chart_detections_static():
-            label_counts = df['label'].value_counts()
-            total_count = len(df['label'])
-            percentages = label_counts / total_count * 100
-            hidden_categories = list(percentages[percentages < 0].index)
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-            wedges, _, autotexts = ax1.pie(label_counts, autopct='', startangle=140)
-            ax1.axis('equal')
-            for i, autotext in enumerate(autotexts):
-                if label_counts.index[i] in hidden_categories:
-                    autotext.set_visible(False)
-            legend_labels = ['%s (n = %s, %.1f%%)' % (label, count, (float(count) / len(df['label'])) * 100) for label, count in zip(label_counts.index, label_counts)]
-            ax2.legend(wedges, legend_labels, loc="center", fontsize='medium')
-            ax2.axis('off')
-            for autotext in autotexts:
-                autotext.set_bbox(dict(facecolor='white', edgecolor='black', boxstyle='square,pad=0.2'))
-            fig.suptitle(f"Distribution of detections (n = {total_count})", fontsize=16, y=0.95)
-            plt.subplots_adjust(wspace=0.1)
-            plt.tight_layout()
-            save_path = os.path.join(results_dir, "graphs", "pie-charts", "distribution-detections.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.savefig(save_path)
-            update_pbar_plt()
-
-        def create_pie_chart_detections_interactive():
-            grouped_df = df.groupby('label').size().reset_index(name='count')
-            total_count = grouped_df['count'].sum()
-            grouped_df['percentage'] = (grouped_df['count'] / total_count) * 100
-            grouped_df['percentage'] = grouped_df['percentage'].round(2).astype(str) + '%'
-            fig = px.pie(grouped_df, names='label', values='count', title=f"Distribution of detections (n = {total_count})", hover_data={'percentage'})
-            fig.update_traces(textinfo='label')
-            save_path = os.path.join(results_dir, "graphs", "pie-charts", "distribution-detections.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        # run
-        create_pie_chart_detections_static();plt.close('all')
-        create_pie_chart_detections_interactive();plt.close('all')
-
-    # create pie charts with distributions
-    def create_pie_plots_files(df, results_dir, pbar):
-
-        # def nested function
-        def create_pie_chart_files_static():
-            df['label'] = df['n_detections'].apply(lambda x: 'detection' if x >= 1 else 'empty')
-            label_counts = df['label'].value_counts()
-            total_count = len(df['label'])
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-            def autopct_func(pct):
-                if pct > 0:
-                    return f'{pct:.1f}%'
-                else:
-                    return ''
-            labels = [label for label in label_counts.index]
-            wedges, texts, autotexts = ax1.pie(label_counts, labels=labels, autopct=autopct_func, startangle=140)
-            ax1.axis('equal')
-            legend_labels = ['%s (n = %s, %.1f%%)' % (label, count, (float(count) / len(df['label'])) * 100) for label, count in zip(label_counts.index, label_counts)]
-            ax2.legend(wedges, legend_labels, loc="center", fontsize='medium')
-            ax2.axis('off')
-            for autotext in autotexts:
-                autotext.set_bbox(dict(facecolor='white', edgecolor='black', boxstyle='square,pad=0.2'))
-            fig.suptitle(f"Distribution of files (n = {total_count})", fontsize=16, y=0.95)
-            plt.subplots_adjust(wspace=0.5)
-            save_path = os.path.join(results_dir, "graphs", "pie-charts", "distribution-files.png")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.savefig(save_path)
-            update_pbar_plt()
-
-        def create_pie_chart_files_interactive():
-            df['label'] = df['n_detections'].apply(lambda x: 'detection' if x >= 1 else 'empty')
-            grouped_df = df.groupby('label').size().reset_index(name='count')
-            total_count = grouped_df['count'].sum()
-            grouped_df['percentage'] = (grouped_df['count'] / total_count) * 100
-            grouped_df['percentage'] = grouped_df['percentage'].round(2).astype(str) + '%'
-            fig = px.pie(grouped_df, names='label', values='count', title=f"Distribution of files (n = {total_count})", hover_data={'percentage'})
-            fig.update_traces(textinfo='label')
-            save_path = os.path.join(results_dir, "graphs", "pie-charts", "distribution-files.html")
-            Path(os.path.dirname(save_path)).mkdir(parents=True, exist_ok=True)
-            fig.write_html(save_path)
-            update_pbar_plt()
-
-        # run
-        create_pie_chart_files_static();plt.close('all')
-        create_pie_chart_files_interactive();plt.close('all')
-
-    # overlay logo
-    def overlay_logo(image_path, logo):
-        main_image = Image.open(image_path)
-        main_width, main_height = main_image.size
-        logo_width, logo_height = logo.size
-        position = (main_width - logo_width - 10, 10)
-        main_image.paste(logo, position, logo)
-        main_image.save(image_path)
-
-    def calculate_time_span(df):
-        first_date = df['DateTimeOriginal'].min()
-        last_date = df['DateTimeOriginal'].max()
-        time_difference = last_date - first_date
-        days = time_difference.days
-        years = int(days / 365)
-        months = int(days / 30)
-        weeks = int(days / 7)
-        return years, months, weeks, days
-
-    # main code to plot graphs
-    results_dir = os.path.normpath(results_dir)
-    plots_dir = os.path.join(results_dir, "graphs")
-    det_df = pd.read_csv(os.path.join(results_dir, "results_detections.csv"))
-    fil_df = pd.read_csv(os.path.join(results_dir, "results_files.csv"))
-
-    # for the temporal plots we need to check the number of units
-    det_df['DateTimeOriginal'] = pd.to_datetime(det_df['DateTimeOriginal'], format='%d/%m/%y %H:%M:%S')
-    n_years, n_months, n_weeks, n_days = calculate_time_span(det_df)
-
-    # to limit unneccesary computing only plot units if they have a minimum of 2 and a maximum of *max_units* units
-    temporal_units = []
-    max_units = 100
-    if n_years > 1:
-        temporal_units.append("year")
-    if 1 < n_months <= max_units:
-        temporal_units.append("month")
-    if 1 < n_weeks <= max_units:
-        temporal_units.append("week")
-    if 1 < n_days <= max_units:
-        temporal_units.append("day")
-    print(f"Years: {n_years}, Months: {n_months}, Weeks: {n_weeks}, Days: {n_days}")
-    print(f"temporal_units : {temporal_units}")
-
-    # check if we have geo tags in the data
-    det_df_geo = det_df[(det_df['Latitude'].notnull()) & (det_df['Longitude'].notnull())]
-    if len(det_df_geo) > 0:
-        data_permits_map_creation = True
-        n_categories_geo = len(det_df_geo['label'].unique())
-    else:
-        data_permits_map_creation = False
-        n_categories_geo = 0
-
-    # calculate the number of plots to be created
-    n_categories_with_timestamps = len(det_df[det_df['DateTimeOriginal'].notnull()]['label'].unique())
-    n_obs_per_label_with_timestamps = det_df[det_df['DateTimeOriginal'].notnull()] .groupby('label').size().reset_index(name='count')
-    activity_patterns_n_plots = (((n_categories_with_timestamps * 2) + 2) * 2)
-    bar_charts_n_plots = (((n_categories_with_timestamps * 2) + 4) * len(temporal_units))
-    maps_n_plots = (n_categories_geo + 2) if data_permits_map_creation else 0
-    pie_charts_n_plots = 4 
-    temporal_heatmaps_n_plots = (4 * len(temporal_units))
-    n_plots = (activity_patterns_n_plots + bar_charts_n_plots + maps_n_plots + pie_charts_n_plots + temporal_heatmaps_n_plots)
-
-    # create plots
-    with tqdm(total=n_plots, disable=False) as pbar:
-        progress_window.update_values(process = f"plt", status = "load")
-        create_time_plots(det_df, results_dir, temporal_units, pbar, n_obs_per_label_with_timestamps);plt.close('all')
-        if cancel_var: return
-        if data_permits_map_creation:
-            create_geo_plots(det_df_geo, results_dir, pbar);plt.close('all')
-        if cancel_var: return
-        create_pie_plots_detections(det_df, results_dir, pbar);plt.close('all')
-        if cancel_var: return
-        create_pie_plots_files(fil_df, results_dir, pbar);plt.close('all')
-        if cancel_var: return
-        create_activity_patterns(det_df, results_dir, pbar);plt.close('all')
-        if cancel_var: return
-
-    # add ecoassist logo
-    logo_for_graphs = PIL_logo.resize((60, 60))
-    for root, dirs, files in os.walk(plots_dir):
-        for file in files:
-            if file.endswith(".png"):
-                image_path = os.path.join(root, file)
-                overlay_logo(image_path, logo_for_graphs)
-    
-    # end pbar
-    progress_window.update_values(process = f"plt", status = "done")
 
 # open human-in-the-loop verification windows
 def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, label_map):
@@ -2523,7 +1860,6 @@ def start_deploy(simple_mode = False):
         if var_cls_model.get() not in none_txt:
             processes.append("img_cls")
         processes.append("img_pst")
-        processes.append("plt")
     else:
         processes = []
         if var_process_img.get():
@@ -2795,7 +2131,6 @@ def start_deploy(simple_mode = False):
                          vis = False,
                          crp = False,
                          exp = True,
-                         plt = True,
                          exp_format = "XLSX",
                          data_type = "img")
 
@@ -4942,7 +4277,7 @@ def show_result_info(file_path):
     file_path = os.path.normpath(file_path)
 
     # read results for xlsx file
-    # some combinations of percentages raises a bug: https://github.com/matplotlib/matplotlib/issues/12820
+    # some combinations of eprcentages raises a bug: https://github.com/matplotlib/matplotlib/issues/12820
     # hence we're going to try the nicest layout with some different angles, then an OK layout, and no
     # lines as last resort
     try:
@@ -4980,7 +4315,7 @@ def show_result_info(file_path):
     # label
     lbl1 = customtkinter.CTkLabel(result_main_frame, text=["The images are processed!", "¡Las imágenes están procesadas!"][lang_idx], font = main_label_font, height=20)
     lbl1.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/4), columnspan = 2, sticky="nswe")
-    lbl2 = customtkinter.CTkLabel(result_main_frame, text=[f"The results and graphs are saved at '{os.path.dirname(file_path)}'.", f"Los resultados y gráficos se guardan en '{os.path.dirname(file_path)}'."][lang_idx], height=20)
+    lbl2 = customtkinter.CTkLabel(result_main_frame, text=[f"The results are saved at '{file_path}'.", f"Los resultados se guardan en '{file_path}'."][lang_idx], height=20)
     lbl2.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY/4), columnspan = 2, sticky="nswe")
     lbl3 = customtkinter.CTkLabel(result_main_frame, text=[f"You can find a quick overview of the results below.", f"A continuación encontrará un resumen de los resultados."][lang_idx], height=20)
     lbl3.grid(row=2, column=0, padx=PADX, pady=(PADY/4, PADY/4), columnspan = 2, sticky="nswe")
@@ -5025,16 +4360,12 @@ def show_result_info(file_path):
     btns_frm.columnconfigure(0, weight=1, minsize=10)
     btns_frm.columnconfigure(1, weight=1, minsize=10)
     btns_frm.columnconfigure(2, weight=1, minsize=10)
-    btns_frm.columnconfigure(3, weight=1, minsize=10)
     close_btn = customtkinter.CTkButton(btns_frm, text=["Close window", "Cerrar ventana"][lang_idx], command=close)
     close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
-    openf_btn = customtkinter.CTkButton(btns_frm, text=["See results", "Ver resultados"][lang_idx], command=lambda: open_file_or_folder(file_path))
+    openf_btn = customtkinter.CTkButton(btns_frm, text=["Open file", "Abrir archivo"][lang_idx], command=lambda: open_file_or_folder(file_path))
     openf_btn.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nwse")
-    seegr_dir_path = os.path.join(os.path.dirname(file_path), "graphs")
-    seegr_btn = customtkinter.CTkButton(btns_frm, text=["See graphs", "Ver gráficos"][lang_idx], command=lambda: open_file_or_folder(seegr_dir_path))
-    seegr_btn.grid(row=0, column=2, padx=(0, PADX), pady=PADY, sticky="nwse")
     moreo_btn = customtkinter.CTkButton(btns_frm, text=["More options", "Otras opciones"][lang_idx], command=more_options)
-    moreo_btn.grid(row=0, column=3, padx=(0, PADX), pady=PADY, sticky="nwse")
+    moreo_btn.grid(row=0, column=2, padx=(0, PADX), pady=PADY, sticky="nwse")
 
 # class for simple question with buttons
 class TextButtonWindow:
@@ -5498,44 +4829,10 @@ class ProgressWindow:
             self.img_pst_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
             self.img_pst_can_btn.grid_remove()
 
-        # plotting can only be done for images
-        if "plt" in processes:
-            self.plt_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.plt_frm.grid(row=5, padx=PADX, pady=PADY, sticky="nswe")
-            plt_ttl_txt = [f'Creating graphs...', f'Creando gráficos...']
-            self.plt_ttl = customtkinter.CTkLabel(self.plt_frm, text=plt_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.plt_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
-            self.plt_sub_frm = customtkinter.CTkFrame(master=self.plt_frm)
-            self.plt_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
-            self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
-            self.plt_pbr.set(0)
-            self.plt_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
-            self.plt_per = customtkinter.CTkLabel(self.plt_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.plt_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
-            self.plt_wai_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.plt_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
-            self.plt_ela_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.plt_ela_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
-            self.plt_ela_lbl.grid_remove()
-            self.plt_ela_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_ela_val.grid(row=2, padx=PADX, pady=0, sticky="nse")     
-            self.plt_ela_val.grid_remove()
-            self.plt_rem_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.plt_rem_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
-            self.plt_rem_lbl.grid_remove()
-            self.plt_rem_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_rem_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
-            self.plt_rem_val.grid_remove()
-            self.plt_can_btn = CancelButton(master = self.plt_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.plt_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
-            self.plt_can_btn.grid_remove()
-
         # postprocessing for videos
         if "vid_pst" in processes:
             self.vid_pst_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.vid_pst_frm.grid(row=6, padx=PADX, pady=PADY, sticky="nswe")
+            self.vid_pst_frm.grid(row=5, padx=PADX, pady=PADY, sticky="nswe")
             vid_pst_ttl_txt = [f'Postprocessing{vid_pst_extra_string}...', f'Postprocesado{vid_pst_extra_string}...']
             self.vid_pst_ttl = customtkinter.CTkLabel(self.vid_pst_frm, text=vid_pst_ttl_txt[lang_idx], 
                                             font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
@@ -5854,39 +5151,6 @@ class ProgressWindow:
                 self.vid_pst_can_btn.grid_remove()
                 self.vid_pst_pbr.grid_configure(pady=(PADY, 0))
                 self.vid_pst_per.grid_configure(pady=(PADY, 0))
-
-        # postprocessing of videos
-        elif process == "plt":
-            if status == "load":
-                self.plt_wai_lbl.configure(text = starting_up_txt[lang_idx])
-                self.just_shown_load_screen = True
-            elif status == "running":
-                if self.just_shown_load_screen:
-                    self.plt_wai_lbl.grid_remove()
-                    self.plt_ela_lbl.grid()
-                    self.plt_ela_val.grid()
-                    self.plt_rem_lbl.grid()
-                    self.plt_rem_val.grid()
-                    self.plt_can_btn.grid()
-                    self.plt_can_btn.configure(command = cancel_func)
-                    self.just_shown_load_screen = False
-                percentage = (cur_it / tot_it)
-                self.plt_pbr.set(percentage)
-                self.plt_per.configure(text = f" {round(percentage * 100)}% ")
-                if percentage > 0.5:
-                    self.plt_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
-                else:
-                    self.plt_per.configure(fg_color=("#949BA2", "#4B4D50"))
-                self.plt_ela_val.configure(text = time_ela)
-                self.plt_rem_val.configure(text = time_rem)
-            elif status == "done":
-                self.plt_rem_lbl.grid_remove()
-                self.plt_rem_val.grid_remove()
-                self.plt_ela_val.grid_remove()
-                self.plt_ela_lbl.grid_remove()
-                self.plt_can_btn.grid_remove()
-                self.plt_pbr.grid_configure(pady=(PADY, 0))
-                self.plt_per.grid_configure(pady=(PADY, 0))
 
         # update screen
         self.progress_top_level_window.update()
@@ -7159,19 +6423,9 @@ var_crp_files.set(global_vars['var_crp_files'])
 chb_crp_files = Checkbutton(fth_step, variable=var_crp_files, anchor="w")
 chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
 
-# plot
-lbl_plt_txt = ["Create maps and graphs", "Crear mapas y gráficos"]
-row_plt = 5
-lbl_plt = Label(fth_step, text=lbl_plt_txt[lang_idx], width=1, anchor="w")
-lbl_plt.grid(row=row_plt, sticky='nesw', pady=2)
-var_plt = BooleanVar()
-var_plt.set(global_vars['var_plt'])
-chb_plt = Checkbutton(fth_step, variable=var_plt, anchor="w")
-chb_plt.grid(row=row_plt, column=1, sticky='nesw', padx=5)
-
 # export results
 lbl_exp_txt = ["Export results and retrieve metadata", "Exportar resultados y recuperar metadatos"]
-row_exp = 6
+row_exp = 5
 lbl_exp = Label(fth_step, text=lbl_exp_txt[lang_idx], width=1, anchor="w")
 lbl_exp.grid(row=row_exp, sticky='nesw', pady=2)
 var_exp = BooleanVar()
@@ -7181,7 +6435,7 @@ chb_exp.grid(row=row_exp, column=1, sticky='nesw', padx=5)
 
 ## exportation options
 exp_frame_txt = ["Export options", "Opciones de exportación"]
-exp_frame_row = 7
+exp_frame_row = 6
 exp_frame = LabelFrame(fth_step, text=" ↳ " + exp_frame_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 exp_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 exp_frame.grid(row=exp_frame_row, column=0, columnspan=2, sticky = 'ew')
@@ -7203,7 +6457,7 @@ dpd_exp_format.grid(row=row_exp_format, column=1, sticky='nesw', padx=5)
 
 # threshold
 lbl_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_lbl_thresh = 8
+row_lbl_thresh = 7
 lbl_thresh = Label(fth_step, text=lbl_thresh_txt[lang_idx], width=1, anchor="w")
 lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
 var_thresh = DoubleVar()
@@ -7216,7 +6470,7 @@ dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
 btn_start_postprocess_txt = ["Start post-processing", "Iniciar el postprocesamiento"]
-row_start_postprocess = 9
+row_start_postprocess = 8
 btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang_idx], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
