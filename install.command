@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 14 Jun 2023 (latest edit)
+### Peter van Lunteren, 17 Jun 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -314,6 +314,8 @@ $PIP_BASE install piexif
 $PIP_BASE install openpyxl
 $PIP_BASE install customtkinter
 $PIP_BASE install CTkTable
+$PIP_BASE install folium
+$PIP_BASE install plotly
 
 # requirements for yolov5
 $PIP_BASE install "gitpython>=3.1.30"
