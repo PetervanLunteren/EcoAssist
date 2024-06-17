@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="7 Jun 2024"
+set DATE_OF_LAST_EDIT="17 Jun 2024"
 
 @REM print header
 echo:
@@ -446,6 +446,8 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" install customtkinter
 "%EA_PIP_EXE_BASE%" install CTkTable
 "%EA_PIP_EXE_BASE%" install GitPython==3.1.30
+"%EA_PIP_EXE_BASE%" install folium
+"%EA_PIP_EXE_BASE%" install plotly
 @REM "%EA_PIP_EXE_BASE%" install tensorboard==2.4.1
 @REM "%EA_PIP_EXE_BASE%" install thop==0.1.1.post2209072238
 @REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
