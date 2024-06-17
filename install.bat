@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="17 Jun 2024 (2)"
+set DATE_OF_LAST_EDIT="17 Jun 2024 (3)"
 
 @REM print header
 echo:
@@ -450,7 +450,7 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" install plotly
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
 "%EA_PIP_EXE_BASE%" install pytorchwildlife==1.0.2.15
-"%EA_PIP_EXE_BASE%" uninstall torch torchvision torchaudio
+"%EA_PIP_EXE_BASE%" uninstall torch torchvision torchaudio -y
 "%EA_PIP_EXE_BASE%" install torch==2.3.1+cu118 torchaudio==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
