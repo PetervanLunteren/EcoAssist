@@ -223,6 +223,20 @@ Let me know how that goes!
 
 <img width="1306" alt="Screenshot 2024-05-09 at 09 08 27" src="https://github.com/PetervanLunteren/EcoAssist/assets/85185478/993dff48-f90c-4eb0-9590-0a3c930d8536">
 
+## CondaSSLError: OpenSSL appears to be unavailable on this machine. OpenSSL is required to download and install packages.
+
+Let's see if we can fix it by installing openSSL. Feel free to do some research online, but I think that this install (Win64 OpenSSL v3.3.1) would be good:
+
+https://slproweb.com/download/Win64OpenSSL-3_3_1.exe
+
+After installing that, reboot your computer and try to install EcoAssist again. If that doesn't work right away, try opening an "anaconda prompt", "miniforge prompt", or "miniconda prompt" (search for "anaconda prompt", "miniforge prompt", or "miniconda prompt" (depending on which conda distribution you have installed on you machine) - this is not the same as the "command prompt") and execute the following command:
+```
+conda update openssl
+```
+Then reboot, and try to install EcoAssist again.
+
+Let me know how that goes!
+
 ## `The system cannot find the batch label specified <name_of_label>`
 As it turn out, if the end-of-line break types are not set to CRLF, the batch files can have unexpected behaviours. See https://stackoverflow.com/questions/232651/why-the-system-cannot-find-the-batch-label-specified-is-thrown-even-if-label-e
 
