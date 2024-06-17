@@ -225,7 +225,7 @@ Let me know how that goes!
 
 ## CondaSSLError: OpenSSL appears to be unavailable on this machine. OpenSSL is required to download and install packages.
 
-Let's see if we can fix it by installing openSSL. Feel free to do some research online, but I think that this install (Win64 OpenSSL v3.3.1) would be good:
+There seems to be some issue with SSL certificates. Let's see if we can fix it by installing openSSL. Feel free to do some research online, but I think that this install (Win64 OpenSSL v3.3.1) would be good:
 
 https://slproweb.com/download/Win64OpenSSL-3_3_1.exe
 
