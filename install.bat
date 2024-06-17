@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="17 Jun 2024"
+set DATE_OF_LAST_EDIT="17 Jun 2024 (2)"
 
 @REM print header
 echo:
@@ -448,12 +448,10 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" install GitPython==3.1.30
 "%EA_PIP_EXE_BASE%" install folium
 "%EA_PIP_EXE_BASE%" install plotly
-@REM "%EA_PIP_EXE_BASE%" install tensorboard==2.4.1
-@REM "%EA_PIP_EXE_BASE%" install thop==0.1.1.post2209072238
-@REM "%EA_PIP_EXE_BASE%" install protobuf==3.20.1
-@REM "%EA_PIP_EXE_BASE%" install setuptools==65.5.1
 "%EA_PIP_EXE_BASE%" install numpy==1.23.4
-"%EA_PIP_EXE_BASE%" install pytorchwildlife
+"%EA_PIP_EXE_BASE%" install pytorchwildlife==1.0.2.15
+"%EA_PIP_EXE_BASE%" uninstall torch torchvision torchaudio
+"%EA_PIP_EXE_BASE%" install torch==2.3.1+cu118 torchaudio==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call %EA_CONDA_EXE% deactivate
 
