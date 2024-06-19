@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="17 Jun 2024 (3)"
+set DATE_OF_LAST_EDIT="19 Jun 2024"
 
 @REM print header
 echo:
@@ -164,7 +164,7 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssi
 @REM set conda cmds
 @REM check the default locations for a conda install
 for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
-    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%") do ( 
+    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%LocalAppData%", "%AppData%") do ( 
         set CHECK_DIR=%%y\%%x\
         set CHECK_DIR=!CHECK_DIR:"=!
         echo Checking conda dir:                    '!CHECK_DIR!'
