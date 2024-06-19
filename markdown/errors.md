@@ -41,16 +41,6 @@ Now try to recreate the error and check the console output for its message.
 
 This will show you EcoAssist's output during runtime. If there are any errors, they will most probably show up here. Please copy-paste the entire console output and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
 
-## How to create logfiles?
-If there is an error during runtime, it is important to give the program the opportunity to write out its logs. First thing you'll need to do is recreate the error in EcoAssist. After that, close all EcoAssist windows by clicking the cross at the top - do not quit the program as a whole. On Mac and Linux close the terminal window last. If there is an error during the installation or opening, you don't have to worry about this - in that case the logfiles are automatically created. 
- 
-## How to find logfiles?
-* Navigate to your `EcoAssist_files` folder. It's location is OS dependent, you can find its location [here](https://github.com/PetervanLunteren/EcoAssist/edit/main/errors.md#where-to-find-the-ecoassist-installation-files). 
-* Navigate to `...\EcoAssist_files\EcoAssist\logfiles\`. 
-  * `installation_log.txt` will give you information about the installation.
-  * `session_log.txt` writes logs during runtime on Windows.
-  * `stdout.txt` and `stderr.txt` write logs during runtime on Mac and Linux.
-
 ## Where to find the EcoAssist installation files?
 All files are located in one folder, called `EcoAssist_files`. Please be aware that it's hidden, so you'll probably have to adjust your settings before you can see it (find out how to: [macOS](https://www.sonarworks.com/support/sonarworks/360003040160-Troubleshooting/360003204140-FAQ/5005750481554-How-to-show-hidden-files-Mac-and-Windows-), [Windows](https://support.microsoft.com/en-us/windows/view-hidden-files-and-folders-in-windows-97fbc472-c603-9d90-91d0-1166d1d9f4b5#WindowsVersion=Windows_11), [Linux](https://askubuntu.com/questions/232649/how-to-show-or-hide-a-hidden-file)).
 
