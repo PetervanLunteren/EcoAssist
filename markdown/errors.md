@@ -241,3 +241,13 @@ Let me know how that goes!
 As it turn out, if the end-of-line break types are not set to CRLF, the batch files can have unexpected behaviours. See https://stackoverflow.com/questions/232651/why-the-system-cannot-find-the-batch-label-specified-is-thrown-even-if-label-e
 
 Double check if the eol type is set to CRLF:  https://superuser.com/a/790319/1741678
+
+## `LibMambaUnsatisfiableError: Encountered problems while solving: package cudatoolkit-11.3.1-h280eb24_10 has constraint __cuda >=11 conflicting with __cuda-8.0-0`
+Thanks for your message. This error occurs when your NVIDIA GPU driver is outdated. Updating your CUDA driver to a compatible version should resolve the dependency conflicts. Here’s a step-by-step guide to update your CUDA driver and set up your Conda environment: 
+1. Go to https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64
+2. Choose your Windows version
+3. Follow the installation instructions provided on the NVIDIA website. This typically involves downloading an installer and running it.
+After installation, reboot your computer.
+The EcoAssist installation should work after finishing these steps. 
+
+Let me know how that goes!
