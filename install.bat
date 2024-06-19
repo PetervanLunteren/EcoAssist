@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="19 Jun 2024"
+set DATE_OF_LAST_EDIT="19 Jun 2024 (2)"
 
 @REM print header
 echo:
@@ -327,8 +327,18 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     @REM Some users experience timeout issues due to the large size of this repository
     @REM If it fails here, we'll try again with a larger timeout value and fewer checks during cloning
     if not !errorlevel! == 0 (
-        echo First attempt failed. Retrying with extended timeout... | wtee -a "%LOG_FILE%"
+        echo First attempt failed. Retrying with extended timeout of 200... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+    )
+    if not !errorlevel! == 0 (
+        echo Second attempt failed. Retrying with extended timeout of 1000... | wtee -a "%LOG_FILE%"
+        set GIT_SSH_COMMAND=ssh -o ConnectTimeout=1000
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+    )
+    if not !errorlevel! == 0 (
+        echo Second attempt failed. Retrying with extended timeout of 3000... | wtee -a "%LOG_FILE%"
+        set GIT_SSH_COMMAND=ssh -o ConnectTimeout=3000
         git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
 
