@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="19 Jun 2024 (2)"
+set DATE_OF_LAST_EDIT="20 Jun 2024"
 
 @REM print header
 echo:
@@ -329,19 +329,24 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     if not !errorlevel! == 0 (
         echo First attempt failed. Retrying with extended timeout of 200... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
     if not !errorlevel! == 0 (
         echo Second attempt failed. Retrying with extended timeout of 1000... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=1000
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
     if not !errorlevel! == 0 (
         echo Second attempt failed. Retrying with extended timeout of 3000... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=3000
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
-
+    if not !errorlevel! == 0 (
+        echo Second attempt failed. Retrying with --depth=1 and --unshallow | wtee -a "%LOG_FILE%"
+        git clone --depth=1 --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        cd "%LOCATION_ECOASSIST_FILES%\cameratraps"
+        "%EA_GIT_EXE%" fetch --unshallow
+    )
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     "%EA_GIT_EXE%" checkout 393441e3cea82def9f9e6c968ab787f8e89c3056
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
