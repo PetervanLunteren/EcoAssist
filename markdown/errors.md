@@ -227,6 +227,8 @@ Then reboot, and try to install EcoAssist again.
 
 Let me know how that goes!
 
+_A user reinstalled Anaconda and it worked_
+
 ## `The system cannot find the batch label specified <name_of_label>`
 As it turn out, if the end-of-line break types are not set to CRLF, the batch files can have unexpected behaviours. See https://stackoverflow.com/questions/232651/why-the-system-cannot-find-the-batch-label-specified-is-thrown-even-if-label-e
 
