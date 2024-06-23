@@ -3,11 +3,13 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 17 Jun 2024
+# Latest edit by Peter van Lunteren on 23 Jun 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
 # TODO: SMOOTH - either average or logit
+# TODO: LOG SEQUENCE INFO - add sequence information to JSON, CSV, and XSLX 
+# TODO: SEQ SEP - add feature to separate images into sequence subdirs
 # TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
@@ -71,7 +73,7 @@ from folium.plugins import HeatMap, Draw, MarkerCluster
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.6"
+current_EA_version = "5.7"
 corresponding_model_info_version = "5"
 
 # set global variables
@@ -664,6 +666,7 @@ def start_postprocess():
         "var_crp_files": var_crp_files.get(),
         "var_exp": var_exp.get(),
         "var_exp_format_idx": dpd_options_exp_format[lang_idx].index(var_exp_format.get()),
+        "var_plt": var_plt.get(),
         "var_thresh": var_thresh.get()
     })
     
@@ -754,7 +757,6 @@ def start_postprocess():
                                                 f"post-processing features. See\n\n'{postprocessing_error_log}'\n\nfor more info.",
                                                 f"Uno o más archivos no han podido ser analizados por el modelo (por ejemplo, ficheros corruptos) y serán "
                                                 f"omitidos por las funciones de post-procesamiento. Para más información, véase\n\n'{postprocessing_error_log}'"][lang_idx])
-
 
         # close progress window
         progress_window.close()
@@ -2018,6 +2020,7 @@ def update_json_from_img_list(verified_images, inverted_label_map, recognition_f
 
 # write model specific vaiables to file 
 def write_model_vars(model_type="cls", new_values = None):
+        
     # exit is no cls is selected
     if var_cls_model.get() in none_txt:
         return
@@ -2076,7 +2079,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
         cls_disable_GPU = var_disable_GPU.get()
         cls_detec_thresh = var_cls_detec_thresh.get() 
         cls_class_thresh = var_cls_class_thresh.get()
-        cls_animal_smooth = False # var_smooth_cls_animal.get()
+        cls_animal_smooth = var_smooth_cls_animal.get()
 
     # create command
     command_args = []
@@ -2128,6 +2131,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     subprocess_output = ""
 
     # calculate metrics while running
+    status_setting = 'running'
     for line in p.stdout:
 
         # save output if something goes wrong
@@ -2139,7 +2143,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
 
         # catch early exit if there are no detections that meet the requirmentents to classify
         if line.startswith("n_crops_to_classify is zero. Nothing to classify."):
-            mb.showinfo(warning_txt[lang_idx], ["There are no animal detections that meet the criteria. You either "
+            mb.showinfo(information_txt[lang_idx], ["There are no animal detections that meet the criteria. You either "
                                                 "have selected images without any animals present, or you have set "
                                                 "your detection confidence threshold to high.", "No hay detecciones"
                                                 " de animales que cumplan los criterios. O bien ha seleccionado "
@@ -2163,6 +2167,10 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
                 f.write(f"{smooth_output_line}\n")
             f.close()
 
+        # if smoothing, the pbar should change description
+        if "<EA-status-change>" in line:
+            status_setting = re.search('<EA-status-change>(.+)<EA-status-change>', line).group().replace('<EA-status-change>', '')
+
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
             GPU_param = "CPU"
@@ -2182,7 +2190,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
 
             # print stats
             progress_window.update_values(process = f"{data_type}_cls",
-                                            status = "running",
+                                            status = status_setting,
                                             cur_it = int(current_im),
                                             tot_it = int(total_im),
                                             time_ela = elapsed_time,
@@ -2215,9 +2223,29 @@ def cancel_subprocess(process):
     progress_window.close()
 
 # delpoy model and create json output files 
+warn_smooth_vid = True
 def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode = False):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
+    
+    # note if user is video analysing without smoothing
+    global warn_smooth_vid
+    if (var_cls_model.get() not in none_txt) and \
+        (var_smooth_cls_animal.get() == False) and \
+            data_type == 'vid' and \
+                simple_mode == False and \
+                    warn_smooth_vid == True:
+                        warn_smooth_vid = False
+                        if not mb.askyesno(information_txt[lang_idx], [f"You are about to analyze videos without smoothing enabled. Typically, videos contain "
+                                                                "many frames of the same animal, resulting in multiple labels for the same "
+                                                                f"video. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, each video will have "
+                                                                "only one label. Do you want to proceed with the current settings? "
+                                                                "\n\nPress 'No' to go back.",f"Va a analizar vídeos sin el suavizado activado. Normalmente, "
+                                                                "los vídeos contienen muchos fotogramas del mismo animal, lo que da lugar a múltiples "
+                                                                f"clasificaciones para el mismo video. Con '{lbl_smooth_cls_animal_txt[lang_idx]}' "
+                                                                "activado, cada vídeo tendrá sólo una clasificación por video. ¿Desea continuar con la "
+                                                                "configuración actual? \n\nPulse 'No' para volver atrás."][lang_idx]):
+                            return
     
     # display loading window
     progress_window.update_values(process = f"{data_type}_det", status = "load")
@@ -2726,15 +2754,14 @@ def start_deploy(simple_mode = False):
     if total_saved_images > 0:
         # write to log file 
         if os.path.isfile(model_special_char_log):
-            os.remove(model_special_char_log)
+            os.remove(model_special_char_log)            
         for k, v in isolated_special_fpaths.items():
             line = f"There are {str(v[0]).ljust(4)} files hidden behind the {str(v[1])} character in folder '{k}'"
             if not line.isprintable():
                 line = repr(line)
-                print(f"\nSPECIAL CHARACTER LOG: This special character is going to give an error : {line}\n") # log
-            with open(model_special_char_log, 'a+') as f:
+                print(f"\nSPECIAL CHARACTER LOG: This special character is going to give an error : {line}\n")  # log
+            with open(model_special_char_log, 'a+', encoding='utf-8') as f:
                 f.write(f"{line}\n")
-            f.close()
         
         # log to console
         print(f"\nSPECIAL CHARACTER LOG: There are {total_saved_images} files hidden behind {n_special_chars} special characters.\n")
@@ -3994,6 +4021,7 @@ def model_cls_animal_options(self):
         dsp_choose_classes.configure(text = f"{len(model_vars['selected_classes'])} of {len(model_vars['all_classes'])}")
         var_cls_detec_thresh.set(model_vars["var_cls_detec_thresh"])
         var_cls_class_thresh.set(model_vars["var_cls_class_thresh"])
+        var_smooth_cls_animal.set(model_vars["var_smooth_cls_animal"])
     
         # adjust simple_mode window
         sim_spp_lbl.configure(text_color = "black")
@@ -5582,6 +5610,7 @@ class ProgressWindow:
         
         # language settings
         algorithm_starting_txt = ["Algorithm is starting up...", 'El algoritmo está arrancando...']
+        smoothing_txt = ["Smoothing predictions...", 'Suavizar las predicciones...']
         image_per_second_txt = ["Images per second:", "Imágenes por segundo:"]
         seconds_per_image_txt = ["Seconds per image:", "Segundos por imagen:"]
         animals_per_second_txt = ["Animals per second:", "Animales por segundo:"]
@@ -5639,7 +5668,7 @@ class ProgressWindow:
                 self.img_det_spe_val.grid_remove()
                 self.img_det_pbr.grid_configure(pady=(PADY, 0))
                 self.img_det_per.grid_configure(pady=(PADY, 0))
-
+                
         # classification of images
         elif process == "img_cls":
             if status == "load":
@@ -5675,6 +5704,20 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.img_cls_spe_val.configure(text = parsed_speed)
                 self.img_cls_hwa_val.configure(text = hware)
+            elif status == "smoothing":
+                self.img_cls_num_lbl.grid_remove()
+                self.img_cls_num_val.grid_remove()
+                self.img_cls_rem_lbl.grid_remove()
+                self.img_cls_rem_val.grid_remove()
+                self.img_cls_hwa_lbl.grid_remove()
+                self.img_cls_hwa_val.grid_remove()
+                self.img_cls_can_btn.grid_remove()
+                self.img_cls_ela_val.grid_remove()
+                self.img_cls_ela_lbl.grid_remove()
+                self.img_cls_spe_lbl.grid_remove()
+                self.img_cls_spe_val.grid_remove()
+                self.img_cls_wai_lbl.grid()
+                self.img_cls_wai_lbl.configure(text = smoothing_txt[lang_idx])
             elif status == "done":
                 self.img_cls_num_lbl.grid_remove()
                 self.img_cls_num_val.grid_remove()
@@ -5775,6 +5818,20 @@ class ProgressWindow:
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_cls_spe_val.configure(text = parsed_speed)
                 self.vid_cls_hwa_val.configure(text = hware)
+            elif status == "smoothing":
+                self.vid_cls_num_lbl.grid_remove()
+                self.vid_cls_num_val.grid_remove()
+                self.vid_cls_rem_lbl.grid_remove()
+                self.vid_cls_rem_val.grid_remove()
+                self.vid_cls_hwa_lbl.grid_remove()
+                self.vid_cls_hwa_val.grid_remove()
+                self.vid_cls_can_btn.grid_remove()
+                self.vid_cls_ela_val.grid_remove()
+                self.vid_cls_ela_lbl.grid_remove()
+                self.vid_cls_spe_lbl.grid_remove()
+                self.vid_cls_spe_val.grid_remove()
+                self.vid_cls_wai_lbl.grid()
+                self.vid_cls_wai_lbl.configure(text = smoothing_txt[lang_idx])
             elif status == "done":
                 self.vid_cls_num_lbl.grid_remove()
                 self.vid_cls_num_val.grid_remove()
@@ -5985,7 +6042,7 @@ def set_language():
     btn_choose_classes.configure(text = select_txt[lang_idx])
     lbl_cls_detec_thresh.configure(text="     " + lbl_cls_detec_thresh_txt[lang_idx])
     lbl_cls_class_thresh.configure(text="     " + lbl_cls_class_thresh_txt[lang_idx])
-    # lbl_smooth_cls_animal.configure(text="     " + lbl_smooth_cls_animal_txt[lang_idx])
+    lbl_smooth_cls_animal.configure(text="     " + lbl_smooth_cls_animal_txt[lang_idx])
     img_frame.configure(text=" ↳ " + img_frame_txt[lang_idx] + " ")
     lbl_use_checkpnts.configure(text="     " + lbl_use_checkpnts_txt[lang_idx])
     lbl_checkpoint_freq.configure(text="        ↳ " + lbl_checkpoint_freq_txt[lang_idx])
@@ -6014,6 +6071,7 @@ def set_language():
     lbl_exp.configure(text=lbl_exp_txt[lang_idx])
     exp_frame.configure(text=" ↳ " + exp_frame_txt[lang_idx] + " ")
     lbl_exp_format.configure(text=lbl_exp_format_txt[lang_idx])
+    lbl_plt.configure(text=lbl_plt_txt[lang_idx])
     lbl_thresh.configure(text=lbl_thresh_txt[lang_idx])
     btn_start_postprocess.configure(text=btn_start_postprocess_txt[lang_idx])
 
@@ -6236,6 +6294,17 @@ def toggle_exp_frame():
         exp_frame.configure(fg='grey80')
         exp_frame.grid_forget()
     resize_canvas_to_content()
+
+# on checkbox change
+def on_chb_smooth_cls_animal_change():
+    write_model_vars(new_values={"var_smooth_cls_animal": var_smooth_cls_animal.get()})
+    if var_smooth_cls_animal.get():
+        mb.showinfo(information_txt[lang_idx], ["This feature averages confidence scores to avoid noise. Note that it assumes a single species per "
+                                               "sequence or video and should therefore only be used if multi-species sequences are rare. It does not"
+                                               " affect detections of vehicles or people alongside animals.", "Esta función promedia las puntuaciones "
+                                               "de confianza para evitar el ruido. Tenga en cuenta que asume una única especie por secuencia o vídeo "
+                                               "y, por lo tanto, sólo debe utilizarse si las secuencias multiespecíficas son poco frecuentes. No afecta"
+                                               " a las detecciones de vehículos o personas junto a animales."][lang_idx])
 
 # toggle classification subframe
 def toggle_cls_frame(): 
@@ -6887,16 +6956,15 @@ dsp_cls_class_thresh = Label(cls_frame, textvariable=var_cls_class_thresh)
 dsp_cls_class_thresh.grid(row=row_cls_class_thresh, column=0, sticky='e', padx=0)
 dsp_cls_class_thresh.configure(fg=EA_blue_color)
 
-# # Smoothen results
-# lbl_smooth_cls_animal_txt = ["Smoothen results", "Suavizar resultados"]
-# row_smooth_cls_animal = 4
-# lbl_smooth_cls_animal = Label(cls_frame, text="     " + lbl_smooth_cls_animal_txt[lang_idx], width=1, anchor="w")
-# lbl_smooth_cls_animal.grid(row=row_smooth_cls_animal, sticky='nesw', pady=2)
-# var_smooth_cls_animal = BooleanVar()
-# var_smooth_cls_animal.set(model_vars.get('var_smooth_cls_animal', False))
-# chb_smooth_cls_animal = Checkbutton(cls_frame, variable=var_smooth_cls_animal, anchor="w",
-#                                     command = lambda: write_model_vars(new_values = {"var_smooth_cls_animal": var_smooth_cls_animal.get()}))
-# chb_smooth_cls_animal.grid(row=row_smooth_cls_animal, column=1, sticky='nesw', padx=5)
+# Smoothen results
+lbl_smooth_cls_animal_txt = ["Smooth confidence scores per sequence", "Suavizar puntuaciones por secuencia"]
+row_smooth_cls_animal = 4
+lbl_smooth_cls_animal = Label(cls_frame, text="     " + lbl_smooth_cls_animal_txt[lang_idx], width=1, anchor="w")
+lbl_smooth_cls_animal.grid(row=row_smooth_cls_animal, sticky='nesw', pady=2)
+var_smooth_cls_animal = BooleanVar()
+var_smooth_cls_animal.set(model_vars.get('var_smooth_cls_animal', False))
+chb_smooth_cls_animal = Checkbutton(cls_frame, variable=var_smooth_cls_animal, anchor="w", command = on_chb_smooth_cls_animal_change)
+chb_smooth_cls_animal.grid(row=row_smooth_cls_animal, column=1, sticky='nesw', padx=5)
 
 # include subdirectories
 lbl_exclude_subs_txt = ["Don't process subdirectories", "No procesar subcarpetas"]
@@ -7366,6 +7434,20 @@ def write_help_tab():
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
+    # smooth results
+    help_text.insert(END, f"{lbl_smooth_cls_animal_txt[lang_idx]}\n")
+    help_text.insert(END, ["Sequence smoothing averages confidence scores across detections within a sequence to reduce noise. This improves accuracy by "
+                           "providing more stable results by combining information over multiple images. Note that it assumes a single species per "
+                           "sequence and should therefore only be used if multi-species sequences are rare. It does not affect detections of vehicles or "
+                           "people alongside animals.", "El suavizado de secuencias promedia las puntuaciones de confianza entre detecciones dentro de "
+                           "una secuencia para reducir el ruido. Esto mejora la precisión al proporcionar resultados más estables mediante la combinación"
+                           " de información de múltiples imágenes. Tenga en cuenta que supone una única especie por secuencia y, por lo tanto, sólo debe "
+                           "utilizarse si las secuencias multiespecie son poco frecuentes. No afecta a las detecciones de vehículos o personas junto a "
+                           "animales."][lang_idx])
+    help_text.insert(END, "\n\n")
+    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
     # exclude subs
     help_text.insert(END, f"{lbl_exclude_subs_txt[lang_idx]}\n")
     help_text.insert(END, ["By default, EcoAssist will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only"
@@ -7535,6 +7617,22 @@ def write_help_tab():
     help_text.insert(END, f"{lbl_crp_files_txt[lang_idx]}\n")
     help_text.insert(END, ["This feature will crop the detections and save them as separate images. Not applicable for videos.\n\n",
                            "Esta función recortará las detecciones y las guardará como imágenes separadas. No es aplicable a los vídeos.\n\n"][lang_idx])
+    help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
+    help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
+
+    # plot graphs
+    help_text.insert(END, f"{lbl_plt_txt[lang_idx]}\n")
+    help_text.insert(END, ["Here you can select to create activity patterns, bar charts, pie charts and temporal heatmaps. The time unit (year, month, "
+                           "week or day) will be chosen automatically based on the time period of your data. If more than 100 units are needed to "
+                           "visualize, they will be skipped due to long processing times. Each visualization results in a static PNG file and a dynamic"
+                           " HTML file to explore the data further. Additional interactive maps will be produced when geotags can be retrieved from the "
+                           "image metadata.", "Aquí puede seleccionar la creación de patrones de actividad, gráficos de barras, gráficos circulares y "
+                           "mapas térmicos temporales. La unidad temporal (año, mes, semana o día) se elegirá automáticamente en función del periodo de"
+                           " tiempo de sus datos. Si se necesitan más de 100 unidades para visualizar, se omitirán debido a los largos tiempos de "
+                           "procesamiento. Cada visualización da como resultado un archivo PNG estático y un archivo HTML dinámico para explorar más a "
+                           "fondo los datos. Se producirán mapas interactivos adicionales cuando se puedan recuperar geoetiquetas de los metadatos de "
+                           "las imágenes."][lang_idx])
+    help_text.insert(END, "\n\n")
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
