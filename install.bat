@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="20 Jun 2024"
+set DATE_OF_LAST_EDIT="26 Jun 2024"
 
 @REM print header
 echo:
@@ -163,7 +163,7 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssi
 
 @REM set conda cmds
 @REM check the default locations for a conda install
-for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
+for %%x in (miniforge3, miniconda3, anaconda3) do ( 
     for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%LocalAppData%", "%AppData%") do ( 
         set CHECK_DIR=%%y\%%x\
         set CHECK_DIR=!CHECK_DIR:"=!
@@ -176,9 +176,8 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
         ) 
     )
 
-@REM check if conda or mamba is added to PATH
+@REM check if conda is added to PATH
 where conda /q  && (for /f "tokens=*" %%a in ('where conda') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
-where mamba /q  && (for /f "tokens=*" %%a in ('where mamba') do (for %%b in ("%%~dpa\.") do set PATH_TO_CONDA_INSTALLATION=%%~dpb)) && goto check_conda_install
 
 @REM provide miniforge link if not found
 :set_conda_install
@@ -203,9 +202,7 @@ echo Path to conda is defined as:           '%PATH_TO_CONDA_INSTALLATION%'
 @REM check dir validity
 if not exist "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" ( echo '%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat' does not exist. Enter a path to a valid conda installation. & goto set_conda_install )
 echo %PATH_TO_CONDA_INSTALLATION%> "%LOCATION_ECOASSIST_FILES%\path_to_conda_installation.txt"
-@REM check if mambaforge and set conda command accordingly
-for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
-if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
+
 @REM set pip path
 set EA_PIP_EXE_BASE=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base\Scripts\pip3
 set EA_PIP_EXE_PYTORCH=%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch\Scripts\pip3
@@ -411,18 +408,21 @@ echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 
 @REM suppress conda warnings about updates
-call %EA_CONDA_EXE% config --set notify_outdated_conda false
+call conda config --set notify_outdated_conda false
 
 @REM remove index cache, lock files, unused cache packages, and tarballs
-call %EA_CONDA_EXE% clean --all -y
+call conda clean --all -y
+
+@REM install mamba
+call conda install mamba -n base -c conda-forge -y
 
 @REM remove all old ecoassist conda evironments on the conda way, if present
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-yolov8 -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-mewc -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-base -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-pytorch -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv-tensorflow -y || ( echo "could not conda env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv-yolov8 -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv-mewc -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv-base -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv-pytorch -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env remove -n ecoassistcondaenv-tensorflow -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 
 @REM loop over common locations for old ecoassist conda environments and remove them the hard way (rd)
 for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
@@ -445,9 +445,9 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
         ) 
     )
 
-@REM create conda env and install packages for MegaDetector
+@REM create mamba env and install packages for MegaDetector
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-call %EA_CONDA_EXE% env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call mamba env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-base
@@ -468,13 +468,13 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" uninstall torch torchvision torchaudio -y
 "%EA_PIP_EXE_BASE%" install torch==2.3.1+cu118 torchaudio==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call %EA_CONDA_EXE% deactivate
+call conda deactivate
 
 @REM create and log dedicated environment for pytorch classification
-call %EA_CONDA_EXE% create -n ecoassistcondaenv-pytorch python=3.8 -y
+call mamba create -n ecoassistcondaenv-pytorch python=3.8 -y
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-pytorch
-call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+call mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
 "%EA_PIP_EXE_PYTORCH%" install timm
 "%EA_PIP_EXE_PYTORCH%" install pandas
@@ -486,10 +486,10 @@ call %EA_CONDA_EXE% install pytorch torchvision torchaudio pytorch-cuda=11.8 -c 
 "%EA_PIP_EXE_PYTORCH%" install versions
 "%EA_PIP_EXE_PYTORCH%" install jsonpickle
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call %EA_CONDA_EXE% deactivate
+call conda deactivate
 
 @REM create and log dedicated environment for tensorflow classification
-call %EA_CONDA_EXE% env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
+call mamba env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
