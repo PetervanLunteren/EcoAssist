@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 17 Jun 2023 (latest edit)
+### Peter van Lunteren, 26 Jun 2023 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -261,10 +261,13 @@ export PATH="${CONDA_DIR}/bin":$PATH
 # suppress conda warnings about updates
 conda config --set notify_outdated_conda false
 
+# install mamba
+conda install mamba -n base -c conda-forge -y
+
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
@@ -285,24 +288,24 @@ if [ "$PLATFORM" = "Linux" ]; then
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
-  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  conda env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
   { # install nightly pytorch via miniforge as arm64
     $PIP_BASE install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
   } || { # if the first try didn't work
-    conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
+    mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
   }
   # for some reason conda-installed opencv decided it doesn't work on silicon macs anymore
-  conda uninstall opencv -y
+  mamba uninstall opencv -y
   pip install opencv-python
 fi
 
@@ -328,7 +331,7 @@ $PIP_BASE install "setuptools>=65.5.1"
 cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 $PIP_BASE install PySide6
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  conda install lxml -y
+  mamba install lxml -y
   make pyside6
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   $PIP_BASE install "lxml==4.9.0"
@@ -340,39 +343,39 @@ fi
 cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 
 # log env info
-conda info --envs >> "$LOG_FILE"
-conda list >> "$LOG_FILE"
+mamba info --envs >> "$LOG_FILE"
+mamba list >> "$LOG_FILE"
 $PIP_BASE freeze >> "$LOG_FILE"
 conda deactivate
 
 # create dedicated tensorflow classification environment 
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml"
 elif [ "$PLATFORM" = "Intel Mac" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml"
 elif [ "$PLATFORM" = "Linux" ]; then
-  conda env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml"
 fi
 
 # create dedicated pytorch classification environment
 if [ "$PLATFORM" = "Intel Mac" ]; then
-  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
-  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  mamba env remove -p $ECOASSISTCONDAENV_PYTORCH
+  mamba create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
   conda activate $ECOASSISTCONDAENV_PYTORCH
-  conda install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
+  mamba install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
   $PIP_YOLOV8 install "ultralytics==8.0.191"
-  conda install -c conda-forge numpy==1.24.1 -y
-  conda install -c conda-forge humanfriendly==10.0 -y
-  conda install -c conda-forge jsonpickle==3.0.2 -y
-  conda install -c conda-forge timm
-  conda info --envs >> "$LOG_FILE"
-  conda list >> "$LOG_FILE"
+  mamba install -c conda-forge numpy==1.24.1 -y
+  mamba install -c conda-forge humanfriendly==10.0 -y
+  mamba install -c conda-forge jsonpickle==3.0.2 -y
+  mamba install -c conda-forge timm
+  mamba info --envs >> "$LOG_FILE"
+  mamba list >> "$LOG_FILE"
   $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 else
   # apple silicon and linux
-  conda env remove -p $ECOASSISTCONDAENV_PYTORCH
-  conda create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
+  mamba env remove -p $ECOASSISTCONDAENV_PYTORCH
+  mamba create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
   conda activate $ECOASSISTCONDAENV_PYTORCH
   $PIP_PYTORCH install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
   $PIP_PYTORCH install "ultralytics==8.0.191"
@@ -380,15 +383,15 @@ else
   $PIP_PYTORCH install "humanfriendly==10.0"
   $PIP_PYTORCH install "jsonpickle==3.0.2"
   $PIP_PYTORCH install timm
-  conda info --envs >> "$LOG_FILE"
-  conda list >> "$LOG_FILE"
+  mamba info --envs >> "$LOG_FILE"
+  mamba list >> "$LOG_FILE"
   $PIP_PYTORCH freeze >> "$LOG_FILE" 
   conda deactivate
 fi
 
 # create dedicated classification environment for the pytorchwildlife models
-conda env remove -p $ECOASSISTCONDAENV_PYWILDLIFE
-conda create -p $ECOASSISTCONDAENV_PYWILDLIFE python=3.8 -y
+mamba env remove -p $ECOASSISTCONDAENV_PYWILDLIFE
+mamba create -p $ECOASSISTCONDAENV_PYWILDLIFE python=3.8 -y
 conda activate $ECOASSISTCONDAENV_PYWILDLIFE
 $PIP_PYWILDLIFE install pytorchwildlife
 $PIP_PYWILDLIFE install "setuptools<70"
