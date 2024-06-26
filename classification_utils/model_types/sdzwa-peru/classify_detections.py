@@ -48,7 +48,7 @@ with open(os.path.join(os.path.dirname(cls_model_fpath), "Peru-Amazon_0.86.txt")
             identifier = parts[1].strip()
             animal_name = parts[3].strip()
             if identifier.isdigit():
-                class_map[animal_name] = int(identifier)
+                class_map[str(identifier)] = str(animal_name)
 
 # predict from cropped image
 # input: cropped PIL image
