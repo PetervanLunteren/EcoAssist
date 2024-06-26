@@ -24,6 +24,7 @@
     # - apparently you still get images in which a class is found under the annotation threshold,
     #         it should count only the images that have classes above the set annotation threshold,
     #         at this point it only checks whether it should draw an bbox or not, but still shows the image
+    # - Add custom shortcuts. See email Grant ('Possible software feature'). 
 
 # import packages like a very pointy half christmas tree
 import os
