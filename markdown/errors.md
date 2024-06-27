@@ -244,4 +244,4 @@ The EcoAssist installation should work after finishing these steps. 
 
 Let me know how that goes!
 
-UPDATE: I've adjusted the install scripts to install everything with mamba. That might help... (tip from ChatGDP). See email Kira and Maya. 
+USER: "We were able to get it all downloaded properly. Seems it was an issue with the Cuda version on our computer needing updated and some admin access issues."
