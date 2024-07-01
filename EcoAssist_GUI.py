@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 23 Jun 2024
+# Latest edit by Peter van Lunteren on 1 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -1326,7 +1326,11 @@ def produce_plots(results_dir):
         main_image.paste(logo, position, logo)
         main_image.save(image_path)
 
+    # check the time difference in the dataset
     def calculate_time_span(df):
+        any_dates_present = df['DateTimeOriginal'].notnull().any()
+        if not any_dates_present:
+            return 0, 0, 0, 0
         first_date = df['DateTimeOriginal'].min()
         last_date = df['DateTimeOriginal'].max()
         time_difference = last_date - first_date
@@ -1370,19 +1374,20 @@ def produce_plots(results_dir):
         n_categories_geo = 0
 
     # calculate the number of plots to be created
+    any_dates_present = det_df['DateTimeOriginal'].notnull().any()
     n_categories_with_timestamps = len(det_df[det_df['DateTimeOriginal'].notnull()]['label'].unique())
     n_obs_per_label_with_timestamps = det_df[det_df['DateTimeOriginal'].notnull()] .groupby('label').size().reset_index(name='count')
-    activity_patterns_n_plots = (((n_categories_with_timestamps * 2) + 2) * 2)
-    bar_charts_n_plots = (((n_categories_with_timestamps * 2) + 4) * len(temporal_units))
+    activity_patterns_n_plots = (((n_categories_with_timestamps * 2) + 2) * 2) if any_dates_present else 0 
+    bar_charts_n_plots = (((n_categories_with_timestamps * 2) + 4) * len(temporal_units)) if any_dates_present else 0 
     maps_n_plots = (n_categories_geo + 2) if data_permits_map_creation else 0
     pie_charts_n_plots = 4 
-    temporal_heatmaps_n_plots = (4 * len(temporal_units))
+    temporal_heatmaps_n_plots = (4 * len(temporal_units)) if any_dates_present else 0 
     n_plots = (activity_patterns_n_plots + bar_charts_n_plots + maps_n_plots + pie_charts_n_plots + temporal_heatmaps_n_plots)
 
     # create plots
     with tqdm(total=n_plots, disable=False) as pbar:
         progress_window.update_values(process = f"plt", status = "load")
-        create_time_plots(det_df, results_dir, temporal_units, pbar, n_obs_per_label_with_timestamps);plt.close('all')
+        if any_dates_present: create_time_plots(det_df, results_dir, temporal_units, pbar, n_obs_per_label_with_timestamps);plt.close('all')
         if cancel_var: return
         if data_permits_map_creation:
             create_geo_plots(det_df_geo, results_dir, pbar);plt.close('all')
@@ -1391,7 +1396,7 @@ def produce_plots(results_dir):
         if cancel_var: return
         create_pie_plots_files(fil_df, results_dir, pbar);plt.close('all')
         if cancel_var: return
-        create_activity_patterns(det_df, results_dir, pbar);plt.close('all')
+        if any_dates_present: create_activity_patterns(det_df, results_dir, pbar);plt.close('all')
         if cancel_var: return
 
     # add ecoassist logo
