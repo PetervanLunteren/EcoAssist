@@ -245,3 +245,13 @@ The EcoAssist installation should work after finishing these steps. 
 Let me know how that goes!
 
 USER: "We were able to get it all downloaded properly. Seems it was an issue with the Cuda version on our computer needing updated and some admin access issues."
+
+## GPU out of memory
+
+The error message is saying that the GPU is out of memory. In other words, it can't handle the workload. Apart from buying new hardware, there are a few things you can do.
+1. Increase the paging file size. See [FAQ 6 - point 1](https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/FAQ.md#faq-6-what-should-i-do-when-i-run-out-ofmemory). Please note that the rest of these FAQs are for model training, so are not necessarily applicable for your situation when deploying an existing model. 
+2. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode.
+3. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
+
+
+
