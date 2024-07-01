@@ -328,6 +328,59 @@
             "var_cls_class_thresh_default": "0.70",
             "var_smooth_cls_animal": false,
             "min_version": "5.6"
+        },
+        "Iran - Addax Data Science": {
+            "model_fname": "iran_v1.pt",
+            "description": "Model to identify 14 species or higher-level taxons present in Iran. The model was trained on a set of approximately 1 million camera trap images. The model has an overall validation accuracy, precision, and recall of 95%, 93%, and 94%, respectively. The accuracy was not tested on an out-of-sample-dataset since local images were absent. The model was designed to expedite the monitoring of the Iranian Cheetah Society.",
+            "developer": "Addax Data Science",
+            "env": "pytorch",
+            "type": "addax-yolov8",
+            "download_info": [
+                [
+                    "https://huggingface.co/Addax-Data-Science/Iran_v1/resolve/main/iran_v1.pt?download=true",
+                    "iran_v1.pt"
+                ]
+            ],
+            "citation": "https://joss.theoj.org/papers/10.21105/joss.05581",
+            "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "total_download_size": "32 MB",
+            "info_url": "https://addaxdatascience.com/",
+            "all_classes": [
+                "antilope",
+                "bird",
+                "camel",
+                "caracal",
+                "cat",
+                "cheetah",
+                "equid",
+                "fox",
+                "goat+sheep",
+                "hyena",
+                "leopard",
+                "porcupine",
+                "wolf+jackal"
+            ],
+            "selected_classes": [
+                "antilope",
+                "bird",
+                "camel",
+                "caracal",
+                "cat",
+                "cheetah",
+                "equid",
+                "fox",
+                "goat+sheep",
+                "hyena",
+                "leopard",
+                "porcupine",
+                "wolf+jackal"
+            ],
+            "var_cls_detec_thresh": "0.30",
+            "var_cls_detec_thresh_default": "0.30",
+            "var_cls_class_thresh": "0.60",
+            "var_cls_class_thresh_default": "0.60",
+            "var_smooth_cls_animal": true,
+            "min_version": "5.8"
         }
     },
     "det": {
