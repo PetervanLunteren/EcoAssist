@@ -54,7 +54,7 @@ All EcoAssist files are located in one folder, called `EcoAssist_files`. Please 
 1. Navigate to `/EcoAssist_files/models/cls`. If you don't see the subfolder `Namibian Desert - Addax Data Science`, you might need to open and close the EcoAssist application in order to create the necessary file structure.
 2. Create a folder inside `cls` with a descriptive name for your model. For example: `Arctic fauna`.
 3. Copy-paste the `variables.json` from `Namibian Desert - Addax Data Science` to your model folder.
-4. Place your model file (`.h5`) and classes list (`.yaml`) inside your model folder. Always make sure you have a backup - just in case.
+4. Place your model file (`.h5`) and classes list (`.yaml`) inside your model folder. Always make sure you have a backup - just in case. If you ever need to update EcoAssist, it will remove the entire folder and you'll have to do this again. 
 5. The model file can have a custom filename, but make sure your classes list is called `class_list.yaml`. 
 6. After completing this section, the folder structure should look something like this:
 
