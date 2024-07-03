@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 1 Jul 2024
+# Latest edit by Peter van Lunteren on 3 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -4279,6 +4279,7 @@ def fetch_latest_model_info():
     # and check if there are any new models the user should know about
     else:
         start_time = time.time()
+        release_info_url = "https://api.github.com/repos/PetervanLunteren/EcoAssist/releases"
         model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/EcoAssist/main/model_info/model_info_v{corresponding_model_info_version}.json"
         try:
             headers = {
@@ -4286,10 +4287,13 @@ def fetch_latest_model_info():
                 "Accept-Encoding": "*",
                 "Connection": "keep-alive"
             }
-            response = requests.get(model_info_url, timeout=1, headers=headers)
-            if response.status_code == 200:
+            model_info_response = requests.get(model_info_url, timeout=1, headers=headers)
+            release_info_response = requests.get(release_info_url, timeout=1, headers=headers)
+
+            # model info
+            if model_info_response.status_code == 200:
                 with open(model_info_fpath, 'wb') as file:
-                    file.write(response.content)
+                    file.write(model_info_response.content)
                 print(f"Updated model_info.json successfully.")
 
                 # check if there is a new model available
@@ -4307,6 +4311,57 @@ def fetch_latest_model_info():
                             show_model_info(title = model_id, model_dict = model_dict, new_model = True)
                             set_up_unkown_model(title = model_id, model_dict = model_dict, model_type = typ)
 
+            # release info
+            if release_info_response.status_code == 200:
+                print("Checking release info")
+
+                # check which releases are already shown
+                release_shown_json = os.path.join(EcoAssist_files, "EcoAssist", "releases_shown.json")
+                if os.path.exists(release_shown_json):
+                    with open(release_shown_json, 'r') as f:
+                        already_shown_releases = json.load(f)
+                else:
+                    already_shown_releases = []
+                    with open(release_shown_json, 'w') as f:
+                        json.dump([], f)
+
+                # check internet
+                releases = release_info_response.json()
+                release_info_list = []
+                for release in releases:
+
+                    # clean tag
+                    release_str = release.get("tag_name")
+                    if "v." in release_str:
+                        release_str = release_str.replace("v.", "")
+                    elif "v" in release_str:
+                        release_str = release_str.replace("v", "")
+
+                    # collect newer versions
+                    newer_version = needs_EA_update(release_str)
+                    already_shown = release_str in already_shown_releases
+                    if newer_version and not already_shown:
+                        print(f"Found newer version: {release_str}")
+                        release_info = {
+                            "tag_name_raw": release.get("tag_name"),
+                            "tag_name_clean": release_str,
+                            "newer_version": newer_version,
+                            "name": release.get("name"),
+                            "body": release.get("body"),
+                            "created_at": release.get("created_at"),
+                            "published_at": release.get("published_at")
+                        }
+                        release_info_list.append(release_info)
+
+                # show user
+                for release_info in release_info_list:
+                    show_release_info(release_info)
+                    already_shown_releases.append(release_info["tag_name_clean"])
+                
+                # remember shown releases
+                with open(release_shown_json, 'w') as f:
+                    json.dump(already_shown_releases, f)
+
         except requests.exceptions.Timeout:
             print("Request timed out. File download stopped.")
 
@@ -4317,6 +4372,80 @@ def fetch_latest_model_info():
         # but also the correct species for the existing models
         update_model_dropdowns()
         print(f"model info updated in {round(time.time() - start_time, 2)} seconds")
+
+# open window with release info
+def show_release_info(release):
+    
+    # define functions
+    def close():
+        rl_root.destroy()
+    def update():
+        webbrowser.open("https://addaxdatascience.com/ecoassist/#install")
+
+    # catch vars
+    name_var = release["name"]
+    body_var_raw = release["body"]
+    date_var = datetime.datetime.strptime(release["published_at"], "%Y-%m-%dT%H:%M:%SZ").strftime("%B %d, %Y")
+
+    # tidy body
+    filtered_lines = [line for line in body_var_raw.split('\r\n') if "Full Changelog" not in line]
+    body_var = '\n'.join(filtered_lines)
+
+    # create window
+    rl_root = customtkinter.CTkToplevel(root)
+    rl_root.title("Release information")
+    rl_root.geometry("+10+10")
+    bring_window_to_top_but_not_for_ever(rl_root)
+
+    # new version label
+    lbl = customtkinter.CTkLabel(rl_root, text="New version available!", font = main_label_font)
+    lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/4), columnspan = 2, sticky="nswe")
+
+    # name frame
+    row_idx = 1
+    name_frm_1 = model_info_frame(master=rl_root)
+    name_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    name_frm_2 = model_info_frame(master=name_frm_1)
+    name_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
+    name_lbl_1 = customtkinter.CTkLabel(name_frm_1, text="Name", font = main_label_font)
+    name_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
+    name_lbl_2 = customtkinter.CTkLabel(name_frm_2, text=name_var)
+    name_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
+
+    # date frame
+    row_idx += 1
+    date_frm_1 = model_info_frame(master=rl_root)
+    date_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    date_frm_2 = model_info_frame(master=date_frm_1)
+    date_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
+    date_lbl_1 = customtkinter.CTkLabel(date_frm_1, text="Release date", font = main_label_font)
+    date_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
+    date_lbl_2 = customtkinter.CTkLabel(date_frm_2, text=date_var)
+    date_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
+
+    # body frame
+    row_idx += 1
+    body_frm_1 = model_info_frame(master=rl_root)
+    body_frm_1.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    body_frm_2 = model_info_frame(master=body_frm_1)
+    body_frm_2.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
+    body_lbl_1 = customtkinter.CTkLabel(body_frm_1, text="Description", font = main_label_font)
+    body_lbl_1.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), sticky="nse")
+    body_txt_1 = customtkinter.CTkTextbox(master=body_frm_2, corner_radius=10, height = 150, wrap = "word", fg_color = "transparent")
+    body_txt_1.grid(row=0, column=0, padx=PADX/4, pady=(0, PADY/4), columnspan = 2, sticky="nswe")
+    body_txt_1.insert("0.0", body_var)
+    body_txt_1.configure(state="disabled")
+
+    # buttons frame
+    row_idx += 1
+    btns_frm = customtkinter.CTkFrame(master=rl_root)
+    btns_frm.columnconfigure(0, weight=1, minsize=10)
+    btns_frm.columnconfigure(1, weight=1, minsize=10)
+    btns_frm.grid(row=row_idx, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    close_btn = customtkinter.CTkButton(btns_frm, text="Close", command=close)
+    close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
+    updat_btn = customtkinter.CTkButton(btns_frm, text="Update", command=update)
+    updat_btn.grid(row=0, column=1, padx=(0, PADX), pady=PADY, sticky="nwse")
 
 # check if the user needs an update
 def needs_EA_update(required_version):
@@ -4790,7 +4919,7 @@ def bring_window_to_top_but_not_for_ever(master):
         master.lift()
         master.attributes('-topmost', False)
     master.attributes('-topmost', True)
-    master.after(100, lift_toplevel)
+    master.after(1000, lift_toplevel)
 
 # open window with model info
 def show_model_info(title = None, model_dict = None, new_model = False):
@@ -4824,7 +4953,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     def read_more():
         webbrowser.open(url_var)
     def update():
-        webbrowser.open("https://addaxdatascience.com/ecoassist/")
+        webbrowser.open("https://addaxdatascience.com/ecoassist/#install")
     def cite():
         webbrowser.open(citation)
     def see_license():
