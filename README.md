@@ -83,7 +83,7 @@ Interested in contributing to this project? There are always things to do. Do yo
 - [ ] **Improve installation** - At the moment users still have to install dependeceies and use CLI. Perferably, we would like to package EcoAssist as a standalone folder with all dependencies.
 - [ ] **Camtrap DP format** - Add a postprocess option to export results to camtrap DP format: https://camtrap-dp.tdwg.org/.
 - [ ] **Improve human-in-loop** - At the moment the human-in-the-loop feature works with two separate windows. Perferably, we would like to merge these two.
-- [ ] **Sequence smoothing** - There is no option to smoothen results based on sequences, yet. Dan Morris has already created [the code to do so](https://github.com/agentmorris/MegaDetector/blob/main/api/batch_processing/data_preparation/manage_local_batch.py#L1302). This needs to be implemented into the existing workflow.
+- [x] **Sequence smoothing** - There is no option to smoothen results based on sequences, yet. Dan Morris has already created [the code to do so](https://github.com/agentmorris/MegaDetector/blob/main/api/batch_processing/data_preparation/manage_local_batch.py#L1302). This needs to be implemented into the existing workflow.
 - [ ] **Sequence ID** - Add column for unique sequence_id in CSV export.
 
 ## Uninstall
