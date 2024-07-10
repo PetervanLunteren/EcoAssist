@@ -27,7 +27,8 @@
     # - Add custom shortcuts. See email Grant ('Possible software feature'). 
     # - Add option to order chronological See email Grant ('A few questions I've come up with').
     # - If you press the '?' button in the selection window, it doesn't scroll all the way down anymore. So
-              adjust the scroll region, of make an option to close the help text
+    #         adjust the scroll region, of make an option to close the help text
+    # - shift forcus on first label. See email Grant ('Another small request').
 
 # import packages like a very pointy half christmas tree
 import os
