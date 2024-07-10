@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 4 Jul 2024
+# Latest edit by Peter van Lunteren on 10 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -45,6 +45,7 @@ import signal
 import shutil
 import pickle
 import folium
+import argparse
 import calendar
 import platform
 import requests
@@ -2561,8 +2562,9 @@ def start_deploy(simple_mode = False):
         processes = ["img_det"]
         if var_cls_model.get() not in none_txt:
             processes.append("img_cls")
-        processes.append("img_pst")
-        processes.append("plt")
+        if not timelapse_mode:
+            processes.append("img_pst")
+            processes.append("plt")
     else:
         processes = []
         if var_process_img.get():
@@ -2824,18 +2826,21 @@ def start_deploy(simple_mode = False):
         # if deployed through simple mode, analyse images and add predefined postprocess for simple mode directly after deployment and classification
         else:
             deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
-            postprocess(src_dir = chosen_folder,
-                         dst_dir = chosen_folder,
-                         thresh = global_vars["var_thresh_default"],
-                         sep = False,
-                         file_placement = 1,
-                         sep_conf = False,
-                         vis = False,
-                         crp = False,
-                         exp = True,
-                         plt = True,
-                         exp_format = "XLSX",
-                         data_type = "img")
+
+            # if in timelapse mode, there is no need to do postprocessing
+            if not timelapse_mode:
+                postprocess(src_dir = chosen_folder,
+                            dst_dir = chosen_folder,
+                            thresh = global_vars["var_thresh_default"],
+                            sep = False,
+                            file_placement = 1,
+                            sep_conf = False,
+                            vis = False,
+                            crp = False,
+                            exp = True,
+                            plt = True,
+                            exp_format = "XLSX",
+                            data_type = "img")
 
         # reset window
         update_frame_states()
@@ -2871,8 +2876,22 @@ def start_deploy(simple_mode = False):
         sim_run_btn.configure(state=NORMAL)
         root.update()
 
+        # duplicate the correct json file if in timelapse mode
+        if timelapse_mode:
+            original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
+            normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
+            timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
+            if os.path.exists(original_json):
+                shutil.copy(original_json, timelapse_json)
+            else:
+                shutil.copy(normal_json, timelapse_json)
+
         # show results
-        if simple_mode:
+        if timelapse_mode:
+            mb.showinfo("Analaysis done!", f"Recognition file created at \n\n{timelapse_json}\n\nTo use it in Timelapse, return to "
+                                            "Timelapse with the relevant image set open, select the menu item 'Recognition | Import "
+                                            "recognition data for this image set' and navigate to the file above.")
+        elif simple_mode:
             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
         
         # check window transparency
@@ -3982,7 +4001,13 @@ def check_checkpnt():
     elif len(loc_chkpnt_files) > 1:
         loc_chkpnt_file = os.path.join(var_choose_folder.get(), sort_checkpoint_files(loc_chkpnt_files)[0])
     return True
-    
+
+# cut off string if it is too long
+def shorten_path(path, length):
+    if len(path) > length:
+        path = "..." + path[0 - length + 3:]
+    return path
+
 # browse directory
 def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky, source_dir = False):    
     # log
@@ -4000,8 +4025,7 @@ def browse_dir(var, var_short, dsp, cut_off_length, n_row, n_column, str_sticky,
     
     # shorten, set and grid display
     dsp_chosen_dir = chosen_dir
-    if len(dsp_chosen_dir) > cut_off_length:
-        dsp_chosen_dir = "..." + dsp_chosen_dir[0 - cut_off_length + 3:]
+    dsp_chosen_dir = shorten_path(dsp_chosen_dir, cut_off_length)
     var_short.set(dsp_chosen_dir)
     dsp.grid(column=n_column, row=n_row, sticky=str_sticky)
     
@@ -7995,6 +8019,23 @@ resize_canvas_to_content()
 # main function
 def main():
 
+    # check if user calls this script from Timelapse
+    parser = argparse.ArgumentParser(description="EcoAssist GUI")
+    parser.add_argument('--timelapse-path', type=str, help="Path to the timelapse folder")
+    args = parser.parse_args()
+    global timelapse_mode
+    global timelapse_path
+    timelapse_mode = False
+    timelapse_path = ""
+    if args.timelapse_path:
+        timelapse_mode = True
+        timelapse_path = os.path.normpath(args.timelapse_path)
+        var_choose_folder.set(timelapse_path)
+        dsp_timelapse_path = shorten_path(timelapse_path, 25)
+        sim_dir_pth.configure(text = dsp_timelapse_path, text_color = "black")
+        var_choose_folder_short.set(dsp_timelapse_path)
+        dsp_choose_folder.grid(column=0, row=row_choose_folder, sticky="w")
+
     # try to download the model info json to check if there are new models
     fetch_latest_model_info()
 
@@ -8008,6 +8049,10 @@ def main():
     # super weird but apparently neccesary, otherwise script halts at first root.update()
     switch_mode()
     switch_mode()
+
+    # update frame states if we already have a timelapse path
+    if timelapse_mode:
+        update_frame_states()
 
     # run
     root.mainloop()
