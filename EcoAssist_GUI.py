@@ -16,6 +16,7 @@
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: INSTALL - why put the shortcut not on the dekstop on windows?
+# TODO: UNINSTALL - adjust the install script with a flag "uninstall" so that it removed the Ecoassist_Files and the environments. Then make an batch file that executes this on button click. 
 # TODO: ANNOTATION - improve annotation experience
     # - make one progress windows in stead of all separate pbars when using large jsons
     # - I've converted pyqt5 to pyside6 for apple silicon so we don't need to install it via homebrew
