@@ -5,7 +5,7 @@
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 22 May 2024
+# Latest edit by Peter van Lunteren on 11 Jul 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -44,8 +44,10 @@ def read_yaml(file_path):
     with open(file_path, 'r') as f:
         return yaml.safe_load(f)
 class_map = read_yaml(os.path.join(os.path.dirname(cls_model_fpath), "class_list.yaml"))
+inv_class = {v: k for k, v in class_map.items()}
+class_ids = sorted(inv_class.values())
 
-# invert key:values if they are formatted as int:label 
+# apparently the class_list.yaml can be formatted differently
 def can_all_keys_be_converted_to_int(d):
     for key in d.keys():
         try:
@@ -53,8 +55,16 @@ def can_all_keys_be_converted_to_int(d):
         except ValueError:
             return False
     return True
+
+# take note how it is formatted
 if not can_all_keys_be_converted_to_int(class_map):
-    class_map = {v: k for k, v in class_map.items()}
+    formatted_int_label = False
+else:
+    formatted_int_label = True
+
+# extra processing step if the class_list is formatted as int:label
+if formatted_int_label:    
+    class_ids = [class_map[i] for i in sorted(inv_class.values())]
 
 # predict from cropped image
 # input: cropped PIL image
@@ -65,7 +75,6 @@ def get_classification(PIL_crop):
     img = cv2.resize(img, (img_size, img_size))
     img = np.expand_dims(img, axis=0)
     pred = animal_model.predict(img, verbose=0)[0]
-    class_ids = sorted(class_map.values())
     classifications = []
     for i in range(len(pred)):
         classifications.append([class_ids[i], float(pred[i])])
