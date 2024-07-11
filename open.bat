@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 10 Jul 2024 (latest edit)
+@REM ### Peter van Lunteren, 11 Jul 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -94,7 +94,7 @@ echo Opening EcoAssist now... >> "%LOG_FILE%"
 if "%1" == "debug" (
     python EcoAssist\EcoAssist_GUI.py
 ) else if "%1" == "timelapse" (
-    python EcoAssist\EcoAssist_GUI.py "--timelapse-path=%2"
+    python EcoAssist\EcoAssist_GUI.py --timelapse-path=%2
 ) else (
     python EcoAssist\EcoAssist_GUI.py 2>&1 >> "%LOG_FILE%"
     )
