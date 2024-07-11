@@ -15,6 +15,7 @@
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
+# TODO: INSTALL - why put the shortcut not on the dekstop on windows?
 # TODO: ANNOTATION - improve annotation experience
     # - make one progress windows in stead of all separate pbars when using large jsons
     # - I've converted pyqt5 to pyside6 for apple silicon so we don't need to install it via homebrew
