@@ -81,7 +81,7 @@ from folium.plugins import HeatMap, Draw, MarkerCluster
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # set versions
-current_EA_version = "5.11"
+current_EA_version = "5.12"
 corresponding_model_info_version = "5"
 
 # set global variables
