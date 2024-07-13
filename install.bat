@@ -6,7 +6,10 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="11 Jul 2024"
+set DATE_OF_LAST_EDIT="13 Jul 2024"
+
+@REM installing version
+set CURRENT_VERSION=5.12
 
 @REM print header
 echo:
@@ -118,6 +121,43 @@ set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 @REM echo paths
 echo Prefix:                                '%ECOASSIST_PREFIX%'
 echo Location:                              '%LOCATION_ECOASSIST_FILES%'
+
+@REM compare versions and prompt user
+set "VERSION_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\version.txt"
+if not exist "%VERSION_FILE%" ( goto skip_version_check)
+@REM read
+FOR /F "tokens=* USEBACKQ" %%F IN (`type "%VERSION_FILE%"`) DO ( SET OTHER_VERSION=%%F)
+echo Current version:                       'v!OTHER_VERSION!'
+rem parse
+for /F "tokens=1-2 delims=." %%a in ("%CURRENT_VERSION%") do (
+    set "CURRENT_MAJOR=%%a"
+    set "CURRENT_MINOR=%%b")
+for /F "tokens=1-2 delims=." %%a in ("%OTHER_VERSION%") do (
+    set "OTHER_MAJOR=%%a"
+    set "OTHER_MINOR=%%b")
+rem compare
+
+if %CURRENT_MAJOR% gtr %OTHER_MAJOR% (
+    echo Updating to version:                    'v!OTHER_VERSION!'
+) else (
+    if %CURRENT_MINOR% gtr %OTHER_MINOR% (
+        echo Updating to version:                   'v!CURRENT_VERSION!'
+    ) else (
+        echo:
+        echo You already have the latest version installed ^(v%OTHER_VERSION%^). Do you want to re-install?
+        :reinstall_prompt
+        set /p INPUT_REINSTALL_PROMPT=Enter [Y]es or [N]o: 
+        If /I "!INPUT_REINSTALL_PROMPT!"=="Y" ( goto reinstallation )
+        If /I "!INPUT_REINSTALL_PROMPT!"=="y" ( goto reinstallation )
+        If /I "!INPUT_REINSTALL_PROMPT!"=="N" ( echo Exiting install... & cmd /k & exit )
+        If /I "!INPUT_REINSTALL_PROMPT!"=="n" ( echo Exiting install... & cmd /k & exit )
+        echo Invalid input. Type 'Y', 'y', 'N' or 'n'.
+        goto reinstall_prompt
+        :reinstallation
+        echo Re-installing version %CURRENT_VERSION%...
+    )
+)
+:skip_version_checks
 
 @REM delete previous EcoAssist installs
 set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
