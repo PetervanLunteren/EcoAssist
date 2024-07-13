@@ -95,7 +95,7 @@
             "type": "deepfaune",
             "download_info": [
                 [
-                    "https://pbil.univ-lyon1.fr/software/download/deepfaune/v1.1/deepfaune-vit_large_patch14_dinov2.lvd142m.pt",
+                    "https://huggingface.co/Addax-Data-Science/Deepfaune_v1.1/resolve/main/deepfaune-vit_large_patch14_dinov2.lvd142m.pt?download=true",
                     "deepfaune-vit_large_patch14_dinov2.lvd142m.pt"
                 ]
             ],
