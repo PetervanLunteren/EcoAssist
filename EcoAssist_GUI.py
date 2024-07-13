@@ -81,15 +81,16 @@ from tkinter import filedialog, ttk, messagebox as mb
 from folium.plugins import HeatMap, Draw, MarkerCluster
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# set versions
-current_EA_version = "5.12"
-corresponding_model_info_version = "5"
-
 # set global variables
 EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 CLS_DIR = os.path.join(EcoAssist_files, "models", "cls")
 DET_DIR = os.path.join(EcoAssist_files, "models", "det")
+
+# set versions
+with open(os.path.join(EcoAssist_files, 'EcoAssist', 'version.txt'), 'r') as file:
+    current_EA_version = file.read().strip()
+corresponding_model_info_version = "5"
 
 # colors and images
 EA_blue_color = '#3B8ED0'
