@@ -44,7 +44,6 @@ PIP_PYWILDLIFE="${ECOASSISTCONDAENV_PYWILDLIFE}/bin/pip"
 # check other version and prompt user to re-install
 VERSION_FILE="${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
 if [ -f $VERSION_FILE ]; then
-    echo -e "\n"
     OTHER_VERSION=$(<$VERSION_FILE)
     IFS='.' read -r CURRENT_MAJOR CURRENT_MINOR <<< "$CURRENT_VERSION"
     IFS='.' read -r OTHER_MAJOR OTHER_MINOR <<< "$OTHER_VERSION"
@@ -52,10 +51,10 @@ if [ -f $VERSION_FILE ]; then
         echo "You're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
     else
         if [ "$CURRENT_MINOR" -gt "$OTHER_MINOR" ]; then
-            echo "You're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
+            echo -e "\nYou're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
         else
             while true; do
-                echo "The latest version (v$CURRENT_VERSION) is already installed. Do you want to re-install it? [Y]es or [N]o?"
+                echo -e "\nYou already have the latest version installed (v$CURRENT_VERSION). Do you want to re-install it? [Y]es or [N]o?"
                 read answer
                 answer_lc=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
                 if [ "$answer_lc" = "y" ]; then
@@ -65,7 +64,7 @@ if [ -f $VERSION_FILE ]; then
                     echo "Not re-installing. Exiting script..."
                     exit 1
                 else
-                    echo "Invalid response. Please enter 'y' or 'n'."
+                    echo "Invalid response. Please enter 'Y', 'y', 'N', or 'n'."
                 fi
             done
         fi
