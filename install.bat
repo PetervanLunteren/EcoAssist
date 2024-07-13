@@ -124,7 +124,7 @@ echo Location:                              '%LOCATION_ECOASSIST_FILES%'
 
 @REM compare versions and prompt user
 set "VERSION_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\version.txt"
-if not exist "%VERSION_FILE%" ( goto skip_version_check)
+if not exist "%VERSION_FILE%" ( goto skip_version_check )
 @REM read
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%VERSION_FILE%"`) DO ( SET OTHER_VERSION=%%F)
 echo Current version:                       'v!OTHER_VERSION!'
@@ -136,7 +136,6 @@ for /F "tokens=1-2 delims=." %%a in ("%OTHER_VERSION%") do (
     set "OTHER_MAJOR=%%a"
     set "OTHER_MINOR=%%b")
 rem compare
-
 if %CURRENT_MAJOR% gtr %OTHER_MAJOR% (
     echo Updating to version:                    'v!OTHER_VERSION!'
 ) else (
@@ -157,7 +156,7 @@ if %CURRENT_MAJOR% gtr %OTHER_MAJOR% (
         echo Re-installing version %CURRENT_VERSION%...
     )
 )
-:skip_version_checks
+:skip_version_check
 
 @REM delete previous EcoAssist installs
 set NO_ADMIN_INSTALL=%homedrive%%homepath%\EcoAssist_files
