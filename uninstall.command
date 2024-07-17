@@ -5,9 +5,7 @@
 
 # log
 echo
-echo
 echo Uninstalling EcoAssist...
-echo
 echo
 
 # check the OS and set var
@@ -33,7 +31,5 @@ rm -rf $LOCATION_ECOASSIST_FILES && echo "Removed dir '${LOCATION_ECOASSIST_FILE
 
 # log
 echo
-echo
 echo Uninstalled EcoAssist. You can close this terminal window.
-echo
 echo
