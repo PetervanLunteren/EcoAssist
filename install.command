@@ -20,16 +20,6 @@ elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
   PLATFORM="Linux"
 fi
 
-# check for uninstall argument
-if [ "$1" == "uninstall" ]; then
-  UNINSTALL=1
-  echo ""
-  echo "Uninstalling EcoAssist..."
-  echo ""
-else
-  UNINSTALL=0
-fi
-
 # timestamp the start of installation
 START_DATE=`date`
 
@@ -52,43 +42,39 @@ PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
 PIP_PYWILDLIFE="${ECOASSISTCONDAENV_PYWILDLIFE}/bin/pip"
 
 # check other version and prompt user to re-install
-if [ $UNINSTALL -eq 0 ]; then
-    VERSION_FILE="${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
-    if [ -f $VERSION_FILE ]; then
-        OTHER_VERSION=$(<$VERSION_FILE)
-        IFS='.' read -r CURRENT_MAJOR CURRENT_MINOR <<< "$CURRENT_VERSION"
-        IFS='.' read -r OTHER_MAJOR OTHER_MINOR <<< "$OTHER_VERSION"
-        if [ "$CURRENT_MAJOR" -gt "$OTHER_MAJOR" ]; then
-            echo "You're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
+VERSION_FILE="${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
+if [ -f $VERSION_FILE ]; then
+    OTHER_VERSION=$(<$VERSION_FILE)
+    IFS='.' read -r CURRENT_MAJOR CURRENT_MINOR <<< "$CURRENT_VERSION"
+    IFS='.' read -r OTHER_MAJOR OTHER_MINOR <<< "$OTHER_VERSION"
+    if [ "$CURRENT_MAJOR" -gt "$OTHER_MAJOR" ]; then
+        echo "You're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
+    else
+        if [ "$CURRENT_MINOR" -gt "$OTHER_MINOR" ]; then
+            echo -e "\nYou're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
         else
-            if [ "$CURRENT_MINOR" -gt "$OTHER_MINOR" ]; then
-                echo -e "\nYou're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
-            else
-                while true; do
-                    echo -e "\nYou already have the latest version installed (v$CURRENT_VERSION). Do you want to re-install it? [Y]es or [N]o?"
-                    read answer
-                    answer_lc=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
-                    if [ "$answer_lc" = "y" ]; then
-                        echo "Re-installing version $CURRENT_VERSION..."
-                        break
-                    elif [ "$answer_lc" = "n" ]; then
-                        echo "Not re-installing. Exiting script..."
-                        exit 1
-                    else
-                        echo "Invalid response. Please enter 'Y', 'y', 'N', or 'n'."
-                    fi
-                done
-            fi
-        fi 
-    fi
+            while true; do
+                echo -e "\nYou already have the latest version installed (v$CURRENT_VERSION). Do you want to re-install it? [Y]es or [N]o?"
+                read answer
+                answer_lc=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
+                if [ "$answer_lc" = "y" ]; then
+                    echo "Re-installing version $CURRENT_VERSION..."
+                    break
+                elif [ "$answer_lc" = "n" ]; then
+                    echo "Not re-installing. Exiting script..."
+                    exit 1
+                else
+                    echo "Invalid response. Please enter 'Y', 'y', 'N', or 'n'."
+                fi
+            done
+        fi
+    fi 
 fi
 
 # prevent mac to sleep during process
-if [ $UNINSTALL -eq 0 ]; then
-    if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-      pmset noidle &
-      PMSETPID=$!
-    fi
+if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+  pmset noidle &
+  PMSETPID=$!
 fi
 
 # check for sandbox argument and specify branch 
@@ -100,14 +86,6 @@ fi
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES && echo "Removed dir '${LOCATION_ECOASSIST_FILES}'"
-
-# early exit if uninstalling
-if [ $UNINSTALL -eq 1 ]; then
-  echo ""
-  echo "THE UNINSTALLATION IS DONE!"
-  echo ""
-  exit 1
-fi
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
