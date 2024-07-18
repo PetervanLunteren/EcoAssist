@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 10 Jul 2024
+# Latest edit by Peter van Lunteren on 18 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -2880,20 +2880,21 @@ def start_deploy(simple_mode = False):
         sim_run_btn.configure(state=NORMAL)
         root.update()
 
-        # duplicate the correct json file if in timelapse mode
+        # remove non-original jsons and rename to timelapse version
         if timelapse_mode:
             original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
             normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
             timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
             if os.path.exists(original_json):
-                shutil.copy(original_json, timelapse_json)
+                os.rename(original_json, timelapse_json)
+                os.remove(normal_json)
             else:
-                shutil.copy(normal_json, timelapse_json)
+                os.rename(normal_json, timelapse_json)
 
         # show results
         if timelapse_mode:
             mb.showinfo("Analaysis done!", f"Recognition file created at \n\n{timelapse_json}\n\nTo use it in Timelapse, return to "
-                                            "Timelapse with the relevant image set open, select the menu item 'Recognition | Import "
+                                            "Timelapse with the relevant image set open, select the menu item 'Recognition > Import "
                                             "recognition data for this image set' and navigate to the file above.")
         elif simple_mode:
             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
@@ -4398,7 +4399,7 @@ def fetch_latest_model_info():
             print("Request timed out. File download stopped.")
 
         except Exception as e:
-            print(f"Could not update model info: {e}")
+            print(f"Could not update model and version info: {e}")
 
         # update root so that the new models show up in the dropdown menu, 
         # but also the correct species for the existing models
@@ -6318,9 +6319,11 @@ def update_frame_states():
             complete_frame(trd_step)
     else:
         disable_frame(trd_step)
-
-    # check windows transparencies and sizes
     
+    # if in timelapse mode, always disable trd and fth step
+    if timelapse_mode:
+        disable_frame(trd_step)
+        disable_frame(fth_step)    
 
 # check if user entered text in entry widget
 def no_user_input(var):
@@ -6636,6 +6639,10 @@ def disable_frame(frame):
         disable_widgets(sep_frame)
         sep_frame.configure(fg='grey80')
         sep_frame.configure(relief = 'flat')
+        disable_widgets(exp_frame)
+        exp_frame.configure(fg='grey80')
+        exp_frame.configure(relief = 'flat')
+
     
 # check if checkpoint is present and set checkbox accordingly
 def disable_chb_cont_checkpnt():
