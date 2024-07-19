@@ -16,6 +16,7 @@
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: INSTALL - why put the shortcut not on the dekstop on windows?
+# TODO: JSON - keep track of the original confidence scores whenever it changes (from detection to classification, after human verification, etc.)
 # TODO: SMALL FIXES - see list from Saul ('RE: tentative agenda / discussion points') - 12 July 01:11. 
 # TODO: UNINSTALL - adjust the install script with a flag "uninstall" so that it removed the Ecoassist_Files and the environments. Then make an batch file that executes this on button click. 
 # TODO: ANNOTATION - improve annotation experience
