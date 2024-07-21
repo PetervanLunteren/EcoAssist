@@ -60,7 +60,7 @@ def get_classification(PIL_crop):
     img = np.expand_dims(img, axis=0)
     
     # According to https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L175
-    # there are no particular preprocessing steps or augmentations to handle prior to inference except for horzontal flip. Is that correct?
+    # there are no particular preprocessing steps or augmentations to handle prior to inference except for horzontal flip.
     
     pred = animal_model.predict(img, verbose=0)[0]
     class_ids = sorted(class_map.values())
@@ -75,12 +75,9 @@ def get_classification(PIL_crop):
 # output: cropped image <class 'PIL.Image.Image'>
 # each developer has its own way of padding, squaring, cropping, resizing etc
 # it needs to happen exactly the same as on which the model was trained
+# I've pulled this crop function from
+# https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L135
 def crop_image(img, bbox): 
-    
-    # I've pulled this crop function from 
-    # https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L135
-    # Question: with which buffer did you train the Peru model?
-    
     buffer = 0 
     width, height = img.size
     bbox1, bbox2, bbox3, bbox4 = bbox
