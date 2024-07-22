@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 18 Jul 2024
+# Latest edit by Peter van Lunteren on 22 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -4659,6 +4659,7 @@ def show_download_error_window(model_title, model_dir, model_vars):
     # download instructions are dependent on their host
     step_n = 1
     show_next_steps = True
+    pro_lbl5_row = 4
     if model_title == "Namibian Desert - Addax Data Science":
         main_url = download_info[0][0].replace("/resolve/main/namib_desert_v1.pt?download=true", "/tree/main")
         pro_lbl3 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Go to website:",
@@ -4678,7 +4679,6 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl4 = customtkinter.CTkLabel(pro_frm_2, text=main_url, cursor="hand2", font = url_label_font)
         pro_lbl4.grid(row=3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
         pro_lbl4.bind("<Button-1>", lambda e: callback(main_url))
-        pro_lbl5_row = 4
         for download_file in download_info:
             pro_lbl5 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Download file '{download_file[1]}'.",
                                                             f" {step_n}. Descarga el archivo '{download_file[1]}'."][lang_idx]);step_n += 1
@@ -4746,15 +4746,15 @@ def show_download_error_window(model_title, model_dir, model_vars):
         # general steps
         pro_lbl7 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Make sure you can view hidden files in your file explorer.", 
                                                            f" {step_n}. Asegúrate de que puedes ver los archivos ocultos en tu explorador de archivos."][lang_idx]);step_n += 1
-        pro_lbl7.grid(row=6, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl7.grid(row=pro_lbl5_row + 1, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
         pro_lbl8 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Move the downloaded file(s) into the folder:",
                                                            f" {step_n}. Mueva los archivos descargados a la carpeta:"][lang_idx]);step_n += 1
-        pro_lbl8.grid(row=7, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
+        pro_lbl8.grid(row=pro_lbl5_row + 2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
         pro_lbl9 = customtkinter.CTkLabel(pro_frm_2, text=f"'{model_dir}'")
-        pro_lbl9.grid(row=8, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl9.grid(row=pro_lbl5_row + 3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
         pro_lbl10 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Close EcoAssist and try again.",
                                                             f" {step_n}. Cierre EcoAssist e inténtelo de nuevo."][lang_idx]);step_n += 1
-        pro_lbl10.grid(row=9, column=0, padx=PADX, pady=(PADY/8, PADY/8), sticky="nsw")
+        pro_lbl10.grid(row=pro_lbl5_row + 4, column=0, padx=PADX, pady=(PADY/8, PADY/8), sticky="nsw")
 
         # close EcoAssist
         btns_frm2 = customtkinter.CTkFrame(master=de_root)
