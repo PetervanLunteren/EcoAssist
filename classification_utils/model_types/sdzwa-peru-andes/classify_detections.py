@@ -54,7 +54,7 @@ except:
     pass
 if not GPU_availability:
     GPU_availability = torch.cuda.is_available()
-    device_str = 'gpu'
+    device_str = 'cuda'
 
 # init efficientnet
 class EfficientNet(nn.Module):
