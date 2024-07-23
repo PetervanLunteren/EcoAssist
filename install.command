@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 13 Jul 2023 (latest edit)
+### Peter van Lunteren, 23 Jul 2023 (latest edit)
 
 CURRENT_VERSION="5.13"
 
@@ -196,14 +196,17 @@ if [ -d "$CAM" ]; then
   echo "Dir ${CAM} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps 2>&1 | tee -a "$LOG_FILE"
-
-  # some users experience timeout issues due to the large size of this repository
-  # if it fails here, we'll try again with a larger timeout value and less checks during cloning
-  if [ $? -ne 0 ]; then
+  git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps || {
+    
+      # some users experience timeout issues due to the large size of this repository
+      # if it fails here, we'll try again with a larger timeout value and less checks during cloning
       echo "First attempt failed. Retrying with extended timeout..."
-      GIT_SSH_COMMAND="ssh -o ConnectTimeout=200" git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
-  fi
+      GIT_HTTP_POSTBUFFER=524288000 git clone --progress \
+          --config transfer.fsckObjects=false \
+          --config receive.fsckObjects=false \
+          --config fetch.fsckObjects=false \
+          https://github.com/agentmorris/MegaDetector.git cameratraps
+  }
 
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
   git checkout 393441e3cea82def9f9e6c968ab787f8e89c3056 2>&1 | tee -a "$LOG_FILE"
