@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 22 Jul 2024
+# Latest edit by Peter van Lunteren on 31 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
@@ -593,6 +593,28 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     df['DateTimeDigitized'] = pd.to_datetime(df['DateTimeDigitized'], format='%d/%m/%y %H:%M:%S')
                 df.to_excel(writer, sheet_name=result_type, index=None, header=True)
     
+    # convert csv to coco format if required
+    if exp and exp_format == dpd_options_exp_format[lang_idx][2]: # COCO
+        
+        # init vars
+        coco_path = os.path.join(dst_dir, "results_coco.json")
+        detections_df = pd.read_csv(os.path.join(dst_dir, f"results_detections.csv"), dtype=dtypes, low_memory=False)
+        files_df = pd.read_csv(os.path.join(dst_dir, f"results_files.csv"), dtype=dtypes, low_memory=False)
+        
+        # convert csv to coco format
+        csv_to_coco(
+            detections_df=detections_df,
+            files_df=files_df,
+            output_path=coco_path
+        )
+        
+        # only plt needs the csv's, so if the user didn't specify plt, remove csvs
+        if not plt:
+            for result_type in ['detections', 'files', 'summary']:
+                csv_path = os.path.join(dst_dir, f"results_{result_type}.csv")
+                if os.path.isfile(csv_path):
+                    os.remove(csv_path)
+    
     # change json paths back, if converted earlier
     if json_paths_converted:
         make_json_absolute(recognition_file)
@@ -605,13 +627,95 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     if plt:
         produce_plots(dst_dir)
 
-        # if user wants XLSX as output or if user didn't specify exp all-
+        # if user wants XLSX or COCO as output, or if user didn't specify exp all-
         # together but the files were created for plt -> remove CSV files
-        if exp and exp_format == dpd_options_exp_format[lang_idx][0] or remove_csv:
+        if (exp and exp_format == dpd_options_exp_format[lang_idx][0]) or \
+            (exp and exp_format == dpd_options_exp_format[lang_idx][2]) or \
+            remove_csv:
             for result_type in ['detections', 'files', 'summary']:
                 csv_path = os.path.join(dst_dir, f"results_{result_type}.csv")
                 if os.path.isfile(csv_path):
                     os.remove(csv_path)
+
+# convert csv to coco format
+def csv_to_coco(detections_df, files_df, output_path):
+    
+    # log
+    print(f"EXECUTED: {sys._getframe().f_code.co_name}\n")
+    
+    # init coco structure
+    coco = {
+        "images": [],
+        "annotations": [],
+        "categories": [],
+        "licenses": [{
+            "id": 1,
+            "name": "Unknown",
+            "url": "NA"
+            }],
+        "info": {
+            "description": f"Object detection results exported from EcoAssist (v{str(current_EA_version)}).",
+            "url": "https://addaxdatascience.com/ecoassist/",
+            "date_created": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    }
+
+    # prepare categories and category mapping
+    category_mapping = {}
+    current_category_id = 1
+
+    # assign categories from detections
+    for label in detections_df['label'].unique():
+        if label not in category_mapping:
+            category_mapping[label] = current_category_id
+            coco['categories'].append({
+                "id": current_category_id,
+                "name": label
+                })
+            current_category_id += 1
+
+    # process each image and its detections
+    annotation_id = 1
+    for _, file_info in files_df.iterrows():
+        
+        # create image entry
+        image_id = len(coco['images']) + 1
+        image_entry = {
+            "id": image_id,
+            "width": int(file_info['ExifImageWidth']),
+            "height": int(file_info['ExifImageHeight']),
+            "file_name": file_info['relative_path'],
+            "license": 1,
+            "date_captured": datetime.datetime.strptime(file_info['DateTimeOriginal'],
+                                                        "%d/%m/%y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
+        }
+        coco['images'].append(image_entry)
+
+        # add annotations for this image
+        image_detections = detections_df[detections_df['relative_path'] == file_info['relative_path']]
+        for _, detection in image_detections.iterrows():
+            bbox_left = int(detection['bbox_left'])
+            bbox_top = int(detection['bbox_top'])
+            bbox_right = int(detection['bbox_right'])
+            bbox_bottom = int(detection['bbox_bottom'])
+
+            bbox_width = bbox_right - bbox_left
+            bbox_height = bbox_bottom - bbox_top
+
+            annotation_entry = {
+                "id": annotation_id,
+                "image_id": image_id,
+                "category_id": category_mapping[detection['label']],
+                "bbox": [bbox_left, bbox_top, bbox_width, bbox_height],
+                "area": float(bbox_width * bbox_height),
+                "iscrowd": 0
+            }
+            coco['annotations'].append(annotation_entry)
+            annotation_id += 1
+
+    # save when done
+    with open(output_path, 'w') as output_file:
+        json.dump(coco, output_file, indent=4)
 
 # set data types for csv inport so that the machine doesn't run out of memory with large files (>0.5M rows)
 dtypes = {
@@ -6242,7 +6346,7 @@ def set_language():
     lbl_crp_files.configure(text=lbl_crp_files_txt[lang_idx])
     lbl_exp.configure(text=lbl_exp_txt[lang_idx])
     exp_frame.configure(text=" ↳ " + exp_frame_txt[lang_idx] + " ")
-    lbl_exp_format.configure(text=lbl_exp_format_txt[lang_idx])
+    lbl_exp_format.configure(text="     " + lbl_exp_format_txt[lang_idx])
     lbl_plt.configure(text=lbl_plt_txt[lang_idx])
     lbl_thresh.configure(text=lbl_thresh_txt[lang_idx])
     btn_start_postprocess.configure(text=btn_start_postprocess_txt[lang_idx])
@@ -6605,6 +6709,7 @@ def enable_frame(frame):
         toggle_sep_frame()
         toggle_exp_frame()
         sep_frame.configure(relief = 'solid')
+        exp_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
 def uncomplete_frame(frame):
@@ -7441,7 +7546,7 @@ lbl_exp_format_txt = ["Output file format", "Formato del archivo de salida"]
 row_exp_format = 0
 lbl_exp_format = Label(exp_frame, text="     " + lbl_exp_format_txt[lang_idx], pady=2, width=1, anchor="w")
 lbl_exp_format.grid(row=row_exp_format, sticky='nesw')
-dpd_options_exp_format = [["XLSX", "CSV"], ["XLSX", "CSV"]]
+dpd_options_exp_format = [["XLSX", "CSV", "COCO"], ["XLSX", "CSV", "COCO"]]
 var_exp_format = StringVar(exp_frame)
 var_exp_format.set(dpd_options_exp_format[lang_idx][global_vars['var_exp_format_idx']])
 dpd_exp_format = OptionMenu(exp_frame, var_exp_format, *dpd_options_exp_format[lang_idx])
@@ -7468,7 +7573,7 @@ btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang_idx
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
 # set minsize for all rows inside labelframes...
-for frame in [fst_step, snd_step, cls_frame, img_frame, vid_frame, fth_step, sep_frame]:
+for frame in [fst_step, snd_step, cls_frame, img_frame, vid_frame, fth_step, sep_frame, exp_frame]:
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
