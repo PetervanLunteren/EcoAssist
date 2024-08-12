@@ -6,6 +6,7 @@
 # Latest edit by Peter van Lunteren on 31 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
+# TODO: VIDEO - create video tutorials of all the steps (simple mode, advanced mode, annotation, postprocessing, etc.)
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
 # TODO: SMOOTH - either average or logit
 # TODO: LOG SEQUENCE INFO - add sequence information to JSON, CSV, and XSLX 
@@ -18,6 +19,7 @@
 # TODO: INSTALL - why put the shortcut not on the dekstop on windows?
 # TODO: JSON - keep track of the original confidence scores whenever it changes (from detection to classification, after human verification, etc.)
 # TODO: SMALL FIXES - see list from Saul ('RE: tentative agenda / discussion points') - 12 July 01:11. 
+# TODO: ERROR - get rid of error: How about an ok/cancel dialog that simply asks: ‘Recognition file already exists. Do you want me to over-write it?’
 # TODO: UNINSTALL - adjust the install script with a flag "uninstall" so that it removed the Ecoassist_Files and the environments. Then make an batch file that executes this on button click. 
 # TODO: ANNOTATION - improve annotation experience
     # - make one progress windows in stead of all separate pbars when using large jsons
@@ -33,6 +35,7 @@
     # - If you press the '?' button in the selection window, it doesn't scroll all the way down anymore. So
     #         adjust the scroll region, of make an option to close the help text
     # - shift forcus on first label. See email Grant ('Another small request').
+    # - get rid of the default label pane in the top right. Or at least make it less prominent. 
 
 # import packages like a very pointy half christmas tree
 import os
