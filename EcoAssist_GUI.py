@@ -2993,6 +2993,13 @@ def start_deploy(simple_mode = False):
             original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
             normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
             timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
+
+            # if the timelapse json already exists, remove it
+            # otherwise the os.rename will fail later on
+            if os.path.exists(timelapse_json):
+                os.remove(timelapse_json)
+
+            # rename and remove
             if os.path.exists(original_json):
                 os.rename(original_json, timelapse_json)
                 os.remove(normal_json)
