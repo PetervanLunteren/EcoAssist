@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 23 Jul 2023 (latest edit)
+### Peter van Lunteren, 12 Aug 2023 (latest edit)
 
 CURRENT_VERSION="5.14"
 
@@ -198,6 +198,12 @@ else
   echo "Dir ${CAM} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
   git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps || {
     
+      # if this git repo fails to clone, chances are the conda environments will give problems too
+      # so better already set the conda settings to accomodate slow internet speeds
+      export CONDA_REMOTE_READ_TIMEOUT_SECS=120
+      export CONDA_REMOTE_CONNECTIONS=1
+      export CONDA_REMOTE_MAX_RETRIES=20
+
       # some users experience timeout issues due to the large size of this repository
       # if it fails here, we'll try again with a larger timeout value and less checks during cloning
       echo "First attempt failed. Retrying with extended timeout..."
