@@ -2,7 +2,7 @@
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 23 Jan 2024
+# Latest edit by Peter van Lunteren on 12 Aug 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -32,7 +32,7 @@ plt = platform.system()
 if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
 
 # load model
-animal_model = YOLO(cls_model_fpath)
+animal_model = YOLO(cls_model_fpath, weights_only=True)
 
 # check GPU availability
 GPU_availability = False
