@@ -38,3 +38,5 @@ Now try to recreate the error and check the console output for its message.
 </details>
 
 This will show you EcoAssist's output during runtime. If there are any errors, they will most probably show up here. Please copy-paste the entire console output and [email](mailto:petervanlunteren@hotmail.com) it to me, or [raise an issue](https://github.com/PetervanLunteren/EcoAssist/issues/new).
+
+<img width="1196" alt="Screenshot 2024-08-12 at 10 47 14" src="https://github.com/user-attachments/assets/23c3d898-8de9-4369-a70d-78d736d0316d">
