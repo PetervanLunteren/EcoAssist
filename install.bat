@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="13 Jul 2024"
+set DATE_OF_LAST_EDIT="12 Aug 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.14
@@ -363,6 +363,12 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
     @REM Some users experience timeout issues due to the large size of this repository
     @REM If it fails here, we'll try again with a larger timeout value and fewer checks during cloning
     if not !errorlevel! == 0 (
+
+        @REM if this git repo fails to clone, chances are the conda environments will give problems too. So better already set the conda settings to better accomodate slow internet speeds.
+        set CONDA_REMOTE_READ_TIMEOUT_SECS=120
+        set CONDA_REMOTE_CONNECTIONS=1
+        set CONDA_REMOTE_MAX_RETRIES=20
+
         echo First attempt failed. Retrying with extended timeout of 200... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
         git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
