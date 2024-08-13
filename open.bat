@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 11 Jul 2024 (latest edit)
+@REM ### Peter van Lunteren, 13 Aug 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -46,18 +46,38 @@ set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
 @REM fetch conda install path and set cmds
+@REM if miniforge3 folder is inside EcoAssist_files, set conda path to that
+IF EXIST "%LOCATION_ECOASSIST_FILES%\miniforge3" (
+    SET PATH_TO_CONDA_INSTALLATION=%LOCATION_ECOASSIST_FILES%\miniforge3
+    echo Path to conda hard coded as: "!PATH_TO_CONDA_INSTALLATION!"
+    goto skip_conda_import_from_txt_file
+)
+
+@REM else import conda path from txt file
 set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
 echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
+:skip_conda_import_from_txt_file
 
 @REM check if conda install is mambaforge and set conda command accordingly
 for %%f in ("%PATH_TO_CONDA_INSTALLATION%") do set "FOLDER_NAME=%%~nxf"
 if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_CONDA_EXE=conda )
 
 @REM fetch git install path and set cmds
+@REM if Git folder is inside EcoAssist_files, set git path to that
+IF EXIST "%LOCATION_ECOASSIST_FILES%\Git" (
+    SET PATH_TO_GIT_INSTALLATION=%LOCATION_ECOASSIST_FILES%\Git
+    echo Path to git hard coded as: "!PATH_TO_GIT_INSTALLATION!"
+    goto skip_git_import_from_txt_file
+)
+
+@REM else import git path from txt file
 set PATH_TO_GIT_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_git_installation.txt
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_GIT_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_GIT_INSTALLATION=%%F)
 echo Path to git as imported from "%PATH_TO_GIT_INSTALLATION_TXT_FILE%" is: "%PATH_TO_GIT_INSTALLATION%"
+:skip_git_import_from_txt_file
+
+@REM this is shared code for both hard coded and imported git paths
 set PATH=%PATH_TO_GIT_INSTALLATION%\cmd;%PATH%
 set GIT_PYTHON_GIT_EXECUTABLE=%PATH_TO_GIT_INSTALLATION%\cmd\git.exe
 
