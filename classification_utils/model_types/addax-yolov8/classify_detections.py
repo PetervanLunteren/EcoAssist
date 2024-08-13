@@ -32,7 +32,7 @@ plt = platform.system()
 if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
 
 # load model
-animal_model = YOLO(cls_model_fpath, weights_only=True)
+animal_model = YOLO(cls_model_fpath)
 
 # check GPU availability
 GPU_availability = False
