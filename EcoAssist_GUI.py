@@ -6,6 +6,8 @@
 # Latest edit by Peter van Lunteren on 31 Jul 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
+# TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
+# TODO: JSON - remove the part where MD stores its typical threshold values etc in the EcoAssist altered json. It doesn't make sense anymore if the detection caterogies are changed. 
 # TODO: VIDEO - create video tutorials of all the steps (simple mode, advanced mode, annotation, postprocessing, etc.)
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
 # TODO: SMOOTH - either average or logit
