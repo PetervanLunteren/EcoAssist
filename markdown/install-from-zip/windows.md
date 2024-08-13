@@ -1,7 +1,7 @@
 
 # Steps to install EcoAssist from ZIP file
 
-The below steps are ment for EcoAssist users that can't execute the normal install due to unstable internet or security issues. The normal install is preferred since it performs additional checks and automates the process. If you haven't tried the [normal install](https://addaxdatascience.com/ecoassist-windows/) yet, please try that first. 
+The below steps are ment for EcoAssist users that can't execute the normal install due to unstable internet or security issues. The normal install is preferred since it is much quicker, performs additional checks, and automates the whole process. If you haven't tried the [normal install](https://addaxdatascience.com/ecoassist-windows/) yet, please try that first. 
 
 Follow the following steps to install EcoAssist from ZIP file. 
 1. Download the ZIP file from [this direct download link](https://drive.google.com/uc?export=download&id=1i0v4MgfFhp5RbK6pBseyaYawP1B6hglr).
