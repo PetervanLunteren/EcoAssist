@@ -20,14 +20,15 @@ _______________________________________________________________________
 <br></br>
 Follow the steps below to create this all-encompassing EcoAssist zip file.
 
-1. [Install the latest EcoAssist version](https://addaxdatascience.com/ecoassist-windows/) on a Windows machine
-2. Copy the entire contents of the following folders to `C:\Users\smart\EcoAssist_files`.
+1. [Install the latest EcoAssist version](https://addaxdatascience.com/ecoassist-windows/) on a Windows machine.
+2. Make sure you have copy-pasted all models to `C:\Users\smart\EcoAssist_files\models\cls` so that they will be included in the ZIP.
+3. Copy the entire contents of the following folders to `C:\Users\smart\EcoAssist_files`.
    * `C:\Users\smart\miniforge3` (double check for redundant environments)
    * `C:\Program Files\Git`
-3. Remove the following files
+4. Remove the following files
    * `C:\Users\smart\EcoAssist_files\EcoAssist\logfiles\path_to_conda_installation.txt`
    * `C:\Users\smart\EcoAssist_files\EcoAssist\logfiles\path_to_git_installation.txt`
-4. Compress the folder (takes about 1 hour)
+5. Compress the folder (takes about 1 hour)
 ```
 7z a -tzip "C:\Users\smart\Desktop\EcoAssist_files.zip" "C:\Users\smart\EcoAssist_files"
 ```
