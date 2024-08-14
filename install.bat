@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="12 Aug 2024"
+set DATE_OF_LAST_EDIT="14 Aug 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.14
@@ -519,7 +519,7 @@ call conda deactivate
 call mamba create -n ecoassistcondaenv-pytorch python=3.8 -y
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-pytorch
-call mamba install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+call mamba install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
 "%EA_PIP_EXE_PYTORCH%" install timm
 "%EA_PIP_EXE_PYTORCH%" install pandas
