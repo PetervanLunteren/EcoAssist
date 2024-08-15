@@ -1,5 +1,5 @@
 @REM ### Windows commands to execute classify_detections.py script in different conda environment
-@REM ### Peter van Lunteren, 14 May 2024 (latest edit)
+@REM ### Peter van Lunteren, 15 Aug 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -29,8 +29,12 @@ if "%FRAME_DIR%" == "" ( set "FRAME_DIR=dummy-variable" )
 @REM add EcoAssist_files to path
 set PATH=%PATH%;%LOCATION_ECOASSIST_FILES%
 
+@REM remove quotes for path concat
+set LOCATION_ECOASSIST_FILES_NO_QUOTES=%LOCATION_ECOASSIST_FILES:"=%
+set MODEL_TYPE_NO_QUOTES=%MODEL_TYPE:"=%
+
 @REM fetch conda install path and set cmds
-set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES%\EcoAssist\logfiles\path_to_conda_installation.txt
+set PATH_TO_CONDA_INSTALLATION_TXT_FILE=%LOCATION_ECOASSIST_FILES_NO_QUOTES%\EcoAssist\logfiles\path_to_conda_installation.txt
 FOR /F "tokens=* USEBACKQ" %%F IN (`type "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%"`) DO ( SET PATH_TO_CONDA_INSTALLATION=%%F)
 echo Path to conda as imported from "%PATH_TO_CONDA_INSTALLATION_TXT_FILE%" is: "%PATH_TO_CONDA_INSTALLATION%"
 
@@ -42,7 +46,7 @@ if "%FOLDER_NAME%" == "mambaforge" ( set EA_CONDA_EXE=mamba ) else ( set EA_COND
 cd "%LOCATION_ECOASSIST_FILES%" || ( cmd /k & exit )
 
 @REM set variables
-set "INF_SCRIPT=%LOCATION_ECOASSIST_FILES%\EcoAssist\classification_utils\model_types\%MODEL_TYPE%\classify_detections.py"
+set INF_SCRIPT="%LOCATION_ECOASSIST_FILES_NO_QUOTES%\EcoAssist\classification_utils\model_types\%MODEL_TYPE_NO_QUOTES%\classify_detections.py"
 set BASE_ENV=ecoassistcondaenv-base
 set CLS_ENV=ecoassistcondaenv-%MODEL_ENV%
 
