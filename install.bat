@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="14 Aug 2024"
+set DATE_OF_LAST_EDIT="16 Aug 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.14
@@ -371,21 +371,21 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
 
         echo First attempt failed. Retrying with extended timeout of 200... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=200
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        "%EA_GIT_EXE%" clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
     if not !errorlevel! == 0 (
         echo Second attempt failed. Retrying with extended timeout of 1000... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=1000
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        "%EA_GIT_EXE%" clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
     if not !errorlevel! == 0 (
         echo Second attempt failed. Retrying with extended timeout of 3000... | wtee -a "%LOG_FILE%"
         set GIT_SSH_COMMAND=ssh -o ConnectTimeout=3000
-        git clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        "%EA_GIT_EXE%" clone --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
     )
     if not !errorlevel! == 0 (
         echo Second attempt failed. Retrying with --depth=1 and --unshallow | wtee -a "%LOG_FILE%"
-        git clone --depth=1 --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
+        "%EA_GIT_EXE%" clone --depth=1 --progress --config transfer.fsckObjects=false --config receive.fsckObjects=false --config fetch.fsckObjects=false https://github.com/agentmorris/MegaDetector.git cameratraps
         cd "%LOCATION_ECOASSIST_FILES%\cameratraps"
         "%EA_GIT_EXE%" fetch --unshallow
     )
