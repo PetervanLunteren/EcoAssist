@@ -1555,6 +1555,19 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                      "seleccionados. Utilice el botón 'Actualizar recuentos' para ver cuántas imágenes necesita verificar con "
                      "los criterios seleccionados."][lang_idx])
         return
+    
+    # TODO: progressbars are not in front of other windows
+    # check corrupted images # TODO: this needs to be included in the progressbar
+    print(f"DEBUG start")
+    corrupted_images = check_images(file_list_txt)
+
+    # fix images # TODO: this needs to be included in the progressbar
+    if len(corrupted_images) > 0:
+            if mb.askyesno(["Corrupted images found", "Imágenes corruptas encontradas"][lang_idx],
+                            [f"There are {len(corrupted_images)} images corrupted. Do you want to repair?",
+                            f"Hay {len(corrupted_images)} imágenes corruptas. Quieres repararlas?"][lang_idx]):
+                fix_images(corrupted_images)
+    print(f"DEBUG end")
 
     # read label map from json
     label_map = fetch_label_map_from_json(recognition_file)
@@ -3458,6 +3471,8 @@ def open_hitl_settings_window():
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
+    # TODO: this window pops up behind the main EcoAssist window on windows OS. place in front, or hide EcoAssist frame.
+
     # fetch confs for histograms
     confs = fetch_confs_per_class(os.path.join(var_choose_folder.get(), 'image_recognition_file.json'))
 
@@ -3800,6 +3815,40 @@ def on_toplevel_close():
         "var_cls_model_idx": dpd_options_cls_model[lang_idx].index(var_cls_model.get())
         })
     root.destroy()
+
+# check if image is corrupted by attepting to load them 
+def is_image_corrupted(image_path):
+    try:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+        with Image.open(image_path) as img:
+            img.load()
+        ImageFile.LOAD_TRUNCATED_IMAGES = True
+        return False
+    except:
+        return True 
+
+# read file list and check all images if they are corrupted
+def check_images(image_list_file):
+    corrupted_images = []
+    with open(image_list_file, 'r') as file:
+        image_paths = file.read().splitlines()
+    for image_path in image_paths:
+        if os.path.exists(image_path):
+            if is_image_corrupted(image_path):
+                corrupted_images.append(image_path)
+    return corrupted_images
+
+# try to fix truncated file by opening and saving it again
+def fix_images(image_paths):
+    for image_path in image_paths:
+        if os.path.exists(image_path):
+            try:
+                ImageFile.LOAD_TRUNCATED_IMAGES = True
+                with Image.open(image_path) as img:
+                    img_copy = img.copy()
+                    img_copy.save(image_path, format=img.format, exif=img.info.get('exif'))
+            except Exception as e:
+                print(f"Could not fix image: {e}")
 
 # convert pascal bbox to yolo
 def convert_bbox_pascal_to_yolo(size, box):
