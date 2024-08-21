@@ -11,6 +11,7 @@
 # TODO: VIDEO - create video tutorials of all the steps (simple mode, advanced mode, annotation, postprocessing, etc.)
 # TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
 # TODO: SMOOTH - either average or logit
+# TODO: EMPTIES - add a checkbox for folder separation where you can skip the empties from being copied
 # TODO: LOG SEQUENCE INFO - add sequence information to JSON, CSV, and XSLX 
 # TODO: SEQ SEP - add feature to separate images into sequence subdirs. Something like "treat sequence as detection" or "Include all images in the sequence" while doing the separation step.
 # TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
