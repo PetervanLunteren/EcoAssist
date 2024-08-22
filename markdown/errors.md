@@ -118,6 +118,8 @@ This is a Windows error message and means that your training data is located on 
 ## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
 
+If you don't have access to a faster internet connection, you may also try to install EcoAssist from a ZIP file: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
+
 Let me know if this doesn't work!
 
 ## `PackagesNotFoundError: The following packages are not available from current channels`
