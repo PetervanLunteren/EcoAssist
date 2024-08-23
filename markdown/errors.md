@@ -1,5 +1,14 @@
 Below you can find some common error messages and their potential solutions. If you can't figure it out yourself, raise an error in this repository or [email me](mailto:petervanlunteren@hotmail.com) the logfiles, a detailed explenation of what's going on and a way to recreate the error. 
 
+## Ask for debug mode
+There must be something going wrong in the backend. Can you run EcoAssist in debug mode and try again? 
+
+How to run in debug mode: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/debug_mode.md
+
+It won't solve the issue, but it will print more information about what is going on. If you could then copy-paste the full console text and send it to me - I'll investigate!
+
+Kind regards,
+
 ## How to run EcoAssist in debug mode?
 It is possible to run EcoAssist in debug mode, where it'll print its output in a console window. That should point us in the right direction if there is an error. How to run it in debug mode depends on your operating system.
 <details>
