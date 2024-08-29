@@ -1,6 +1,6 @@
 # library of inference functions to be used for classifying MD crops 
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 23 Jun 2024
+# Latest edit by Peter van Lunteren on 29 Aug 2024
 
 # import packages
 import io
@@ -210,6 +210,10 @@ def convert_detections_to_classification(json_path,
 
         # add cls classes to det label map
         for k, v in inverted_cls_label_map.items():
+
+            # if a model shares category names with MD, slightly modify it
+            if k in ["animal", "person", "vehicle"]:
+                k += " "
             inverted_det_label_map[k] = str(len(inverted_det_label_map) + 1)
 
         # loop and adjust
