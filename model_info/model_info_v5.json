@@ -448,7 +448,7 @@
             "description": "This model distinguishes between 53 species native to the Peruvian Andes. The training data was collected by SDZWA and comprises 201,943 images. We used a 70/20/10 Train/Val/Test split. The model reached an overall accuracy, precision, and recall of 88.9%, 88.6%, and 87.3% respectively on the test set.",
             "developer": "San Diego Zoo Wildlife Alliance",
             "env": "pytorch",
-            "type": "sdzwa-peru-andes",
+            "type": "sdzwa-pt",
             "download_info": [
                 [
                     "https://huggingface.co/Addax-Data-Science/Peruvian_Andes/resolve/main/andes_v1.pt?download=true",
