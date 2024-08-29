@@ -581,7 +581,7 @@
             "var_cls_class_thresh": "0.50",
             "var_cls_class_thresh_default": "0.50",
             "var_smooth_cls_animal": false,
-            "min_version": "5.13"
+            "min_version": "5.16"
         },
         "Iran - Addax Data Science": {
             "model_fname": "iran_v1.pt",
