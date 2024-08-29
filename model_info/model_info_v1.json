@@ -459,8 +459,8 @@
                     "efficientnet_v2_m-dc08266a.pth"
                 ],
                 [
-                    "https://huggingface.co/Addax-Data-Science/Peruvian_Andes/resolve/main/andes_classes.csv?download=true",
-                    "andes_classes.csv"
+                    "https://huggingface.co/Addax-Data-Science/Peruvian_Andes/resolve/main/classes.csv?download=true",
+                    "classes.csv"
                 ]
             ],
             "license": "https://opensource.org/license/mit",
