@@ -6,7 +6,7 @@
 # code that is generic for all model architectures that will be run via EcoAssist.
 
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 22 Jul 2024
+# Latest edit by Peter van Lunteren on 29 Aug 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -35,7 +35,7 @@ from torchvision.models import efficientnet
 
 # set paths
 efficientnet_pth_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'efficientnet_v2_m-dc08266a.pth')
-class_csv_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'andes_classes.csv')
+class_csv_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'classes.csv')
 
 # make sure windows trained models work on unix too
 import pathlib
