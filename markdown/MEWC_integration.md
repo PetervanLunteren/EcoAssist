@@ -179,7 +179,7 @@ Addax Data Science supports open-source principles, aiming to facilitate the dis
 ```json
 {
   "model_fname": "model_file.pt",
-  "description": "The model was trained on X images taken from database Y and is ment for Z.",
+  "description": "The model was trained on X images taken from database Y and is meant for Z.",
   "developer": "Addax Data Science",
   "env": "tensorflow",
   "type": "mewc",
