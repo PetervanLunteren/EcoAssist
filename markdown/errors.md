@@ -257,9 +257,10 @@ Double check if the eol type is set to CRLF:  https://superuser.com/a/790319/174
 There seems to be an issue with the Cuda version on our computer. Can you try the following:
 1. Disable VPN, firewall, proxy, etc if possible.
 2. Install Cuda 11.3 from https://developer.nvidia.com/cuda-11.3.0-download-archive
-3. Reboot computer
-4. Download latest EcoAssist install file from https://addaxdatascience.com/ecoassist/
-5. Execute the install script with admin access if possible
+3. Make sure you have a recent driver installed: https://www.nvidia.com/download/index.aspx
+4. Reboot your computer
+5. Download latest EcoAssist install file from https://addaxdatascience.com/ecoassist/
+6. Execute the install script with admin access if possible
 
 
 ## GPU out of memory
@@ -267,8 +268,5 @@ There seems to be an issue with the Cuda version on our computer. Can you try th
 The error message is saying that the GPU is out of memory. In other words, it can't handle the workload. Apart from buying new hardware, there are a few things you can do.
 1. Make sure you have a recent driver installed, then reboot: https://www.nvidia.com/download/index.aspx
 2. Increase the paging file size. See FAQ 6 - point 1: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/FAQ.md#faq-6-what-should-i-do-when-i-run-out-ofmemory. Please note that the rest of these FAQs are for model training, so are not necessarily applicable for your situation when deploying an existing model. 
-3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will result in decreased accuracy.
+3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
-
-
-
