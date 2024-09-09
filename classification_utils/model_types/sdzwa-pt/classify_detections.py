@@ -66,7 +66,7 @@ class EfficientNet(nn.Module):
         super(EfficientNet, self).__init__()
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.model = efficientnet.efficientnet_v2_m(weights=None)
-        self.model.load_state_dict(torch.load(efficientnet_pth_fpath))
+        self.model.load_state_dict(torch.load(efficientnet_pth_fpath, map_location=torch.device(device_str)))
         if tune:
             for params in self.model.parameters():
                 params.requires_grad = True
