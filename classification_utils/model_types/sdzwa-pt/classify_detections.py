@@ -67,7 +67,6 @@ class EfficientNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.model = efficientnet.efficientnet_v2_m(weights=None)
         self.model.load_state_dict(torch.load(efficientnet_pth_fpath, map_location=torch.device(device_str)))
-        self.model.to(torch.device(device_str))
         if tune:
             for params in self.model.parameters():
                 params.requires_grad = True
@@ -76,6 +75,7 @@ class EfficientNet(nn.Module):
                 params.requires_grad = True
         num_ftrs = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Linear(in_features=num_ftrs, out_features=num_classes)
+        self.model.to(torch.device(device_str))
 
     def forward(self, x):
         '''
