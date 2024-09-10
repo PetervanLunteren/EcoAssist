@@ -56,6 +56,11 @@ if not GPU_availability:
     GPU_availability = torch.cuda.is_available()
     device_str = 'cuda'
 
+print("debug 10 sept") # DEBUG
+print(device_str)
+print(GPU_availability)
+
+
 # init efficientnet
 class EfficientNet(nn.Module):
 
