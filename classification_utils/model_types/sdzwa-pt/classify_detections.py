@@ -92,7 +92,7 @@ classes = pd.read_csv(class_csv_fpath)
 model = EfficientNet(len(classes), tune=False)
 checkpoint = torch.load(cls_model_fpath, map_location=torch.device(device_str))
 model.load_state_dict(checkpoint['model'])
-model.to(device_str)
+model.to(torch.device(device_str))
 model.eval()
 model.framework = "EfficientNet"
 device = torch.device(device_str)
