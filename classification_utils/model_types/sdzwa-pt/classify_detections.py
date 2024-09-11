@@ -53,8 +53,9 @@ try:
 except:
     pass
 if not GPU_availability:
-    GPU_availability = torch.cuda.is_available()
-    device_str = 'cuda'
+    if torch.cuda.is_available():
+        GPU_availability = True
+        device_str = 'cuda'
 
 print("debug 10 sept") # DEBUG
 print(device_str)
