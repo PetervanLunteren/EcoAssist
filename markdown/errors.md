@@ -270,3 +270,16 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 2. Increase the paging file size. See FAQ 6 - point 1: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/FAQ.md#faq-6-what-should-i-do-when-i-run-out-ofmemory. Please note that the rest of these FAQs are for model training, so are not necessarily applicable for your situation when deploying an existing model. 
 3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
+
+## Alternative installation method for security-restricted systems
+
+It seems that you may be encountering some security-related issues, which is common when working on government, university, or company computers.
+
+To help you with this, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
+
+You can find the alternative installation guide here:
+https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows
+
+Let me know how it works for you, and feel free to reach out if you have any questions or encounter any issues.
+
+Best regards,
