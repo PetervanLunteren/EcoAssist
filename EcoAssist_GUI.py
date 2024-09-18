@@ -39,6 +39,7 @@
     #         adjust the scroll region, of make an option to close the help text
     # - shift forcus on first label. See email Grant ('Another small request').
     # - get rid of the default label pane in the top right. Or at least make it less prominent. 
+    # - remove the X cross to remove the box label pane. No need to have an option to remove it. It's difficult to get it back on macOS. 
 
 # import packages like a very pointy half christmas tree
 import os
