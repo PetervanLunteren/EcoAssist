@@ -40,8 +40,10 @@
     # - shift forcus on first label. See email Grant ('Another small request').
     # - get rid of the default label pane in the top right. Or at least make it less prominent. 
     # - remove the X cross to remove the box label pane. No need to have an option to remove it. It's difficult to get it back on macOS. 
+    # - see if you can add the conf of the bbox in the box label pane too. just for clarification purposes for threshhold settings (see email Grant "Showing confidence level")
+    # - there should be a setting that shows box labels inside the image. turn this on by default.
 
-# import packages like a very pointy half christmas tree
+#import packages like a very pointy half christmas tree
 import os
 import re
 import sys
