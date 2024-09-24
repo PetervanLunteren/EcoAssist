@@ -32,6 +32,26 @@ Below are instructions for EcoAssist users who are unable to execute the normal 
 11. If you want, you can create a shortcut file so you don't always have to navigate to the `open.bat` file. If you still have your shortcut file left from the normal install, that will work fine. If not, you can create one by right-clicking on `open.bat` > (Optionally: 'Show more options') > Create shortcut. Then drag and drop that shortcut file to your desktop and rename it to 'EcoAssist'.
 <div align="center"><img width="90" alt="Screenshot 2024-08-14 at 07 11 06" src="https://github.com/user-attachments/assets/d590cf69-a7fd-4b63-8d66-3278fa9443a4"></div>
 
+_______________________________________________________________________
+<details>
+<summary><b>Download using Wget or cURL [for developers]</b></summary>
+  
+<br>
+
+I just want to say thanks for the support, I managed to download and use Ecoassist. But for future reference, the trick with loading cookies did not work. I ended up having to go to the google api page, creating a token and then downloading the file from the api using curl to add a custom header. Fortunately, curl had the same "continue" option for download  so it still helped with my unreliable internet. 
+  
+<br>
+
+The command line was something like that
+
+<br>
+
+```
+curl -H "Authorization: Bearer <TOKEN>" https://www.googleapis.com/drive/v3/files/1i0v4MgfFhp5RbK6pBseyaYawP1B6hglr?alt=media -o Ecoassist.zip
+```
+</details>
+
+
 
 
 
