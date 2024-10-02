@@ -278,7 +278,7 @@ It seems that you may be encountering some security-related issues (firewall, VP
 If that doesn't work, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
 
 You can find the alternative installation guide here:
-https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows
+https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
 
 Let me know how it works for you, and feel free to reach out if you have any questions or encounter any issues.
 
