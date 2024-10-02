@@ -3,8 +3,11 @@
     "main-body": "main-body",
     "option-1-title": "option-1-title",
     "option-1-button-text": "option-1-button-text",
+    "option-1-url": "option-1-url",
     "option-2-title": "option-2-title",
     "option-2-button-text": "option-2-button-text",
+    "option-2-url": "option-2-url",
     "option-3-title": "option-3-title",
-    "option-3-button-text": "option-3-button-text"
+    "option-3-button-text": "option-3-button-text",
+    "option-3-url": "option-3-url"
 }
