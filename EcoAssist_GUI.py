@@ -127,6 +127,16 @@ from visualise_detection.bounding_box import bounding_box as bb
 # log pythonpath
 print(sys.path)
 
+# set DPI awareness on Windows
+if platform.system() == "Windows":
+    import ctypes
+    try:
+        # attempt
+        ctypes.windll.shcore.SetProcessDpiAwareness(1) 
+    except AttributeError:
+        # fallback for older versions of Windows
+        ctypes.windll.user32.SetProcessDPIAware()
+
 # load previous settings
 def load_global_vars():
     var_file = os.path.join(EcoAssist_files, "EcoAssist", "global_vars.json")
