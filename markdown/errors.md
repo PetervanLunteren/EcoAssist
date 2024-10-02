@@ -273,9 +273,9 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 
 ## Alternative installation method for security-restricted systems
 
-It seems that you may be encountering some security-related issues, which is common when working on government, university, or company computers.
+It seems that you may be encountering some security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which is common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. 
 
-To help you with this, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
+If that doesn't work, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
 
 You can find the alternative installation guide here:
 https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows
