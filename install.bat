@@ -9,7 +9,7 @@ echo off
 set DATE_OF_LAST_EDIT="16 Aug 2024"
 
 @REM installing version
-set CURRENT_VERSION=5.16
+set CURRENT_VERSION=5.17
 
 @REM print header
 echo:
@@ -461,13 +461,23 @@ call conda clean --all -y
 @REM install mamba
 call conda install mamba -n base -c conda-forge -y
 
-@REM remove all old ecoassist conda evironments on the conda way, if present
-call mamba env remove -n ecoassistcondaenv -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-yolov8 -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-mewc -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-base -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-pytorch -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-tensorflow -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+@REM remove all old ecoassist conda evironments on the conda way, if possible
+set environments=ecoassistcondaenv ecoassistcondaenv-yolov8 ecoassistcondaenv-mewc ecoassistcondaenv-base ecoassistcondaenv-pytorch ecoassistcondaenv-tensorflow
+for %%E in (%environments%) do (
+    echo "Attempting to remove environment %%E..."
+    if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
+        echo "Environment directory %%E exists. Proceeding with removal."
+        call mamba env remove -n %%E -y || (
+            echo "Could not mamba env remove %%E, proceeding to remove via rd..."
+            rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\%%E"
+        ) || (
+            echo "There was an error trying to execute the conda command for %%E. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+            cmd /k & exit
+        )
+    ) else (
+        echo "Environment directory %%E does not exist. Skipping removal."
+    )
+)
 
 @REM loop over common locations for old ecoassist conda environments and remove them the hard way (rd)
 for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
