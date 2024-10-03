@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 31 Jul 2024
+# Latest edit by Peter van Lunteren on 3 Oct 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
@@ -114,6 +114,7 @@ PIL_dir_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs"
 PIL_mdl_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "tech.png"))
 PIL_spp_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "paw.png"))
 PIL_run_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "shuttle.png"))
+launch_count_file = os.path.join(EcoAssist_files, 'launch_count.json')
 
 # insert pythonpath
 sys.path.insert(0, os.path.join(EcoAssist_files))
@@ -1572,7 +1573,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     
     # TODO: progressbars are not in front of other windows
     # check corrupted images # TODO: this needs to be included in the progressbar
-    print(f"DEBUG start")
     corrupted_images = check_images(file_list_txt)
 
     # fix images # TODO: this needs to be included in the progressbar
@@ -1581,7 +1581,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                             [f"There are {len(corrupted_images)} images corrupted. Do you want to repair?",
                             f"Hay {len(corrupted_images)} imágenes corruptas. Quieres repararlas?"][lang_idx]):
                 fix_images(corrupted_images)
-    print(f"DEBUG end")
 
     # read label map from json
     label_map = fetch_label_map_from_json(recognition_file)
@@ -5137,6 +5136,116 @@ def bring_window_to_top_but_not_for_ever(master):
     master.attributes('-topmost', True)
     master.after(1000, lift_toplevel)
 
+# bunch of functions to keep track of the number of times the application has been launched
+# the donation popup window will show every 5th launch
+def load_launch_count():
+    if not os.path.exists(launch_count_file):
+        with open(launch_count_file, 'w') as f:
+            json.dump({'count': 0}, f)
+    with open(launch_count_file, 'r') as f:
+        data = json.load(f)
+        count = data.get('count', 0)
+        print(f"Launch count: {count}")
+        return count
+def save_launch_count(count):
+    with open(launch_count_file, 'w') as f:
+        json.dump({'count': count}, f)
+def check_donation_window_popup():
+    launch_count = load_launch_count()
+    launch_count += 1
+    save_launch_count(launch_count)
+    if launch_count % 5 == 0:
+        show_donation_popup()
+
+# show donation window
+def show_donation_popup():
+    
+    # define functions
+    def open_link(url):
+        webbrowser.open(url)
+    
+    # define text variables
+    donation_text = [
+        "At Addax Data Science, we are dedicated to making conservation technology accessible to everyone—especially for those who may not have the funds to support it. But... developing and maintaining EcoAssist requires considerable time and resources, all contributed by volunteers. Donations will directly fund platform maintenance, new features, and the development of species identification models.",
+        "En Addax Data Science, nos dedicamos a hacer que la tecnología de conservación sea accesible para todos, especialmente para aquellos que pueden no tener los fondos para apoyarla. Pero... desarrollar y mantener EcoAssist requiere considerable tiempo y recursos, todos aportados por voluntarios. Las donaciones financiarán directamente el mantenimiento de la plataforma, nuevas funciones y el desarrollo de modelos de identificación de especies."
+    ]
+    title_text = [
+        "Does EcoAssist make your work easier?",
+        "¿EcoAssist hace tu trabajo más fácil?"
+    ]
+    subtitle_text = [
+        "Let's keep EcoAssist free and available for everybody!",
+        "¡Mantengamos EcoAssist libre y disponible para todos!"
+    ]
+    suggested_amounts_text = [
+        "Suggested amounts",
+        "Cantidades sugeridas"
+    ]
+    questions_text = [
+        "Let us know if you have any questions or want to receive an invoice for tax-deduction purposes.",
+        "Háganos saber si tiene alguna pregunta o desea recibir una factura para fines de deducción de impuestos."
+    ]
+    email_text = "peter@addaxdatascience.com"
+    btn_1_txt = [
+        "\nFor individuals:\n€5 per month\n",
+        "\nPara individuos:\n€5 por mes\n"
+    ]
+    btn_2_txt = [
+        "\nFor ongoing support:\n€10 per month\n",
+        "\nPara apoyo continuo:\n€10 por mes\n"
+    ]
+    btn_3_txt = [
+        "\nFor organisations:\n€50 per month\n",
+        "\nPara organizaciones:\n€50 por mes\n"
+    ]
+    btn_4_txt = [
+        "\nChoose your\nown amount\n",
+        "\nElige tu\npropia cantidad\n"
+    ]
+
+    # create window
+    do_root = customtkinter.CTkToplevel(root)
+    do_root.title("Model information")
+    do_root.geometry("+10+10")
+    bring_window_to_top_but_not_for_ever(do_root)
+
+    # title frame
+    row_idx = 1
+    frm_1 = donation_popup_frame(master=do_root)
+    frm_1.grid(row=row_idx, padx=PADX, pady=PADY, sticky="nswe")
+    title_lbl_1 = customtkinter.CTkLabel(frm_1, text=title_text[lang_idx], font=main_label_font)
+    title_lbl_1.grid(row=0, padx=PADX, pady=(PADY, PADY/2), sticky="nswe")
+    descr_txt_1 = customtkinter.CTkTextbox(master=frm_1, corner_radius=10, height=90, wrap="word", fg_color="transparent")
+    descr_txt_1.grid(row=1, padx=PADX, pady=(0, 0), sticky="nswe")
+    descr_txt_1.tag_config("center", justify="center")
+    descr_txt_1.insert("0.0", donation_text[lang_idx], "center")
+    descr_txt_1.configure(state="disabled")
+    title_lbl_2 = customtkinter.CTkLabel(frm_1, text=subtitle_text[lang_idx], font=main_label_font)
+    title_lbl_2.grid(row=2, padx=PADX, pady=(0, PADY), sticky="nswe")
+
+    # buttons frame
+    btns_frm = customtkinter.CTkFrame(master=do_root)
+    btns_frm.columnconfigure(0, weight=1, minsize=200)
+    btns_frm.columnconfigure(1, weight=1, minsize=200)
+    btns_frm.columnconfigure(2, weight=1, minsize=200)
+    btns_frm.columnconfigure(3, weight=1, minsize=200)
+    btns_frm.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+    btn_lbl_1 = customtkinter.CTkLabel(btns_frm, text=suggested_amounts_text[lang_idx], font=italic_label_font)
+    btn_lbl_1.grid(row=0, columnspan=4, padx=PADX, pady=(PADY/2, PADY/2), sticky="nswe")
+    btn_1 = customtkinter.CTkButton(btns_frm, text=btn_1_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/aEU8xxh1y2EXgow8wx"))
+    btn_1.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+    btn_2 = customtkinter.CTkButton(btns_frm, text=btn_2_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/9AQ5ll4eM6Vd5JSaEE"))
+    btn_2.grid(row=1, column=1, padx=(0, PADX), pady=PADY, sticky="nwse")
+    btn_3 = customtkinter.CTkButton(btns_frm, text=btn_3_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/fZedRRbHe0wP5JS005"))
+    btn_3.grid(row=1, column=2, padx=(0, PADX), pady=PADY, sticky="nswe")
+    ntb_4 = customtkinter.CTkButton(btns_frm, text=btn_4_txt[lang_idx], command=lambda: open_link("https://paymentlink.mollie.com/payment/al7x0Z6k2XWvEcdTwB5c7/"))
+    ntb_4.grid(row=1, column=3, padx=(0, PADX), pady=PADY, sticky="nwse")
+    btn_lbl_2 = customtkinter.CTkLabel(btns_frm, text=questions_text[lang_idx], font=italic_label_font)
+    btn_lbl_2.grid(row=2, columnspan=4, padx=PADX, pady=(PADY/2, 0), sticky="nswe")
+    btn_lbl_4 = customtkinter.CTkLabel(btns_frm, text=email_text, cursor="hand2", font=url_label_font)
+    btn_lbl_4.grid(row=3, columnspan=4, padx=PADX, pady=(0, PADY/2), sticky="nswe")
+    btn_lbl_4.bind("<Button-1>", lambda e: callback("mailto:peter@addaxdatascience.com"))
+
 # open window with model info
 def show_model_info(title = None, model_dict = None, new_model = False):
     
@@ -5292,6 +5401,12 @@ class model_info_frame(customtkinter.CTkFrame):
         super().__init__(master, **kwargs)
         self.columnconfigure(0, weight=1, minsize=120)
         self.columnconfigure(1, weight=1, minsize=500)
+
+# class frame for donation window
+class donation_popup_frame(customtkinter.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
+        self.columnconfigure(0, weight=1, minsize=500)
 
 # make sure the latest updated models also are listed in the dpd menu
 def update_model_dropdowns():
@@ -7105,6 +7220,7 @@ s.configure("TNotebook", tabposition='n')
 root.withdraw()
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
 url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
+italic_label_font = customtkinter.CTkFont(family='CTkFont', size=14, slant='italic')
 
 # ADVANCED MODE WINDOW 
 advanc_mode_win = customtkinter.CTkToplevel(root)
@@ -8230,6 +8346,9 @@ def main():
 
     # try to download the model info json to check if there are new models
     fetch_latest_model_info()
+
+    # show donation popup if user has launched the app a certain number of times
+    check_donation_window_popup()
 
     # initialise start screen
     enable_frame(fst_step)
