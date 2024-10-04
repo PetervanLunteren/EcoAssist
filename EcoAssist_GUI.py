@@ -42,6 +42,8 @@
     # - remove the X cross to remove the box label pane. No need to have an option to remove it. It's difficult to get it back on macOS. 
     # - see if you can add the conf of the bbox in the box label pane too. just for clarification purposes for threshhold settings (see email Grant "Showing confidence level")
     # - there should be a setting that shows box labels inside the image. turn this on by default.
+    # - remove the messagebox that warns you that you're not completely done with the human verification before postprocess. just do it.
+    # - why do I ask if the user is done after verification anyway? why not just take the results as they are and accept it? 
 
 #import packages like a very pointy half christmas tree
 import os
