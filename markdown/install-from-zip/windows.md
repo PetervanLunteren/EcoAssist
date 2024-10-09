@@ -49,6 +49,10 @@ The command line was something like that
 ```
 curl -H "Authorization: Bearer <TOKEN>" https://www.googleapis.com/drive/v3/files/1i0v4MgfFhp5RbK6pBseyaYawP1B6hglr?alt=media -o Ecoassist.zip
 ```
+
+Essentially I followed the instructions on this page, more precisely thunder's recommendation. 
+
+You have to go https://developers.google.com/oauthplayground/ get a token for the Driver API v3 and use the given token in curl request (or for a native window solution using `Invoke-RestMethod` in the powershell.
 </details>
 
 
