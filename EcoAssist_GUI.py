@@ -20,6 +20,7 @@
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: INSTALL - why put the shortcut not on the dekstop on windows?
+# TODO: MINOR - By the way, in the EcoAssist UI, I think the frame extraction status popup uses the same wording as the detection popup. They both say something about "frame X of Y". I think for the frame extraction, it should be "video X of Y".
 # TODO: JSON - keep track of the original confidence scores whenever it changes (from detection to classification, after human verification, etc.)
 # TODO: SMALL FIXES - see list from Saul ('RE: tentative agenda / discussion points') - 12 July 01:11. 
 # TODO: ERROR - get rid of error: How about an ok/cancel dialog that simply asks: ‘Recognition file already exists. Do you want me to over-write it?’
