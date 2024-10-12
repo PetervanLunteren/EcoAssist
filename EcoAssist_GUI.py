@@ -16,6 +16,7 @@
 # TODO: SEQ SEP - add feature to separate images into sequence subdirs. Something like "treat sequence as detection" or "Include all images in the sequence" while doing the separation step.
 # TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
 # TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
+# TODO: WEBSITE - add info about zip install on windows install page. While you're at it, also print info about ZIP install when internet connection issues 
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
