@@ -283,3 +283,26 @@ https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zi
 Let me know how it works for you, and feel free to reach out if you have any questions or encounter any issues.
 
 Best regards,
+
+## Custom model inquiry
+
+Glad to hear EcoAssist can help you in your work!
+
+I used to have a train feature inside EcoAssist, but I've removed that some time ago. Although it was technically working, the results weren't very good. Science has since moved away from training detection models to identify species, to training image classifiers to be used in conjunction with detection models. The old EcoAssist way is training detection models. That being said, you can still do that if you want. A tutorial can be found here (https://drive.google.com/drive/folders/12Qn05KE7TXYhDKLHGSKz1uG-toep9sqx?usp=sharing), and you can downgrade your EcoAssist version to 4.3 via the link in the FAQ section (https://addaxdatascience.com/ecoassist/#FAQ).
+
+That being said, the better way is to train an image classifier. For this I've started a collaboration with some folks from the University of Tasmania. They provide a pipeline on training species identification models, which then can be loaded into EcoAssist. I'll admit that it can be a bit daunting, since you'll need to at least have an understanding of Python and Docker. If you want to go down this path, I advise you to first do the Quick Start Vignette (https://github.com/zaandahl/mewc/blob/master/vignette.md).
+1. how to train: https://github.com/zaandahl/mewc
+2. how to load: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/MEWC_integration.md
+
+If you prefer, you can also outsource it and let Addax Data Science develop a species identification model for you. These models will be deployable via EcoAssist. More information here: https://addaxdatascience.com/species-recognition-models/ We'll work together on what the best way is to annotate the images and divide them into classes. I can also pull camera trap images from public repositories of comparable ecological studies if we need additional images to strengthen the model. 
+
+Here are some similar projects I've done in the past, which might give you an idea.
+1. Namibia: https://addaxdatascience.com/projects/2023-01-dlc/
+2. New Zealand: https://addaxdatascience.com/projects/#2024-06-NZF
+3. Warning system for wolves: https://addaxdatascience.com/projects/#project-wolf
+
+I’m also working on species identification models for Hawaii (for the USDA), Arizona (for the University of Arizona), British Columbia, and Scotland, though these are still in development.
+
+Anyway, hope this helps!
+
+Kind regards,
