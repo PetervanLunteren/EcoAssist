@@ -228,9 +228,9 @@
             "var_smooth_cls_animal": false,
             "min_version": "5.4"
         },
-        "Columbian Amazon - AI for Good Lab, Microsoft": {
+        "Colombian Amazon - AI for Good Lab, Microsoft": {
             "model_fname": "AI4GAmazonClassification_v0.0.0.ckpt",
-            "description": "This model was previously named 'Amazon Rainforest'. The model is trained to classify animals into their genus taxonomic group. The training data are collected by the Department of Biological sciences at Universidad de los Andes. All the images come from the 'Magdalena Medio' region in Colombia. The dataset contains 41,904 images across 36 labeled genera, and it is distributed into 33,569 images in the training set and 8,335 images in the validation set. In our inference of the Amazon Rainforest dataset, we implement a 98% confidence threshold as part of a human-in-the-loop procedure. We observe that the model predicts 90% of the data with recognition confidence exceeding this threshold. Furthermore, within this high-confidence subset, the model achieves an average classification accuracy of 92%. This means that, after filtering out empty images with MegaDetector, only 10% of the detected animal objects require human validation.",
+            "description": "This model was previously named 'Columbian Amazon'. The model is trained to classify animals into their genus taxonomic group. The training data are collected by the Department of Biological sciences at Universidad de los Andes. All the images come from the 'Magdalena Medio' region in Colombia. The dataset contains 41,904 images across 36 labeled genera, and it is distributed into 33,569 images in the training set and 8,335 images in the validation set. In our inference of the Amazon Rainforest dataset, we implement a 98% confidence threshold as part of a human-in-the-loop procedure. We observe that the model predicts 90% of the data with recognition confidence exceeding this threshold. Furthermore, within this high-confidence subset, the model achieves an average classification accuracy of 92%. This means that, after filtering out empty images with MegaDetector, only 10% of the detected animal objects require human validation.",
             "developer": "AI For Good Lab, Microsoft",
             "owner": "AI For Good Lab, Microsoft",
             "env": "base",
@@ -635,6 +635,59 @@
             "var_cls_class_thresh_default": "0.60",
             "var_smooth_cls_animal": true,
             "min_version": "5.8"
+        },
+        "Kirghizistan - Manas v1 - OSI-Panthera - Hex Data": {
+            "model_fname": "best_model_Fri_Sep__1_18_50_55_2023.pt",
+            "description": "This model is dedicated to the classification of the fauna from Kirghizistan. It was developped by Hex Data (https://hex-data.io) on behalf of OSI-Panthera (https://www.osi-panthera.org/). The model was trained on 42k images, with around 4k images per class, provided by the camera traps set up by OSI-Panthera. Class 'vide' (empty, in French), is used to try to set aside the few false negatives returned by MegaDetector. The rest correspond to the scientific name of the family or species detected.",
+            "developer": "Hex Data",
+            "env": "pytorch",
+            "type": "hex-data-pt",
+            "download_info": [
+                [
+                    "https://huggingface.co/Hex-Data/Panthera/resolve/main/best_model_Fri_Sep__1_18_50_55_2023.pt?download=true",
+                    "best_model_Fri_Sep__1_18_50_55_2023.pt"
+                ],
+                [
+                    "https://huggingface.co/Hex-Data/Panthera/resolve/main/classes_Fri_Sep__1_18_50_55_2023.pickle?download=true",
+                    "classes_Fri_Sep__1_18_50_55_2023.pickle"
+                ]
+            ],
+            "citation": "",
+            "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "total_download_size": "472 MB",
+            "info_url": "https://www.osi-panthera.org/",
+            "all_classes": [
+                "panthera_uncia",
+                "canidae",
+                "ochotonidae",
+                "vide",
+                "aves",
+                "ursidae",
+                "mustelidae",
+                "caprinae",
+                "marmota",
+                "muridae",
+                "leporidae"
+            ],
+            "selected_classes": [
+                "panthera_uncia",
+                "canidae",
+                "ochotonidae",
+                "vide",
+                "aves",
+                "ursidae",
+                "mustelidae",
+                "caprinae",
+                "marmota",
+                "muridae",
+                "leporidae"
+            ],
+            "var_cls_detec_thresh": "0.33",
+            "var_cls_detec_thresh_default": "0.33",
+            "var_cls_class_thresh": "0.70",
+            "var_cls_class_thresh_default": "0.70",
+            "var_smooth_cls_animal": false,
+            "min_version": "5.18"
         },
         "Southwest USA v3 - San Diego Zoo Wildlife Alliance": {
             "model_fname": "southwest_v3.pt",
