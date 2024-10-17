@@ -203,7 +203,7 @@ cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssi
 @REM set conda cmds
 @REM check the default locations for a conda install
 for %%x in (miniforge3, miniconda3, anaconda3) do ( 
-    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%LocalAppData%", "%AppData%") do ( 
+    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%LocalAppData%", "%AppData%", "C:\tools") do ( 
         set CHECK_DIR=%%y\%%x\
         set CHECK_DIR=!CHECK_DIR:"=!
         echo Checking conda dir:                    '!CHECK_DIR!'
