@@ -4178,7 +4178,7 @@ def check_checkpnt():
     global loc_chkpnt_file
     loc_chkpnt_files = []
     for filename in os.listdir(var_choose_folder.get()):
-        if re.search('^checkpoint_\d+\.json$', filename):
+        if re.search('^md_checkpoint_\d+\.json$', filename):
             loc_chkpnt_files.append(filename)
     if len(loc_chkpnt_files) == 0:
         mb.showinfo(["No checkpoint file found", "No se ha encontrado ningún archivo de puntos de control"][lang_idx],
