@@ -93,6 +93,9 @@ All files are located in one folder, called `EcoAssist_files`. Please be aware t
 ## `Local variable 'elapsed time' referenced before assignment`
 This error message can be thrown when trying to deploy a model. It basically means that the model outputs some unexpected text. First of all, try if the model deploys succesfully over the test images supplied [here](https://github.com/PetervanLunteren/EcoAssist#test-your-installation). Check if your preloaded models are correctly downloaded. Sometimes protection software prevent the download of the actual model files. There should be two files named `md_v5a.0.0.pt` and `md_v5b.0.0.pt` in `\EcoAssist_files\pretrained_models\`. You can find the location of the EcoAssist_files [here](https://github.com/PetervanLunteren/EcoAssist#uninstall). If that isn't the problem, the logfiles should point you in the right direction.
 
+## ImportError: cannot import name 'generate_parser' from 'conda.cli.main'
+"I figured the error was due to a conflict between mamba and conda. So after uninstalling mamba the installation proceeded without any more issues."
+
 ## `SSL certificate problem: unable to get local issuer certificate` -> git
 It seems there is something going on with your SSL certificates. Most probably that is due to some security setting (VPN, firewall, proxy, etc.) which prevents it from downloading the specific package. Most of the time this can be fixed by simply disabling the VPN/firewall/proxy and reinstalling EcoAssist. If that doesn't work, try switching internet networks, from WiFi to ethernet, or vice versa. If all that doesn't work, you can disable SSL verification temporarily. If you want that, open a new console window and execute
 
