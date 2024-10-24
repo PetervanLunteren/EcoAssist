@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="16 Aug 2024"
+set DATE_OF_LAST_EDIT="24 Oct 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.18
@@ -318,7 +318,6 @@ if "%1%"=="sandbox" (
 ) else (
   set "GITHUB_BRANCH_NAME=main"
 )
-
 @REM clone EcoAssist git if not present
 if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
     echo Dir EcoAssist already exists! Skipping this step. | wtee -a "%LOG_FILE%"
@@ -452,14 +451,34 @@ echo Hello world! >> "%LOCATION_ECOASSIST_FILES%\first-startup.txt"
 @REM add conda dir to path
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 
+@REM check if the mamba command is available
+where mamba >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Mamba is not found. Switching to conda...
+    set CONDA_EXECUTABLE=conda
+) else (
+    echo Mamba is found. Using mamba...
+    set CONDA_EXECUTABLE=mamba
+)
+
+@REM print mamba and conda versions
+echo Checking mamba version...
+call mamba --version
+
+echo Checking conda version...
+call conda --version
+
+@REM list environments
+call %CONDA_EXECUTABLE% env list
+
 @REM suppress conda warnings about updates
-call conda config --set notify_outdated_conda false
+call %CONDA_EXECUTABLE% config --set notify_outdated_conda false
 
 @REM remove index cache, lock files, unused cache packages, and tarballs
-call conda clean --all -y
+call %CONDA_EXECUTABLE% clean --all -y
 
 @REM install mamba
-call conda install mamba -n base -c conda-forge -y
+call %CONDA_EXECUTABLE% install mamba -n base -c conda-forge -y
 
 @REM remove all old ecoassist conda evironments on the conda way, if possible
 set environments=ecoassistcondaenv ecoassistcondaenv-yolov8 ecoassistcondaenv-mewc ecoassistcondaenv-base ecoassistcondaenv-pytorch ecoassistcondaenv-tensorflow
@@ -467,8 +486,8 @@ for %%E in (%environments%) do (
     echo "Attempting to remove environment %%E..."
     if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
         echo "Environment directory %%E exists. Proceeding with removal."
-        call mamba env remove -n %%E -y || (
-            echo "Could not mamba env remove %%E, proceeding to remove via rd..."
+        call %CONDA_EXECUTABLE% env remove -n %%E -y || (
+            echo "Could not mamba/conda env remove %%E, proceeding to remove via rd..."
             rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\%%E"
         ) || (
             echo "There was an error trying to execute the conda command for %%E. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
@@ -502,7 +521,7 @@ for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do (
 
 @REM create mamba env and install packages for MegaDetector
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-call mamba env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+call %CONDA_EXECUTABLE% env create --name ecoassistcondaenv-base --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-base
@@ -523,13 +542,13 @@ call activate ecoassistcondaenv-base
 "%EA_PIP_EXE_BASE%" uninstall torch torchvision torchaudio -y
 "%EA_PIP_EXE_BASE%" install torch==2.3.1+cu118 torchaudio==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call conda deactivate
+call %CONDA_EXECUTABLE% deactivate
 
 @REM create and log dedicated environment for pytorch classification
-call mamba create -n ecoassistcondaenv-pytorch python=3.8 -y
+call %CONDA_EXECUTABLE% create -n ecoassistcondaenv-pytorch python=3.8 -y
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
 call activate ecoassistcondaenv-pytorch
-call mamba install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
+call %CONDA_EXECUTABLE% install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 "%EA_PIP_EXE_PYTORCH%" install ultralytics==8.0.230
 "%EA_PIP_EXE_PYTORCH%" install timm
 "%EA_PIP_EXE_PYTORCH%" install pandas
@@ -541,10 +560,10 @@ call mamba install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-
 "%EA_PIP_EXE_PYTORCH%" install versions
 "%EA_PIP_EXE_PYTORCH%" install jsonpickle
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call conda deactivate
+call %CONDA_EXECUTABLE% deactivate
 
 @REM create and log dedicated environment for tensorflow classification
-call mamba env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
+call %CONDA_EXECUTABLE% env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
