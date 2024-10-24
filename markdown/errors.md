@@ -287,15 +287,15 @@ Let me know how it works for you, and feel free to reach out if you have any que
 
 Best regards,
 
-## Custom model inquiry
+## Train your own model inquiry
 
 Glad to hear EcoAssist can help you in your work!
 
 I used to have a train feature inside EcoAssist, but I've removed that some time ago. Although it was technically working, the results weren't very good. Science has since moved away from training detection models to identify species, to training image classifiers to be used in conjunction with detection models. The old EcoAssist way is training detection models. That being said, you can still do that if you want. A tutorial can be found here (https://drive.google.com/drive/folders/12Qn05KE7TXYhDKLHGSKz1uG-toep9sqx?usp=sharing), and you can downgrade your EcoAssist version to 4.3 via the link in the FAQ section (https://addaxdatascience.com/ecoassist/#FAQ).
 
 That being said, the better way is to train an image classifier. For this I've started a collaboration with some folks from the University of Tasmania. They provide a pipeline on training species identification models, which then can be loaded into EcoAssist. I'll admit that it can be a bit daunting, since you'll need to at least have an understanding of Python and Docker. If you want to go down this path, I advise you to first do the Quick Start Vignette (https://github.com/zaandahl/mewc/blob/master/vignette.md).
-1. how to train: https://github.com/zaandahl/mewc
-2. how to load: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/MEWC_integration.md
+1. How to train: https://github.com/zaandahl/mewc
+2. How to load: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/MEWC_integration.md
 
 If you prefer, you can also outsource it and let Addax Data Science develop a species identification model for you. These models will be deployable via EcoAssist. More information here: https://addaxdatascience.com/species-recognition-models/ We'll work together on what the best way is to annotate the images and divide them into classes. I can also pull camera trap images from public repositories of comparable ecological studies if we need additional images to strengthen the model. 
 
@@ -309,3 +309,24 @@ I’m also working on species identification models for Hawaii (for the USDA), A
 Anyway, hope this helps!
 
 Kind regards,
+
+## Update miniforge
+
+It seems that the problem might be due to the miniforge installation. A simple reinstall might do the trick!
+
+Could you please:
+
+1. Reboot your computer.
+2. If possible, temporarily disable the protection software.
+3. Uninstall existing miniforge by checking if there’s an entry in the Windows "Add or Remove Programs" section (use the searchbar at 'Start'). If it appears there, uninstall it using the standard process.
+4. Delete the miniforge folder if there are still files inside. Search your window explorer for 'miniforge3' (it is usually located at 'C:\Users\<username>\miniforge3\' or 'C:\ProgramData\miniforge3') and manually delete if there are still residual files left over.
+5. Download miniforge using this installer: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+6. Execute the installer and follow the steps. You can leave all settings as the default values. If you see a 'Windows protected your PC' warning, you may need to click 'More info' and 'Run anyway'.
+7. Reboot your computer after it finishes succesfully.
+    Repeat the EcoAssist installation using the latest installation file: https://addaxdatascience.com/ecoassist/#install.
+8. Copy-paste the entire console output and save it to a text file. You might need to send it to me, if it turns out EcoAssist won’t function properly.
+9. Double-click the shortcut file to open EcoAssist. Have some patience. The first time opening might take about a minute due to script compiling.
+10. If that doesn’t work, try opening it in debug mode: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/errors.md#how-to-run-ecoassist-in-debug-mode
+11. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
+
+I’ll take a look and help you to get EcoAssist running!
