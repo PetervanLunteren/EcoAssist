@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="24 Oct 2024"
+set DATE_OF_LAST_EDIT="29 Oct 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.18
@@ -227,7 +227,7 @@ echo:
 echo EcoAssist requires miniforge ^(or any other conda distribution^) to be installed on your device. It seems like this is not the case. To install Miniforge, simply download and execute the Miniforge installer via the link below. You can leave all settings as the default values. If you see a 'Windows protected your PC' warning, you may need to click 'More info' and 'Run anyway'.
 echo:
 echo:
-echo https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+echo https://github.com/conda-forge/miniforge/releases/download/24.9.0-0/Miniforge3-Windows-x86_64.exe
 echo:
 echo:
 cmd /k & exit
