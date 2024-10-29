@@ -320,7 +320,7 @@ Could you please:
 2. If possible, temporarily disable the protection software.
 3. Uninstall existing miniforge by checking if there’s an entry in the Windows "Add or Remove Programs" section (use the search bar at 'Start'). If it appears there, uninstall it using the standard process.
 4. Delete the miniforge folder if there are still files inside. Search your window explorer for 'miniforge3' (it is usually located at 'C:\Users\<username>\miniforge3\' or 'C:\ProgramData\miniforge3') and manually delete if there are still residual files left over.
-5. Download miniforge using this installer: https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
+5. Download miniforge using this installer: https://github.com/conda-forge/miniforge/releases/download/24.9.0-0/Miniforge3-Windows-x86_64.exe
 6. Execute the installer and follow the steps. You can leave all settings as the default values. If you see a 'Windows protected your PC' warning, you may need to click 'More info' and 'Run anyway'.
 7. Reboot your computer after it finishes successfully.
     Repeat the EcoAssist installation using the latest installation file: https://addaxdatascience.com/ecoassist/#install.
