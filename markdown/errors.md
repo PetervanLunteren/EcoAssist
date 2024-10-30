@@ -330,3 +330,24 @@ Could you please:
 11. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
 
 I’ll take a look and help you to get EcoAssist running!
+
+# Manually remove all ecoassist files
+I'm not sure what is gogin on, but I believe a hard reset might do the trick. 
+1. Reboot your computer.
+2. Open your C: drive in file explorer and search for "EcoAssist_files" and manually remove this folder. Make sure hidden items are shown.
+
+<img width="764" alt="Screenshot 2024-10-30 at 08 37 36" src="https://github.com/user-attachments/assets/80bc8f34-e3d2-4495-9885-ab532944aaa7">
+
+4. Now use the search term "ecoassistcondaenv-" and remove all those folders.
+
+<img width="766" alt="Screenshot 2024-10-30 at 09 41 20" src="https://github.com/user-attachments/assets/e04cd86b-2e59-4fa1-a5da-53cb95642952">
+
+6. Reboot your computer again.
+7. If possible, temporarily disable the protection software.
+8. Repeat the EcoAssist installation using the latest installation file: https://addaxdatascience.com/ecoassist/#install.
+9. Copy-paste the entire console output and save it to a text file. You might need to send it to me, if it turns out EcoAssist won’t function properly.
+10. Double-click the shortcut file to open EcoAssist. Have some patience. The first time opening might take about a minute due to script compiling.
+11. If that doesn’t work, try opening it in debug mode: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/errors.md#how-to-run-ecoassist-in-debug-mode
+12. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
+
+I’ll take a look and help you to get EcoAssist running!
