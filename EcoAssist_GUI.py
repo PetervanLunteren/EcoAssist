@@ -47,6 +47,7 @@
     # - remove the messagebox that warns you that you're not completely done with the human verification before postprocess. just do it.
     # - why do I ask if the user is done after verification anyway? why not just take the results as they are and accept it? 
     # - take the annotation confidence ranges the same as the image confidence ranges if the user specified them. Otherwise use 0.6-1.0.
+    # - Als ik inzoom, zoom ik altijd in op het midden en ik krijg het dan niet voor elkaar om de image te schuiven.
     # - Ondertussen ben ik erachter wanneer het label grijs wordt. Bij mij gebeurt dat als ik zelf een bounding box teken en als ik dan naar het volgende image ga, dan is “edit label” uitgegrijsd. Als ik dan de annotatie afsluit (dus niet de hele app) en dan weer verder ga, dan werkt het weer.
 
 #import packages like a very pointy half christmas tree
