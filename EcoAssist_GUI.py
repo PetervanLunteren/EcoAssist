@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 3 Oct 2024
+# Latest edit by Peter van Lunteren on 4 Nov 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
@@ -3956,11 +3956,11 @@ def switch_yolov5_git_to(model_type):
     repository = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
     if model_type == "old models": # MD
         if platform.processor() == "arm" and os.name != "nt": # M1 and M2
-            repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1") 
+            repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1", force = True) 
         else:
-            repository.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1")
+            repository.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1", force = True)
     elif model_type == "new models": # models trained trough EA v3.4
-        repository.git.checkout("3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8")
+        repository.git.checkout("3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8", force = True)
 
 # extract label map from custom model
 def extract_label_map_from_model(model_file):
