@@ -127,7 +127,7 @@ Cheers,
 ## `ValueError: path is on mount '...', start on mount '...'`
 This is a Windows error message and means that your training data is located on a different drive than EcoAssist. For example, it would say `ValueError: path is on mount 'C:', start on mount 'F:'`, which means that the training data is located on your `F:` drive, while EcoAssist is located on the `C:` drive. The sollution is to get everything on the same drive. So either install EcoAssist on the `F:` drive, or move the training data to the `C:` drive. 
 
-## `error: RPC failed; curl 92 HTTP/2 stream 5 was not closed cleanly: CANCEL (err 8)` while installing
+## Internet issues
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
 
 If you don't have access to a faster internet connection, you may also try to install EcoAssist from a ZIP file: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
@@ -274,7 +274,7 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
 
-## Alternative installation method for security-restricted systems
+## Security issues
 
 It seems that you may be encountering some security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which is common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. 
 
