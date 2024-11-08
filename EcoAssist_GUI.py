@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 4 Nov 2024
+# Latest edit by Peter van Lunteren on 8 Nov 2024
 
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
@@ -529,7 +529,8 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 if manually_checked:
                     vis_label = f"{bbox[0]} (verified)"
                 else:
-                    vis_label = f"{bbox[0]} {round(bbox[1], 3)}"
+                    conf_label = round(bbox[1], 2) if round(bbox[1], 2) != 1.0 else 0.99
+                    vis_label = f"{bbox[0]} {conf_label}"
                 color = colors[int(inverted_label_map[bbox[0]])]
                 bb.add(im_to_vis, *bbox[3:7], vis_label, color)
             im = os.path.join(dst_dir, file)
