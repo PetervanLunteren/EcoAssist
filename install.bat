@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="7 Nov 2024"
+set DATE_OF_LAST_EDIT="11 Nov 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.19
@@ -455,18 +455,22 @@ set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 where mamba >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo Mamba is not found. Switching to conda...
-    set CONDA_EXECUTABLE=conda
+    @REM set CONDA_EXECUTABLE=conda # DEBUG trial with full path
+    set CONDA_EXECUTABLE=%PATH_TO_CONDA_INSTALLATION%\Scripts\conda.exe
 ) else (
     echo Mamba is found. Using mamba...
-    set CONDA_EXECUTABLE=mamba
+    @REM set CONDA_EXECUTABLE=mamba # DEBUG trial with full path
+    set CONDA_EXECUTABLE=%PATH_TO_CONDA_INSTALLATION%\Scripts\mamba.exe
 )
 
 @REM print mamba and conda versions
 echo Checking mamba version...
 call mamba --version
+call %CONDA_EXECUTABLE% --version
 
 echo Checking conda version...
 call conda --version
+call %CONDA_EXECUTABLE% --version
 
 @REM list environments
 call %CONDA_EXECUTABLE% env list
