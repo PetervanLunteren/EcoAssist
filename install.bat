@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="11 Nov 2024"
+set DATE_OF_LAST_EDIT="13 Nov 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.19
@@ -503,8 +503,8 @@ for %%E in (%environments%) do (
 )
 
 @REM loop over common locations for old ecoassist conda environments and remove them the hard way (rd)
-for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
-    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%") do ( 
+for %%x in (miniforge3, mambaforge3, mambaforge, miniconda3, anaconda3) do ( 
+    for %%y in ("%ProgramData%", "%HOMEDRIVE%%HOMEPATH%", "%ProgramFiles%", "%ProgramFiles(x86)%", "%LocalAppData%", "%AppData%", "C:\tools") do ( 
         set CHECK_DIR=%%y\%%x\
         set CHECK_DIR=!CHECK_DIR:"=!
         echo Checking conda dir:                  '!CHECK_DIR!'
