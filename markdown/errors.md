@@ -273,7 +273,7 @@ This error usually occurs when the internet signal speed is too slow or unstable
 
 Otherwise it might be due to security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which are common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. 
 
-If that all doesn't work, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
+If that doesn't work or is not possible, I’ve prepared an alternative installation method that should bypass these restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
 
 You can find the alternative installation guide here:
 https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
