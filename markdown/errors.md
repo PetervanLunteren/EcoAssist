@@ -274,11 +274,13 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
 
-## Security issues
+## download from ZIP file
 
-It seems that you may be encountering some security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which is common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. 
+This error usually occurs when the internet signal speed is unstable or due to security-related issues (firewall, VPN, antivirus, proxy settings, etc.). Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
 
-If that doesn't work, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
+Security-related issues are common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. 
+
+If that all doesn't work, I’ve prepared an alternative installation method that should bypass these security restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated.
 
 You can find the alternative installation guide here:
 https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
