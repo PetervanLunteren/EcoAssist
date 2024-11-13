@@ -49,8 +49,8 @@
     # - remove the messagebox that warns you that you're not completely done with the human verification before postprocess. just do it.
     # - why do I ask if the user is done after verification anyway? why not just take the results as they are and accept it? 
     # - take the annotation confidence ranges the same as the image confidence ranges if the user specified them. Otherwise use 0.6-1.0.
-    # - Als ik inzoom, zoom ik altijd in op het midden en ik krijg het dan niet voor elkaar om de image te schuiven.
-    # - Ondertussen ben ik erachter wanneer het label grijs wordt. Bij mij gebeurt dat als ik zelf een bounding box teken en als ik dan naar het volgende image ga, dan is “edit label” uitgegrijsd. Als ik dan de annotatie afsluit (dus niet de hele app) en dan weer verder ga, dan werkt het weer.
+    # - When I zoom in, I always zoom in on the center, and then I can’t manage to move the image.
+    # - I figured out when the label becomes greyed out. For me, it happens when I draw a bounding box myself, and then when I go to the next image, "edit label" is greyed out. If I then close the annotation (but not the entire app) and continue, it works again.
 
 #import packages like a very pointy half christmas tree
 import os
