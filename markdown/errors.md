@@ -127,13 +127,6 @@ Cheers,
 ## `ValueError: path is on mount '...', start on mount '...'`
 This is a Windows error message and means that your training data is located on a different drive than EcoAssist. For example, it would say `ValueError: path is on mount 'C:', start on mount 'F:'`, which means that the training data is located on your `F:` drive, while EcoAssist is located on the `C:` drive. The sollution is to get everything on the same drive. So either install EcoAssist on the `F:` drive, or move the training data to the `C:` drive. 
 
-## Internet issues
-This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
-
-If you don't have access to a faster internet connection, you may also try to install EcoAssist from a ZIP file: https://github.com/PetervanLunteren/EcoAssist/blob/main/markdown/install-from-zip/windows.md
-
-Let me know if this doesn't work!
-
 ## `PackagesNotFoundError: The following packages are not available from current channels`
 It looks like it crashes because it can't access certain package repositories. I'm not sure, but my guess is that some kind of protection software (firewall, VPN, antivirus, proxy settings, etc.) might be blocking conda from accessing the required channels. Company computers often have protection software like this enabled. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled. Another possible solution is to run the conda installation with administrator privileges (if possible). Right-click on the installation script and select "Run as administrator."
 
@@ -274,7 +267,7 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
 
-## download from ZIP file
+## Download from ZIP file
 
 This error usually occurs when the internet signal speed is unstable or due to security-related issues (firewall, VPN, antivirus, proxy settings, etc.). Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
 
