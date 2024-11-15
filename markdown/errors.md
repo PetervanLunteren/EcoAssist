@@ -161,7 +161,7 @@ Solution comming up...
 
 ## Example email for faulty installation
 
-Seems like there was an issue during the installation. Nine times out of ten, these issues are due to security settings blocking certain downloads. This may be attributed to security software such as VPNs, proxy servers, firewall, or antivirus applications, which are known to be particularly strict on company computers. Could you please check if any of these security settings are enabled on your computer?
+It seems there was an issue during the installation. In most cases, such issues are caused by security settings blocking certain downloads. This is often due to security software such as VPNs, proxy servers, firewalls, or antivirus applications, which are particularly strict on company-managed computers. Could you please check if any of these security settings are enabled on your computer? Additionally, the security settings might be active on the internet connection you're using. If your connection is managed by a university, government, or other organization, it could be the source of the issue. If possible, try switching to a different network (e.g., use your home network instead), or switch between WiFi and ethernet to see if this resolves the problem.
 
 In order to debug, could you please:
 1. Reboot your computer.
