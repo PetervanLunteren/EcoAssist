@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 12 Aug 2023 (latest edit)
+### Peter van Lunteren, 15 Nov 2024 (latest edit)
 
 CURRENT_VERSION="5.19"
 
@@ -438,6 +438,9 @@ $PIP_PYWILDLIFE install pytorchwildlife
 $PIP_PYWILDLIFE install "setuptools<70"
 $PIP_PYWILDLIFE install jsonpickle
 conda deactivate
+
+# delete compressed versions of the packages
+conda clean --all --yes --force-pkgs-dirs
 
 # log system files with sizes after installation
 FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
