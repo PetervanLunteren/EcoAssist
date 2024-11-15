@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="13 Nov 2024"
+set DATE_OF_LAST_EDIT="15 Nov 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.19
@@ -568,6 +568,9 @@ call %CONDA_EXECUTABLE% deactivate
 
 @REM create and log dedicated environment for tensorflow classification
 call %CONDA_EXECUTABLE% env create --file EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml
+
+@REM delete compressed versions of the packages
+call %CONDA_EXECUTABLE% clean --all --yes --force-pkgs-dirs
 
 @REM log folder structure
 dir "%LOCATION_ECOASSIST_FILES%" | wtee -a "%LOG_FILE%"
