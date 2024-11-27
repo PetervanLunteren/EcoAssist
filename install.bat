@@ -6,7 +6,7 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM log the install file version
-set DATE_OF_LAST_EDIT="15 Nov 2024"
+set DATE_OF_LAST_EDIT="27 Nov 2024"
 
 @REM installing version
 set CURRENT_VERSION=5.19
@@ -389,7 +389,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
         "%EA_GIT_EXE%" fetch --unshallow
     )
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 393441e3cea82def9f9e6c968ab787f8e89c3056
+    "%EA_GIT_EXE%" checkout 23044843cc4772c7d587e6e8515f92e4d49b0702
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
