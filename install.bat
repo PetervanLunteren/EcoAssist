@@ -389,7 +389,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\cameratraps\" (
         "%EA_GIT_EXE%" fetch --unshallow
     )
     cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 23044843cc4772c7d587e6e8515f92e4d49b0702
+    "%EA_GIT_EXE%" checkout a13bef87001cb4682330b954d33b3728f6e56fe7
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\cameratraps" | wtee -a "%LOG_FILE%"
