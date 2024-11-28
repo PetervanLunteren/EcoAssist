@@ -14,7 +14,7 @@
     "var_use_checkpnts": false,
     "var_checkpoint_freq": "",
     "var_cont_checkpnt": false,
-    "var_process_vid": false,
+    "var_process_vid": true,
     "var_not_all_frames": false,
     "var_nth_frame": "",
     "var_separate_files": false,
