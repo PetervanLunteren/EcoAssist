@@ -1967,6 +1967,14 @@ def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file,
     hitl_final_window.destroy()
     change_hitl_var_in_json(recognition_file, "done")
 
+# check if input can be converted to float
+def is_valid_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
 # get size of file in appropriate unit
 def get_size(path):
     size = os.path.getsize(path)
@@ -2576,7 +2584,8 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
         if "Warning:" in line:
             if not "could not determine MegaDetector version" in line \
                 and not "no metadata for unknown detector version" in line \
-                and not "using user-supplied image size" in line:
+                and not "using user-supplied image size" in line \
+                and not "already exists and will be overwritten" in line:
                 with open(model_warning_log, 'a+') as f:
                     f.write(f"{line}\n")
                 f.close()
@@ -2660,20 +2669,20 @@ def merge_jsons(image_json, video_json, output_file_path):
         merged_images = image_data['images'] + video_data['images']
         detection_categories = image_data['detection_categories']
         info = image_data['info']
-        classification_categories = image_data['classification_categories']
-        forbidden_classes = image_data['forbidden_classes']
+        classification_categories = image_data['classification_categories'] if 'classification_categories' in image_data else {}
+        forbidden_classes = image_data['forbidden_classes'] if 'forbidden_classes' in image_data else {}
     elif image_json:
         merged_images = image_data['images']
         detection_categories = image_data['detection_categories']
         info = image_data['info']
-        classification_categories = image_data['classification_categories']
-        forbidden_classes = image_data['forbidden_classes']
+        classification_categories = image_data['classification_categories'] if 'classification_categories' in image_data else {}
+        forbidden_classes = image_data['forbidden_classes'] if 'forbidden_classes' in image_data else {}
     elif video_json:
         merged_images = video_data['images']
         detection_categories = video_data['detection_categories']
         info = video_data['info']
-        classification_categories = video_data['classification_categories']
-        forbidden_classes = video_data['forbidden_classes']
+        classification_categories = video_data['classification_categories'] if 'classification_categories' in video_data else {}
+        forbidden_classes = video_data['forbidden_classes'] if 'forbidden_classes' in video_data else {}
         
     # Create the merged data
     merged_data = {
@@ -2794,11 +2803,6 @@ def start_deploy(simple_mode = False):
                     (vid_present and not check_img_presence) or \
                         (not check_img_presence and not check_vid_presence):
                     break
-                
-    # reset the variables if the user selected to exclude data type
-    if not simple_mode:
-        img_present = False if not var_process_img.get() else img_present
-        vid_present = False if not var_process_vid.get() else vid_present
 
     # check if user selected to process either images or videos
     if not img_present and not vid_present:
@@ -2817,6 +2821,25 @@ def start_deploy(simple_mode = False):
         sim_run_btn.configure(state=NORMAL)
         return
 
+    # note if user is video analysing without smoothing
+    global warn_smooth_vid
+    if (var_cls_model.get() not in none_txt) and \
+        (var_smooth_cls_animal.get() == False) and \
+            vid_present and \
+                simple_mode == False and \
+                    warn_smooth_vid == True:
+                        warn_smooth_vid = False
+                        if not mb.askyesno(information_txt[lang_idx], [f"You are about to analyze videos without smoothing enabled. Typically, videos contain "
+                                                                "many frames of the same animal, resulting in multiple labels for the same "
+                                                                f"video. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, each video will have "
+                                                                "only one label. Do you want to proceed with the current settings? "
+                                                                "\n\nPress 'No' to go back.",f"Va a analizar vídeos sin el suavizado activado. Normalmente, "
+                                                                "los vídeos contienen muchos fotogramas del mismo animal, lo que da lugar a múltiples "
+                                                                f"clasificaciones para el mismo video. Con '{lbl_smooth_cls_animal_txt[lang_idx]}' "
+                                                                "activado, cada vídeo tendrá sólo una clasificación por video. ¿Desea continuar con la "
+                                                                "configuración actual? \n\nPulse 'No' para volver atrás."][lang_idx]):
+                            return
+    
     # check which processes need to be listed on the progress window
     if simple_mode:
         processes = []
@@ -2904,7 +2927,7 @@ def start_deploy(simple_mode = False):
     if timelapse_mode:
         additional_vid_options.append("--include_all_processed_frames")
     temp_frame_folder_created = False
-    if var_process_vid.get():
+    if vid_present:
         if var_cls_model.get() not in none_txt:
             global temp_frame_folder
             temp_frame_folder_obj = tempfile.TemporaryDirectory()
@@ -2972,15 +2995,15 @@ def start_deploy(simple_mode = False):
                 return
         
         # check if the nth frame entry is valid
-        if var_not_all_frames.get() and not var_nth_frame.get().isdecimal():
+        if var_not_all_frames.get() and not is_valid_float(var_nth_frame.get()):
             if mb.askyesno(invalid_value_txt[lang_idx],
-                            [f"You either entered an invalid value for '{lbl_nth_frame_txt[lang_idx]}', or none at all. You can only "
-                            "enter numberic characters.\n\nDo you want to proceed with the default value 10?\n\n"
-                            "That means you process only 1 out of 10 frames, making the process time 10 times faster.",
-                            f"Ha introducido un valor no válido para '{lbl_nth_frame_txt[lang_idx]}', o no ha introducido ninguno. Sólo "
-                            "puede introducir caracteres numéricos.\n\n¿Desea continuar con el valor por defecto 10?. Eso significa "
-                            "que sólo se procesa 1 de cada 10 fotogramas, con lo que el tiempo de proceso es 10 veces más rápido."][lang_idx]):
-                var_nth_frame.set("10")
+                           [f"Invalid input for '{lbl_nth_frame_txt[lang_idx]}'. Please enter a numeric value (e.g., '1', '1.5', '0.3', '7')."
+                            " Non-numeric values like 'two' or '1,2' are not allowed.\n\nWould you like to proceed with the default value"
+                            " of 1?\n\nThis means the program will only process 1 frame every second.", "Entrada no válida para "
+                            f"'{lbl_nth_frame_txt[lang_idx]}'. Introduzca un valor numérico (por ejemplo, 1, 1.5, 0.3). Valores no numéricos como"
+                            " 'dos' o '1,2' no están permitidos.\n\n¿Desea continuar con el valor predeterminado de 1?\n\nEsto significa que"
+                            " el programa solo procesará 1 fotograma cada segundo."][lang_idx]):
+                var_nth_frame.set("1")
                 ent_nth_frame.configure(fg='black')
             else:
                 btn_start_deploy.configure(state=NORMAL)
@@ -3145,8 +3168,12 @@ def start_deploy(simple_mode = False):
         timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
         exif_data_json = os.path.join(chosen_folder, "exif_data.json")
 
-        # get the frame_rates from the video_recognition_file.json
-        if os.path.isfile(video_recognition_file):
+        # convert to frame jsons to video jsons if frames are classified 
+        if os.path.isfile(video_recognition_file) and\
+            os.path.isfile(video_recognition_file_frame) and\
+                os.path.isfile(video_recognition_file_frame_original):
+                    
+            # get the frame_rates from the video_recognition_file.json
             frame_rates = {}
             with open(video_recognition_file) as f:
                 data = json.load(f)
@@ -3182,9 +3209,16 @@ def start_deploy(simple_mode = False):
         # prepare for Timelapse use
         if timelapse_mode:
             # merge json
-            merge_jsons(image_recognition_file_original if os.path.isfile(image_recognition_file_original) else None,
-                        video_recognition_file_original if os.path.isfile(video_recognition_file_original) else None,
-                        timelapse_json)
+            if var_cls_model.get() not in none_txt:
+                # if a classification model is selected
+                merge_jsons(image_recognition_file_original if os.path.isfile(image_recognition_file_original) else None,
+                            video_recognition_file_original if os.path.isfile(video_recognition_file_original) else None,
+                            timelapse_json)
+            else:
+                # if no classification model is selected
+                merge_jsons(image_recognition_file if os.path.isfile(image_recognition_file) else None,
+                            video_recognition_file if os.path.isfile(video_recognition_file) else None,
+                            timelapse_json)
             
             # remove unnecessary jsons
             if os.path.isfile(image_recognition_file_original):
@@ -3244,7 +3278,7 @@ def start_deploy(simple_mode = False):
         sim_run_btn.configure(state=NORMAL)
         root.update()
 
-        # # remove non-original jsons and rename to timelapse version DEBUG
+        # # remove non-original jsons and rename to timelapse version - DEBUG this was my logic before merging jsons. Can I remove it?
         # if timelapse_mode:
         #     original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
         #     normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
@@ -6221,43 +6255,10 @@ class ProgressWindow:
             self.img_pst_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.img_pst_can_btn.grid_remove()
 
-        # plotting can only be done for images
-        if "plt" in processes:
-            self.plt_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.plt_frm.grid(row=5, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
-            plt_ttl_txt = [f'Creating graphs...', f'Creando gráficos...']
-            self.plt_ttl = customtkinter.CTkLabel(self.plt_frm, text=plt_ttl_txt[lang_idx], font = ttl_font)
-            self.plt_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
-            self.plt_sub_frm = customtkinter.CTkFrame(master=self.plt_frm)
-            self.plt_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
-            self.plt_pbr.set(0)
-            self.plt_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
-            self.plt_per = customtkinter.CTkLabel(self.plt_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.plt_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
-            self.plt_wai_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.plt_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
-            self.plt_ela_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.plt_ela_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
-            self.plt_ela_lbl.grid_remove()
-            self.plt_ela_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_ela_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")     
-            self.plt_ela_val.grid_remove()
-            self.plt_rem_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.plt_rem_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
-            self.plt_rem_lbl.grid_remove()
-            self.plt_rem_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_rem_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
-            self.plt_rem_val.grid_remove()
-            self.plt_can_btn = CancelButton(master = self.plt_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.plt_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
-            self.plt_can_btn.grid_remove()
-
         # postprocessing for videos
         if "vid_pst" in processes:
             self.vid_pst_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.vid_pst_frm.grid(row=6, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
+            self.vid_pst_frm.grid(row=5, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             vid_pst_ttl_txt = [f'Postprocessing{vid_pst_extra_string}...', f'Postprocesado{vid_pst_extra_string}...']
             self.vid_pst_ttl = customtkinter.CTkLabel(self.vid_pst_frm, text=vid_pst_ttl_txt[lang_idx], font = ttl_font)
             self.vid_pst_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
@@ -6286,6 +6287,39 @@ class ProgressWindow:
             self.vid_pst_can_btn = CancelButton(master = self.vid_pst_sub_frm, text = "Cancel", command = lambda: print(""))
             self.vid_pst_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.vid_pst_can_btn.grid_remove()
+
+        # plotting can only be done for images
+        if "plt" in processes:
+            self.plt_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
+            self.plt_frm.grid(row=6, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
+            plt_ttl_txt = [f'Creating graphs...', f'Creando gráficos...']
+            self.plt_ttl = customtkinter.CTkLabel(self.plt_frm, text=plt_ttl_txt[lang_idx], font = ttl_font)
+            self.plt_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
+            self.plt_sub_frm = customtkinter.CTkFrame(master=self.plt_frm)
+            self.plt_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
+            self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
+            self.plt_pbr.set(0)
+            self.plt_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
+            self.plt_per = customtkinter.CTkLabel(self.plt_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
+            self.plt_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
+            self.plt_wai_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
+            self.plt_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
+            self.plt_ela_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
+            self.plt_ela_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
+            self.plt_ela_lbl.grid_remove()
+            self.plt_ela_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
+            self.plt_ela_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")     
+            self.plt_ela_val.grid_remove()
+            self.plt_rem_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
+            self.plt_rem_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
+            self.plt_rem_lbl.grid_remove()
+            self.plt_rem_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
+            self.plt_rem_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
+            self.plt_rem_val.grid_remove()
+            self.plt_can_btn = CancelButton(master = self.plt_sub_frm, text = "Cancel", command = lambda: print(""))
+            self.plt_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
+            self.plt_can_btn.grid_remove()
 
         self.progress_top_level_window.update()
 
