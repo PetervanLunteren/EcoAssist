@@ -3,8 +3,9 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 8 Nov 2024
+# Latest edit by Peter van Lunteren on 28 Nov 2024
 
+# TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
 # TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
 # TODO: JSON - remove the part where MD stores its typical threshold values etc in the EcoAssist altered json. It doesn't make sense anymore if the detection caterogies are changed. 
@@ -21,6 +22,9 @@
 # TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
 # TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
 # TODO: INSTALL - why put the shortcut not on the dekstop on windows?
+# TODO: JSON - keep track of confidences for each detection and classification in the JSON. And put that in CSV/XSLX, and visualise it in the images.
+# TODO: CSV/XLSX - add frame number and frama rate to the CSV and XLSX files
+# TODO: VIS VIDEO - add option to visualise frame with highest confidence
 # TODO: N_CORES - add UI "--ncores” option - see email Dan "mambaforge vs. miniforge"
 # TODO: REPORTS - add postprocessing reports - see email Dan "mambaforge vs. miniforge"
 # TODO: MINOR - By the way, in the EcoAssist UI, I think the frame extraction status popup uses the same wording as the detection popup. They both say something about "frame X of Y". I think for the frame extraction, it should be "video X of Y".
@@ -93,6 +97,7 @@ from GPSPhoto import gpsphoto
 from CTkTable import CTkTable
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from collections import defaultdict
 import xml.etree.cElementTree as ET
 from PIL import ImageTk, Image, ImageFile
 from RangeSlider.RangeSlider import RangeSliderH
@@ -133,6 +138,7 @@ sys.path.insert(0, os.path.join(EcoAssist_files, "cameratraps"))
 
 # import modules from forked repositories
 from visualise_detection.bounding_box import bounding_box as bb
+from cameratraps.megadetector.detection.video_utils import frame_results_to_video_results, FrameToVideoOptions
 
 # log pythonpath
 print(sys.path)
@@ -2451,20 +2457,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     # create commands for Windows
     if os.name == 'nt':
         if selected_options == []:
-            img_command = [sys.executable, run_detector_batch_py, det_model_fpath, chosen_folder, image_recognition_file]
+            img_command = [sys.executable, run_detector_batch_py, det_model_fpath, '--threshold=0.01', chosen_folder, image_recognition_file]
             vid_command = [sys.executable, process_video_py, '--max_width=1280', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
         else:
-            img_command = [sys.executable, run_detector_batch_py, det_model_fpath, *selected_options, chosen_folder, image_recognition_file]
+            img_command = [sys.executable, run_detector_batch_py, det_model_fpath, *selected_options, '--threshold=0.01', chosen_folder, image_recognition_file]
             vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
 
      # create command for MacOS and Linux
     else:
         if selected_options == []:
-            img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{chosen_folder}' '{image_recognition_file}'"]
+            img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
             vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
         else:
             selected_options = "' '".join(selected_options)
-            img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{selected_options}' '{chosen_folder}' '{image_recognition_file}'"]
+            img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{selected_options}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
             vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
 
     # pick one command
@@ -2636,10 +2642,54 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
             else:
                 classify_detections(os.path.join(chosen_folder, "video_recognition_file.json"), data_type, simple_mode = simple_mode)
 
-    # remove frames.json file
-    frames_video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.frames.json")
-    if os.path.isfile(frames_video_recognition_file):
-        os.remove(frames_video_recognition_file)
+# merge image and video jsons together
+def merge_jsons(image_json, video_json, output_file_path):
+
+    # Load the image recognition JSON file
+    if image_json:
+        with open(image_json, 'r') as image_file:
+            image_data = json.load(image_file)
+            
+    # Load the video recognition JSON file
+    if video_json:
+        with open(video_json, 'r') as video_file:
+            video_data = json.load(video_file)
+
+    # Merge the "images" lists
+    if image_json and video_json:
+        merged_images = image_data['images'] + video_data['images']
+        detection_categories = image_data['detection_categories']
+        info = image_data['info']
+        classification_categories = image_data['classification_categories']
+        forbidden_classes = image_data['forbidden_classes']
+    elif image_json:
+        merged_images = image_data['images']
+        detection_categories = image_data['detection_categories']
+        info = image_data['info']
+        classification_categories = image_data['classification_categories']
+        forbidden_classes = image_data['forbidden_classes']
+    elif video_json:
+        merged_images = video_data['images']
+        detection_categories = video_data['detection_categories']
+        info = video_data['info']
+        classification_categories = video_data['classification_categories']
+        forbidden_classes = video_data['forbidden_classes']
+        
+    # Create the merged data
+    merged_data = {
+        "images": merged_images,
+        "detection_categories": detection_categories,
+        "info": info,
+        "classification_categories": classification_categories,
+        "forbidden_classes": forbidden_classes
+    }
+
+    # Save the merged data to a new JSON file
+    with open(output_file_path, 'w') as output_file:
+        json.dump(merged_data, output_file, indent=1)
+
+    print(f'merged json file saved to {output_file_path}')
+
 
 # pop up window showing the user that an EcoAssist update is required for a particular model
 def show_update_info(model_vars, model_name):
@@ -2707,27 +2757,95 @@ def start_deploy(simple_mode = False):
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
+    # check if there are any images or videos in the folder
+    chosen_folder = var_choose_folder.get()
+    if simple_mode:
+        check_img_presence = True
+        check_vid_presence = True
+    else:
+        check_img_presence = var_process_img.get()
+        check_vid_presence = var_process_vid.get()
+    img_present = False
+    vid_present = False
+    if var_exclude_subs.get():
+        # non recursive
+        for f in os.listdir(chosen_folder):
+            if check_img_presence:
+                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    img_present = True
+            if check_vid_presence:
+                if f.lower().endswith(('.mp4', '.avi', '.mpeg', '.mpg')):
+                    vid_present = True
+            if (img_present and vid_present) or \
+                (img_present and not check_vid_presence) or \
+                    (vid_present and not check_img_presence) or \
+                        (not check_img_presence and not check_vid_presence):
+                break
+    else:
+        # recursive
+        for main_dir, _, files in os.walk(chosen_folder):
+            for file in files:
+                if check_img_presence and file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    img_present = True
+                if check_vid_presence and file.lower().endswith(('.mp4', '.avi', '.mpeg', '.mpg')):
+                    vid_present = True
+            if (img_present and vid_present) or \
+                (img_present and not check_vid_presence) or \
+                    (vid_present and not check_img_presence) or \
+                        (not check_img_presence and not check_vid_presence):
+                    break
+                
+    # reset the variables if the user selected to exclude data type
+    if not simple_mode:
+        img_present = False if not var_process_img.get() else img_present
+        vid_present = False if not var_process_vid.get() else vid_present
+
+    # check if user selected to process either images or videos
+    if not img_present and not vid_present:
+        if simple_mode:
+            mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
+                            message=[f"There are no images nor videos found.", f"No se han encontrado imágenes ni vídeos."][lang_idx])
+        else:
+            mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
+                            message=[f"There are no images nor videos found, or you selected not to search for them. If there is indeed data to be "
+                                    f"processed, make sure the '{lbl_process_img_txt[lang_idx]}' and/or '{lbl_process_vid_txt[lang_idx]}' options "
+                                    f"are selected. You must select at least one of these.", f"No se han encontrado imágenes ni vídeos, o ha "
+                                    f"seleccionado no buscarlos. Si efectivamente hay datos para procesar, asegúrese de que las opciones "
+                                    f"'{lbl_process_img_txt[lang_idx]}' y/o '{lbl_process_vid_txt[lang_idx]}' están seleccionadas. Debe seleccionar"
+                                    f" al menos una de ellas."][lang_idx])
+        btn_start_deploy.configure(state=NORMAL)
+        sim_run_btn.configure(state=NORMAL)
+        return
+
     # check which processes need to be listed on the progress window
     if simple_mode:
-        processes = ["img_det"]
-        if var_cls_model.get() not in none_txt:
-            processes.append("img_cls")
-        if not timelapse_mode:
-            processes.append("img_pst")
-            processes.append("plt")
-    else:
         processes = []
-        if var_process_img.get():
+        if img_present:
             processes.append("img_det")
             if var_cls_model.get() not in none_txt:
                 processes.append("img_cls")
-        if var_process_vid.get():
+        if vid_present:
             processes.append("vid_det")
             if var_cls_model.get() not in none_txt:
                 processes.append("vid_cls")
-
-    # redicrect warnings and error to log files
-    chosen_folder = var_choose_folder.get()
+        if not timelapse_mode and img_present:
+            processes.append("img_pst")
+        if not timelapse_mode and vid_present:
+            processes.append("vid_pst")
+        if not timelapse_mode:
+            processes.append("plt")
+    else:
+        processes = []
+        if img_present:
+            processes.append("img_det")
+            if var_cls_model.get() not in none_txt:
+                processes.append("img_cls")
+        if vid_present:
+            processes.append("vid_det")
+            if var_cls_model.get() not in none_txt:
+                processes.append("vid_cls")
+    
+    # redirect warnings and error to log files
     global model_error_log
     model_error_log = os.path.join(chosen_folder, "model_error_log.txt")
     global model_warning_log
@@ -2778,12 +2896,33 @@ def start_deploy(simple_mode = False):
         "var_cls_model_idx": dpd_options_cls_model[lang_idx].index(var_cls_model.get())
     })
 
-    # start building the command
+    # simple_mode and advanced mode shared image settings
     additional_img_options = ["--output_relative_filenames"]
+    
+    # simple_mode and advanced mode shared video settings
+    additional_vid_options = ["--json_confidence_threshold=0.01"]
+    if timelapse_mode:
+        additional_vid_options.append("--include_all_processed_frames")
+    temp_frame_folder_created = False
+    if var_process_vid.get():
+        if var_cls_model.get() not in none_txt:
+            global temp_frame_folder
+            temp_frame_folder_obj = tempfile.TemporaryDirectory()
+            temp_frame_folder_created = True
+            temp_frame_folder = temp_frame_folder_obj.name
+            additional_vid_options.append("--frame_folder=" + temp_frame_folder)
+            additional_vid_options.append("--keep_extracted_frames")
+
 
     # if user deployed from simple mode everything will be default, so easy
     if simple_mode:
+        
+        # simple mode specific image options
         additional_img_options.append("--recursive")
+        
+        # simple mode specific video options
+        additional_vid_options.append("--recursive")
+        additional_vid_options.append("--time_sample=1")
 
     # if the user comes from the advanced mode, there are more settings to be checked
     else:
@@ -2805,17 +2944,6 @@ def start_deploy(simple_mode = False):
             "var_not_all_frames": var_not_all_frames.get(),
             "var_nth_frame": var_nth_frame.get() if var_nth_frame.get().isdecimal() else ""
         })
-        
-        # check if user selected to process either images or videos
-        if not var_process_img.get() and not var_process_vid.get():
-            mb.showerror(["Nothing selected to be processed", "No se ha seleccionado nada para procesar"][lang_idx],
-                            message=[f"Neither the '{lbl_process_img_txt[lang_idx]}' nor '{lbl_process_vid_txt[lang_idx]}' "
-                                     "options are selected. You must select at least one of these.", "No están seleccionadas "
-                                     f"las opciones '{lbl_process_img_txt[lang_idx]}' ni '{lbl_process_vid_txt[lang_idx]}'. "
-                                     "Debe seleccionar al menos una de ellas."][lang_idx])
-            btn_start_deploy.configure(state=NORMAL)
-            sim_run_btn.configure(state=NORMAL)
-            return
         
         # check if checkpoint entry is valid
         if var_use_custom_img_size_for_deploy.get() and not var_image_size_for_deploy.get().isdecimal():
@@ -2870,21 +2998,11 @@ def start_deploy(simple_mode = False):
             additional_img_options.append("--image_size=" + var_image_size_for_deploy.get())
 
         # create command for the video process to be passed on to process_video.py
-        additional_vid_options = []
-        additional_vid_options.append("--json_confidence_threshold=0.01")
         if not var_exclude_subs.get():
             additional_vid_options.append("--recursive")
         if var_not_all_frames.get():
-            additional_vid_options.append("--frame_sample=" + var_nth_frame.get())
-        temp_frame_folder_created = False
-        if var_process_vid.get():
-            if var_cls_model.get() not in none_txt:
-                global temp_frame_folder
-                temp_frame_folder_obj = tempfile.TemporaryDirectory()
-                temp_frame_folder_created = True
-                temp_frame_folder = temp_frame_folder_obj.name
-                additional_vid_options.append("--frame_folder=" + temp_frame_folder)
-                additional_vid_options.append("--keep_extracted_frames")
+            additional_vid_options.append("--time_sample=" + var_nth_frame.get())
+
     
     # open progress window with frames for each process that needs to be done
     global progress_window
@@ -2896,7 +3014,7 @@ def start_deploy(simple_mode = False):
     for main_dir, _, files in os.walk(chosen_folder):
         for file in files:
             file_path = os.path.join(main_dir, file)
-            if os.path.splitext(file_path)[1].lower() in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.mp4', '.avi', '.mpeg', '.mpg']:
+            if os.path.splitext(file_path)[1].lower() in ['.jpg', '.jpeg', '.png', '.mp4', '.avi', '.mpeg', '.mpg']:
                 bool, char = contains_special_characters(file_path)
                 if bool:
                     drive, rest_of_path = os.path.splitdrive(file_path)
@@ -2963,34 +3081,134 @@ def start_deploy(simple_mode = False):
 
     try:
 
-        # if not deployed through simple mode, check the input values
-        if not simple_mode:
-            # detect images ...
-            if var_process_img.get():
-                deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
-
-            # ... and/or videos
-            if var_process_vid.get() and not simple_mode:
-                deploy_model(chosen_folder, additional_vid_options, data_type = "vid", simple_mode = simple_mode)
-        
-        # if deployed through simple mode, analyse images and add predefined postprocess for simple mode directly after deployment and classification
-        else:
+        # process images and/or videos
+        if img_present:
             deploy_model(chosen_folder, additional_img_options, data_type = "img", simple_mode = simple_mode)
+        if vid_present:
+            deploy_model(chosen_folder, additional_vid_options, data_type = "vid", simple_mode = simple_mode)
+        
+        # if deployed through simple mode, add predefined postprocess directly after deployment and classification
+        if simple_mode:
+               
+                # postprocess images
+                if "img_pst" in processes:
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = True,
+                                plt = False,
+                                exp_format = "XLSX",
+                                data_type = "img")
+                
+                # postprocess videos
+                if "vid_pst" in processes:
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = True,
+                                plt = False,
+                                exp_format = "XLSX",
+                                data_type = "vid")
+                
+                # plot the results
+                if "plt" in processes:
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = False,
+                                plt = True,
+                                exp_format = "XLSX",
+                                data_type = "img")
 
-            # if in timelapse mode, there is no need to do postprocessing
-            if not timelapse_mode:
-                postprocess(src_dir = chosen_folder,
-                            dst_dir = chosen_folder,
-                            thresh = global_vars["var_thresh_default"],
-                            sep = False,
-                            file_placement = 1,
-                            sep_conf = False,
-                            vis = False,
-                            crp = False,
-                            exp = True,
-                            plt = True,
-                            exp_format = "XLSX",
-                            data_type = "img")
+        # let's organise all the json files and check their presence
+        image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
+        image_recognition_file_original = os.path.join(chosen_folder, "image_recognition_file_original.json")
+        video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.json")
+        video_recognition_file_original = os.path.join(chosen_folder, "video_recognition_file_original.json")
+        video_recognition_file_frame = os.path.join(chosen_folder, "video_recognition_file.frames.json") 
+        video_recognition_file_frame_original = os.path.join(chosen_folder, "video_recognition_file.frames_original.json")
+        timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
+        exif_data_json = os.path.join(chosen_folder, "exif_data.json")
+
+        # get the frame_rates from the video_recognition_file.json
+        if os.path.isfile(video_recognition_file):
+            frame_rates = {}
+            with open(video_recognition_file) as f:
+                data = json.load(f)
+                images = data['images']
+                for image in images:
+                    file = image['file']
+                    frame_rate = image['frame_rate']
+                    frame_rates[file] = frame_rate
+        
+            # convert frame results to video results
+            options = FrameToVideoOptions()
+            if timelapse_mode:
+                options.include_all_processed_frames = True
+            else:
+                options.include_all_processed_frames = False
+            frame_results_to_video_results(input_file = video_recognition_file_frame,
+                                        output_file = video_recognition_file,
+                                        options = options,
+                                        video_filename_to_frame_rate = frame_rates)
+            frame_results_to_video_results(input_file = video_recognition_file_frame_original,
+                                        output_file = video_recognition_file_original,
+                                        options = options,
+                                        video_filename_to_frame_rate = frame_rates)
+
+        # remove unnecessary jsons after conversion
+        if os.path.isfile(video_recognition_file_frame_original):
+            os.remove(video_recognition_file_frame_original)
+        if os.path.isfile(video_recognition_file_frame):
+            os.remove(video_recognition_file_frame)
+        if os.path.isfile(exif_data_json):
+            os.remove(exif_data_json)
+        
+        # prepare for Timelapse use
+        if timelapse_mode:
+            # merge json
+            merge_jsons(image_recognition_file_original if os.path.isfile(image_recognition_file_original) else None,
+                        video_recognition_file_original if os.path.isfile(video_recognition_file_original) else None,
+                        timelapse_json)
+            
+            # remove unnecessary jsons
+            if os.path.isfile(image_recognition_file_original):
+                os.remove(image_recognition_file_original)
+            if os.path.isfile(image_recognition_file):
+                os.remove(image_recognition_file)
+            if os.path.isfile(video_recognition_file_original):
+                os.remove(video_recognition_file_original)
+            if os.path.isfile(video_recognition_file):
+                os.remove(video_recognition_file)
+        
+        # prepare for EcoAssist use
+        else:
+            
+            # # If at a later stage I want a merged json for EcoAssist too - this is the code
+            # merge_jsons(image_recognition_file if os.path.isfile(image_recognition_file) else None,
+            #             video_recognition_file if os.path.isfile(video_recognition_file) else None,
+            #             os.path.join(chosen_folder, "merged_recognition_file.json"))
+            
+            # remove unnecessary jsons
+            if os.path.isfile(image_recognition_file_original):
+                os.remove(image_recognition_file_original)
+            if os.path.isfile(video_recognition_file_original):
+                os.remove(video_recognition_file_original)
 
         # reset window
         update_frame_states()
@@ -3026,23 +3244,23 @@ def start_deploy(simple_mode = False):
         sim_run_btn.configure(state=NORMAL)
         root.update()
 
-        # remove non-original jsons and rename to timelapse version
-        if timelapse_mode:
-            original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
-            normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
-            timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
+        # # remove non-original jsons and rename to timelapse version DEBUG
+        # if timelapse_mode:
+        #     original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
+        #     normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
+        #     timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
 
-            # if the timelapse json already exists, remove it
-            # otherwise the os.rename will fail later on
-            if os.path.exists(timelapse_json):
-                os.remove(timelapse_json)
+        #     # if the timelapse json already exists, remove it
+        #     # otherwise the os.rename will fail later on
+        #     if os.path.exists(timelapse_json):
+        #         os.remove(timelapse_json)
 
-            # rename and remove
-            if os.path.exists(original_json):
-                os.rename(original_json, timelapse_json)
-                os.remove(normal_json)
-            else:
-                os.rename(normal_json, timelapse_json)
+        #     # rename and remove
+        #     if os.path.exists(original_json):
+        #         os.rename(original_json, timelapse_json)
+        #         os.remove(normal_json)
+        #     else:
+        #         os.rename(normal_json, timelapse_json)
 
         # show results
         if timelapse_mode:
@@ -5732,7 +5950,12 @@ class ProgressWindow:
         self.progress_top_level_window = customtkinter.CTkToplevel()
         self.progress_top_level_window.title("Analysis progress")
         self.progress_top_level_window.geometry("+10+10")
-        lbl_height = 20
+        lbl_height = 12
+        pbr_height = 22
+        ttl_font = customtkinter.CTkFont(family='CTkFont', size=13, weight = 'bold')
+        self.pady_progress_window = PADY/2.5
+        self.padx_progress_window = PADX
+        
 
         # language settings
         in_queue_txt = ['In queue', 'En cola']
@@ -5764,311 +5987,304 @@ class ProgressWindow:
         # initialise image detection process
         if "img_det" in processes:
             self.img_det_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.img_det_frm.grid(row=0, padx=PADX, pady=PADY, sticky="nswe")
+            self.img_det_frm.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             img_det_ttl_txt = [f'Locating animals{img_det_extra_string}...', f'Localización de animales{img_det_extra_string}...']
-            self.img_det_ttl = customtkinter.CTkLabel(self.img_det_frm, text=img_det_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.img_det_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.img_det_ttl = customtkinter.CTkLabel(self.img_det_frm, text=img_det_ttl_txt[lang_idx], font = ttl_font)
+            self.img_det_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_det_sub_frm = customtkinter.CTkFrame(master=self.img_det_frm)
-            self.img_det_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.img_det_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.img_det_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.img_det_pbr = customtkinter.CTkProgressBar(self.img_det_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.img_det_pbr = customtkinter.CTkProgressBar(self.img_det_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_det_pbr.set(0)
-            self.img_det_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.img_det_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.img_det_per = customtkinter.CTkLabel(self.img_det_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.img_det_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.img_det_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.img_det_wai_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=checking_fpaths_txt[lang_idx])
-            self.img_det_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.img_det_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.img_det_num_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{processing_image_txt[lang_idx]}:")
-            self.img_det_num_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.img_det_num_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_det_num_lbl.grid_remove()
             self.img_det_num_val = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"")
-            self.img_det_num_val.grid(row=2, padx=PADX, pady=0, sticky="nse")
+            self.img_det_num_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_det_num_val.grid_remove()
             self.img_det_ela_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.img_det_ela_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.img_det_ela_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_det_ela_lbl.grid_remove()
             self.img_det_ela_val = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"")
-            self.img_det_ela_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.img_det_ela_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.img_det_ela_val.grid_remove()
             self.img_det_rem_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.img_det_rem_lbl.grid(row=4, padx=PADX, pady=0, sticky="nsw")
+            self.img_det_rem_lbl.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_det_rem_lbl.grid_remove()
             self.img_det_rem_val = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"")
-            self.img_det_rem_val.grid(row=4, padx=PADX, pady=0, sticky="nse")
+            self.img_det_rem_val.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_det_rem_val.grid_remove()
             self.img_det_spe_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{images_per_second_txt[lang_idx]}:")
-            self.img_det_spe_lbl.grid(row=5, padx=PADX, pady=0, sticky="nsw")
+            self.img_det_spe_lbl.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_det_spe_lbl.grid_remove()
             self.img_det_spe_val = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"")
-            self.img_det_spe_val.grid(row=5, padx=PADX, pady=0, sticky="nse")
+            self.img_det_spe_val.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_det_spe_val.grid_remove()
             self.img_det_hwa_lbl = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"{running_on_txt[lang_idx]}:")
-            self.img_det_hwa_lbl.grid(row=6, padx=PADX, pady=0, sticky="nsw")
+            self.img_det_hwa_lbl.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_det_hwa_lbl.grid_remove()
             self.img_det_hwa_val = customtkinter.CTkLabel(self.img_det_sub_frm, height = lbl_height, text=f"")
-            self.img_det_hwa_val.grid(row=6, padx=PADX, pady=0, sticky="nse")
+            self.img_det_hwa_val.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_det_hwa_val.grid_remove()
             self.img_det_can_btn = CancelButton(master = self.img_det_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.img_det_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.img_det_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.img_det_can_btn.grid_remove()
 
         # initialise image classification process
         if "img_cls" in processes:
             self.img_cls_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.img_cls_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe")
+            self.img_cls_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             img_cls_ttl_txt = [f'Identifying animals{img_det_extra_string}...', f'Identificación de animales{img_det_extra_string}...']
-            self.img_cls_ttl = customtkinter.CTkLabel(self.img_cls_frm, text=img_cls_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.img_cls_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.img_cls_ttl = customtkinter.CTkLabel(self.img_cls_frm, text=img_cls_ttl_txt[lang_idx], font = ttl_font)
+            self.img_cls_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_cls_sub_frm = customtkinter.CTkFrame(master=self.img_cls_frm)
-            self.img_cls_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.img_cls_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.img_cls_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.img_cls_pbr = customtkinter.CTkProgressBar(self.img_cls_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.img_cls_pbr = customtkinter.CTkProgressBar(self.img_cls_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_cls_pbr.set(0)
-            self.img_cls_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.img_cls_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.img_cls_per = customtkinter.CTkLabel(self.img_cls_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.img_cls_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.img_cls_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.img_cls_wai_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.img_cls_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.img_cls_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.img_cls_num_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"{processing_animal_txt[lang_idx]}:")
-            self.img_cls_num_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.img_cls_num_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_cls_num_lbl.grid_remove()
             self.img_cls_num_val = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"")
-            self.img_cls_num_val.grid(row=2, padx=PADX, pady=0, sticky="nse")
+            self.img_cls_num_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_cls_num_val.grid_remove()
             self.img_cls_ela_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.img_cls_ela_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.img_cls_ela_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_cls_ela_lbl.grid_remove()
             self.img_cls_ela_val = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"")
-            self.img_cls_ela_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.img_cls_ela_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.img_cls_ela_val.grid_remove()
             self.img_cls_rem_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.img_cls_rem_lbl.grid(row=4, padx=PADX, pady=0, sticky="nsw")
+            self.img_cls_rem_lbl.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_cls_rem_lbl.grid_remove()
             self.img_cls_rem_val = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"")
-            self.img_cls_rem_val.grid(row=4, padx=PADX, pady=0, sticky="nse")
+            self.img_cls_rem_val.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_cls_rem_val.grid_remove()
             self.img_cls_spe_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"{animals_per_second_txt[lang_idx]}:")
-            self.img_cls_spe_lbl.grid(row=5, padx=PADX, pady=0, sticky="nsw")
+            self.img_cls_spe_lbl.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_cls_spe_lbl.grid_remove()
             self.img_cls_spe_val = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"")
-            self.img_cls_spe_val.grid(row=5, padx=PADX, pady=0, sticky="nse")
+            self.img_cls_spe_val.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_cls_spe_val.grid_remove()
             self.img_cls_hwa_lbl = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"{running_on_txt[lang_idx]}:")
-            self.img_cls_hwa_lbl.grid(row=6, padx=PADX, pady=0, sticky="nsw")
+            self.img_cls_hwa_lbl.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_cls_hwa_lbl.grid_remove()
             self.img_cls_hwa_val = customtkinter.CTkLabel(self.img_cls_sub_frm, height = lbl_height, text=f"")
-            self.img_cls_hwa_val.grid(row=6, padx=PADX, pady=0, sticky="nse")
+            self.img_cls_hwa_val.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.img_cls_hwa_val.grid_remove()
             self.img_cls_can_btn = CancelButton(master = self.img_cls_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.img_cls_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.img_cls_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.img_cls_can_btn.grid_remove()
 
         # initialise video detection process
         if "vid_det" in processes:
             self.vid_det_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.vid_det_frm.grid(row=2, padx=PADX, pady=PADY, sticky="nswe")
+            self.vid_det_frm.grid(row=2, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             vid_det_ttl_txt = [f'Locating animals{vid_det_extra_string}...', f'Localización de animales{vid_det_extra_string}...']
-            self.vid_det_ttl = customtkinter.CTkLabel(self.vid_det_frm, text=vid_det_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.vid_det_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.vid_det_ttl = customtkinter.CTkLabel(self.vid_det_frm, text=vid_det_ttl_txt[lang_idx], font = ttl_font)
+            self.vid_det_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_det_sub_frm = customtkinter.CTkFrame(master=self.vid_det_frm)
-            self.vid_det_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.vid_det_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.vid_det_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.vid_det_pbr = customtkinter.CTkProgressBar(self.vid_det_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.vid_det_pbr = customtkinter.CTkProgressBar(self.vid_det_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_det_pbr.set(0)
-            self.vid_det_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.vid_det_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.vid_det_per = customtkinter.CTkLabel(self.vid_det_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.vid_det_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.vid_det_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.vid_det_wai_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.vid_det_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.vid_det_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.vid_det_num_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{processing_frame_txt[lang_idx]}:")
-            self.vid_det_num_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.vid_det_num_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_num_lbl.grid_remove()
             self.vid_det_num_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
-            self.vid_det_num_val.grid(row=2, padx=PADX, pady=0, sticky="nse")
+            self.vid_det_num_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_det_num_val.grid_remove()
             self.vid_det_ela_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.vid_det_ela_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.vid_det_ela_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_ela_lbl.grid_remove()
             self.vid_det_ela_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
-            self.vid_det_ela_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.vid_det_ela_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.vid_det_ela_val.grid_remove()
             self.vid_det_rem_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.vid_det_rem_lbl.grid(row=4, padx=PADX, pady=0, sticky="nsw")
+            self.vid_det_rem_lbl.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_rem_lbl.grid_remove()
             self.vid_det_rem_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
-            self.vid_det_rem_val.grid(row=4, padx=PADX, pady=0, sticky="nse")
+            self.vid_det_rem_val.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_det_rem_val.grid_remove()
             self.vid_det_spe_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{frames_per_second_txt[lang_idx]}:")
-            self.vid_det_spe_lbl.grid(row=5, padx=PADX, pady=0, sticky="nsw")
+            self.vid_det_spe_lbl.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_spe_lbl.grid_remove()
             self.vid_det_spe_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
-            self.vid_det_spe_val.grid(row=5, padx=PADX, pady=0, sticky="nse")
+            self.vid_det_spe_val.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_det_spe_val.grid_remove()
             self.vid_det_hwa_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{running_on_txt[lang_idx]}:")
-            self.vid_det_hwa_lbl.grid(row=6, padx=PADX, pady=0, sticky="nsw")
+            self.vid_det_hwa_lbl.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_hwa_lbl.grid_remove()
             self.vid_det_hwa_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
-            self.vid_det_hwa_val.grid(row=6, padx=PADX, pady=0, sticky="nse")
+            self.vid_det_hwa_val.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_det_hwa_val.grid_remove()
             self.vid_det_can_btn = CancelButton(master = self.vid_det_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.vid_det_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.vid_det_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.vid_det_can_btn.grid_remove()
 
         # initialise video classification process
         if "vid_cls" in processes:
             self.vid_cls_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.vid_cls_frm.grid(row=3, padx=PADX, pady=PADY, sticky="nswe")
+            self.vid_cls_frm.grid(row=3, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             vid_cls_ttl_txt = [f'Identifying animals{vid_det_extra_string}...', f'Identificación de animales{vid_det_extra_string}...']
-            self.vid_cls_ttl = customtkinter.CTkLabel(self.vid_cls_frm, text=vid_cls_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.vid_cls_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.vid_cls_ttl = customtkinter.CTkLabel(self.vid_cls_frm, text=vid_cls_ttl_txt[lang_idx], font = ttl_font)
+            self.vid_cls_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_cls_sub_frm = customtkinter.CTkFrame(master=self.vid_cls_frm)
-            self.vid_cls_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.vid_cls_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.vid_cls_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.vid_cls_pbr = customtkinter.CTkProgressBar(self.vid_cls_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.vid_cls_pbr = customtkinter.CTkProgressBar(self.vid_cls_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_cls_pbr.set(0)
-            self.vid_cls_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.vid_cls_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.vid_cls_per = customtkinter.CTkLabel(self.vid_cls_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.vid_cls_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.vid_cls_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.vid_cls_wai_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.vid_cls_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.vid_cls_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.vid_cls_num_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"{processing_animal_txt[lang_idx]}:")
-            self.vid_cls_num_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.vid_cls_num_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_cls_num_lbl.grid_remove()
             self.vid_cls_num_val = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"")
-            self.vid_cls_num_val.grid(row=2, padx=PADX, pady=0, sticky="nse")
+            self.vid_cls_num_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_cls_num_val.grid_remove()
             self.vid_cls_ela_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.vid_cls_ela_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.vid_cls_ela_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_cls_ela_lbl.grid_remove()
             self.vid_cls_ela_val = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"")
-            self.vid_cls_ela_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.vid_cls_ela_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.vid_cls_ela_val.grid_remove()
             self.vid_cls_rem_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.vid_cls_rem_lbl.grid(row=4, padx=PADX, pady=0, sticky="nsw")
+            self.vid_cls_rem_lbl.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_cls_rem_lbl.grid_remove()
             self.vid_cls_rem_val = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"")
-            self.vid_cls_rem_val.grid(row=4, padx=PADX, pady=0, sticky="nse")
+            self.vid_cls_rem_val.grid(row=4, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_cls_rem_val.grid_remove()
             self.vid_cls_spe_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"{animals_per_second_txt[lang_idx]}:")
-            self.vid_cls_spe_lbl.grid(row=5, padx=PADX, pady=0, sticky="nsw")
+            self.vid_cls_spe_lbl.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_cls_spe_lbl.grid_remove()
             self.vid_cls_spe_val = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"")
-            self.vid_cls_spe_val.grid(row=5, padx=PADX, pady=0, sticky="nse")
+            self.vid_cls_spe_val.grid(row=5, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_cls_spe_val.grid_remove()
             self.vid_cls_hwa_lbl = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"{running_on_txt[lang_idx]}:")
-            self.vid_cls_hwa_lbl.grid(row=6, padx=PADX, pady=0, sticky="nsw")
+            self.vid_cls_hwa_lbl.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_cls_hwa_lbl.grid_remove()
             self.vid_cls_hwa_val = customtkinter.CTkLabel(self.vid_cls_sub_frm, height = lbl_height, text=f"")
-            self.vid_cls_hwa_val.grid(row=6, padx=PADX, pady=0, sticky="nse")
+            self.vid_cls_hwa_val.grid(row=6, padx=self.padx_progress_window, pady=0, sticky="nse")
             self.vid_cls_hwa_val.grid_remove()
             self.vid_cls_can_btn = CancelButton(master = self.vid_cls_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.vid_cls_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.vid_cls_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.vid_cls_can_btn.grid_remove()
 
         # postprocessing for images
         if "img_pst" in processes:
             self.img_pst_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.img_pst_frm.grid(row=4, padx=PADX, pady=PADY, sticky="nswe")
+            self.img_pst_frm.grid(row=4, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             img_pst_ttl_txt = [f'Postprocessing{img_pst_extra_string}...', f'Postprocesado{img_pst_extra_string}...']
-            self.img_pst_ttl = customtkinter.CTkLabel(self.img_pst_frm, text=img_pst_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.img_pst_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.img_pst_ttl = customtkinter.CTkLabel(self.img_pst_frm, text=img_pst_ttl_txt[lang_idx], font = ttl_font)
+            self.img_pst_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_pst_sub_frm = customtkinter.CTkFrame(master=self.img_pst_frm)
-            self.img_pst_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.img_pst_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.img_pst_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.img_pst_pbr = customtkinter.CTkProgressBar(self.img_pst_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.img_pst_pbr = customtkinter.CTkProgressBar(self.img_pst_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_pst_pbr.set(0)
-            self.img_pst_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.img_pst_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.img_pst_per = customtkinter.CTkLabel(self.img_pst_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.img_pst_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.img_pst_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.img_pst_wai_lbl = customtkinter.CTkLabel(self.img_pst_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.img_pst_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.img_pst_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.img_pst_ela_lbl = customtkinter.CTkLabel(self.img_pst_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.img_pst_ela_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.img_pst_ela_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_pst_ela_lbl.grid_remove()
             self.img_pst_ela_val = customtkinter.CTkLabel(self.img_pst_sub_frm, height = lbl_height, text=f"")
-            self.img_pst_ela_val.grid(row=2, padx=PADX, pady=0, sticky="nse")     
+            self.img_pst_ela_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.img_pst_ela_val.grid_remove()
             self.img_pst_rem_lbl = customtkinter.CTkLabel(self.img_pst_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.img_pst_rem_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.img_pst_rem_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.img_pst_rem_lbl.grid_remove()
             self.img_pst_rem_val = customtkinter.CTkLabel(self.img_pst_sub_frm, height = lbl_height, text=f"")
-            self.img_pst_rem_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.img_pst_rem_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.img_pst_rem_val.grid_remove()
             self.img_pst_can_btn = CancelButton(master = self.img_pst_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.img_pst_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.img_pst_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.img_pst_can_btn.grid_remove()
 
         # plotting can only be done for images
         if "plt" in processes:
             self.plt_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.plt_frm.grid(row=5, padx=PADX, pady=PADY, sticky="nswe")
+            self.plt_frm.grid(row=5, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             plt_ttl_txt = [f'Creating graphs...', f'Creando gráficos...']
-            self.plt_ttl = customtkinter.CTkLabel(self.plt_frm, text=plt_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.plt_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.plt_ttl = customtkinter.CTkLabel(self.plt_frm, text=plt_ttl_txt[lang_idx], font = ttl_font)
+            self.plt_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.plt_sub_frm = customtkinter.CTkFrame(master=self.plt_frm)
-            self.plt_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.plt_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.plt_pbr.set(0)
-            self.plt_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.plt_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.plt_per = customtkinter.CTkLabel(self.plt_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.plt_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.plt_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.plt_wai_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.plt_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.plt_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.plt_ela_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.plt_ela_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.plt_ela_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.plt_ela_lbl.grid_remove()
             self.plt_ela_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_ela_val.grid(row=2, padx=PADX, pady=0, sticky="nse")     
+            self.plt_ela_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.plt_ela_val.grid_remove()
             self.plt_rem_lbl = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.plt_rem_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.plt_rem_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.plt_rem_lbl.grid_remove()
             self.plt_rem_val = customtkinter.CTkLabel(self.plt_sub_frm, height = lbl_height, text=f"")
-            self.plt_rem_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.plt_rem_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.plt_rem_val.grid_remove()
             self.plt_can_btn = CancelButton(master = self.plt_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.plt_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.plt_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.plt_can_btn.grid_remove()
 
         # postprocessing for videos
         if "vid_pst" in processes:
             self.vid_pst_frm = customtkinter.CTkFrame(master=self.progress_top_level_window)
-            self.vid_pst_frm.grid(row=6, padx=PADX, pady=PADY, sticky="nswe")
+            self.vid_pst_frm.grid(row=6, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe")
             vid_pst_ttl_txt = [f'Postprocessing{vid_pst_extra_string}...', f'Postprocesado{vid_pst_extra_string}...']
-            self.vid_pst_ttl = customtkinter.CTkLabel(self.vid_pst_frm, text=vid_pst_ttl_txt[lang_idx], 
-                                            font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-            self.vid_pst_ttl.grid(row=0, padx=PADX * 2, pady=(PADY, 0), columnspan = 2, sticky="nsw")
+            self.vid_pst_ttl = customtkinter.CTkLabel(self.vid_pst_frm, text=vid_pst_ttl_txt[lang_idx], font = ttl_font)
+            self.vid_pst_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_pst_sub_frm = customtkinter.CTkFrame(master=self.vid_pst_frm)
-            self.vid_pst_sub_frm.grid(row=1, padx=PADX, pady=PADY, sticky="nswe", ipady=PADY/2)
+            self.vid_pst_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
             self.vid_pst_sub_frm.columnconfigure(0, weight=1, minsize=300)
-            self.vid_pst_pbr = customtkinter.CTkProgressBar(self.vid_pst_sub_frm, orientation="horizontal", height=28, corner_radius=5, width=1)
+            self.vid_pst_pbr = customtkinter.CTkProgressBar(self.vid_pst_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_pst_pbr.set(0)
-            self.vid_pst_pbr.grid(row=0, padx=PADX, pady=PADY, sticky="nsew")
+            self.vid_pst_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
             self.vid_pst_per = customtkinter.CTkLabel(self.vid_pst_sub_frm, text=f" 0% ", height=5, fg_color=("#949BA2", "#4B4D50"), text_color="white")
-            self.vid_pst_per.grid(row=0, padx=PADX, pady=PADY, sticky="")
+            self.vid_pst_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.vid_pst_wai_lbl = customtkinter.CTkLabel(self.vid_pst_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
-            self.vid_pst_wai_lbl.grid(row=1, padx=PADX, pady=0, sticky="nsew")
+            self.vid_pst_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
             self.vid_pst_ela_lbl = customtkinter.CTkLabel(self.vid_pst_sub_frm, height = lbl_height, text=f"{elapsed_time_txt[lang_idx]}:")
-            self.vid_pst_ela_lbl.grid(row=2, padx=PADX, pady=0, sticky="nsw")
+            self.vid_pst_ela_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_pst_ela_lbl.grid_remove()
             self.vid_pst_ela_val = customtkinter.CTkLabel(self.vid_pst_sub_frm, height = lbl_height, text=f"")
-            self.vid_pst_ela_val.grid(row=2, padx=PADX, pady=0, sticky="nse")     
+            self.vid_pst_ela_val.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.vid_pst_ela_val.grid_remove()
             self.vid_pst_rem_lbl = customtkinter.CTkLabel(self.vid_pst_sub_frm, height = lbl_height, text=f"{remaining_time_txt[lang_idx]}:")
-            self.vid_pst_rem_lbl.grid(row=3, padx=PADX, pady=0, sticky="nsw")
+            self.vid_pst_rem_lbl.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_pst_rem_lbl.grid_remove()
             self.vid_pst_rem_val = customtkinter.CTkLabel(self.vid_pst_sub_frm, height = lbl_height, text=f"")
-            self.vid_pst_rem_val.grid(row=3, padx=PADX, pady=0, sticky="nse")     
+            self.vid_pst_rem_val.grid(row=3, padx=self.padx_progress_window, pady=0, sticky="nse")     
             self.vid_pst_rem_val.grid_remove()
             self.vid_pst_can_btn = CancelButton(master = self.vid_pst_sub_frm, text = "Cancel", command = lambda: print(""))
-            self.vid_pst_can_btn.grid(row=7, padx=PADX, pady=(PADY, 0), sticky="ns")
+            self.vid_pst_can_btn.grid(row=7, padx=self.padx_progress_window, pady=(self.pady_progress_window, 0), sticky="ns")
             self.vid_pst_can_btn.grid_remove()
 
         self.progress_top_level_window.update()
@@ -6142,8 +6358,8 @@ class ProgressWindow:
                 self.img_det_ela_lbl.grid_remove()
                 self.img_det_spe_lbl.grid_remove()
                 self.img_det_spe_val.grid_remove()
-                self.img_det_pbr.grid_configure(pady=(PADY, 0))
-                self.img_det_per.grid_configure(pady=(PADY, 0))
+                self.img_det_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.img_det_per.grid_configure(pady=(self.pady_progress_window, 0))
                 
         # classification of images
         elif process == "img_cls":
@@ -6206,8 +6422,8 @@ class ProgressWindow:
                 self.img_cls_ela_lbl.grid_remove()
                 self.img_cls_spe_lbl.grid_remove()
                 self.img_cls_spe_val.grid_remove()
-                self.img_cls_pbr.grid_configure(pady=(PADY, 0))
-                self.img_cls_per.grid_configure(pady=(PADY, 0))
+                self.img_cls_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.img_cls_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # detection of videos
         if process == "vid_det":
@@ -6256,8 +6472,8 @@ class ProgressWindow:
                 self.vid_det_spe_lbl.grid_remove()
                 self.vid_det_spe_val.grid_remove()
                 self.vid_det_can_btn.grid_remove()
-                self.vid_det_pbr.grid_configure(pady=(PADY, 0))
-                self.vid_det_per.grid_configure(pady=(PADY, 0))
+                self.vid_det_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.vid_det_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # classification of videos
         elif process == "vid_cls":
@@ -6320,8 +6536,8 @@ class ProgressWindow:
                 self.vid_cls_spe_lbl.grid_remove()
                 self.vid_cls_spe_val.grid_remove()
                 self.vid_cls_can_btn.grid_remove()
-                self.vid_cls_pbr.grid_configure(pady=(PADY, 0))
-                self.vid_cls_per.grid_configure(pady=(PADY, 0))
+                self.vid_cls_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.vid_cls_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # postprocessing of images
         elif process == "img_pst":
@@ -6353,8 +6569,8 @@ class ProgressWindow:
                 self.img_pst_ela_val.grid_remove()
                 self.img_pst_ela_lbl.grid_remove()
                 self.img_pst_can_btn.grid_remove()
-                self.img_pst_pbr.grid_configure(pady=(PADY, 0))
-                self.img_pst_per.grid_configure(pady=(PADY, 0))
+                self.img_pst_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.img_pst_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # postprocessing of videos
         elif process == "vid_pst":
@@ -6386,8 +6602,8 @@ class ProgressWindow:
                 self.vid_pst_ela_val.grid_remove()
                 self.vid_pst_ela_lbl.grid_remove()
                 self.vid_pst_can_btn.grid_remove()
-                self.vid_pst_pbr.grid_configure(pady=(PADY, 0))
-                self.vid_pst_per.grid_configure(pady=(PADY, 0))
+                self.vid_pst_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.vid_pst_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # postprocessing of videos
         elif process == "plt":
@@ -6419,8 +6635,8 @@ class ProgressWindow:
                 self.plt_ela_val.grid_remove()
                 self.plt_ela_lbl.grid_remove()
                 self.plt_can_btn.grid_remove()
-                self.plt_pbr.grid_configure(pady=(PADY, 0))
-                self.plt_per.grid_configure(pady=(PADY, 0))
+                self.plt_pbr.grid_configure(pady=(self.pady_progress_window, 0))
+                self.plt_per.grid_configure(pady=(self.pady_progress_window, 0))
 
         # update screen
         self.progress_top_level_window.update()
@@ -6763,7 +6979,7 @@ def toggle_sep_frame():
 
 # toggle export subframe
 def toggle_exp_frame():
-    if var_exp.get():
+    if var_exp.get() and lbl_exp.cget("state") == "normal":
         exp_frame.grid(row=exp_frame_row, column=0, columnspan=2, sticky = 'ew')
         enable_widgets(exp_frame)
         exp_frame.configure(fg='black')
@@ -7061,7 +7277,7 @@ class GreyTopButton(customtkinter.CTkButton):
 
 def reset_values():
 
-    # set vaules
+    # set values
     var_thresh.set(global_vars['var_thresh_default'])
     var_det_model_path.set("")
     var_det_model_short.set("")
@@ -7074,9 +7290,9 @@ def reset_values():
     var_use_checkpnts.set(False)
     var_checkpoint_freq.set("")
     var_cont_checkpnt.set(False)
-    var_process_vid.set(False)
-    var_not_all_frames.set(False)
-    var_nth_frame.set("")
+    var_process_vid.set(True)
+    var_not_all_frames.set(True)
+    var_nth_frame.set("1")
     var_separate_files.set(False)
     var_file_placement.set(2)
     var_sep_conf.set(False)
@@ -7505,7 +7721,7 @@ chb_disable_GPU = Checkbutton(snd_step, variable=var_disable_GPU, anchor="w")
 chb_disable_GPU.grid(row=row_disable_GPU, column=1, sticky='nesw', padx=5)
 
 # process images
-lbl_process_img_txt = ["Process all images in the folder specified", "Procesar todas las imágenes en carpeta elegida"]
+lbl_process_img_txt = ["Process images, if present", "Si está presente, procesa todas las imágenes"]
 row_process_img = 8
 lbl_process_img = Label(snd_step, text=lbl_process_img_txt[lang_idx], width=1, anchor="w")
 lbl_process_img.grid(row=row_process_img, sticky='nesw', pady=2)
@@ -7561,7 +7777,7 @@ chb_cont_checkpnt = Checkbutton(img_frame, variable=var_cont_checkpnt, state=DIS
 chb_cont_checkpnt.grid(row=row_cont_checkpnt, column=1, sticky='nesw', padx=5)
 
 # process videos
-lbl_process_vid_txt = ["Process all videos in the folder specified", "Procesar todos los vídeos en la carpeta elegida"]
+lbl_process_vid_txt = ["Process videos, if present", "Si está presente, procesa todos los vídeos"]
 row_process_vid = 10
 lbl_process_vid = Label(snd_step, text=lbl_process_vid_txt[lang_idx], width=1, anchor="w")
 lbl_process_vid.grid(row=row_process_vid, sticky='nesw', pady=2)
@@ -7591,13 +7807,13 @@ chb_not_all_frames = Checkbutton(vid_frame, variable=var_not_all_frames, command
 chb_not_all_frames.grid(row=row_not_all_frames, column=1, sticky='nesw', padx=5)
 
 # process every nth frame
-lbl_nth_frame_txt = ["Analyse every Nth frame", "Analizar cada Nº fotograma"]
+lbl_nth_frame_txt = ["Sample frames every N seconds", "Muestreo de tramas cada N segundos"]
 row_nth_frame = 1
 lbl_nth_frame = tk.Label(vid_frame, text="        ↳ " + lbl_nth_frame_txt[lang_idx], pady=2, state=DISABLED, width=1, anchor="w")
 lbl_nth_frame.grid(row=row_nth_frame, sticky='nesw')
 var_nth_frame = StringVar()
 var_nth_frame.set(global_vars['var_nth_frame'])
-ent_nth_frame = tk.Entry(vid_frame, textvariable=var_nth_frame, fg='grey', state=NORMAL, width=1)
+ent_nth_frame = tk.Entry(vid_frame, textvariable=var_nth_frame, fg='grey' if var_nth_frame.get().isdecimal() else 'black', state=NORMAL, width=1)
 ent_nth_frame.grid(row=row_nth_frame, column=1, sticky='nesw', padx=5)
 if var_nth_frame.get() == "":
     ent_nth_frame.insert(0, f"{eg_txt[lang_idx]}: 10")
@@ -8009,10 +8225,8 @@ def write_help_tab():
 
     # analyse every nth frame
     help_text.insert(END, f"{lbl_nth_frame_txt[lang_idx]}\n")
-    help_text.insert(END, ["Specify how many frames you want to process. By entering 2, you will process every 2nd frame and thus cut process time by half. By entering 10, "
-                    "you will shorten process time to 1/10, et cetera. However, keep in mind that the chance of detecting something is also cut to 1/10.\n\n",
-                    "Especifique cuántos fotogramas desea procesar. Introduciendo 2, procesará cada 2 fotogramas y reducirá así el tiempo de proceso a la mitad. Introduciendo "
-                    "10, reducirá el tiempo de proceso a 1/10, etcétera. Sin embargo, tenga en cuenta que la probabilidad de detectar algo también se reduce a 1/10.\n\n"][lang_idx])
+    help_text.insert(END, ["Specify the frame sampling rate you'd like to use. For example, entering '1' will process one frame per second. Typically, sampling one frame per second is sufficient and can significantly reduce processing time. The exact time savings depend on the video's frame rate. Most camera traps record at 30 frames per second, meaning this approach can reduce processing time by 97% compared to processing every frame.\n\n",
+                    "Especifica la tasa de muestreo de fotogramas que deseas utilizar. Por ejemplo, ingresar '1' procesará un fotograma por segundo. Generalmente, muestrear un fotograma por segundo es suficiente y puede reducir significativamente el tiempo de procesamiento. El ahorro exacto de tiempo depende de la tasa de fotogramas del video. La mayoría de las cámaras trampa graban a 30 fotogramas por segundo, lo que significa que este enfoque puede reducir el tiempo de procesamiento aproximadamente en un 97% en comparación con procesar todos los fotogramas.\n\n"][lang_idx])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
