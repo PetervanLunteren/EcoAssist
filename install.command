@@ -215,7 +215,7 @@ else
   }
 
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout 23044843cc4772c7d587e6e8515f92e4d49b0702 2>&1 | tee -a "$LOG_FILE"
+  git checkout a13bef87001cb4682330b954d33b3728f6e56fe7 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
