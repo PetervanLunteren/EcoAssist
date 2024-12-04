@@ -9,7 +9,7 @@ echo off
 set DATE_OF_LAST_EDIT="27 Nov 2024"
 
 @REM installing version
-set CURRENT_VERSION=5.19
+set CURRENT_VERSION=5.20
 
 @REM print header
 echo:
