@@ -3314,6 +3314,7 @@ def start_deploy(simple_mode = False):
             mb.showinfo("Analaysis done!", f"Recognition file created at \n\n{timelapse_json}\n\nTo use it in Timelapse, return to "
                                             "Timelapse with the relevant image set open, select the menu item 'Recognition > Import "
                                             "recognition data for this image set' and navigate to the file above.")
+            open_file_or_folder(os.path.dirname(timelapse_json))
         elif simple_mode:
             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
         
@@ -6000,8 +6001,8 @@ class ProgressWindow:
         lbl_height = 12
         pbr_height = 22
         ttl_font = customtkinter.CTkFont(family='CTkFont', size=13, weight = 'bold')
-        self.pady_progress_window = PADY/2
-        self.padx_progress_window = PADX/2
+        self.pady_progress_window = PADY/1.5
+        self.padx_progress_window = PADX/1.5
         
 
         # language settings
