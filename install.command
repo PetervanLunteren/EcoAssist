@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 27 Nov 2024 (latest edit)
+### Peter van Lunteren, 4 Dec 2024 (latest edit)
 
 CURRENT_VERSION="5.19"
 
@@ -308,7 +308,7 @@ conda install mamba -n base -c conda-forge -y
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml -y
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
@@ -329,14 +329,14 @@ if [ "$PLATFORM" = "Linux" ]; then
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml -y
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml
+  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml -y
   conda activate $ECOASSISTCONDAENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
@@ -391,11 +391,11 @@ conda deactivate
 
 # create dedicated tensorflow classification environment 
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml" -y
 elif [ "$PLATFORM" = "Intel Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml" -y
 elif [ "$PLATFORM" = "Linux" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml"
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -y
 fi
 
 # create dedicated pytorch classification environment
