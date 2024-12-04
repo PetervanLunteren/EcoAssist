@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 28 Nov 2024
+# Latest edit by Peter van Lunteren on 4 Dec 2024
 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -2411,15 +2411,16 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                 simple_mode == False and \
                     warn_smooth_vid == True:
                         warn_smooth_vid = False
-                        if not mb.askyesno(information_txt[lang_idx], [f"You are about to analyze videos without smoothing enabled. Typically, videos contain "
-                                                                "many frames of the same animal, resulting in multiple labels for the same "
-                                                                f"video. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, each video will have "
-                                                                "only one label. Do you want to proceed with the current settings? "
-                                                                "\n\nPress 'No' to go back.",f"Va a analizar vídeos sin el suavizado activado. Normalmente, "
-                                                                "los vídeos contienen muchos fotogramas del mismo animal, lo que da lugar a múltiples "
-                                                                f"clasificaciones para el mismo video. Con '{lbl_smooth_cls_animal_txt[lang_idx]}' "
-                                                                "activado, cada vídeo tendrá sólo una clasificación por video. ¿Desea continuar con la "
-                                                                "configuración actual? \n\nPulse 'No' para volver atrás."][lang_idx]):
+                        if not mb.askyesno(information_txt[lang_idx], ["You are about to analyze videos without smoothing enabled. "
+                            "Typically, a video may contain many frames of the same animal, increasing the likelihood that at least "
+                            f"one of the labels could be a false prediction. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, all"
+                            " predictions from a single video will be averaged, resulting in only one label per video. Do you wish to"
+                            " continue without smoothing?\n\nPress 'No' to go back.", "Estás a punto de analizar videos sin suavizado "
+                            "habilitado. Normalmente, un video puede contener muchos cuadros del mismo animal, lo que aumenta la "
+                            "probabilidad de que al menos una de las etiquetas pueda ser una predicción falsa. Con "
+                            f"'{lbl_smooth_cls_animal_txt[lang_idx]}' habilitado, todas las predicciones de un solo video se promediarán,"
+                            " lo que resultará en una sola etiqueta por video. ¿Deseas continuar sin suavizado habilitado?\n\nPresiona "
+                            "'No' para regresar."][lang_idx]):
                             return
     
     # display loading window
@@ -3113,8 +3114,8 @@ def start_deploy(simple_mode = False):
         # if deployed through simple mode, add predefined postprocess directly after deployment and classification
         if simple_mode:
                
-                # postprocess images
-                if "img_pst" in processes:
+                # if only analysing images, postprocess images with plots
+                if "img_pst" in processes and not "vid_pst" in processes:
                     postprocess(src_dir = chosen_folder,
                                 dst_dir = chosen_folder,
                                 thresh = global_vars["var_thresh_default"],
@@ -3124,39 +3125,51 @@ def start_deploy(simple_mode = False):
                                 vis = False,
                                 crp = False,
                                 exp = True,
-                                plt = False,
-                                exp_format = "XLSX",
-                                data_type = "img")
-                
-                # postprocess videos
-                if "vid_pst" in processes:
-                    postprocess(src_dir = chosen_folder,
-                                dst_dir = chosen_folder,
-                                thresh = global_vars["var_thresh_default"],
-                                sep = False,
-                                file_placement = 1,
-                                sep_conf = False,
-                                vis = False,
-                                crp = False,
-                                exp = True,
-                                plt = False,
-                                exp_format = "XLSX",
-                                data_type = "vid")
-                
-                # plot the results
-                if "plt" in processes:
-                    postprocess(src_dir = chosen_folder,
-                                dst_dir = chosen_folder,
-                                thresh = global_vars["var_thresh_default"],
-                                sep = False,
-                                file_placement = 1,
-                                sep_conf = False,
-                                vis = False,
-                                crp = False,
-                                exp = False,
                                 plt = True,
                                 exp_format = "XLSX",
                                 data_type = "img")
+                
+                # if only analysing videos, postprocess videos with plots
+                elif "vid_pst" in processes and not "img_pst" in processes:
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = True,
+                                plt = True,
+                                exp_format = "XLSX",
+                                data_type = "vid")
+                
+                # otherwise postprocess first images without plots, and then videos with plots
+                else:
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = True,
+                                plt = False,
+                                exp_format = "XLSX",
+                                data_type = "img")
+                    postprocess(src_dir = chosen_folder,
+                                dst_dir = chosen_folder,
+                                thresh = global_vars["var_thresh_default"],
+                                sep = False,
+                                file_placement = 1,
+                                sep_conf = False,
+                                vis = False,
+                                crp = False,
+                                exp = True,
+                                plt = True,
+                                exp_format = "XLSX",
+                                data_type = "vid")
 
         # let's organise all the json files and check their presence
         image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
@@ -5987,8 +6000,8 @@ class ProgressWindow:
         lbl_height = 12
         pbr_height = 22
         ttl_font = customtkinter.CTkFont(family='CTkFont', size=13, weight = 'bold')
-        self.pady_progress_window = PADY/2.5
-        self.padx_progress_window = PADX
+        self.pady_progress_window = PADY/2
+        self.padx_progress_window = PADX/2
         
 
         # language settings
