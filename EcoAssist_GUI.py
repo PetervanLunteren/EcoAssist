@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 4 Dec 2024
+# Latest edit by Peter van Lunteren on 28 Nov 2024
 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -2411,7 +2411,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                 simple_mode == False and \
                     warn_smooth_vid == True:
                         warn_smooth_vid = False
-                        if not mb.askyesno(information_txt[lang_idx], ["You are about to analyze videos without smoothing enabled. "
+                        if not mb.askyesno(information_txt[lang_idx], ["You are about to analyze videos without smoothing the confidence scores. "
                             "Typically, a video may contain many frames of the same animal, increasing the likelihood that at least "
                             f"one of the labels could be a false prediction. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, all"
                             " predictions from a single video will be averaged, resulting in only one label per video. Do you wish to"
@@ -3112,7 +3112,7 @@ def start_deploy(simple_mode = False):
             deploy_model(chosen_folder, additional_vid_options, data_type = "vid", simple_mode = simple_mode)
         
         # if deployed through simple mode, add predefined postprocess directly after deployment and classification
-        if simple_mode:
+        if simple_mode and not timelapse_mode:
                
                 # if only analysing images, postprocess images with plots
                 if "img_pst" in processes and not "vid_pst" in processes:
@@ -6346,7 +6346,7 @@ class ProgressWindow:
                       speed = "",
                       hware = "",
                       cancel_func = lambda: print("")):
-        
+
         # language settings
         algorithm_starting_txt = ["Algorithm is starting up...", 'El algoritmo está arrancando...']
         smoothing_txt = ["Smoothing predictions...", 'Suavizar las predicciones...']
@@ -6791,7 +6791,7 @@ def set_language():
     vid_frame.configure(text=" ↳ " + vid_frame_txt[lang_idx] + " ")
     lbl_not_all_frames.configure(text="     " + lbl_not_all_frames_txt[lang_idx])
     lbl_nth_frame.configure(text="        ↳ " + lbl_nth_frame_txt[lang_idx])
-    update_ent_text(ent_nth_frame, f"{eg_txt[lang_idx]}: 10")
+    update_ent_text(ent_nth_frame, f"{eg_txt[lang_idx]}: 1")
     btn_start_deploy.configure(text=btn_start_deploy_txt[lang_idx])
     trd_step.configure(text=" " + trd_step_txt[lang_idx] + " ")
     lbl_hitl_main.configure(text=lbl_hitl_main_txt[lang_idx])
@@ -7863,7 +7863,8 @@ var_nth_frame.set(global_vars['var_nth_frame'])
 ent_nth_frame = tk.Entry(vid_frame, textvariable=var_nth_frame, fg='grey' if var_nth_frame.get().isdecimal() else 'black', state=NORMAL, width=1)
 ent_nth_frame.grid(row=row_nth_frame, column=1, sticky='nesw', padx=5)
 if var_nth_frame.get() == "":
-    ent_nth_frame.insert(0, f"{eg_txt[lang_idx]}: 10")
+    ent_nth_frame.insert(0, f"{eg_txt[lang_idx]}: 1")
+    ent_nth_frame.configure(fg='grey')
 else:
     ent_nth_frame.configure(fg='black')
 ent_nth_frame.bind("<FocusIn>", nth_frame_focus_in)
@@ -8608,7 +8609,8 @@ def main():
     timelapse_path = ""
     if args.timelapse_path:
         timelapse_mode = True
-        timelapse_path = os.path.normpath(args.timelapse_path)
+        # timelapse_path = os.path.normpath(args.timelapse_path)
+        timelapse_path = args.timelapse_path # DEBUG trial - check with Dan if the problem is now resolved
         var_choose_folder.set(timelapse_path)
         dsp_timelapse_path = shorten_path(timelapse_path, 25)
         sim_dir_pth.configure(text = dsp_timelapse_path, text_color = "black")
