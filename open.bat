@@ -1,5 +1,5 @@
 @REM ### Windows commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 13 Aug 2024 (latest edit)
+@REM ### Peter van Lunteren, 6 Dec 2024 (latest edit)
 
 @REM set echo settings
 echo off
@@ -12,6 +12,12 @@ set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\EcoAssist_files\EcoAssist\=%
 set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\ECOASS~1\ECOASS~1\=%
 set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\ECOASS~2\ECOASS~1\=%
 set ECOASSIST_PREFIX=%ECOASSIST_PREFIX:\ECOASS~3\ECOASS~1\=%
+
+@REM save args to a temp file so that it can be read by the new admin console
+set TEMP_FIRST_ARG=%temp%\ecoassist_first_arg.txt
+set TEMP_SECOND_ARG=%temp%\ecoassist_second_arg.txt
+if not exist "%TEMP_FIRST_ARG%" (echo %1 > "%TEMP_FIRST_ARG%")
+if not exist "%TEMP_SECOND_ARG%" (echo %2 > "%TEMP_SECOND_ARG%")
 
 @REM check if installed in program files
 if "%ECOASSIST_PREFIX%"=="%ProgramFiles%" (
@@ -40,6 +46,18 @@ if '%errorlevel%' NEQ '0' (
 
 @REM begin opening EcoAssist
 :skip_permissions
+
+@REM read stored settings again as they are lost after the UAC prompt
+if exist "%TEMP_FIRST_ARG%" (
+    set /p param_1=<"%TEMP_FIRST_ARG%"
+    if "!param_1:~-1!"==" " set param_1=!param_1:~0,-1!
+    del "%TEMP_FIRST_ARG%"
+)
+if exist "%TEMP_SECOND_ARG%" (
+    set /p param_2=<"%TEMP_SECOND_ARG%"
+    if "!param_2:~-1!"==" " set param_2=!param_2:~0,-1!
+    del "%TEMP_SECOND_ARG%"
+)
 
 @REM set EcoAssist_files
 set LOCATION_ECOASSIST_FILES=%ECOASSIST_PREFIX%\EcoAssist_files
@@ -111,11 +129,14 @@ where python >> "%LOG_FILE%"
 
 @REM run script and check if executed in debug or timelapse mode
 echo Opening EcoAssist now... >> "%LOG_FILE%"
-if "%1" == "debug" (
+if "%param_1%" == "debug" (
+    echo Running EcoAssist in debug mode...
     python EcoAssist\EcoAssist_GUI.py
-) else if "%1" == "timelapse" (
-    python EcoAssist\EcoAssist_GUI.py --timelapse-path=%2
+) else if "%param_1%" == "timelapse" (
+    echo Running EcoAssist in timelapse mode...
+    python EcoAssist\EcoAssist_GUI.py --timelapse-path=%param_2%
 ) else (
+    echo Running EcoAssist in normal mode...
     python EcoAssist\EcoAssist_GUI.py 2>&1 >> "%LOG_FILE%"
     )
 
