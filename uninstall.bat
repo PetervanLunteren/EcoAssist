@@ -63,25 +63,20 @@ call conda clean --all -y
 REM loop through each environment and attempt to remove it
 set "ENV_NAMES=ecoassistcondaenv ecoassistcondaenv-yolov8 ecoassistcondaenv-mewc ecoassistcondaenv-base ecoassistcondaenv-pytorch ecoassistcondaenv-tensorflow"
 for %%E in (%ENV_NAMES%) do (
-    echo Removing environment %%E...
-    call mamba env remove -n %%E -y || (
-        echo "Could not mamba env remove %%E, checking for folder..."
-        if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
-            echo "Folder for %%E exists. Removing via rd..."
+    echo Checking for environment %%E...
+    if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
+        echo "Environment %%E exists. Attempting to remove..."
+        call mamba env remove -n %%E -y || (
+            echo "Could not remove %%E with mamba. Proceeding to remove folder..."
             rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" || (
                 echo "There was an error trying to remove the folder for %%E."
                 echo "Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
                 cmd /k
                 exit /b
             )
-        ) else (
-            echo "Folder for %%E does not exist. Skipping manual removal."
         )
-    ) || (
-        echo "There was an error trying to execute the conda command for %%E."
-        echo "Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
-        cmd /k
-        exit /b
+    ) else (
+        echo "Environment %%E does not exist. Skipping removal."
     )
 )
 
