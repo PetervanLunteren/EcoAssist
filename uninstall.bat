@@ -1,5 +1,5 @@
 @REM ### Windows uninstall commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-@REM ### Peter van Lunteren, 17 Jul (latest edit).
+@REM ### Peter van Lunteren, 6 Dec (latest edit).
 
 @REM set echo settings
 echo off
@@ -60,13 +60,30 @@ call conda config --set notify_outdated_conda false
 @REM remove index cache, lock files, unused cache packages, and tarballs
 call conda clean --all -y
 
-@REM remove all old ecoassist conda evironments on the conda way, if present
-call mamba env remove -n ecoassistcondaenv -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-yolov8 -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-yolov8" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-mewc -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-mewc" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-base -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-base" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-pytorch -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-pytorch" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
-call mamba env remove -n ecoassistcondaenv-tensorflow -y || ( echo "could not mamba env remove, proceeding to remove via rd..." & rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\ecoassistcondaenv-tensorflow" ) || ( echo "There was an error trying to execute the conda command. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." & cmd /k & exit )
+REM loop through each environment and attempt to remove it
+set "ENV_NAMES=ecoassistcondaenv ecoassistcondaenv-yolov8 ecoassistcondaenv-mewc ecoassistcondaenv-base ecoassistcondaenv-pytorch ecoassistcondaenv-tensorflow"
+for %%E in (%ENV_NAMES%) do (
+    echo Removing environment %%E...
+    call mamba env remove -n %%E -y || (
+        echo "Could not mamba env remove %%E, checking for folder..."
+        if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
+            echo "Folder for %%E exists. Removing via rd..."
+            rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" || (
+                echo "There was an error trying to remove the folder for %%E."
+                echo "Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+                cmd /k
+                exit /b
+            )
+        ) else (
+            echo "Folder for %%E does not exist. Skipping manual removal."
+        )
+    ) || (
+        echo "There was an error trying to execute the conda command for %%E."
+        echo "Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+        cmd /k
+        exit /b
+    )
+)
 
 @REM loop over common locations for old ecoassist conda environments and remove them the hard way (rd)
 for %%x in (miniforge3, mambaforge, miniconda3, anaconda3) do ( 
