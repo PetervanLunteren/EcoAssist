@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 4 Dec 2024 (latest edit)
+### Peter van Lunteren, 7 Dec 2024 (latest edit)
 
 CURRENT_VERSION="5.20"
 
@@ -215,7 +215,7 @@ else
   }
 
   cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
-  git checkout a13bef87001cb4682330b954d33b3728f6e56fe7 2>&1 | tee -a "$LOG_FILE"
+  git checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576 2>&1 | tee -a "$LOG_FILE"
   cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support." 2>&1 | tee -a "$LOG_FILE"; exit 1; }
 fi
 
