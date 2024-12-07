@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 28 Nov 2024
+# Latest edit by Peter van Lunteren on 7 Dec 2024
 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -2467,20 +2467,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     if os.name == 'nt':
         if selected_options == []:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, '--threshold=0.01', chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, '--max_width=1280', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, '--max_width=1280', '--verbose', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
         else:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, *selected_options, '--threshold=0.01', chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--verbose', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
 
      # create command for MacOS and Linux
     else:
         if selected_options == []:
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--verbose' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
         else:
             selected_options = "' '".join(selected_options)
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{selected_options}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--verbose' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
 
     # pick one command
     if data_type == "img":
@@ -2532,7 +2532,16 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     subprocess_output = ""
     previous_processed_img = ["There is no previously processed image. The problematic character is in the first image to analyse.",
                               "No hay ninguna imagen previamente procesada. El personaje problemático está en la primera imagen a analizar."][lang_idx]
-
+    extracting_frames_mode = False
+    
+    # check if the unit shown should be frame or video
+    if data_type == "vid" and var_cls_model.get() in none_txt:
+        frame_video_choice = "video"
+    elif data_type == "vid" and var_cls_model.get() not in none_txt:
+        frame_video_choice = "frame"
+    else:
+        frame_video_choice = None
+    
     # read output
     for line in p.stdout:
         
@@ -2590,6 +2599,24 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                 with open(model_warning_log, 'a+') as f:
                     f.write(f"{line}\n")
                 f.close()
+                
+        # print frame extraction progress and dont continue until done
+        if "Extracting frames for folder " in line and \
+            data_type == "vid":
+            progress_window.update_values(process = f"{data_type}_det",
+                                          status = "extracting frames")
+            extracting_frames_mode = True
+        if extracting_frames_mode:
+            if '%' in line[0:4]:
+                progress_window.update_values(process = f"{data_type}_det",
+                                            status = "extracting frames",
+                                            extracting_frames_txt = [f"Extracting frames... {line[:3]}%",
+                                                                    f"Extrayendo fotogramas... {line[:3]}%"])
+        if "Extracted frames for" in line and \
+            data_type == "vid":
+                extracting_frames_mode = False
+        if extracting_frames_mode:
+            continue
         
         # get process stats and send them to tkinter
         if line.startswith("GPU available: False"):
@@ -2617,7 +2644,8 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
                                             time_rem = time_left,
                                             speed = processing_speed,
                                             hware = GPU_param,
-                                            cancel_func = lambda: cancel_subprocess(p))
+                                            cancel_func = lambda: cancel_subprocess(p),
+                                            frame_video_choice = frame_video_choice)
         root.update()
     
     # process is done
@@ -2830,15 +2858,16 @@ def start_deploy(simple_mode = False):
                 simple_mode == False and \
                     warn_smooth_vid == True:
                         warn_smooth_vid = False
-                        if not mb.askyesno(information_txt[lang_idx], [f"You are about to analyze videos without smoothing enabled. Typically, videos contain "
-                                                                "many frames of the same animal, resulting in multiple labels for the same "
-                                                                f"video. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, each video will have "
-                                                                "only one label. Do you want to proceed with the current settings? "
-                                                                "\n\nPress 'No' to go back.",f"Va a analizar vídeos sin el suavizado activado. Normalmente, "
-                                                                "los vídeos contienen muchos fotogramas del mismo animal, lo que da lugar a múltiples "
-                                                                f"clasificaciones para el mismo video. Con '{lbl_smooth_cls_animal_txt[lang_idx]}' "
-                                                                "activado, cada vídeo tendrá sólo una clasificación por video. ¿Desea continuar con la "
-                                                                "configuración actual? \n\nPulse 'No' para volver atrás."][lang_idx]):
+                        if not mb.askyesno(information_txt[lang_idx], ["You are about to analyze videos without smoothing the confidence scores. "
+                            "Typically, a video may contain many frames of the same animal, increasing the likelihood that at least "
+                            f"one of the labels could be a false prediction. With '{lbl_smooth_cls_animal_txt[lang_idx]}' enabled, all"
+                            " predictions from a single video will be averaged, resulting in only one label per video. Do you wish to"
+                            " continue without smoothing?\n\nPress 'No' to go back.", "Estás a punto de analizar videos sin suavizado "
+                            "habilitado. Normalmente, un video puede contener muchos cuadros del mismo animal, lo que aumenta la "
+                            "probabilidad de que al menos una de las etiquetas pueda ser una predicción falsa. Con "
+                            f"'{lbl_smooth_cls_animal_txt[lang_idx]}' habilitado, todas las predicciones de un solo video se promediarán,"
+                            " lo que resultará en una sola etiqueta por video. ¿Deseas continuar sin suavizado habilitado?\n\nPresiona "
+                            "'No' para regresar."][lang_idx]):
                             return
     
     # check which processes need to be listed on the progress window
@@ -6004,13 +6033,12 @@ class ProgressWindow:
         self.pady_progress_window = PADY/1.5
         self.padx_progress_window = PADX/1.5
         
-
         # language settings
         in_queue_txt = ['In queue', 'En cola']
         checking_fpaths_txt = ['Checking file paths', 'Comprobación de rutas de archivos']
         processing_image_txt = ['Processing image', 'Procesamiento de imágenes']
         processing_animal_txt = ['Processing animal', 'Procesamiento de animales']
-        processing_frame_txt = ['Processing frame', 'Procesamiento de fotogramas']
+        processing_unknown_txt = ['Processing', 'Procesamiento']
         images_per_second_txt = ['Images per second', 'Imágenes por segundo']
         animals_per_second_txt = ['Animals per second', 'Animales por segundo']
         frames_per_second_txt = ['Frames per second', 'Fotogramas por segundo']
@@ -6151,7 +6179,7 @@ class ProgressWindow:
             self.vid_det_per.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="")
             self.vid_det_wai_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=in_queue_txt[lang_idx])
             self.vid_det_wai_lbl.grid(row=1, padx=self.padx_progress_window, pady=0, sticky="nsew")
-            self.vid_det_num_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{processing_frame_txt[lang_idx]}:")
+            self.vid_det_num_lbl = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"{processing_unknown_txt[lang_idx]}:")
             self.vid_det_num_lbl.grid(row=2, padx=self.padx_progress_window, pady=0, sticky="nsw")
             self.vid_det_num_lbl.grid_remove()
             self.vid_det_num_val = customtkinter.CTkLabel(self.vid_det_sub_frm, height = lbl_height, text=f"")
@@ -6346,7 +6374,10 @@ class ProgressWindow:
                       time_rem = "",
                       speed = "",
                       hware = "",
-                      cancel_func = lambda: print("")):
+                      cancel_func = lambda: print(""),
+                      extracting_frames_txt = ["Extracting frames...     ",
+                                               "Extrayendo fotogramas...     "],
+                      frame_video_choice = "frame"):
 
         # language settings
         algorithm_starting_txt = ["Algorithm is starting up...", 'El algoritmo está arrancando...']
@@ -6357,6 +6388,10 @@ class ProgressWindow:
         seconds_per_animal_txt = ["Seconds per animal:", "Segundos por animal:"]
         frames_per_second_txt = ["Frames per second:", "Fotogramas por segundo:"]
         seconds_per_frame_txt = ["Seconds per frame:", "Segundos por fotograma:"]
+        videos_per_second_txt = ["Videos per second:", "Vídeos por segundo:"]
+        seconds_per_video_txt = ["Seconds per video:", "Segundos por vídeo:"]
+        processing_videos_txt = ["Processing video:", "Procesando vídeo:"]
+        processing_frames_txt = ["Processing frame:", "Procesando fotograma:"]
         starting_up_txt = ["Starting up...", "Arrancando..."]
 
         # detection of images
@@ -6478,6 +6513,9 @@ class ProgressWindow:
             if status == "load":
                 self.vid_det_wai_lbl.configure(text = algorithm_starting_txt[lang_idx])
                 self.just_shown_load_screen = True
+            elif status == "extracting frames":
+                self.vid_det_wai_lbl.configure(text = extracting_frames_txt[lang_idx])
+                self.just_shown_load_screen = True
             elif status == "running":
                 if self.just_shown_load_screen:
                     self.vid_det_wai_lbl.grid_remove()
@@ -6501,10 +6539,17 @@ class ProgressWindow:
                     self.vid_det_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
                 else:
                     self.vid_det_per.configure(fg_color=("#949BA2", "#4B4D50"))
+                if frame_video_choice == "frame":
+                    self.vid_det_num_lbl.configure(text = processing_frames_txt[lang_idx])
+                else:
+                    self.vid_det_num_lbl.configure(text = processing_videos_txt[lang_idx])
                 self.vid_det_num_val.configure(text = f"{cur_it} of {tot_it}")
                 self.vid_det_ela_val.configure(text = time_ela)
                 self.vid_det_rem_val.configure(text = time_rem)
-                self.vid_det_spe_lbl.configure(text = frames_per_second_txt[lang_idx] if "it/s" in speed else seconds_per_frame_txt[lang_idx])
+                if frame_video_choice == "frame":
+                    self.vid_det_spe_lbl.configure(text = frames_per_second_txt[lang_idx] if "it/s" in speed else seconds_per_frame_txt[lang_idx])
+                else:
+                    self.vid_det_spe_lbl.configure(text = videos_per_second_txt[lang_idx] if "it/s" in speed else seconds_per_video_txt[lang_idx])
                 parsed_speed = speed.replace("it/s", "").replace("s/it", "")
                 self.vid_det_spe_val.configure(text = parsed_speed)
                 self.vid_det_hwa_val.configure(text = hware)
@@ -8610,8 +8655,7 @@ def main():
     timelapse_path = ""
     if args.timelapse_path:
         timelapse_mode = True
-        # timelapse_path = os.path.normpath(args.timelapse_path)
-        timelapse_path = args.timelapse_path # DEBUG trial - check with Dan if the problem is now resolved
+        timelapse_path = os.path.normpath(args.timelapse_path)
         var_choose_folder.set(timelapse_path)
         dsp_timelapse_path = shorten_path(timelapse_path, 25)
         sim_dir_pth.configure(text = dsp_timelapse_path, text_color = "black")
