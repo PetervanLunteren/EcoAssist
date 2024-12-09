@@ -3,7 +3,7 @@
 ### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
 ### Peter van Lunteren, 7 Dec 2024 (latest edit)
 
-CURRENT_VERSION="5.20"
+CURRENT_VERSION="5.21"
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
