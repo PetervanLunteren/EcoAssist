@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 7 Dec 2024
+# Latest edit by Peter van Lunteren on 10 Dec 2024
 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -3379,42 +3379,45 @@ def reset_window_transparency():
     scaling_adjusted = False
     print(f"check_dpi_scaling: {customtkinter.ScalingTracker.check_dpi_scaling()}")
 
-    # reset transparency
-    transparency_sim = simple_mode_win.attributes('-alpha')
-    transparency_adv = advanc_mode_win.attributes('-alpha')
-    print(f"\t transparency:   {transparency_sim} & {transparency_adv}")
-    if transparency_sim != 1 or transparency_adv != 1:
-        print("\t\t transparency is not 1, adjusting...")
-        simple_mode_win.attributes('-alpha', 1)
-        advanc_mode_win.attributes('-alpha', 1)
-        root.update_idletasks()
-
-    # reset widget scaling
-    widget_scaling_sim = customtkinter.ScalingTracker.get_widget_scaling(simple_mode_win)
-    widget_scaling_adv = customtkinter.ScalingTracker.get_widget_scaling(advanc_mode_win)
-    print(f"\t widget_scaling: {widget_scaling_sim} & {widget_scaling_adv}")
-    if widget_scaling_sim != 1 or widget_scaling_adv != 1:
-        print("\t\t widget_scaling is not 1, adjusting...")
-        customtkinter.set_widget_scaling(1)
-        scaling_adjusted = True
-
-    # reset window scaling
-    window_scaling_sim = customtkinter.ScalingTracker.get_window_scaling(simple_mode_win)
-    window_scaling_adv = customtkinter.ScalingTracker.get_window_scaling(advanc_mode_win)
-    print(f"\t window_scaling: {window_scaling_sim} & {window_scaling_adv}")
-    if window_scaling_sim != 1 or window_scaling_adv != 1:
-        print("\t\t window_scaling is not 1, adjusting...")
-        customtkinter.set_window_scaling(1)
-        scaling_adjusted = True
-
-    # update geometry
-    if scaling_adjusted:
-        simple_mode_win.geometry(f"{SIM_WINDOW_WIDTH}x{SIM_WINDOW_HEIGHT}+10+20")
-        advanc_mode_win.geometry(f"{advanc_bg_image_label.winfo_reqwidth()}x{advanc_bg_image_label.winfo_reqheight()}+10+20")
-        root.update_idletasks()
-
-    print("\n")
-    print(f"Time taken: {time.time() - start_time:.6f} seconds")
+    if (simple_mode_win and simple_mode_win.winfo_exists()) and \
+        (advanc_mode_win and advanc_mode_win.winfo_exists()):
+    
+        # reset transparency
+        transparency_sim = simple_mode_win.attributes('-alpha')
+        transparency_adv = advanc_mode_win.attributes('-alpha')
+        print(f"\t transparency:   {transparency_sim} & {transparency_adv}")
+        if transparency_sim != 1 or transparency_adv != 1:
+            print("\t\t transparency is not 1, adjusting...")
+            simple_mode_win.attributes('-alpha', 1)
+            advanc_mode_win.attributes('-alpha', 1)
+            root.update_idletasks()
+    
+        # reset widget scaling
+        widget_scaling_sim = customtkinter.ScalingTracker.get_widget_scaling(simple_mode_win)
+        widget_scaling_adv = customtkinter.ScalingTracker.get_widget_scaling(advanc_mode_win)
+        print(f"\t widget_scaling: {widget_scaling_sim} & {widget_scaling_adv}")
+        if widget_scaling_sim != 1 or widget_scaling_adv != 1:
+            print("\t\t widget_scaling is not 1, adjusting...")
+            customtkinter.set_widget_scaling(1)
+            scaling_adjusted = True
+    
+        # reset window scaling
+        window_scaling_sim = customtkinter.ScalingTracker.get_window_scaling(simple_mode_win)
+        window_scaling_adv = customtkinter.ScalingTracker.get_window_scaling(advanc_mode_win)
+        print(f"\t window_scaling: {window_scaling_sim} & {window_scaling_adv}")
+        if window_scaling_sim != 1 or window_scaling_adv != 1:
+            print("\t\t window_scaling is not 1, adjusting...")
+            customtkinter.set_window_scaling(1)
+            scaling_adjusted = True
+    
+        # update geometry
+        if scaling_adjusted:
+            simple_mode_win.geometry(f"{SIM_WINDOW_WIDTH}x{SIM_WINDOW_HEIGHT}+10+20")
+            advanc_mode_win.geometry(f"{advanc_bg_image_label.winfo_reqwidth()}x{advanc_bg_image_label.winfo_reqheight()}+10+20")
+            root.update_idletasks()
+    
+        print("\n")
+        print(f"Time taken: {time.time() - start_time:.6f} seconds")
 
 # get data from file list and create graph
 def produce_graph(file_list_txt = None, dir = None):
