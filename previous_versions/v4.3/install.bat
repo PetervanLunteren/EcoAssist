@@ -237,10 +237,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone https://github.com/PetervanLunteren/EcoAssist.git
-    cd "%LOCATION_ECOASSIST_FILES%\EcoAssist" || ( echo "Could not change directory to EcoAssist. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone -b finetuneMD https://github.com/PetervanLunteren/EcoAssist.git    
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    "%EA_GIT_EXE%" clone -b finetuneMD https://github.com/PetervanLunteren/EcoAssist.git   
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
