@@ -1,16 +1,6 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 18 Oct 2023
-
-# TODO: add install info for Apple Silicon homebrew sudo command
-# TODO: fix scroll bug of deploy_tab doesn't work anymore after deployment
-# TODO: auto adjust size of helptab after show/hide widgets
-# TODO: fix width after show hide subframes
-# TODO: add documentation for smooth_params.py
-# TODO: add messagebox pointing user to smooth_info.txt file
-# TODO: maak een check voor resize window en tel dan gewoon de widget lengths bij elkaar op. 
-# TODO: als je een grote json file hebt, dan even checken of alle lekker werkt met de human in the loop. Krijg je overal progress windows?
-# TODO: spaanse teksten bij de Help tab.
+# Latest edit by Peter van Lunteren on 12 Dec 2024
 
 # import packages like a christmas tree
 import os
@@ -518,6 +508,28 @@ def start_postprocess():
         # close window
         pp_process_window.destroy()
 
+# This function preserves the hierarchy of parent and child folders while sorting all file paths. It ensures that:
+# Files and subfolders within the same parent folder are sorted together.
+# Files and folders from different parent folders are kept separate and sorted relative to their full path.
+def sort_paths_per_dir_layer(file_paths):
+    # Split each path into components
+    split_paths = [os.path.normpath(path).split(os.sep) for path in file_paths]
+    
+    # Sort paths alphabetically by each directory layer
+    sorted_paths = sorted(split_paths, key=lambda x: tuple(x))
+    
+    # Reconstruct the file paths
+    sorted_file_paths = []
+    for path in sorted_paths:
+        drive, tail = os.path.splitdrive(os.path.join(*path))
+        if drive:
+            sorted_file_paths.append(drive + os.sep + tail)
+        else:
+            sorted_file_paths.append(tail)
+            
+    # return
+    return sorted_file_paths
+
 # check data and prepare for training
 def prepare_data_for_training(data_folder, prop_to_test, prop_to_val):
     # log
@@ -536,7 +548,8 @@ def prepare_data_for_training(data_folder, prop_to_test, prop_to_val):
     n_val = int(total_n * prop_to_val)
 
     # select random files
-    random.shuffle(files)
+    # random.shuffle(files)                 # dont randomly shuffle  
+    files = sort_paths_per_dir_layer(files) # but sort them so there is minimum location overlap between splits
     test_files = files[:n_test]
     val_files = files[n_test:n_test+n_val]
     train_files = files[n_test+n_val:]
