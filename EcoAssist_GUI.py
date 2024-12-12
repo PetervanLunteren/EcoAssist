@@ -5257,7 +5257,7 @@ row_lbl_val_prop = 0
 lbl_val_prop = Label(adv_params, text=lbl_val_prop_txt[lang], width=1, anchor="w")
 lbl_val_prop.grid(row=row_lbl_val_prop, sticky='nesw', pady=2)
 var_val_prop = DoubleVar()
-var_val_prop.set(0.1)
+var_val_prop.set(0.2)
 scl_val_prop = Scale(adv_params, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_val_prop, showvalue=0, width=10, length=1)
 scl_val_prop.grid(row=row_lbl_val_prop, column=1, sticky='ew', padx=10)
 dsp_val_prop = Label(adv_params, textvariable=var_val_prop)
@@ -5270,7 +5270,7 @@ row_lbl_test_prop = 1
 lbl_test_prop = Label(adv_params, text=lbl_test_prop_txt[lang], width=1, anchor="w")
 lbl_test_prop.grid(row=row_lbl_test_prop, sticky='nesw', pady=2)
 var_test_prop = DoubleVar()
-var_test_prop.set(0.2)
+var_test_prop.set(0.1)
 scl_test_prop = Scale(adv_params, from_=0.000000001, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_test_prop, showvalue=0, width=10, length=1) # not 0 because display needs two digits
 scl_test_prop.grid(row=row_lbl_test_prop, column=1, sticky='ew', padx=10)
 dsp_test_prop = Label(adv_params, textvariable=var_test_prop)
