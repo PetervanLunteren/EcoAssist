@@ -1,6 +1,8 @@
 # Non-code GUI platform for training and deploying object detection models: https://github.com/PetervanLunteren/EcoAssist
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 12 Dec 2024
+# Latest edit by Peter van Lunteren on 13 Dec 2024
+
+# -> search for 'SPLIT_DATASET' to find the part of the code where you decide the split train, val, test.
 
 # import packages like a christmas tree
 import os
@@ -547,9 +549,10 @@ def prepare_data_for_training(data_folder, prop_to_test, prop_to_val):
     n_test = int(total_n * prop_to_test)
     n_val = int(total_n * prop_to_val)
 
-    # select random files
-    # random.shuffle(files)                 # dont randomly shuffle  
-    files = sort_paths_per_dir_layer(files) # but sort them so there is minimum location overlap between splits
+    # split dataset SPLIT_DATASET
+    # random.shuffle(files)                                                                 # DEBUG - dont randomly shuffle  
+    # files = sort_paths_per_dir_layer(files)                                               # DEBUG - also dont sort them by dir layer since the dirs start with the species name 
+    files = sorted(files, key=lambda x: re.search(r"PvL_seq_([a-zA-Z0-9_-]+)", x).group(1)) # DEBUG - sort based on the string starting from "PvL_seq" (extract the alphanumeric part after "PvL_seq")
     test_files = files[:n_test]
     val_files = files[n_test:n_test+n_val]
     train_files = files[n_test+n_val:]
@@ -5270,7 +5273,7 @@ row_lbl_test_prop = 1
 lbl_test_prop = Label(adv_params, text=lbl_test_prop_txt[lang], width=1, anchor="w")
 lbl_test_prop.grid(row=row_lbl_test_prop, sticky='nesw', pady=2)
 var_test_prop = DoubleVar()
-var_test_prop.set(0.1)
+var_test_prop.set(0)
 scl_test_prop = Scale(adv_params, from_=0.000000001, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_test_prop, showvalue=0, width=10, length=1) # not 0 because display needs two digits
 scl_test_prop.grid(row=row_lbl_test_prop, column=1, sticky='ew', padx=10)
 dsp_test_prop = Label(adv_params, textvariable=var_test_prop)
