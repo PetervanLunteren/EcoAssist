@@ -1,6 +1,6 @@
 # library of inference functions to be used for classifying MD crops 
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 28 Nov 2024
+# Latest edit by Peter van Lunteren on 18 Dec 2024
 
 # import packages
 import io
@@ -11,7 +11,6 @@ import contextlib
 from tqdm import tqdm
 from PIL import Image
 from collections import defaultdict
-from EcoAssist.smooth_params import *
 from megadetector.data_management import read_exif
 from megadetector.data_management import cct_json_utils
 from megadetector.data_management.read_exif import parse_exif_datetime_string
