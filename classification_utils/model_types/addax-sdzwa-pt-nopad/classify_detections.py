@@ -148,7 +148,7 @@ def get_classification(PIL_crop):
 # output: cropped image <class 'PIL.Image.Image'>
 # each developer has its own way of padding, squaring, cropping, resizing etc
 # it needs to happen exactly the same as on which the model was trained
-def remove_background(img, bbox_norm):
+def get_crop(img, bbox_norm):
     img_w, img_h = img.size
     xmin = int(bbox_norm[0] * img_w)
     ymin = int(bbox_norm[1] * img_h)
