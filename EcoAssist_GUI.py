@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 10 Dec 2024
+# Latest edit by Peter van Lunteren on 23 Dec 2024
 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -2467,20 +2467,20 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     if os.name == 'nt':
         if selected_options == []:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, '--threshold=0.01', chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, '--max_width=1280', '--verbose', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, '--max_width=1280', '--verbose', '--allow_empty_videos', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
         else:
             img_command = [sys.executable, run_detector_batch_py, det_model_fpath, *selected_options, '--threshold=0.01', chosen_folder, image_recognition_file]
-            vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--verbose', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
+            vid_command = [sys.executable, process_video_py, *selected_options, '--max_width=1280', '--verbose', '--allow_empty_videos', '--quality=85', video_recognition_file, det_model_fpath, chosen_folder]
 
-     # create command for MacOS and Linux
+    # create command for MacOS and Linux
     else:
         if selected_options == []:
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--verbose' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '--max_width=1280' '--verbose' '--allow_empty_videos' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
         else:
             selected_options = "' '".join(selected_options)
             img_command = [f"'{sys.executable}' '{run_detector_batch_py}' '{det_model_fpath}' '{selected_options}' '--threshold=0.01' '{chosen_folder}' '{image_recognition_file}'"]
-            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--verbose' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
+            vid_command = [f"'{sys.executable}' '{process_video_py}' '{selected_options}' '--max_width=1280' '--verbose' '--allow_empty_videos' '--quality=85' '{video_recognition_file}' '{det_model_fpath}' '{chosen_folder}'"]
 
     # pick one command
     if data_type == "img":
