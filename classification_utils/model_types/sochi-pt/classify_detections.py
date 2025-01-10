@@ -42,7 +42,7 @@ logging.info(f"temp_frame_folder: {temp_frame_folder}")
 ############### MODEL SPECIFIC ###############
 ##############################################
 # set paths
-chkpt_path = Path(cls_model_fpath).parent / ".pt"
+chkpt_path = Path(cls_model_fpath).parent / "classificator_sochi_v2.pt"
 class_csv_path = Path(cls_model_fpath).parent / "classes.csv"
 logging.info(f"Checkpoint path: {chkpt_path}")
 logging.info(f"Class CSV path: {class_csv_path}")
