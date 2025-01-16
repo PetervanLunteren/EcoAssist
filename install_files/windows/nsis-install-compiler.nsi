@@ -43,6 +43,9 @@ Name "EcoAssist ${VERSION}"
 # Section for installation steps
 Section "Install"
 
+    ; Prevent the system from sleeping
+    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000|0x00000001)'
+    
     # Set fixed installation directory without prompting the user
     StrCpy $INSTDIR "$PROFILE\EcoAssist_files"
 
@@ -151,11 +154,17 @@ Section "Install"
     ; Notify user
     DetailPrint "Shortcut created on the desktop."
 
+    ; Allow the system to sleep again after installation
+    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000)'
+    
 SectionEnd
 
 # Uninstaller section
 Section "Uninstall"
 
+    ; Prevent the system from sleeping
+    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000|0x00000001)'
+    
     # Set fixed installation directory without prompting the user
     StrCpy $INSTDIR "$PROFILE\EcoAssist" 
 
@@ -183,6 +192,9 @@ Section "Uninstall"
     RMDir /r $INSTDIR
     IfErrors 0 RemoveSuccess ; Proceed to Success if no errors
 
+    ; Allow the system to sleep again after installation
+    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000)'
+    
     ; Handle failure
     MessageBox MB_ICONEXCLAMATION "Failed to remove the installation directory. Often a reboot solves this issue. Please try again after a reboot. "
     StrCpy $InstallStatus 0 ; Installation failure
@@ -196,6 +208,7 @@ Section "Uninstall"
 
     Delete "$DESKTOP\EcoAssist.lnk"
     DetailPrint "Uninstallation complete."
+    
 SectionEnd
 
 # function to hide / show pbar
@@ -224,4 +237,3 @@ Function .onInstFailed
     MessageBox MB_ICONEXCLAMATION "The installation was canceled. Some files may not have been fully installed."
     abort
 FunctionEnd
-
