@@ -11,6 +11,7 @@ APPLICATIONS_DIR="/Applications"
 SHORTCUT="${HOME}/Desktop/${APP_NAME}.app"
 TAR_FILE="/tmp/${APP_NAME}.tar.xz"
 INSTALL_DIR="/Applications/EcoAssist_files"
+OLD_INSTALL_DIR="/Applications/.EcoAssist_files"
 PBAR_POS=0
 
 progress() {
@@ -31,7 +32,16 @@ progress 3
 
 # Step 0: Remove previous installation
 echo "Step 1 of 5 - Uninstalling ${PREVIOUS_VERSION}..."
+if [[ -d "$OLD_INSTALL_DIR" ]]; then
+    if ! rm -rf "$OLD_INSTALL_DIR"; then
+        echo "ALERT:Error|Failed to remove ${PREVIOUS_VERSION} ${INSTALL_DIR}"
+        exit 1
+    fi
+fi]
+
+# Step 0B: remove files on the old locations if present
 if [[ -d "$INSTALL_DIR" ]]; then
+    echo "Step 1 of 5 - Still uninstalling..."
     if ! rm -rf "$INSTALL_DIR"; then
         echo "ALERT:Error|Failed to remove ${PREVIOUS_VERSION} ${INSTALL_DIR}"
         exit 1
