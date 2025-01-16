@@ -57,7 +57,7 @@ jobs:
           echo Hello world! > "%root%\first-startup.txt"
           
           @REM EcoAssist
-          git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist-experiments.git "%root%\EcoAssist"
+          git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
           rmdir /s /q "%root%\EcoAssist\.git"
           move "%root%\EcoAssist\main.py" "%root%\main.py"
           set RAW_VERSION=${{ env.RELEASE_VERSION }}
