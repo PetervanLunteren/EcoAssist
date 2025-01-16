@@ -41,7 +41,7 @@ if [[ -d "$OLD_INSTALL_DIR" ]]; then
         echo "ALERT:Error|Failed to remove ${PREVIOUS_VERSION} ${INSTALL_DIR}"
         exit 1
     fi
-fi]
+fi
 
 # Step 0B: remove files on the old locations if present
 if [[ -d "$INSTALL_DIR" ]]; then
