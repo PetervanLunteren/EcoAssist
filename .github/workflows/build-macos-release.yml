@@ -35,7 +35,7 @@ jobs:
         run: |
         
           ### refresh root
-          root="$HOME/EcoAssist"
+          root="$HOME/EcoAssist_files"
           if [ -d "${root}" ]; then
               rm -rf "${root}"
               echo "$root folder removed"
@@ -157,7 +157,7 @@ jobs:
       - name: Zip folder contents
         run: |
           cd "$HOME"
-          tar -caf "macos-${{ env.RELEASE_VERSION }}.tar.xz" EcoAssist
+          tar -caf "macos-${{ env.RELEASE_VERSION }}.tar.xz" EcoAssist_files
 
       # - name: Upload files to Google Cloud
       #   run: |
