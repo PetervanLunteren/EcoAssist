@@ -21,6 +21,10 @@ progress() {
 
 progress 2
 
+# prevent computer from sleeping
+pmset noidle &
+PMSETPID=$!
+
 # Read previous version
 PREVIOUS_VERSION="previous installation"
 PREVIOUS_VERSION_FILE="${INSTALL_DIR}/EcoAssist/version.txt"
@@ -109,6 +113,9 @@ progress 12
 if [[ -L "$SHORTCUT" ]]; then
     rm "$SHORTCUT"
 fi
+
+# computer can sleep again if it want to
+kill $PMSETPID
 
 progress 2
 if ln -s "${INSTALL_DIR}/${APP_NAME} ${VERSION}.app" "$SHORTCUT"; then
