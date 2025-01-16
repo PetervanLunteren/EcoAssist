@@ -286,7 +286,7 @@ Best regards,
 
 Glad to hear EcoAssist can help you in your work!
 
-I used to have a train feature inside EcoAssist, but I've removed that some time ago. Although it was technically working, the results weren't very good. Science has since moved away from training detection models to identify species, to training image classifiers to be used in conjunction with detection models. The old EcoAssist way is training detection models. That being said, you can still do that if you want. A tutorial can be found here (https://drive.google.com/drive/folders/12Qn05KE7TXYhDKLHGSKz1uG-toep9sqx?usp=sharing), and you can downgrade your EcoAssist version to 4.3 via the link in the FAQ section (https://addaxdatascience.com/ecoassist/#FAQ). Please be aware that this version is depreciated.
+I used to have a train feature inside EcoAssist, but I've removed that some time ago. Although it was technically working, the results weren't very good. Science has since moved away from training detection models to identify species, to training image classifiers to be used in conjunction with detection models. The old EcoAssist way is training detection models. That being said, you can still do that if you want. A tutorial can be found here (https://drive.google.com/drive/folders/12Qn05KE7TXYhDKLHGSKz1uG-toep9sqx?usp=sharing), and you can downgrade your EcoAssist version to 4.3 via the link in the FAQ section (https://addaxdatascience.com/ecoassist/#FAQ).
 
 That being said, the better way is to train an image classifier. For this I've started a collaboration with some folks from the University of Tasmania. They provide a pipeline on training species identification models, which then can be loaded into EcoAssist. I'll admit that it can be a bit daunting, since you'll need to at least have an understanding of Python and Docker. If you want to go down this path, I advise you to first do the Quick Start Vignette (https://github.com/zaandahl/mewc/blob/master/vignette.md).
 1. How to train: https://github.com/zaandahl/mewc
@@ -346,3 +346,8 @@ I'm not sure what is gogin on, but I believe a hard reset might do the trick.
 12. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
 
 I’ll take a look and help you to get EcoAssist running!
+
+# Timelapse command to run EcoAssist in Timelapse mode
+```
+(cd /d %homedrive%%homepath% && "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images")
+```

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-### OSx and Linux install commands for the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 7 Dec 2024 (latest edit)
-
-CURRENT_VERSION="5.21"
+### Linux install commands 
+### This install script originally was also meant for macOS, so there is a lot of redundant code in here
+### The macOS install was transferred to a UI install with GitHub actions, but the linux install was too big for the GitHub runners
+### So for now we just leave the install method for linux with this script as only about 1% of the EcoAssist users are Linux
+### 
+### Peter van Lunteren, 15 Jan 2025 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
@@ -40,36 +42,6 @@ PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
 PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
 PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
 PIP_PYWILDLIFE="${ECOASSISTCONDAENV_PYWILDLIFE}/bin/pip"
-
-# check other version and prompt user to re-install
-VERSION_FILE="${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
-if [ -f $VERSION_FILE ]; then
-    OTHER_VERSION=$(<$VERSION_FILE)
-    IFS='.' read -r CURRENT_MAJOR CURRENT_MINOR <<< "$CURRENT_VERSION"
-    IFS='.' read -r OTHER_MAJOR OTHER_MINOR <<< "$OTHER_VERSION"
-    if [ "$CURRENT_MAJOR" -gt "$OTHER_MAJOR" ]; then
-        echo "You're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
-    else
-        if [ "$CURRENT_MINOR" -gt "$OTHER_MINOR" ]; then
-            echo -e "\nYou're updating EcoAssist from v$OTHER_VERSION to v$CURRENT_VERSION."
-        else
-            while true; do
-                echo -e "\nYou already have the latest version installed (v$CURRENT_VERSION). Do you want to re-install it? [Y]es or [N]o?"
-                read answer
-                answer_lc=$(echo "$answer" | tr '[:upper:]' '[:lower:]')
-                if [ "$answer_lc" = "y" ]; then
-                    echo "Re-installing version $CURRENT_VERSION..."
-                    break
-                elif [ "$answer_lc" = "n" ]; then
-                    echo "Not re-installing. Exiting script..."
-                    exit 1
-                else
-                    echo "Invalid response. Please enter 'Y', 'y', 'N', or 'n'."
-                fi
-            done
-        fi
-    fi 
-fi
 
 # prevent mac to sleep during process
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
