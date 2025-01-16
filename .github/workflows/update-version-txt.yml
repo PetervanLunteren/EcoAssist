@@ -14,10 +14,15 @@ jobs:
       RELEASE_VERSION: ${{ github.event.release.tag_name }}
 
     steps:
-    - name: Checkout code
+    - name: Checkout the latest version of main
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Checkout the main branch explicitly
+      run: |
+        git checkout main
+        git pull origin main --rebase  # Ensure you're up to date with the remote
 
     - name: Replace contents of version.txt
       run: |
@@ -31,11 +36,9 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add version.txt
         git commit -m "Version tag update (GitHub actions)"
-        git fetch origin # Ensure you're up-to-date with the remote
-        git pull origin main --rebase # Rebase local changes with the remote
 
     - name: Push changes
       run: |
-        git push origin HEAD:refs/heads/main
+        git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
