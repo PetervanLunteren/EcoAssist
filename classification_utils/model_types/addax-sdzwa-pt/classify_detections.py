@@ -30,6 +30,10 @@ import torch.nn.functional as F
 from torchvision import transforms
 from torchvision.models import efficientnet, convnext_base, ConvNeXt_Base_Weights
 
+# lets not freak out over truncated images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 # make sure windows trained models work on unix too
 import pathlib
 import platform
