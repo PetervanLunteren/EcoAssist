@@ -31,6 +31,10 @@ import platform
 plt = platform.system()
 if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
 
+# lets not freak out over truncated images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 # load model
 animal_model = YOLO(cls_model_fpath)
 
