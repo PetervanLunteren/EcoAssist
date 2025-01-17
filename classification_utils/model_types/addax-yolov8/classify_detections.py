@@ -17,6 +17,10 @@ smooth_bool = True if sys.argv[5] == 'True' else False
 json_path = str(sys.argv[6])
 temp_frame_folder =  None if str(sys.argv[7]) == 'None' else str(sys.argv[7])
 
+# lets not freak out over truncated images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 ##############################################
 ############### MODEL SPECIFIC ###############
 ##############################################
@@ -30,10 +34,6 @@ import pathlib
 import platform
 plt = platform.system()
 if plt != 'Windows': pathlib.WindowsPath = pathlib.PosixPath
-
-# lets not freak out over truncated images
-from PIL import ImageFile
-ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # load model
 animal_model = YOLO(cls_model_fpath)
