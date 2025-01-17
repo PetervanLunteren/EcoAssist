@@ -15,6 +15,10 @@ from megadetector.data_management import read_exif
 from megadetector.data_management import cct_json_utils
 from megadetector.data_management.read_exif import parse_exif_datetime_string
 
+# lets not freak out over truncated images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 # MAIN FUNCTION different workflow for videos than for images
 def classify_MD_json(json_path,
                      GPU_availability,
