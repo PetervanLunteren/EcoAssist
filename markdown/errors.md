@@ -273,7 +273,7 @@ This error usually occurs when the internet signal speed is too slow or unstable
 
 Otherwise it might be due to security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which are common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled.
 
-If that doesn't work or is not possible, I’ve updated the installation method that should bypass these restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated. You can find the alternative installation guide here: https://addaxdatascience.com/ecoassist-windows/
+If that doesn't work or is not possible, I’ve updated the installation method that should bypass these restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated. You can find the new installation guide here: https://addaxdatascience.com/ecoassist-windows/
 
 ## Download from ZIP file
 
