@@ -363,11 +363,11 @@ conda deactivate
 
 # create dedicated tensorflow classification environment 
 if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml" -y
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml" -n env-tensorflow -y
 elif [ "$PLATFORM" = "Intel Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml" -y
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml" -n env-tensorflow -y
 elif [ "$PLATFORM" = "Linux" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -y
+  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -n env-tensorflow -y
 fi
 
 # create dedicated pytorch classification environment
