@@ -1734,17 +1734,12 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     value_hitl_stats_percentage.configure(text = f"{percentage}%")
     value_hitl_stats_verified.configure(text = f"{n_verified_files}/{total_n_files}")
     hitl_progress_window.update_idletasks()
-    
-    # # locate open script # DEBUG
-    # if os.name == 'nt':
-    #     labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "label.bat")
-    # else:
-    #     labelImg_script = os.path.join(EcoAssist_files, "EcoAssist", "label.command")
+    hitl_progress_window.update()
 
     # init paths
     labelImg_dir = os.path.join(EcoAssist_files, "Human-in-the-loop")
     labelImg_script = os.path.join(labelImg_dir, "labelImg.py")
-    python_executable = get_python_interprator("base") # DEBUG os.path.join(env_dir_fpath, "env-base", "bin", "python")
+    python_executable = get_python_interprator("base")
 
     # create command
     command_args = []
