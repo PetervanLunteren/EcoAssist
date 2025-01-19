@@ -1762,9 +1762,6 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     if platform_name == 'darwin' and 'arm64' in platform.machine():
         print("This is an Apple Silicon system.")
         command_args =  "arch -arm64 " + command_args
-    elif platform_name == 'windows':
-        print("This is a Windows system.")
-        command_args = [f'cd "{labelImg_dir}" & pyrcc5 -o libs\resources.py resources.qrc &'] + command_args
 
     # log command
     print(command_args)
