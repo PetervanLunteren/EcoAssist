@@ -34,14 +34,14 @@ fi
 
 # set variables
 CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV_BASE="${CONDA_DIR}/envs/ecoassistcondaenv-base"
-ECOASSISTCONDAENV_PYTORCH="${CONDA_DIR}/envs/ecoassistcondaenv-pytorch"
-ECOASSISTCONDAENV_TENSORFLOW="${CONDA_DIR}/envs/ecoassistcondaenv-tensorflow"
-ECOASSISTCONDAENV_PYWILDLIFE="${CONDA_DIR}/envs/ecoassistcondaenv-pywildlife"
-PIP_BASE="${ECOASSISTCONDAENV_BASE}/bin/pip"
-PIP_PYTORCH="${ECOASSISTCONDAENV_PYTORCH}/bin/pip"
-PIP_TENSORFLOW="${ECOASSISTCONDAENV_TENSORFLOW}/bin/pip"
-PIP_PYWILDLIFE="${ECOASSISTCONDAENV_PYWILDLIFE}/bin/pip"
+ENV_BASE="${CONDA_DIR}/envs/env-base"
+ENV_PYTORCH="${CONDA_DIR}/envs/env-pytorch"
+ENV_TENSORFLOW="${CONDA_DIR}/envs/env-tensorflow"
+ENV_PYWILDLIFE="${CONDA_DIR}/envs/env-pywildlife"
+PIP_BASE="${ENV_BASE}/bin/pip"
+PIP_PYTORCH="${ENV_PYTORCH}/bin/pip"
+PIP_TENSORFLOW="${ENV_TENSORFLOW}/bin/pip"
+PIP_PYWILDLIFE="${ENV_PYWILDLIFE}/bin/pip"
 
 # prevent mac to sleep during process
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
@@ -280,8 +280,8 @@ conda install mamba -n base -c conda-forge -y
 # create conda env
 if [ "$PLATFORM" = "Linux" ]; then
   # requirements for MegaDetector 
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml -y
-  conda activate $ECOASSISTCONDAENV_BASE
+  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml -y
+  conda activate $ENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
 
@@ -301,15 +301,15 @@ if [ "$PLATFORM" = "Linux" ]; then
 
 elif [ "$PLATFORM" = "Intel Mac" ]; then
   # requirements for MegaDetector 
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml -y
-  conda activate $ECOASSISTCONDAENV_BASE
+  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml -y
+  conda activate $ENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
 
 elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
   # requirements for MegaDetector via miniforge
-  mamba env create --name ecoassistcondaenv-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml -y
-  conda activate $ECOASSISTCONDAENV_BASE
+  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml -y
+  conda activate $ENV_BASE
   # upgrade pip
   $PIP_BASE install --upgrade pip
   { # install nightly pytorch via miniforge as arm64
@@ -372,9 +372,9 @@ fi
 
 # create dedicated pytorch classification environment
 if [ "$PLATFORM" = "Intel Mac" ]; then
-  mamba env remove -p $ECOASSISTCONDAENV_PYTORCH
-  mamba create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_PYTORCH
+  mamba env remove -p $ENV_PYTORCH
+  mamba create -p $ENV_PYTORCH python=3.8 -y
+  conda activate $ENV_PYTORCH
   mamba install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
   $PIP_YOLOV8 install "ultralytics==8.0.191"
   mamba install -c conda-forge numpy==1.24.1 -y
@@ -387,9 +387,9 @@ if [ "$PLATFORM" = "Intel Mac" ]; then
   conda deactivate
 else
   # apple silicon and linux
-  mamba env remove -p $ECOASSISTCONDAENV_PYTORCH
-  mamba create -p $ECOASSISTCONDAENV_PYTORCH python=3.8 -y
-  conda activate $ECOASSISTCONDAENV_PYTORCH
+  mamba env remove -p $ENV_PYTORCH
+  mamba create -p $ENV_PYTORCH python=3.8 -y
+  conda activate $ENV_PYTORCH
   $PIP_PYTORCH install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
   $PIP_PYTORCH install "ultralytics==8.0.191"
   $PIP_PYTORCH install "numpy==1.24.1"
@@ -403,9 +403,9 @@ else
 fi
 
 # create dedicated classification environment for the pytorchwildlife models
-mamba env remove -p $ECOASSISTCONDAENV_PYWILDLIFE
-mamba create -p $ECOASSISTCONDAENV_PYWILDLIFE python=3.8 -y
-conda activate $ECOASSISTCONDAENV_PYWILDLIFE
+mamba env remove -p $ENV_PYWILDLIFE
+mamba create -p $ENV_PYWILDLIFE python=3.8 -y
+conda activate $ENV_PYWILDLIFE
 $PIP_PYWILDLIFE install pytorchwildlife
 $PIP_PYWILDLIFE install "setuptools<70"
 $PIP_PYWILDLIFE install jsonpickle
