@@ -139,6 +139,15 @@ Section "Install"
     # clean up temporary files
     Delete "$INSTDIR\windows-${VERSION}.7z"
 
+    # PyQT5 needs to be installed on the local device
+    DetailPrint "Installing PyQT5..."
+    ExecWait '"$INSTDIR\envs\env-base\python.exe" -m pip install PyQt5'
+    ExecWait '"$INSTDIR\envs\env-base\python.exe" -m pip install pyqt5-tools'   
+
+    # compile pyrcc5 on local device
+    DetailPrint "Compiling PyQT5..."
+    ExecWait '"$INSTDIR\envs\env-base\Scripts\pyrcc5.exe" -o "$INSTDIR\Human-in-the-loop\libs\resources.py" "$INSTDIR\Human-in-the-loop\resources.qrc"'
+    
     # Installation completed successfully
     DetailPrint "Installation completed successfully."
 
