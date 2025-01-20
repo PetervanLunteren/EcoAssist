@@ -5,6 +5,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 13 Jan 2024
 
+# TODO: rangeslider annotations change font. Grant can't read it. 
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
