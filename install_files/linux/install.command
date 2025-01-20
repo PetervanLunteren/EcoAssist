@@ -173,24 +173,24 @@ $conda_exe install mamba -n base -c conda-forge -y
 conda_exe="${LOCATION_ECOASSIST_FILES}/miniforge/bin/mamba"
 
 ### install env-base
-$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/cameratraps/envs/environment-detector.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" -y
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install RangeSlider
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install gpsphoto
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install exifread
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install piexif
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install openpyxl
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install customtkinter
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install CTkTable
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install folium
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install plotly
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "gitpython>=3.1.30"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "tensorboard>=2.4.1"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "thop>=0.1.1"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "protobuf<=3.20.1"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "setuptools>=65.5.1"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install PySide6
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "lxml==4.6.3"
-"${LOCATION_ECOASSIST_FILES}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/resources.qrc"
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/cameratraps/envs/environment-detector.yml" -p "${CONDA_DIR}/envs/env-base" -y
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install RangeSlider
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install gpsphoto
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install exifread
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install piexif
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install openpyxl
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install customtkinter
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install CTkTable
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install folium
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install plotly
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "gitpython>=3.1.30"
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "tensorboard>=2.4.1"
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "thop>=0.1.1"
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "protobuf<=3.20.1"
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "setuptools>=65.5.1"
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install PySide6
+$conda_exe run -p "${CONDA_DIR}/envs/env-base" pip install "lxml==4.6.3"
+"${CONDA_DIR}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/resources.qrc"
 
 # requirements for Human-in-the-loop
 echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
@@ -207,23 +207,23 @@ echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libx
   }
 
 ### install env-tensorflow
-$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-tensorflow" -y
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${CONDA_DIR}/envs/env-tensorflow" -y
 
 ### install env-pytorch
-$conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" python=3.8 -y
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install torch==2.0.1 torchvision==0.15.2
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "ultralytics==8.0.191"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "numpy==1.24.1"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "humanfriendly==10.0"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "jsonpickle==3.0.2"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install timm
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install dill
+$conda_exe create -p "${CONDA_DIR}/envs/env-pytorch" python=3.8 -y
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install torch==2.0.1 torchvision==0.15.2
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install "ultralytics==8.0.191"
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install "numpy==1.24.1"
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install "humanfriendly==10.0"
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install "jsonpickle==3.0.2"
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install timm
+$conda_exe run -p "${CONDA_DIR}/envs/env-pytorch" pip install dill
 
 ### install env-pywildlife
-$conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" python=3.8 -y
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install pytorchwildlife
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install "setuptools<70"
-$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install jsonpickle
+$conda_exe create -p "${CONDA_DIR}/envs/env-pywildlife" python=3.8 -y
+$conda_exe run -p "${CONDA_DIR}/envs/env-pywildlife" pip install pytorchwildlife
+$conda_exe run -p "${CONDA_DIR}/envs/env-pywildlife" pip install "setuptools<70"
+$conda_exe run -p "${CONDA_DIR}/envs/env-pywildlife" pip install jsonpickle
 
 ### clean
 $conda_exe clean --all --yes --force-pkgs-dirs
