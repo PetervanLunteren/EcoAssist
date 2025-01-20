@@ -85,10 +85,6 @@ echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
 ## clone repositories
 git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${LOCATION_ECOASSIST_FILES}/EcoAssist"
 rm -rf "${LOCATION_ECOASSIST_FILES}/EcoAssist/.git"
-mv "${LOCATION_ECOASSIST_FILES}/EcoAssist/main.py" "${LOCATION_ECOASSIST_FILES}/main.py"
-RAW_VERSION=${{ env.RELEASE_VERSION }}
-CLEAN_VERSION="${RAW_VERSION#v}"
-echo "$CLEAN_VERSION" > "${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
 FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop" # create shortcut file
 echo "[Desktop Entry]" > $FILE
 echo "Type=Application" >> $FILE
