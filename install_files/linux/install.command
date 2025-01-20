@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 ### Linux install commands 
-### This install script originally was also meant for macOS, so there is a lot of redundant code in here
-### The macOS install was transferred to a UI install with GitHub actions, but the linux install was too big for the GitHub runners
-### So for now we just leave the install method for linux with this script as only about 1% of the EcoAssist users are Linux
-### 
+### The the linux install was too big for the free GitHub runners (as opposed to windows and macos), so
+### the linux install is still with the old install method
 ### Peter van Lunteren, 15 Jan 2025 (latest edit)
 
 # timestamp the start of installation
@@ -26,6 +24,13 @@ PIP_PYWILDLIFE="${ENV_PYWILDLIFE}/bin/pip"
 
 # delete previous installation of EcoAssist if present so that it can update
 rm -rf $LOCATION_ECOASSIST_FILES && echo "Removed dir '${LOCATION_ECOASSIST_FILES}'"
+
+# early exit if the folder still exists
+if [ -d $LOCATION_ECOASSIST_FILES ]; then
+    echo "Error: Folder $LOCATION_ECOASSIST_FILES could not be removed. Exiting script...."
+    echo "Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+    exit 1
+fi
 
 # make dir and change into
 mkdir -p $LOCATION_ECOASSIST_FILES
@@ -66,46 +71,47 @@ echo "System information:"
 echo "$MACHINE_INFO" 
 echo "" 
 
-# clone EcoAssist git
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-ECO="EcoAssist"
-if [ -d "$ECO" ]; then
-  echo "Dir ${ECO} already exists! Skipping this step."
-else
-  echo "Dir ${ECO} does not exist! Clone repo..."
-  git clone --progress --depth 1 https://github.com/PetervanLunteren/EcoAssist.git
-  # move the open.cmd two dirs up and give it an shortcut file with icon
-  FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
-  echo "[Desktop Entry]" > $FILE
-  echo "Type=Application" >> $FILE
-  echo "Terminal=true" >> $FILE
-  echo "Name=EcoAssist" >> $FILE
-  echo "Icon=logo_small_bg" >> $FILE
-  echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/open.command;\$SHELL'\"" >> $FILE
-  echo "Categories=Application;" >> $FILE
-  # and give it an icon
-  SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
-  DEST="$HOME/.icons/logo_small_bg.png"
-  mkdir -p "$HOME/.icons" # create location if not already present
-  cp $SOURCE $DEST # copy icon to proper location
-  FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
-  mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
-fi
+### create folder structure
+mkdir -p "${LOCATION_ECOASSIST_FILES}"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/envs"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/det"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/cls"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old"
+mkdir -p "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new"
+echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
 
-# clone cameratraps git 
-CAM="cameratraps"
-if [ -d "$CAM" ]; then
-  echo "Dir ${CAM} already exists! Skipping this step."
-else
-  echo "Dir ${CAM} does not exist! Clone repo..."
-  git clone --progress https://github.com/agentmorris/MegaDetector.git cameratraps || {
-    
+## clone repositories
+git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${LOCATION_ECOASSIST_FILES}/EcoAssist"
+rm -rf "${LOCATION_ECOASSIST_FILES}/EcoAssist/.git"
+mv "${LOCATION_ECOASSIST_FILES}/EcoAssist/main.py" "${LOCATION_ECOASSIST_FILES}/main.py"
+RAW_VERSION=${{ env.RELEASE_VERSION }}
+CLEAN_VERSION="${RAW_VERSION#v}"
+echo "$CLEAN_VERSION" > "${LOCATION_ECOASSIST_FILES}/EcoAssist/version.txt"
+FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop" # create shortcut file
+echo "[Desktop Entry]" > $FILE
+echo "Type=Application" >> $FILE
+echo "Terminal=true" >> $FILE
+echo "Name=EcoAssist" >> $FILE
+echo "Icon=logo_small_bg" >> $FILE
+echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/open.command;\$SHELL'\"" >> $FILE
+echo "Categories=Application;" >> $FILE
+# and give it an icon
+SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
+DEST="$HOME/.icons/logo_small_bg.png"
+mkdir -p "$HOME/.icons" # create location if not already present
+cp $SOURCE $DEST # copy icon to proper location
+FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop"
+mv -f $FILE "$HOME/Desktop/Linux_open_EcoAssist_shortcut.desktop" # move file and replace
+echo "EcoAssist cloned"
+
+git clone https://github.com/agentmorris/MegaDetector.git "${LOCATION_ECOASSIST_FILES}/MegaDetector" || {
       # if this git repo fails to clone, chances are the conda environments will give problems too
       # so better already set the conda settings to accomodate slow internet speeds
       export CONDA_REMOTE_READ_TIMEOUT_SECS=120
       export CONDA_REMOTE_CONNECTIONS=1
       export CONDA_REMOTE_MAX_RETRIES=20
-
       # some users experience timeout issues due to the large size of this repository
       # if it fails here, we'll try again with a larger timeout value and less checks during cloning
       echo "First attempt failed. Retrying with extended timeout..."
@@ -113,54 +119,29 @@ else
           --config transfer.fsckObjects=false \
           --config receive.fsckObjects=false \
           --config fetch.fsckObjects=false \
-          https://github.com/agentmorris/MegaDetector.git cameratraps
-  }
+          https://github.com/agentmorris/MegaDetector.git "${LOCATION_ECOASSIST_FILES}/MegaDetector"}
+git -C "${LOCATION_ECOASSIST_FILES}/MegaDetector" checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
+rm -rf "${LOCATION_ECOASSIST_FILES}/MegaDetector/.git"
+mv "${LOCATION_ECOASSIST_FILES}/MegaDetector" "${LOCATION_ECOASSIST_FILES}/cameratraps"
+echo "MegaDetector cloned"
 
-  cd $LOCATION_ECOASSIST_FILES/cameratraps || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-  git checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-fi
+git clone https://github.com/ultralytics/yolov5.git "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5"
+git -C "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5" checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1
+rm -rf "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5/.git"
+echo "yolov5 old version cloned"
 
-# clone yolov5 git 
-YOL="yolov5_versions"
-if [ -d "$YOL" ]; then
-  echo "Dir ${YOL} already exists! Skipping this step."
-else
-  echo "Dir ${YOL} does not exist! Clone repo..."
+git clone https://github.com/ultralytics/yolov5.git "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5"
+git -C "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5" checkout 3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8
+rm -rf "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5/.git"
+echo "yolov5 new version cloned"
 
-  git clone https://github.com/ultralytics/yolov5.git "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5"
-  git -C "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5" checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1
-  rm -rf "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_old/yolov5/.git"
-  echo "yolov5 old version cloned"
-  
-  git clone https://github.com/ultralytics/yolov5.git "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5"
-  git -C "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5" checkout 3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8
-  rm -rf "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new/yolov5/.git"
-  echo "yolov5 new version cloned"
+git clone --branch pyside6 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop"
+rm -rf "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/.git"
+echo "Human-in-the-loop cloned"
 
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-fi
-
-# clone Human-in-the-loop git 
-HIT="Human-in-the-loop"
-if [ -d "$HIT" ]; then
-  echo "Dir ${HIT} already exists! Skipping this step."
-else
-  echo "Dir ${HIT} does not exist! Clone repo..."
-  # for mac and linux we use the pyside6 branch which doesn't need PyQt5
-  git clone --branch pyside6 --progress --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-fi
-
-# clone visualise_detection git 
-VIS="visualise_detection"
-if [ -d "$VIS" ]; then
-  echo "Dir ${VIS} already exists! Skipping this step."
-else
-  echo "Dir ${VIS} does not exist! Clone repo..."
-  git clone --progress --depth 1 https://github.com/PetervanLunteren/visualise_detection.git
-  cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-fi
+git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${LOCATION_ECOASSIST_FILES}/visualise_detection"
+rm -rf "${LOCATION_ECOASSIST_FILES}/visualise_detection/.git"
+echo "visualise_detection cloned"
 
 # check if curl is installed
 if command -v curl &> /dev/null
@@ -177,198 +158,79 @@ else
   echo "curl successfuly installed."
 fi
 
-# download the MDv5a model 
-mkdir -p "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a"
-cd "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a" || { echo "Could not change directory to pretrained_models. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-MDv5a="md_v5a.0.0.pt"
-if [ -f "$MDv5a" ]; then
-  echo "File ${MDv5a} already exists! Skipping this step."
-else
-  echo "File ${MDv5a} does not exist! Downloading file..."
-  curl --keepalive -OL https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt
-fi
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to ${LOCATION_ECOASSIST_FILES}. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-
-# create a dir for the classification models, if not already present
-mkdir -p "${LOCATION_ECOASSIST_FILES}/models/cls"
-
-# create txt file to let EcoAssist know it will be the first startup since install
-echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
+### download megadetector 
+curl -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "${LOCATION_ECOASSIST_FILES}/models/det/MegaDetector 5a/md_v5a.0.0.pt"
 
 # install miniforge
-MFG="miniforge"
-if [ -d "$MFG" ]; then
-  echo "Dir ${MFG} already exists! Skipping this step."
-else
-  curl --keepalive -L -o Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-  bash Miniforge3.sh -b -p "${LOCATION_ECOASSIST_FILES}/miniforge"
-  rm Miniforge3.sh
-fi
+curl --keepalive -L -o "${LOCATION_ECOASSIST_FILES}/Miniforge3.sh" "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash "${LOCATION_ECOASSIST_FILES}/Miniforge3.sh" -b -p "${LOCATION_ECOASSIST_FILES}/miniforge"
+rm "${LOCATION_ECOASSIST_FILES}/Miniforge3.sh"
 
-# source conda executable
-source "${CONDA_DIR}/etc/profile.d/conda.sh"
-source "${CONDA_DIR}/bin/activate"
-export PATH="${CONDA_DIR}/bin":$PATH
+### source conda 
+source "${LOCATION_ECOASSIST_FILES}/miniforge/etc/profile.d/conda.sh"
+source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+conda_exe="${LOCATION_ECOASSIST_FILES}/miniforge/bin/conda"
 
-# suppress conda warnings about updates
-conda config --set notify_outdated_conda false
+### install mamba
+$conda_exe install mamba -n base -c conda-forge -y
+conda_exe="${LOCATION_ECOASSIST_FILES}/miniforge/bin/mamba"
 
-# install mamba
-conda install mamba -n base -c conda-forge -y
+### install env-base
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/cameratraps/envs/environment-detector.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-base"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install RangeSlider
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install gpsphoto
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install exifread
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install piexif
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install openpyxl
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install customtkinter
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install CTkTable
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install folium
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install plotly
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "gitpython>=3.1.30"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "tensorboard>=2.4.1"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "thop>=0.1.1"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "protobuf<=3.20.1"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "setuptools>=65.5.1"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install PySide6
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "lxml==4.6.3"
+"${LOCATION_ECOASSIST_FILES}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/resources.qrc"
 
-# create conda env
-if [ "$PLATFORM" = "Linux" ]; then
-  # requirements for MegaDetector 
-  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector.yml -y
-  conda activate $ENV_BASE
-  # upgrade pip
-  $PIP_BASE install --upgrade pip
-
-  # requirements for Human-in-the-loop
-  echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
-  { # first try without sudo
-    add-apt-repository universe
-    apt-get update
-    apt-get install libxcb-cursor-dev
-    apt-get install libxcb-cursor0
-  } || { # otherwise with sudo
-    sudo add-apt-repository universe
-    sudo apt-get update
-    sudo apt-get install libxcb-cursor-dev
-    sudo apt-get install libxcb-cursor0
-    }
-
-elif [ "$PLATFORM" = "Intel Mac" ]; then
-  # requirements for MegaDetector 
-  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-mac.yml -y
-  conda activate $ENV_BASE
-  # upgrade pip
-  $PIP_BASE install --upgrade pip
-
-elif [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  # requirements for MegaDetector via miniforge
-  mamba env create --name env-base --file=$LOCATION_ECOASSIST_FILES/cameratraps/envs/environment-detector-m1.yml -y
-  conda activate $ENV_BASE
-  # upgrade pip
-  $PIP_BASE install --upgrade pip
-  { # install nightly pytorch via miniforge as arm64
-    $PIP_BASE install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1
-  } || { # if the first try didn't work
-    mamba install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 -c pytorch -y
+# requirements for Human-in-the-loop
+echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
+{ # first try without sudo
+  add-apt-repository universe
+  apt-get update
+  apt-get install libxcb-cursor-dev
+  apt-get install libxcb-cursor0
+} || { # otherwise with sudo
+  sudo add-apt-repository universe
+  sudo apt-get update
+  sudo apt-get install libxcb-cursor-dev
+  sudo apt-get install libxcb-cursor0
   }
-  # for some reason conda-installed opencv decided it doesn't work on silicon macs anymore
-  mamba uninstall opencv -y
-  pip install opencv-python
-fi
 
-# requirements for EcoAssist
-$PIP_BASE install RangeSlider
-$PIP_BASE install gpsphoto
-$PIP_BASE install exifread
-$PIP_BASE install piexif
-$PIP_BASE install openpyxl
-$PIP_BASE install customtkinter
-$PIP_BASE install CTkTable
-$PIP_BASE install folium
-$PIP_BASE install plotly
+### install env-tensorflow
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-tensorflow"
 
-# requirements for yolov5
-$PIP_BASE install "gitpython>=3.1.30"
-$PIP_BASE install "tensorboard>=2.4.1"
-$PIP_BASE install "thop>=0.1.1"
-$PIP_BASE install "protobuf<=3.20.1"
-$PIP_BASE install "setuptools>=65.5.1"
+### install env-pytorch
+$conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" python=3.8 -y
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install torch==2.0.1 torchvision==0.15.2
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "ultralytics==8.0.191"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "numpy==1.24.1"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "humanfriendly==10.0"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "jsonpickle==3.0.2"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install timm
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install dill
 
-# requirements for human-in-the-loop
-cd $LOCATION_ECOASSIST_FILES/Human-in-the-loop || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
-$PIP_BASE install PySide6
-if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  mamba install lxml -y
-  make pyside6
-elif [ "$PLATFORM" = "Intel Mac" ]; then
-  $PIP_BASE install "lxml==4.9.0"
-  make pyside6
-elif [ "$PLATFORM" = "Linux" ]; then
-  $PIP_BASE install "lxml==4.6.3"
-  pyside6-rcc -o libs/resources.py resources.qrc
-fi
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory. Command could not be run. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."; exit 1; }
+### install env-pywildlife
+$conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" python=3.8 -y
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install pytorchwildlife
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install "setuptools<70"
+$conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" pip install jsonpickle
 
-# log env info
-mamba info --envs 
-mamba list 
-$PIP_BASE freeze 
-conda deactivate
-
-# create dedicated tensorflow classification environment 
-if [ "$PLATFORM" = "Apple Silicon Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml" -n env-tensorflow -y
-elif [ "$PLATFORM" = "Intel Mac" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-macos-intel.yml" -n env-tensorflow -y
-elif [ "$PLATFORM" = "Linux" ]; then
-  mamba env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -n env-tensorflow -y
-fi
-
-# create dedicated pytorch classification environment
-if [ "$PLATFORM" = "Intel Mac" ]; then
-  mamba env remove -p $ENV_PYTORCH
-  mamba create -p $ENV_PYTORCH python=3.8 -y
-  conda activate $ENV_PYTORCH
-  mamba install pytorch::pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch -y
-  $PIP_YOLOV8 install "ultralytics==8.0.191"
-  mamba install -c conda-forge numpy==1.24.1 -y
-  mamba install -c conda-forge humanfriendly==10.0 -y
-  mamba install -c conda-forge jsonpickle==3.0.2 -y
-  mamba install -c conda-forge timm
-  mamba info --envs 
-  mamba list 
-  $PIP_PYTORCH freeze  
-  conda deactivate
-else
-  # apple silicon and linux
-  mamba env remove -p $ENV_PYTORCH
-  mamba create -p $ENV_PYTORCH python=3.8 -y
-  conda activate $ENV_PYTORCH
-  $PIP_PYTORCH install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2
-  $PIP_PYTORCH install "ultralytics==8.0.191"
-  $PIP_PYTORCH install "numpy==1.24.1"
-  $PIP_PYTORCH install "humanfriendly==10.0"
-  $PIP_PYTORCH install "jsonpickle==3.0.2"
-  $PIP_PYTORCH install timm
-  mamba info --envs 
-  mamba list 
-  $PIP_PYTORCH freeze  
-  conda deactivate
-fi
-
-# create dedicated classification environment for the pytorchwildlife models
-mamba env remove -p $ENV_PYWILDLIFE
-mamba create -p $ENV_PYWILDLIFE python=3.8 -y
-conda activate $ENV_PYWILDLIFE
-$PIP_PYWILDLIFE install pytorchwildlife
-$PIP_PYWILDLIFE install "setuptools<70"
-$PIP_PYWILDLIFE install jsonpickle
-conda deactivate
-
-# delete compressed versions of the packages
-conda clean --all --yes --force-pkgs-dirs
-
-# log system files with sizes after installation
-FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
-FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
-FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ECOASSIST_FILES/*/*`
-echo "File sizes with depth 0:" 
-echo "" 
-echo "$FILE_SIZES_DEPTH_0" 
-echo "" 
-echo "File sizes with depth 1:" 
-echo "" 
-echo "$FILE_SIZES_DEPTH_1" 
-echo "" 
-echo "File sizes with depth 2:" 
-echo "" 
-echo "$FILE_SIZES_DEPTH_2" 
-echo "" 
+### clean
+$conda_exe clean --all --yes --force-pkgs-dirs
+$conda_exe clean --all --yes
 
 # timestamp the end of installation
 END_DATE=`date`
@@ -376,10 +238,5 @@ echo "This installation ended at: $END_DATE"
 
 # message for the user
 echo ""
-echo "THE INSTALLATION IS DONE! You can close this window now and proceed to open EcoAssist by double clicking the EcoAssist.command file in your applications folder (Mac) or on your desktop (Linux)."
+echo "THE INSTALLATION IS DONE! You can close this window now and proceed to open EcoAssist by double clicking the shortcut on your desktop."
 echo ""
-
-# the computer may go to sleep again
-if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-  kill $PMSETPID
-fi
