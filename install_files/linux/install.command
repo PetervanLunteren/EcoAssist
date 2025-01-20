@@ -115,7 +115,8 @@ git clone https://github.com/agentmorris/MegaDetector.git "${LOCATION_ECOASSIST_
           --config transfer.fsckObjects=false \
           --config receive.fsckObjects=false \
           --config fetch.fsckObjects=false \
-          https://github.com/agentmorris/MegaDetector.git "${LOCATION_ECOASSIST_FILES}/MegaDetector"}
+          https://github.com/agentmorris/MegaDetector.git "${LOCATION_ECOASSIST_FILES}/MegaDetector"
+}
 git -C "${LOCATION_ECOASSIST_FILES}/MegaDetector" checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
 rm -rf "${LOCATION_ECOASSIST_FILES}/MegaDetector/.git"
 mv "${LOCATION_ECOASSIST_FILES}/MegaDetector" "${LOCATION_ECOASSIST_FILES}/cameratraps"
