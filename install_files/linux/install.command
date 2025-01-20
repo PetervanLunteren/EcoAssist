@@ -173,7 +173,7 @@ $conda_exe install mamba -n base -c conda-forge -y
 conda_exe="${LOCATION_ECOASSIST_FILES}/miniforge/bin/mamba"
 
 ### install env-base
-$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/cameratraps/envs/environment-detector.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-base"
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/cameratraps/envs/environment-detector.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" -y
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install RangeSlider
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install gpsphoto
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install exifread
@@ -207,7 +207,7 @@ echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libx
   }
 
 ### install env-tensorflow
-$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-tensorflow"
+$conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-tensorflow" -y
 
 ### install env-pytorch
 $conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" python=3.8 -y
