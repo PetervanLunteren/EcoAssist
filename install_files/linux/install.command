@@ -181,6 +181,10 @@ $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install PySide
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-base" pip install "lxml==4.6.3"
 "${LOCATION_ECOASSIST_FILES}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ECOASSIST_FILES}/Human-in-the-loop/resources.qrc"
 
+### clean
+$conda_exe clean --all --yes --force-pkgs-dirs
+$conda_exe clean --all --yes
+
 # requirements for Human-in-the-loop
 echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. EcoAssist will still work fine without it but you might have problems with the Human-in-the-loop software."
 { # first try without sudo
@@ -198,6 +202,10 @@ echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libx
 ### install env-tensorflow
 $conda_exe env create --file="${LOCATION_ECOASSIST_FILES}/EcoAssist/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ECOASSIST_FILES}/envs/env-tensorflow" -y
 
+### clean
+$conda_exe clean --all --yes --force-pkgs-dirs
+$conda_exe clean --all --yes
+
 ### install env-pytorch
 $conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" python=3.8 -y
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install torch==2.0.1 torchvision==0.15.2
@@ -207,6 +215,10 @@ $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "hu
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install "jsonpickle==3.0.2"
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install timm
 $conda_exe run -p "${LOCATION_ECOASSIST_FILES}/envs/env-pytorch" pip install dill
+
+### clean
+$conda_exe clean --all --yes --force-pkgs-dirs
+$conda_exe clean --all --yes
 
 ### install env-pywildlife
 $conda_exe create -p "${LOCATION_ECOASSIST_FILES}/envs/env-pywildlife" python=3.8 -y
