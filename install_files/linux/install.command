@@ -80,7 +80,7 @@ echo "Type=Application" >> $FILE
 echo "Terminal=true" >> $FILE
 echo "Name=EcoAssist" >> $FILE
 echo "Icon=logo_small_bg" >> $FILE
-echo "Exec=gnome-terminal -e \"bash -c 'bash \$HOME/.EcoAssist_files/EcoAssist/open.command;\$SHELL'\"" >> $FILE
+echo "Exec=gnome-terminal -e \"bash -c '\$HOME/.EcoAssist_files/envs/env-base/bin/python \$HOME/.EcoAssist_files/EcoAssist/EcoAssist_GUI.py;\$SHELL'\"" >> $FILE
 echo "Categories=Application;" >> $FILE
 # and give it an icon
 SOURCE="$LOCATION_ECOASSIST_FILES/EcoAssist/imgs/logo_small_bg.png"
