@@ -5,6 +5,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 13 Jan 2024
 
+# TODO: WIDGET - make a slider widget for the line width of the bounding box. 
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -4058,7 +4059,7 @@ def open_hitl_settings_window():
         plt.yticks([])
         dist_graph = FigureCanvasTkAgg(fig, frame)
         plt.close()
-        rsl = RangeSliderH(frame, [min_conf, max_conf], padX=11, digit_precision='.2f', bgColor = '#ececec', Width = 180, font_size = 12, font_family = text_font)
+        rsl = RangeSliderH(frame, [min_conf, max_conf], padX=11, digit_precision='.2f', bgColor = '#ececec', Width = 180, font_size = 10, font_family = text_font)
         rad_var = IntVar()
         rad_var.set(1)
         rad_all = Radiobutton(frame, text=["All images in range", "Todo dentro del rango"][lang_idx],
