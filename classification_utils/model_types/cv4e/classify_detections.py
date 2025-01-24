@@ -48,29 +48,16 @@ class CustomResNet18(nn.Module):
             architecture (layers).
         '''
         super(CustomResNet18, self).__init__()
-
-        self.feature_extractor = resnet.resnet18(pretrained=True)       # "pretrained": use weights pre-trained on ImageNet
-
-        # replace the very last layer from the original, 1000-class output
-        # ImageNet to a new one that outputs num_classes
-        last_layer = self.feature_extractor.fc                          # tip: print(self.feature_extractor) to get info on how model is set up
-        in_features = last_layer.in_features                            # number of input dimensions to last (classifier) layer
-        self.feature_extractor.fc = nn.Identity()                       # discard last layer...
-
-        self.classifier = nn.Linear(in_features, num_classes)           # ...and create a new one
+        self.feature_extractor = resnet.resnet18(pretrained=True)
+        last_layer = self.feature_extractor.fc
+        in_features = last_layer.in_features
+        self.feature_extractor.fc = nn.Identity()
+        self.classifier = nn.Linear(in_features, num_classes)
     
-
     def forward(self, x):
-        '''
-            Forward pass. Here, we define how to apply our model. It's basically
-            applying our modified ResNet-18 on the input tensor ("x") and then
-            apply the final classifier layer on the ResNet-18 output to get our
-            num_classes prediction.
-        '''
         # x.size(): [B x 3 x W x H]
-        features = self.feature_extractor(x)    # features.size(): [B x 512 x W x H]
-        prediction = self.classifier(features)  # prediction.size(): [B x num_classes]
-
+        features = self.feature_extractor(x)
+        prediction = self.classifier(features)
         return prediction
 
 # make sure windows trained models work on unix too
@@ -101,13 +88,11 @@ checkpoint = torch.load(cls_model_fpath, map_location=torch.device(device_str))
 model.load_state_dict(checkpoint['model'])
 model.to(torch.device(device_str))
 model.eval()
-model.framework = "EfficientNet"
 device = torch.device(device_str)
 
 # image preprocessing 
-# according to https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L175
 preprocess = transforms.Compose([
-    transforms.Resize((299, 299)),
+    transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
 
@@ -136,8 +121,6 @@ def get_classification(PIL_crop):
 # output: cropped image <class 'PIL.Image.Image'>
 # each developer has its own way of padding, squaring, cropping, resizing etc
 # it needs to happen exactly the same as on which the model was trained
-# I've pulled this crop function from
-# https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L135
 def get_crop(img, bbox_norm):
     buffer = 0 
     width, height = img.size
