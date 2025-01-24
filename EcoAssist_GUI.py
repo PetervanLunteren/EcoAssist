@@ -12,19 +12,10 @@
 # TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
 # TODO: JSON - remove the part where MD stores its typical threshold values etc in the EcoAssist altered json. It doesn't make sense anymore if the detection caterogies are changed. 
 # TODO: VIDEO - create video tutorials of all the steps (simple mode, advanced mode, annotation, postprocessing, etc.)
-# TODO: INSTALL WIZARD - https://jrsoftware.org/isinfo.php#features ask chatGDP "how to create a install wizard around a batch script"
-# TODO: SMOOTH - either average or logit
-# TODO: pywildlife lijkt niet meer te werken op macos - fixen?
 # TODO: EMPTIES - add a checkbox for folder separation where you can skip the empties from being copied
 # TODO: LOG SEQUENCE INFO - add sequence information to JSON, CSV, and XSLX 
 # TODO: SEQ SEP - add feature to separate images into sequence subdirs. Something like "treat sequence as detection" or "Include all images in the sequence" while doing the separation step.
-# TODO: VIDEO PROCESSING - if you process a video with a species model, it will ID each animal on each frame. Chances are high that you'll end up with false postivites. We'll want to smooth this. Take an average or something.
-# TODO: INSTALL - make install files more robust by adding || { echo } to every line. At the end check for all gits and environments, etc.
-# TODO: WEBSITE - add info about zip install on windows install page. While you're at it, also print info about ZIP install when internet connection issues 
 # TODO: INFO - add a messagebox when the deployment is done via advanced mode. Now it just says there were errors. Perhaps just one messagebox with extra text if there are errors or warnings. And some counts. 
-# TODO: SCRIPT COMPILING - dummy start ecoassist directly after installation so all the scripts are already compiled
-# TODO: ENVIRONMENTS - implement the automatic installs of env.yml files for new models
-# TODO: INSTALL - why put the shortcut not on the dekstop on windows?
 # TODO: JSON - keep track of confidences for each detection and classification in the JSON. And put that in CSV/XSLX, and visualise it in the images.
 # TODO: CSV/XLSX - add frame number and frama rate to the CSV and XLSX files
 # TODO: VIS VIDEO - add option to visualise frame with highest confidence
@@ -33,8 +24,6 @@
 # TODO: MINOR - By the way, in the EcoAssist UI, I think the frame extraction status popup uses the same wording as the detection popup. They both say something about "frame X of Y". I think for the frame extraction, it should be "video X of Y".
 # TODO: JSON - keep track of the original confidence scores whenever it changes (from detection to classification, after human verification, etc.)
 # TODO: SMALL FIXES - see list from Saul ('RE: tentative agenda / discussion points') - 12 July 01:11. 
-# TODO: ERROR - get rid of error: How about an ok/cancel dialog that simply asks: ‘Recognition file already exists. Do you want me to over-write it?’
-# TODO: UNINSTALL - adjust the install script with a flag "uninstall" so that it removed the Ecoassist_Files and the environments. Then make an batch file that executes this on button click. 
 # TODO: ANNOTATION - improve annotation experience
     # - make one progress windows in stead of all separate pbars when using large jsons
     # - I've converted pyqt5 to pyside6 for apple silicon so we don't need to install it via homebrew
