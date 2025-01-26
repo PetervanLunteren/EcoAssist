@@ -25,7 +25,7 @@ jobs:
       #     set root=%USERPROFILE%\EcoAssist
       #     echo root=%root%
       #     mkdir "%root%"
-      #     git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
+      #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
 
       - name: Install dependencies
         shell: cmd
@@ -38,12 +38,25 @@ jobs:
           set root=%USERPROFILE%\EcoAssist
           set conda_exe=${{ env.CONDA_DIR }}\Scripts\conda.exe
           echo Using conda %conda_exe%
+
+          @REM set high timeout value and ip address for ipv4 fallback issues
+          call "%conda_exe%" config --set remote_connect_timeout_secs 120
+          call "%conda_exe%" config --set remote_max_retries 5
+          call "%conda_exe%" config --set remote_read_timeout_secs 120
+          call "%conda_exe%" config --set ssl_verify False
+          call "%conda_exe%" config --set fetch_threads 2
+          call "%conda_exe%" config --show
           
           @REM refresh dir
           if exist "%root%" (
               rmdir /s /q "%root%"
               echo %root% folder removed
           )
+
+          @REM set IPv4
+          set PIP_NO_IPV6=1
+          set CONDA_SSL_VERIFY=0
+          set CONDA_USE_IPV4=1
           
           @REM create folder structure
           mkdir "%root%"
@@ -57,7 +70,7 @@ jobs:
           echo Hello world! > "%root%\first-startup.txt"
           
           @REM EcoAssist
-          git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
           rmdir /s /q "%root%\EcoAssist\.git"
           move "%root%\EcoAssist\main.py" "%root%\main.py"
           set RAW_VERSION=${{ env.RELEASE_VERSION }}
@@ -66,7 +79,7 @@ jobs:
           echo EcoAssist cloned
           
           @REM MegaDetector
-          git clone https://github.com/agentmorris/MegaDetector.git "%root%\cameratraps"
+          git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "%root%\cameratraps"
           pushd "%root%\cameratraps"
           git checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
           popd
@@ -74,7 +87,7 @@ jobs:
           echo MegaDetector cloned
           
           @REM YOLOv5 old
-          git clone https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_old\yolov5"
+          git clone --ipv4 https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_old\yolov5"
           pushd "%root%\yolov5_versions\yolov5_old\yolov5"
           git checkout c23a441c9df7ca9b1f275e8c8719c949269160d1
           popd
@@ -82,7 +95,7 @@ jobs:
           echo YOLOv5 old cloned
           
           @REM YOLOv5 new
-          git clone https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_new\yolov5"
+          git clone --ipv4 https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_new\yolov5"
           pushd "%root%\yolov5_versions\yolov5_new\yolov5"
           git checkout 3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8
           popd
@@ -90,17 +103,17 @@ jobs:
           echo YOLOv5 new cloned
           
           @REM Human in the loop
-          git clone --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "%root%\Human-in-the-loop"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "%root%\Human-in-the-loop"
           rmdir /s /q "%root%\Human-in-the-loop\.git"
           echo Human-in-the-loop cloned
           
           @REM Visualise detections
-          git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
           rmdir /s /q "%root%\visualise_detection\.git"
           echo visualise_detection cloned
           
           @REM MegaDetector model 5A
-          curl -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "%root%/models\det\MegaDetector 5a\md_v5a.0.0.pt"
+          curl --ipv4 -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "%root%/models\det\MegaDetector 5a\md_v5a.0.0.pt"
 
           @REM install mamba
           call "%conda_exe%" install -n base -c conda-forge mamba -y
@@ -109,42 +122,42 @@ jobs:
           
           @REM env-base
           call "%conda_exe%" env create --file "%root%\cameratraps\envs\environment-detector.yml" -p "%root%\envs\env-base"
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install pyqt5==5.15.2 lxml
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install RangeSlider gpsphoto exifread piexif openpyxl pyarrow customtkinter CTkTable 
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install GitPython==3.1.30
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install folium plotly
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install numpy==1.23.4
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install pytorchwildlife==1.0.2.15
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 pyqt5==5.15.2 lxml
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 RangeSlider gpsphoto exifread piexif openpyxl pyarrow customtkinter CTkTable 
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 GitPython==3.1.30
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 folium plotly
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 numpy==1.23.4
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 pytorchwildlife==1.0.2.15
           call "%conda_exe%" run -p "%root%\envs\env-base" pip uninstall torch torchvision -y 
-          call "%conda_exe%" run -p "%root%\envs\env-base" pip install torch==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118 
+          call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 torch==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118 
           
           @REM env-pytorch
           call "%conda_exe%" create -p "%root%\envs\env-pytorch" python=3.8 -y
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" "%conda_exe%" pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install ultralytics==8.0.230
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install timm
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install pandas
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install numpy
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install opencv-python
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install pillow
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install dill
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install hachoir
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install versions
-          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install jsonpickle
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 ultralytics==8.0.230
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 timm
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 pandas
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 numpy
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 opencv-python
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 pillow
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 dill
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 hachoir
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 versions
+          call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 jsonpickle
           
           @REM env-tensorflow
           call "%conda_exe%" env create --file "%root%\EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml" -p "%root%\envs\env-tensorflow"
           
-          @REM install PyInstaller
-          call "%conda_exe%" create -p "${{ env.CONDA_DIR }}\envs\env-fresh" python=3.8 pyinstaller -y
+          # @REM install PyInstaller
+          # call "%conda_exe%" create -p "${{ env.CONDA_DIR }}\envs\env-fresh" python=3.8 pyinstaller -y
           
-          @REM normal executable
-          call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --noconsole --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
-          move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION%.exe"
+          # @REM normal executable
+          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --noconsole --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
+          # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION%.exe"
           
-          @REM debug executable
-          call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --console --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
-          move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION% debug.exe"
+          # @REM debug executable
+          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --console --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
+          # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION% debug.exe"
           
           @REM conda clean
           call "%conda_exe%" clean --all --yes --force-pkgs-dirs
@@ -209,15 +222,17 @@ jobs:
 
       - name: Install Nsis7z Plugin
         run: |
-          curl -L -o "${{ github.workspace }}/Nsis7z_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/9/93/Nsis7z.zip"
-          tar -xf "${{ github.workspace }}/Nsis7z_plugin.zip"
-          7z x -o"${{ github.workspace }}/NSIS_Plugins" "${{ github.workspace }}/Nsis7z_plugin.zip"
-  
+          curl --ipv4 --retry 5 -L -o "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/9/93/Nsis7z.zip"
+          dir "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+          7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+        shell: cmd
+
       - name: Install Inetc Plugin
         run: |
-          curl -L -o "${{ github.workspace }}/Inetc_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/c/c9/Inetc.zip"
-          tar -xf "${{ github.workspace }}/Inetc_plugin.zip"
-          7z x -o"${{ github.workspace }}/NSIS_Plugins" "${{ github.workspace }}/Inetc_plugin.zip"
+          curl --ipv4 --retry 5 -L -o "%GITHUB_WORKSPACE%\Inetc_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/c/c9/Inetc.zip"
+          dir "%GITHUB_WORKSPACE%\Inetc_plugin.zip"
+          7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Inetc_plugin.zip"
+        shell: cmd
 
       - name: Append VERSION to NSIS script
         shell: cmd
