@@ -22,22 +22,16 @@ Name "EcoAssist ${VERSION}"
 !define MUI_PAGE_HEADER_TEXT "Step 1 of 3"
 !define MUI_PAGE_HEADER_SUBTEXT "Uninstalling previous EcoAssist version..."
 !define MUI_FINISHPAGE_TITLE "Installation Complete!"
-!define MUI_FINISHPAGE_TEXT "EcoAssist has been successfully installed. A shortcut has been created on your desktop.$\r$\n$\r$\n'$DESKTOP\EcoAssist'"
-!define MUI_FINISHPAGE_RUN "$INSTDIR\EcoAssist ${VERSION}.exe"
-!define MUI_FINISHPAGE_RUN_TEXT "Open EcoAssist application directly after clicking 'Finish'"
+!define MUI_FINISHPAGE_TEXT "EcoAssist has been successfully installed. A shortcut has been created on your desktop. The program will open when double-clicked. $\r$\n$\r$\n'$DESKTOP\EcoAssist'"
 !define MUI_FINISHPAGE_LINK "Read more on the EcoAssist website"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://addaxdatascience.com/ecoassist/"
 !define MUI_ICON "logo.ico"
-!define MUI_UNICON "logo.ico"
 !define MUI_WELCOMEPAGE_TITLE "EcoAssist ${VERSION} installer"
 !define MUI_WELCOMEPAGE_TEXT "This install consists of three steps:$\r$\n$\r$\n   1 - Uninstall current EcoAssist version if present$\r$\n   2 - Download EcoAssist version ${VERSION}$\r$\n   3 - Extract and clean up files"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
-!insertmacro MUI_UNPAGE_WELCOME
-!insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_UNPAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
 
 # Section for installation steps
@@ -59,23 +53,23 @@ Section "Install"
 
     SetDetailsPrint textonly
     RMDir /r $INSTDIR\visualise_detection
+    RMDir /r $INSTDIR\Human-in-the-loop
+    RMDir /r $INSTDIR\envs\env-pytorch\Lib
+    RMDir /r $INSTDIR\envs\env-pytorch\Library
+    RMDir /r $INSTDIR\envs\env-pytorch
     RMDir /r $INSTDIR\EcoAssist
+    RMDir /r $INSTDIR\models
+    RMDir /r $INSTDIR\envs\env-tensorflow\Lib
+    RMDir /r $INSTDIR\envs\env-tensorflow\Library
+    RMDir /r $INSTDIR\envs\env-tensorflow
     RMDir /r $INSTDIR\cameratraps
+    RMDir /r $INSTDIR\yolov5_versions
     RMDir /r $INSTDIR\envs\env-base\Lib\site-packages\torch
     RMDir /r $INSTDIR\envs\env-base\Lib\site-packages\PyQt5
     RMDir /r $INSTDIR\envs\env-base\Lib\site-packages\plotly
     RMDir /r $INSTDIR\envs\env-base\Lib
     RMDir /r $INSTDIR\envs\env-base\Library
     RMDir /r $INSTDIR\envs\env-base
-    RMDir /r $INSTDIR\envs\env-pytorch\Lib
-    RMDir /r $INSTDIR\envs\env-pytorch\Library
-    RMDir /r $INSTDIR\envs\env-pytorch
-    RMDir /r $INSTDIR\envs\env-tensorflow\Lib
-    RMDir /r $INSTDIR\envs\env-tensorflow\Library
-    RMDir /r $INSTDIR\envs\env-tensorflow
-    RMDir /r $INSTDIR\Human-in-the-loop
-    RMDir /r $INSTDIR\models
-    RMDir /r $INSTDIR\yolov5_versions
 
     ; Proceed to Success if no errors
     IfErrors 0 RemoveSuccess 
@@ -141,21 +135,39 @@ Section "Install"
 
     # PyQT5 needs to be installed on the local device
     DetailPrint "Installing PyQT5..."
-    ExecWait '"$INSTDIR\envs\env-base\python.exe" -m pip install PyQt5'
-    ExecWait '"$INSTDIR\envs\env-base\python.exe" -m pip install pyqt5-tools'   
+    nsExec::Exec '"$INSTDIR\envs\env-base\python.exe" -m pip install PyQt5'
+    nsExec::Exec '"$INSTDIR\envs\env-base\python.exe" -m pip install pyqt5-tools'   
 
     # compile pyrcc5 on local device
     DetailPrint "Compiling PyQT5..."
-    ExecWait '"$INSTDIR\envs\env-base\Scripts\pyrcc5.exe" -o "$INSTDIR\Human-in-the-loop\libs\resources.py" "$INSTDIR\Human-in-the-loop\resources.qrc"'
+    nsExec::Exec '"$INSTDIR\envs\env-base\Scripts\pyrcc5.exe" -o "$INSTDIR\Human-in-the-loop\libs\resources.py" "$INSTDIR\Human-in-the-loop\resources.qrc"'
     
     # Installation completed successfully
     DetailPrint "Installation completed successfully."
 
-    # Write uninstaller
-    WriteUninstaller "$INSTDIR\Uninstaller.exe"
-
     ; Create a shortcut on the desktop
-    CreateShortcut "$DESKTOP\EcoAssist.lnk" "$INSTDIR\EcoAssist ${VERSION}.exe" "" "$INSTDIR\EcoAssist\install_files\windows\logo.ico" 0 SW_SHOWNORMAL
+    CreateShortcut "$INSTDIR\open-debug-mode.lnk" "$INSTDIR\EcoAssist\open.bat" "" "$INSTDIR\EcoAssist\install_files\windows\logo.ico" 0 SW_SHOWNORMAL
+
+    ; create a shortcut for the desktop that executes the open.bat file without any terminal window
+    ; Create Windows_open_EcoAssist_shortcut.vbs
+    FileOpen $0 "$INSTDIR\EcoAssist\Windows_open_EcoAssist_shortcut.vbs" w
+    FileWrite $0 "Set WinScriptHost = CreateObject($\"WScript.Shell$\")$\r$\n"
+    FileWrite $0 "WinScriptHost.Run Chr(34) & $\"$INSTDIR\EcoAssist\open.bat$\" & Chr(34), 0$\r$\n"
+    FileWrite $0 "Set WinScriptHost = Nothing$\r$\n"
+    FileClose $0
+
+    ; Create CreateShortcut.vbs
+    FileOpen $0 "$INSTDIR\EcoAssist\CreateShortcut.vbs" w
+    FileWrite $0 "Set oWS = WScript.CreateObject($\"WScript.Shell$\")$\r$\n"
+    FileWrite $0 "sLinkFile = $\"$DESKTOP\EcoAssist.lnk$\"$\r$\n"
+    FileWrite $0 "Set oLink = oWS.CreateShortcut(sLinkFile)$\r$\n"
+    FileWrite $0 "oLink.TargetPath = $\"$INSTDIR\EcoAssist\Windows_open_EcoAssist_shortcut.vbs$\"$\r$\n"
+    FileWrite $0 "oLink.IconLocation = $\"$INSTDIR\EcoAssist\install_files\windows\logo.ico$\"$\r$\n"
+    FileWrite $0 "oLink.Save$\r$\n"
+    FileClose $0
+
+    ; Execute CreateShortcut.vbs
+    nsExec::Exec 'cscript //nologo "$INSTDIR\EcoAssist\CreateShortcut.vbs"'
 
     # open EcoAssist in installer mode to load all dependencies and compile script so that the users doesnt have to wait long the next time
     nsExec::Exec '"$INSTDIR\\envs\\env-base\\python.exe" "$INSTDIR\\EcoAssist\\EcoAssist_GUI.py" "installer"'
@@ -165,58 +177,6 @@ Section "Install"
 
     ; Allow the system to sleep again after installation
     System::Call 'kernel32::SetThreadExecutionState(i 0x80000000)'
-    
-SectionEnd
-
-# Uninstaller section
-Section "Uninstall"
-
-    ; Prevent the system from sleeping
-    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000|0x00000001)'
-    
-    # Set fixed installation directory without prompting the user
-    StrCpy $INSTDIR "$PROFILE\EcoAssist" 
-
-    # Remove installed files and directories during uninstallation
-    DetailPrint "Removing installed files..."
-    SetDetailsPrint textonly
-    RMDir /r $INSTDIR\visualise_detection
-    RMDir /r $INSTDIR\EcoAssist
-    RMDir /r $INSTDIR\cameratraps
-    RMDir /r $INSTDIR\envs\env-base\Lib\site-packages\torch
-    RMDir /r $INSTDIR\envs\env-base\Lib\site-packages\PyQt5
-    RMDir /r $INSTDIR\envs\env-base\Lib
-    RMDir /r $INSTDIR\envs\env-base\Library
-    RMDir /r $INSTDIR\envs\env-base
-    RMDir /r $INSTDIR\envs\env-pytorch\Lib
-    RMDir /r $INSTDIR\envs\env-pytorch\Library
-    RMDir /r $INSTDIR\envs\env-pytorch
-    RMDir /r $INSTDIR\envs\env-tensorflow\Lib
-    RMDir /r $INSTDIR\envs\env-tensorflow\Library
-    RMDir /r $INSTDIR\envs\env-tensorflow
-    RMDir /r $INSTDIR\Human-in-the-loop
-    RMDir /r $INSTDIR\models
-    RMDir /r $INSTDIR\yolov5_versions
-    Delete "$INSTDIR\Uninstaller.exe"
-    RMDir /r $INSTDIR
-    IfErrors 0 RemoveSuccess ; Proceed to Success if no errors
-
-    ; Allow the system to sleep again after installation
-    System::Call 'kernel32::SetThreadExecutionState(i 0x80000000)'
-    
-    ; Handle failure
-    MessageBox MB_ICONEXCLAMATION "Failed to remove the installation directory. Often a reboot solves this issue. Please try again after a reboot. "
-    StrCpy $InstallStatus 0 ; Installation failure
-    Abort
-    Goto RemoveDone
-
-    RemoveSuccess:
-    StrCpy $InstallStatus 1 ; Installation success
-
-    RemoveDone:
-
-    Delete "$DESKTOP\EcoAssist.lnk"
-    DetailPrint "Uninstallation complete."
     
 SectionEnd
 
