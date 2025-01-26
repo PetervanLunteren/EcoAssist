@@ -22,12 +22,12 @@ jobs:
       #   run: |
       #     root="$HOME/EcoAssist"
       #     mkdir -p "${root}"
-      #     git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
+      #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
 
       - name: Install Miniconda
         run: |
           mkdir "$HOME/miniforge"
-          curl -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh" -o miniforge.sh
+          curl --ipv4 -L "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh" -o miniforge.sh
           bash miniforge.sh -b -u -p "$HOME/miniforge"
           echo "succesfully installed at $HOME/miniforge"
 
@@ -42,6 +42,11 @@ jobs:
           else
               echo "$root folder does not exist"
           fi
+
+          ### set ipv4 settings
+          export PIP_NO_IPV6=1
+          export CONDA_SSL_VERIFY=0
+          export CONDA_USE_IPV4=1
           
           ### create folder structure
           mkdir -p "${root}"
@@ -55,7 +60,7 @@ jobs:
           echo "Hello world!" >> "${root}/first-startup.txt"
           
           ## clone repositories
-          git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${root}/EcoAssist"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist-experiments.git "${root}/EcoAssist"
           rm -rf "${root}/EcoAssist/.git"
           mv "${root}/EcoAssist/main.py" "${root}/main.py"
           RAW_VERSION=${{ env.RELEASE_VERSION }}
@@ -63,37 +68,45 @@ jobs:
           echo "$CLEAN_VERSION" > "${root}/EcoAssist/version.txt"
           echo "EcoAssist cloned"
           
-          git clone https://github.com/agentmorris/MegaDetector.git "${root}/MegaDetector"
+          git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "${root}/MegaDetector"
           git -C "${root}/MegaDetector" checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
           rm -rf "${root}/MegaDetector/.git"
           mv "${root}/MegaDetector" "${root}/cameratraps"
           echo "MegaDetector cloned"
           
-          git clone https://github.com/ultralytics/yolov5.git "${root}/yolov5_versions/yolov5_old/yolov5"
+          git clone --ipv4 https://github.com/ultralytics/yolov5.git "${root}/yolov5_versions/yolov5_old/yolov5"
           git -C "${root}/yolov5_versions/yolov5_old/yolov5" checkout 868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1
           rm -rf "${root}/yolov5_versions/yolov5_old/yolov5/.git"
           echo "yolov5 old version cloned"
           
-          git clone https://github.com/ultralytics/yolov5.git "${root}/yolov5_versions/yolov5_new/yolov5"
+          git clone --ipv4 https://github.com/ultralytics/yolov5.git "${root}/yolov5_versions/yolov5_new/yolov5"
           git -C "${root}/yolov5_versions/yolov5_new/yolov5" checkout 3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8
           rm -rf "${root}/yolov5_versions/yolov5_new/yolov5/.git"
           echo "yolov5 new version cloned"
           
-          git clone --branch pyside6 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "${root}/Human-in-the-loop"
+          git clone --ipv4 --branch pyside6 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "${root}/Human-in-the-loop"
           rm -rf "${root}/Human-in-the-loop/.git"
           echo "Human-in-the-loop cloned"
           
-          git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
           rm -rf "${root}/visualise_detection/.git"
           echo "visualise_detection cloned"
           
           ### download megadetector 
-          curl -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "${root}/models/det/MegaDetector 5a/md_v5a.0.0.pt"
+          curl --ipv4 -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "${root}/models/det/MegaDetector 5a/md_v5a.0.0.pt"
           
           ### source conda 
           source "$HOME/miniforge/etc/profile.d/conda.sh"
           source "$HOME/miniforge/bin/activate"
           conda_exe="$HOME/miniforge/bin/conda"
+
+          ### set high timeout value and ip address for ipv4 fallback issues
+          $conda_exe config --set remote_connect_timeout_secs 120
+          $conda_exe config --set remote_max_retries 5
+          $conda_exe config --set remote_read_timeout_secs 120
+          $conda_exe config --set ssl_verify False
+          $conda_exe config --set fetch_threads 2
+          $conda_exe config --show
 
           ### install mamba
           $conda_exe install mamba -n base -c conda-forge -y
@@ -103,22 +116,22 @@ jobs:
           $conda_exe env create --file="${root}/cameratraps/envs/environment-detector-m1.yml" -p "${root}/envs/env-base"
           $conda_exe run -p "${root}/envs/env-base" conda install pytorch==1.13.1 torchvision==0.14.1 -c pytorch -y
           $conda_exe run -p "${root}/envs/env-base" conda uninstall opencv -y
-          $conda_exe run -p "${root}/envs/env-base" pip install opencv-python
-          $conda_exe run -p "${root}/envs/env-base" pip install RangeSlider
-          $conda_exe run -p "${root}/envs/env-base" pip install gpsphoto
-          $conda_exe run -p "${root}/envs/env-base" pip install exifread
-          $conda_exe run -p "${root}/envs/env-base" pip install piexif
-          $conda_exe run -p "${root}/envs/env-base" pip install openpyxl
-          $conda_exe run -p "${root}/envs/env-base" pip install customtkinter
-          $conda_exe run -p "${root}/envs/env-base" pip install CTkTable
-          $conda_exe run -p "${root}/envs/env-base" pip install folium
-          $conda_exe run -p "${root}/envs/env-base" pip install plotly
-          $conda_exe run -p "${root}/envs/env-base" pip install "gitpython>=3.1.30"
-          $conda_exe run -p "${root}/envs/env-base" pip install "tensorboard>=2.4.1"
-          $conda_exe run -p "${root}/envs/env-base" pip install "thop>=0.1.1"
-          $conda_exe run -p "${root}/envs/env-base" pip install "protobuf<=3.20.1"
-          $conda_exe run -p "${root}/envs/env-base" pip install "setuptools>=65.5.1"
-          $conda_exe run -p "${root}/envs/env-base" pip install PySide6
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 opencv-python
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 RangeSlider
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 gpsphoto
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 exifread
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 piexif
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 openpyxl
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 customtkinter
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 CTkTable
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 folium
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 plotly
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 "gitpython>=3.1.30"
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 "tensorboard>=2.4.1"
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 "thop>=0.1.1"
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 "protobuf<=3.20.1"
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 "setuptools>=65.5.1"
+          $conda_exe run -p "${root}/envs/env-base" pip install --timeout=120 PySide6
           $conda_exe run -p "${root}/envs/env-base" conda install lxml -y
           "${root}/envs/env-base/bin/pyside6-rcc" -o "${root}/Human-in-the-loop/libs/resources.py" "${root}/Human-in-the-loop/resources.qrc"
           
@@ -127,19 +140,19 @@ jobs:
           
           ### install env-pytorch
           $conda_exe create -p "${root}/envs/env-pytorch" python=3.8 -y
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install torch==2.0.1 torchvision==0.15.2
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install "ultralytics==8.0.191"
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install "numpy==1.24.1"
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install "humanfriendly==10.0"
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install "jsonpickle==3.0.2"
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install timm
-          $conda_exe run -p "${root}/envs/env-pytorch" pip install dill
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 torch==2.0.1 torchvision==0.15.2
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 "ultralytics==8.0.191"
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 "numpy==1.24.1"
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 "humanfriendly==10.0"
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 "jsonpickle==3.0.2"
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 timm
+          $conda_exe run -p "${root}/envs/env-pytorch" pip install --timeout=120 dill
           
           ### install env-pywildlife
           $conda_exe create -p "${root}/envs/env-pywildlife" python=3.8 -y
-          $conda_exe run -p "${root}/envs/env-pywildlife" pip install pytorchwildlife
-          $conda_exe run -p "${root}/envs/env-pywildlife" pip install "setuptools<70"
-          $conda_exe run -p "${root}/envs/env-pywildlife" pip install jsonpickle
+          $conda_exe run -p "${root}/envs/env-pywildlife" pip install --timeout=120 pytorchwildlife
+          $conda_exe run -p "${root}/envs/env-pywildlife" pip install --timeout=120 "setuptools<70"
+          $conda_exe run -p "${root}/envs/env-pywildlife" pip install --timeout=120 jsonpickle
 
           ### run pyinstaller from fresh environment
           $conda_exe create -p "$HOME/miniforge/envs/env-fresh" python=3.8 pyinstaller -y
@@ -276,7 +289,6 @@ jobs:
 
           # upload release pinned version
           gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
-
           # upload latest release version
           gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$LATEST_FOLDER_NAME/$LATEST_FILE_NAME
 
