@@ -1,16 +1,16 @@
-# Script to further identify MD animal detections using PT classification models trained by SDZWA
-# SDZWA - San Diego Zoo Wildlife Alliance - The Conservation Technology Lab
-# https://github.com/conservationtechlab/animl-py
+# Script to further identify MD animal detections using PT classification models trained at CV4Ecology
+# https://cv4ecology.caltech.edu/
 
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
 
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 29 Aug 2024
+# Latest edit by Peter van Lunteren on 24 Jan 2025
 
 #############################################
 ############### MODEL GENERIC ###############
 #############################################
+
 # catch shell arguments
 import sys
 EcoAssist_files = str(sys.argv[1])
@@ -28,6 +28,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 ##############################################
 ############### MODEL SPECIFIC ###############
 ##############################################
+
 # imports
 import os
 import torch
@@ -35,11 +36,29 @@ import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import transforms
+from torchvision.models import resnet
 from torchvision.models import efficientnet
 
-# set paths
-efficientnet_pth_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'efficientnet_v2_m-dc08266a.pth')
-class_csv_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'classes.csv')
+# init cv4e resnet18
+class CustomResNet18(nn.Module):
+
+    def __init__(self, num_classes):
+        '''
+            Constructor of the model. Here, we initialize the model's
+            architecture (layers).
+        '''
+        super(CustomResNet18, self).__init__()
+        self.feature_extractor = resnet.resnet18(pretrained=True)
+        last_layer = self.feature_extractor.fc
+        in_features = last_layer.in_features
+        self.feature_extractor.fc = nn.Identity()
+        self.classifier = nn.Linear(in_features, num_classes)
+    
+    def forward(self, x):
+        # x.size(): [B x 3 x W x H]
+        features = self.feature_extractor(x)
+        prediction = self.classifier(features)
+        return prediction
 
 # make sure windows trained models work on unix too
 import pathlib
@@ -61,56 +80,19 @@ if not GPU_availability:
         GPU_availability = True
         device_str = 'cuda'
 
-print("debug 10 sept") # DEBUG
-print(device_str)
-print(GPU_availability)
-
-
-# init efficientnet
-class EfficientNet(nn.Module):
-
-    def __init__(self, num_classes, tune=True):
-        '''
-            Construct the model architecture.
-        '''
-        super(EfficientNet, self).__init__()
-        self.avgpool = nn.AdaptiveAvgPool2d(1)
-        self.model = efficientnet.efficientnet_v2_m(weights=None)
-        self.model.load_state_dict(torch.load(efficientnet_pth_fpath, map_location=torch.device(device_str)))
-        if tune:
-            for params in self.model.parameters():
-                params.requires_grad = True
-        if tune:
-            for params in self.model.parameters():
-                params.requires_grad = True
-        num_ftrs = self.model.classifier[1].in_features
-        self.model.classifier[1] = nn.Linear(in_features=num_ftrs, out_features=num_classes)
-        self.model.to(torch.device(device_str))
-
-    def forward(self, x):
-        '''
-            Forward pass (prediction)
-        '''
-        x = self.model.features(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        prediction = self.model.classifier(x)
-        return prediction
-
 # load model
+class_csv_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'classes.csv')
 classes = pd.read_csv(class_csv_fpath)
-model = EfficientNet(len(classes), tune=False)
+model = CustomResNet18(len(classes))
 checkpoint = torch.load(cls_model_fpath, map_location=torch.device(device_str))
 model.load_state_dict(checkpoint['model'])
 model.to(torch.device(device_str))
 model.eval()
-model.framework = "EfficientNet"
 device = torch.device(device_str)
 
 # image preprocessing 
-# according to https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L175
 preprocess = transforms.Compose([
-    transforms.Resize((299, 299)),
+    transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
 
@@ -139,8 +121,6 @@ def get_classification(PIL_crop):
 # output: cropped image <class 'PIL.Image.Image'>
 # each developer has its own way of padding, squaring, cropping, resizing etc
 # it needs to happen exactly the same as on which the model was trained
-# I've pulled this crop function from
-# https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L135
 def get_crop(img, bbox_norm):
     buffer = 0 
     width, height = img.size

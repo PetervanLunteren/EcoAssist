@@ -1,6 +1,6 @@
 # library of inference functions to be used for classifying MD crops 
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 29 Aug 2024
+# Latest edit by Peter van Lunteren on 28 Nov 2024
 
 # import packages
 import io
@@ -11,11 +11,13 @@ import contextlib
 from tqdm import tqdm
 from PIL import Image
 from collections import defaultdict
-from EcoAssist.smooth_params import *
 from megadetector.data_management import read_exif
 from megadetector.data_management import cct_json_utils
 from megadetector.data_management.read_exif import parse_exif_datetime_string
-from cameratraps.megadetector.detection.video_utils import frame_results_to_video_results
+
+# lets not freak out over truncated images
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # MAIN FUNCTION different workflow for videos than for images
 def classify_MD_json(json_path,
@@ -32,10 +34,7 @@ def classify_MD_json(json_path,
         # init vars
         json_path_head = os.path.splitext(json_path)[0]
         json_path_tail = os.path.splitext(json_path)[1]
-        video_level_json = json_path
-        video_level_json_original = json_path_head + '_original' + json_path_tail
         frame_level_json = json_path_head + '.frames' + json_path_tail
-        frame_level_json_original = json_path_head + '.frames_original' + json_path_tail
 
         # for video's we need to classify the frames json instead of the normal json
         convert_detections_to_classification(json_path = frame_level_json,
@@ -47,18 +46,6 @@ def classify_MD_json(json_path,
                                             crop_function = crop_function,
                                             inference_function = inference_function,
                                             cls_model_fpath = cls_model_fpath)
-        
-        # convert frame results to video results
-        frame_results_to_video_results(input_file = frame_level_json,
-                                       output_file = video_level_json)
-        frame_results_to_video_results(input_file = frame_level_json_original,
-                                       output_file = video_level_json_original)
-
-        # remove unnecessary jsons
-        if os.path.isfile(frame_level_json_original):
-            os.remove(frame_level_json_original)
-        if os.path.isfile(frame_level_json):
-            os.remove(frame_level_json)
 
     # for images it's much more straight forward
     else:

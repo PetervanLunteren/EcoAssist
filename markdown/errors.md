@@ -267,6 +267,14 @@ The error message is saying that the GPU is out of memory. In other words, it ca
 3. Decrease the image size from 1280 to 640 at the 'Use custom image size' option in advanced mode. Please note that this will drastically decrease accuracy. This is generally not advised.
 4. Select the 'Disable GPU processing' option in advanced mode. Processing will go slow, but at least it won't crash.
 
+## New install method
+
+This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
+
+Otherwise it might be due to security-related issues (firewall, VPN, antivirus, proxy settings, etc.), which are common when working on government, university, or company computers. Could this be the case? If possible, try the EcoAssist installation again with the protection software (temporarily) disabled.
+
+If that doesn't work or is not possible, I’ve updated the installation method that should bypass these restrictions. Please note that this is still in the Beta phase, so any feedback you can provide would be greatly appreciated. You can find the new installation guide here: https://addaxdatascience.com/ecoassist-windows/
+
 ## Download from ZIP file
 
 This error usually occurs when the internet signal speed is too slow or unstable. Are you by chance on a weak wifi network? If possible, try the installation again on a fibre internet connection, or perhaps on a different, stronger, wifi network. If you're using a VPN, try disconnecting from it.
@@ -346,3 +354,8 @@ I'm not sure what is gogin on, but I believe a hard reset might do the trick.
 12. Now you should see some output in the console. Again, copy-paste the entire console output, add it to your log file, and send it to me.
 
 I’ll take a look and help you to get EcoAssist running!
+
+# Timelapse command to run EcoAssist in Timelapse mode
+```
+(cd /d %homedrive%%homepath% && "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images")
+```

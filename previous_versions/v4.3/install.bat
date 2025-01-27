@@ -237,10 +237,7 @@ if exist "%LOCATION_ECOASSIST_FILES%\EcoAssist\" (
 ) else (
     echo Dir EcoAssist does not exists! Clone repo... | wtee -a "%LOG_FILE%"
     cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" clone https://github.com/PetervanLunteren/EcoAssist.git
-    cd "%LOCATION_ECOASSIST_FILES%\EcoAssist" || ( echo "Could not change directory to EcoAssist. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
-    "%EA_GIT_EXE%" checkout 8e399af185837a96c2539d6e3c84a8ee9af6785e
-    cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
+    "%EA_GIT_EXE%" clone -b finetuneMD https://github.com/PetervanLunteren/EcoAssist.git   
     @REM check the size of the folder
     dir "%LOCATION_ECOASSIST_FILES%\EcoAssist" | wtee -a "%LOG_FILE%"
 )
@@ -350,10 +347,27 @@ if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_animals" mkdi
 if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_persons"
 if not exist "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles" mkdir "%LOCATION_ECOASSIST_FILES%\classification_models\cls_vehicles"
 
+@REM remove all old ecoassist conda evironments on the conda way, if possible
+set environments=ecoassistcondaenv ecoassistcondaenv-yolov8 ecoassistcondaenv-mewc ecoassistcondaenv-base ecoassistcondaenv-pytorch ecoassistcondaenv-tensorflow
+for %%E in (%environments%) do (
+    echo "Attempting to remove environment %%E..."
+    if exist "%PATH_TO_CONDA_INSTALLATION%\envs\%%E" (
+        echo "Environment directory %%E exists. Proceeding with removal."
+        call %CONDA_EXECUTABLE% env remove -n %%E -y || (
+            echo "Could not mamba/conda env remove %%E, proceeding to remove via rd..."
+            rd /q /s "%PATH_TO_CONDA_INSTALLATION%\envs\%%E"
+        ) || (
+            echo "There was an error trying to execute the conda command for %%E. Installation was terminated. Copy-paste all text in this console window and send it to peter@addaxdatascience.com for further support."
+            cmd /k & exit
+        )
+    ) else (
+        echo "Environment directory %%E does not exist. Skipping removal."
+    )
+)
+
 @REM create conda env and install packages for MegaDetector
 set PATH=%PATH_TO_CONDA_INSTALLATION%\Scripts;%PATH%
 call "%PATH_TO_CONDA_INSTALLATION%\Scripts\activate.bat" "%PATH_TO_CONDA_INSTALLATION%"
-call %EA_CONDA_EXE% env remove -n ecoassistcondaenv || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%\cameratraps" || ( echo "Could not change directory to cameratraps. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )
 call %EA_CONDA_EXE% env create --name ecoassistcondaenv --file envs\environment-detector.yml || ( echo "There was an error trying to execute the conda command. Please get in touch with the developer." & cmd /k & exit )
 cd "%LOCATION_ECOASSIST_FILES%" || ( echo "Could not change directory to EcoAssist_files. Command could not be run. Installation was terminated. Copy-paste this output and send it to peter@addaxdatascience.com for further support." | wtee -a "%LOG_FILE%" & cmd /k & exit )

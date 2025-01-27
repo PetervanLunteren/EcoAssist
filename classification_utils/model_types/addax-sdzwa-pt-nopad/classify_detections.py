@@ -1,12 +1,8 @@
-# Script to further identify MD animal detections using PT classification models trained by SDZWA
-# SDZWA - San Diego Zoo Wildlife Alliance - The Conservation Technology Lab
-# https://github.com/conservationtechlab/animl-py
-
+# Script to further identify MD animal detections using PT classification models
 # It constsist of code that is specific for this kind of model architechture, and 
 # code that is generic for all model architectures that will be run via EcoAssist.
-
 # Written by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 29 Aug 2024
+# Latest edit by Peter van Lunteren on 11 Dec 2024
 
 #############################################
 ############### MODEL GENERIC ###############
@@ -33,13 +29,10 @@ import os
 import torch
 import pandas as pd
 import torch.nn as nn
+from PIL import ImageOps
 import torch.nn.functional as F
 from torchvision import transforms
-from torchvision.models import efficientnet
-
-# set paths
-efficientnet_pth_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'efficientnet_v2_m-dc08266a.pth')
-class_csv_fpath = os.path.join(os.path.dirname(cls_model_fpath), 'classes.csv')
+from torchvision.models import efficientnet, convnext_base, ConvNeXt_Base_Weights
 
 # make sure windows trained models work on unix too
 import pathlib
@@ -61,56 +54,76 @@ if not GPU_availability:
         GPU_availability = True
         device_str = 'cuda'
 
-print("debug 10 sept") # DEBUG
-print(device_str)
-print(GPU_availability)
-
-
-# init efficientnet
-class EfficientNet(nn.Module):
-
+# init model architechtures
+class EfficientNetV2M(nn.Module):
     def __init__(self, num_classes, tune=True):
-        '''
-            Construct the model architecture.
-        '''
-        super(EfficientNet, self).__init__()
+        super(EfficientNetV2M, self).__init__()
         self.avgpool = nn.AdaptiveAvgPool2d(1)
-        self.model = efficientnet.efficientnet_v2_m(weights=None)
-        self.model.load_state_dict(torch.load(efficientnet_pth_fpath, map_location=torch.device(device_str)))
-        if tune:
-            for params in self.model.parameters():
-                params.requires_grad = True
+        self.model = efficientnet.efficientnet_v2_m(weights=efficientnet.EfficientNet_V2_M_Weights.DEFAULT)
         if tune:
             for params in self.model.parameters():
                 params.requires_grad = True
         num_ftrs = self.model.classifier[1].in_features
         self.model.classifier[1] = nn.Linear(in_features=num_ftrs, out_features=num_classes)
-        self.model.to(torch.device(device_str))
-
     def forward(self, x):
-        '''
-            Forward pass (prediction)
-        '''
+        x = self.model.features(x)
+        x = self.avgpool(x)
+        x = torch.flatten(x, 1)
+        prediction = self.model.classifier(x) 
+        return prediction
+    
+class EfficientNetV2S(nn.Module):
+    def __init__(self, num_classes, tune=True):
+        super(EfficientNetV2S, self).__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.model = efficientnet.efficientnet_v2_s(weights=efficientnet.EfficientNet_V2_S_Weights.DEFAULT)
+        if tune:
+            for params in self.model.parameters():
+                params.requires_grad = True
+        num_ftrs = self.model.classifier[1].in_features
+        self.model.classifier[1] = nn.Linear(in_features=num_ftrs, out_features=num_classes)
+    def forward(self, x):
         x = self.model.features(x)
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         prediction = self.model.classifier(x)
         return prediction
+    
+class ConvNeXtBase(nn.Module):
+    def __init__(self, num_classes, tune=True):
+        super(ConvNeXtBase, self).__init__()
+        self.model = convnext_base(weights=ConvNeXt_Base_Weights.DEFAULT)
+        if not tune:
+            for param in self.model.parameters():
+                param.requires_grad = False
+        num_ftrs = self.model.classifier[2].in_features
+        self.model.classifier[2] = nn.Linear(in_features=num_ftrs, out_features=num_classes)
+    def forward(self, x):
+        '''
+        Forward pass (prediction).
+        '''
+        return self.model(x)
 
 # load model
-classes = pd.read_csv(class_csv_fpath)
-model = EfficientNet(len(classes), tune=False)
 checkpoint = torch.load(cls_model_fpath, map_location=torch.device(device_str))
+image_size = tuple(checkpoint['image_size'])
+architecture = checkpoint['architecture']
+categories = checkpoint['categories']
+classes = list(categories.keys())
+if architecture == 'efficientnet_v2_m':
+    model = EfficientNetV2M(len(classes), tune=False)
+elif architecture == 'efficientnet_v2_s':
+    model = EfficientNetV2S(len(classes), tune=False)
+elif architecture == 'convnext_base':
+    model = ConvNeXtBase(len(classes), tune=False)
 model.load_state_dict(checkpoint['model'])
 model.to(torch.device(device_str))
 model.eval()
-model.framework = "EfficientNet"
 device = torch.device(device_str)
 
 # image preprocessing 
-# according to https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L175
 preprocess = transforms.Compose([
-    transforms.Resize((299, 299)),
+    transforms.Resize(image_size),
     transforms.ToTensor(),
 ])
 
@@ -128,7 +141,7 @@ def get_classification(PIL_crop):
     confidence_scores = probabilities_np[0]
     classifications = []
     for i in range(len(confidence_scores)):
-        pred_class = classes.iloc[i].values[1]
+        pred_class = classes[i]
         pred_conf = confidence_scores[i]
         classifications.append([pred_class, pred_conf])
     return classifications
@@ -139,22 +152,27 @@ def get_classification(PIL_crop):
 # output: cropped image <class 'PIL.Image.Image'>
 # each developer has its own way of padding, squaring, cropping, resizing etc
 # it needs to happen exactly the same as on which the model was trained
-# I've pulled this crop function from
-# https://github.com/conservationtechlab/animl-py/blob/a9d1a2d0a40717f1f8346cbf9aca35161edc9a6e/src/animl/generator.py#L135
 def get_crop(img, bbox_norm):
-    buffer = 0 
-    width, height = img.size
-    bbox1, bbox2, bbox3, bbox4 = bbox_norm
-    left = width * bbox1
-    top = height * bbox2
-    right = width * (bbox1 + bbox3)
-    bottom = height * (bbox2 + bbox4)
-    left = max(0, int(left) - buffer)
-    top = max(0, int(top) - buffer)
-    right = min(width, int(right) + buffer)
-    bottom = min(height, int(bottom) + buffer)
-    image_cropped = img.crop((left, top, right, bottom))
-    return image_cropped
+    img_w, img_h = img.size
+    xmin = int(bbox_norm[0] * img_w)
+    ymin = int(bbox_norm[1] * img_h)
+    box_w = int(bbox_norm[2] * img_w)
+    box_h = int(bbox_norm[3] * img_h)
+    box_size = max(box_w, box_h)
+    xmin = max(0, min(
+        xmin - int((box_size - box_w) / 2),
+        img_w - box_w))
+    ymin = max(0, min(
+        ymin - int((box_size - box_h) / 2),
+        img_h - box_h))
+    box_w = min(img_w, box_size)
+    box_h = min(img_h, box_size)
+    if box_w == 0 or box_h == 0:
+        return
+    crop = img.crop(box=[xmin, ymin, xmin + box_w, ymin + box_h])
+    crop = ImageOps.pad(crop, size=(box_size, box_size), color=0)
+    return crop
+
 
 #############################################
 ############### MODEL GENERIC ###############

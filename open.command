@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 ### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### Peter van Lunteren, 9 Apr 2024 (latest edit)
+### This is a script to open EcoAssist for Linux users. It used to be also for mac users, but that is
+### now wrapped in a Github actions with Platypus install and PyInstaller executable. The MacOS code is
+### still in here, so lots of redundant code...
+### Peter van Lunteren, 18 Jan 2025 (latest edit)
 
 # check the OS and set var
 if [ "$(uname)" == "Darwin" ]; then
