@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/ecoassist/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 13 Jan 2024
+# Latest edit by Peter van Lunteren on 28 Jan 2024
 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
@@ -2910,15 +2910,22 @@ def start_deploy(simple_mode = False):
     if not img_present and not vid_present:
         if simple_mode:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
-                            message=[f"There are no images nor videos found.", f"No se han encontrado imágenes ni vídeos."][lang_idx])
+                            message=[f"There are no images nor videos found.\n\nEcoAssist accepts images in  '.jpg', '.jpeg', '.gif', '.png', "
+                                     f"'.tif', '.tiff', and '.bmp'.\n\nIt accepts videos in '.mp4', '.avi', '.mpeg', '.mpg', '.mov', and '.mkv'.",
+                                     f"No se han encontrado imágenes ni vídeos.\n\nEcoAssist acepta imágenes en formato '.jpg', '.jpeg', '.gif',"
+                                     f" '.png', '.tif', '.tiff' y '.bmp'.\n\nAcepta vídeos en formato '.mp4', '.avi', '.mpeg', '.mpg', '.mov' y "
+                                     f"'.mkv'."][lang_idx])
         else:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
                             message=[f"There are no images nor videos found, or you selected not to search for them. If there is indeed data to be "
                                     f"processed, make sure the '{lbl_process_img_txt[lang_idx]}' and/or '{lbl_process_vid_txt[lang_idx]}' options "
-                                    f"are selected. You must select at least one of these.", f"No se han encontrado imágenes ni vídeos, o ha "
-                                    f"seleccionado no buscarlos. Si efectivamente hay datos para procesar, asegúrese de que las opciones "
-                                    f"'{lbl_process_img_txt[lang_idx]}' y/o '{lbl_process_vid_txt[lang_idx]}' están seleccionadas. Debe seleccionar"
-                                    f" al menos una de ellas."][lang_idx])
+                                    f"are selected. You must select at least one of these.\n\nEcoAssist accepts images in  '.jpg', '.jpeg', '.gif', '.png', "
+                                    f"'.tif', '.tiff', and '.bmp'.\n\nIt accepts videos in '.mp4', '.avi', '.mpeg', '.mpg', '.mov', and '.mkv'.",
+                                    f"No se han encontrado imágenes ni vídeos, o ha seleccionado no buscarlos. Si efectivamente hay datos para procesar,"
+                                    f" asegúrese de que las opciones '{lbl_process_img_txt[lang_idx]}' y/o '{lbl_process_vid_txt[lang_idx]}' están seleccionadas."
+                                    f" Debe seleccionar al menos una de ellas.\n\nEcoAssist acepta imágenes en formato '.jpg', '.jpeg', '.gif',"
+                                    f" '.png', '.tif', '.tiff' y '.bmp'.\n\nAcepta vídeos en formato '.mp4', '.avi', '.mpeg', '.mpg', '.mov' y "
+                                    f"'.mkv'."][lang_idx])
         btn_start_deploy.configure(state=NORMAL)
         sim_run_btn.configure(state=NORMAL)
         return
