@@ -81,7 +81,7 @@ jobs:
           @REM MegaDetector
           git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "%root%\cameratraps"
           pushd "%root%\cameratraps"
-          git checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
+          git checkout a64a8f8c467ae6c87b5ca09f54b1abe502168b50
           popd
           rmdir /s /q "%root%\cameratraps\.git"
           echo MegaDetector cloned
