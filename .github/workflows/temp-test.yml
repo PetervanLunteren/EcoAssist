@@ -15,7 +15,7 @@ jobs:
     runs-on: macos-15
 
     env:
-      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
       BUCKET_NAME: github-release-files-storage
     
     steps:
@@ -24,5 +24,5 @@ jobs:
 
       - name: Use the release tag
         run: |
-          echo "Release tag: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}"
+          echo "Release tag: ${{ env.RELEASE_VERSION }}"
         
