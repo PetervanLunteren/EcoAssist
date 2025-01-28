@@ -1,27 +1,24 @@
 name: temp test
+
 on:
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "The release tag name"
-        required: true
   release:
-    types:
-      - published
+    types: [published]
+  workflow_dispatch:
 
 jobs:
-  temp-test:
-    runs-on: macos-15
-
-    env:
-      RELEASE_VERSION: ${{ github.event.release.tag_name }}
-      BUCKET_NAME: github-release-files-storage
-    
+  example_job:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Fetch the latest release tag
+        id: fetch_tag
+        run: |
+          latest_tag=$(curl -s \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          echo "Latest release tag: $latest_tag"
+          echo "tag=$latest_tag" >> $GITHUB_ENV
 
       - name: Use the release tag
         run: |
-          echo "Release tag: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}"
+          echo "Running workflow for release tag: ${{ env.tag }}"
         
