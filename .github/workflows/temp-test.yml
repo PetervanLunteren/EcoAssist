@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "The release tag name. E.g., v5.29"
+        description: "What is release tag name? E.g., v5.29"
         required: true
   release:
     types:
