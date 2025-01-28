@@ -69,7 +69,7 @@ jobs:
           echo "EcoAssist cloned"
           
           git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "${root}/MegaDetector"
-          git -C "${root}/MegaDetector" checkout e8a4fc19a2b9ad1892dd9ce65d437252df271576
+          git -C "${root}/MegaDetector" checkout a64a8f8c467ae6c87b5ca09f54b1abe502168b50
           rm -rf "${root}/MegaDetector/.git"
           mv "${root}/MegaDetector" "${root}/cameratraps"
           echo "MegaDetector cloned"
