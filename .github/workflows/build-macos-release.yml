@@ -37,6 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: |
+
+          ### log release version used
+          echo "Using tag name ${{ env.RELEASE_VERSION }}"
         
           ### refresh root
           root="$HOME/EcoAssist_files"
@@ -65,7 +68,6 @@ jobs:
           
           ## clone repositories
           git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${root}/EcoAssist"
-          echo "DEBUG : using newest version of workflow.yaml"
           rm -rf "${root}/EcoAssist/.git"
           mv "${root}/EcoAssist/main.py" "${root}/main.py"
           RAW_VERSION=${{ env.RELEASE_VERSION }}
