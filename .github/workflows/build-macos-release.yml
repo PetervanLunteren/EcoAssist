@@ -60,7 +60,7 @@ jobs:
           echo "Hello world!" >> "${root}/first-startup.txt"
           
           ## clone repositories
-          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist-experiments.git "${root}/EcoAssist"
+          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${root}/EcoAssist"
           rm -rf "${root}/EcoAssist/.git"
           mv "${root}/EcoAssist/main.py" "${root}/main.py"
           RAW_VERSION=${{ env.RELEASE_VERSION }}
