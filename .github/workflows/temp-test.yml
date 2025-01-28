@@ -52,7 +52,7 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }} > release_info.json
           
           REM Extract asset ID by matching the name
-          for /f "delims=" %%A in ('jq -r ".assets[] | select(.name == \"Windows-installer-v5.29.exe\") | .id" release_info.json') do set asset_id=%%A
+          for /f "delims=" %%A in ('jq -r ".assets[] | select(.name == \"Windows-installer-${{ env.RELEASE_VERSION }}.exe\") | .id" release_info.json') do set asset_id=%%A
           echo The asset_id is: %asset_id%
           
           REM Check if the asset exists and delete it
