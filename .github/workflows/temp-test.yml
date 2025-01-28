@@ -18,6 +18,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Install jq
+        run: brew install jq
+
       - name: Fetch the latest release tag
         id: fetch_tag
         run: |
