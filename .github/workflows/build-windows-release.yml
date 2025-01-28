@@ -2,6 +2,10 @@ name: Build Windows release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "What is tag name of the latest release? E.g., v5.29"
+        required: true
   release:
     types:
       - published
@@ -11,7 +15,7 @@ jobs:
     runs-on: windows-2022
 
     env:
-      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
       BUCKET_NAME: github-release-files-storage
       CONDA_DIR: C:\Miniconda
 
