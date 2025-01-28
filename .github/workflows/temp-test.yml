@@ -49,7 +49,7 @@ jobs:
           
           REM List all assets in the release using curl
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ^
-            https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/releases/tags/${{ env.RELEASE_VERSION }} > release_info.json
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }} > release_info.json
           
           REM Extract asset ID by matching the name
           for /f "tokens=2 delims=:," %%A in ('findstr /i "Windows-installer-${{ env.RELEASE_VERSION }}.zip" release_info.json') do set asset_id=%%A
@@ -59,7 +59,7 @@ jobs:
           if not "%asset_id%"=="" (
             curl -X DELETE ^
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ^
-              https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/releases/assets/%asset_id%
+              https://api.github.com/repos/${{ github.repository }}/releases/assets/%asset_id%
           ) else (
             echo Asset not found. Continue with upload...
           )
