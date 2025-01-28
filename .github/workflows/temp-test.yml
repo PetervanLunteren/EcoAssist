@@ -27,7 +27,7 @@ jobs:
           echo "Hello world!" >> temp.txt # DEBUG
           
           # List all assets in the release
-          release_info=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+          release_info=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }}
             )
           
@@ -38,7 +38,7 @@ jobs:
           # Check if the asset exists and delete it
           if [ ! -z "$asset_id" ]; then
             curl -X DELETE \
-              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id"
           else
             echo "Asset not found. Continue with upload..."
