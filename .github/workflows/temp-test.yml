@@ -11,19 +11,20 @@ on:
       - published
 
 jobs:
-  upload_release:
-    runs-on: ubuntu-latest
+  build-windows-release:
+    runs-on: windows-2022
 
     env:
       RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
       BUCKET_NAME: github-release-files-storage
-
+      CONDA_DIR: C:\Miniconda
+      
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Get Upload URL for Release
-        id: get_upload_url
+        id: get_release
         uses: actions/github-script@v6
         with:
           script: |
@@ -31,39 +32,45 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag: '${{ env.RELEASE_VERSION }}',
-            });
-            // Write the upload URL to the environment file
+            })
+            // Write the upload URL to the environment file instead of using set-output
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_ENV, `UPLOAD_URL=${release.data.upload_url}\n`);
 
+      - name: Create temp.txt file with content
+        run: |
+          "Hello World!" | Out-File -FilePath "temp.txt"
+        shell: powershell
+
       - name: Remove existing asset if present
         run: |
-          echo "Hello world!" >> temp.txt # DEBUG
+          $ErrorActionPreference = "Stop"
           
           # List all assets in the release
-          release_info=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }}
-            )
-          
+          $release_info = curl -H "Authorization: token $env:GITHUB_TOKEN" `
+            https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_VERSION
+      
           # Extract asset ID by matching the name
-          asset_id=$(echo $release_info | jq -r '.assets[] | select(.name == "MacOS-installer-${{ env.RELEASE_VERSION }}.zip") | .id')
-          echo "asset_id is $asset_id"
-          
+          $asset = ($release_info | ConvertFrom-Json).assets | Where-Object { $_.name -eq "Windows-installer-$env:RELEASE_VERSION.zip" }
+          $asset_id = $asset.id
+          Write-Host "asset_id is $asset_id"
+      
           # Check if the asset exists and delete it
-          if [ ! -z "$asset_id" ]; then
-            curl -X DELETE \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id"
-          else
-            echo "Asset not found. Continue with upload..."
-          fi
+          if ($asset_id) {
+            curl -X DELETE `
+              -H "Authorization: token $env:GITHUB_TOKEN" `
+              "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases/assets/$asset_id"
+          } else {
+            Write-Host "Asset not found. Continue with upload..."
+          }
+        shell: powershell
 
       - name: Upload Asset to GitHub Release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ env.UPLOAD_URL }}
+          upload_url: ${{ env.UPLOAD_URL }}  # Use the updated environment variable
           asset_path: "temp.txt"
-          asset_name: "MacOS-installer-${{ env.RELEASE_VERSION }}.zip"
+          asset_name: "Windows-installer-${{ env.RELEASE_VERSION }}.exe"
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
