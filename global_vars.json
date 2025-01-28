@@ -21,6 +21,7 @@
     "var_file_placement": 2,
     "var_sep_conf": false,
     "var_vis_files": false,
+    "var_vis_size_idx": 2,
     "var_crp_files": false,
     "var_exp": true,
     "var_plt": true,
