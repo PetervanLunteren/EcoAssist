@@ -1,0 +1,39 @@
+name: temp-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "What is tag name of the latest release? E.g., v5.29"
+        required: true
+  release:
+    types:
+      - published
+
+jobs:
+  upload_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get release upload URL
+        id: get_release_url
+        run: |
+          RELEASE_TAG=${{ github.event.release.tag_name || inputs.tag_name }}
+          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG" | \
+          jq -r .upload_url | sed -e 's/{?name,label}//')
+          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_ENV
+          echo "Hello world!" >> temp.txt
+
+      - name: Upload Asset to GitHub Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: "temp.txt"
+          asset_name: "temp.txt"
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
