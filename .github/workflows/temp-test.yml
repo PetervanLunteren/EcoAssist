@@ -7,7 +7,7 @@ on:
       - published
 
 jobs:
-  build-macos-release:
+  temp-test:
     runs-on: macos-15
 
     env:
@@ -18,8 +18,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install jq
-        run: brew install jq
+      - name: Fetch latest release tag with debugging
+        run: |
+          response=$(curl -s -H "Accept: application/vnd.github+json" https://api.github.com/repos/PetervanLunteren/EcoAssist/releases/latest)
+          echo "API Response: $response"
+          latest_tag=$(echo $response | jq -r .tag_name)
+          echo "Latest release tag: $latest_tag"
+          echo "tag=$latest_tag" >> $GITHUB_ENV
+        shell: bash
 
       - name: Fetch the latest release tag
         id: fetch_tag
