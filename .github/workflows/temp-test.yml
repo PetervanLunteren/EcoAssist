@@ -24,12 +24,11 @@ jobs:
 
       - name: Remove existing asset if present
         run: |
-          RELEASE_TAG=${{ github.event.release.tag_name || inputs.tag_name }} # DEBUG
-          echo "Hello world!" >> temp.txt
+          echo "Hello world!" >> temp.txt # DEBUG
           
           # List all assets in the release
           release_info=$(curl -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG)
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }})
           
           # Extract asset ID by matching the name
           asset_id=$(echo $release_info | jq -r '.assets[] | select(.name == "MacOS-installer-${{ env.RELEASE_VERSION }}.zip") | .id')
