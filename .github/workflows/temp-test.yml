@@ -48,18 +48,18 @@ jobs:
           setlocal
           
           REM List all assets in the release using curl
-          curl -H "Authorization: token %GITHUB_TOKEN%" ^
-            https://api.github.com/repos/%GITHUB_REPOSITORY%/releases/tags/%RELEASE_VERSION% > release_info.json
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ^
+            https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/releases/tags/${{ env.RELEASE_VERSION }} > release_info.json
           
           REM Extract asset ID by matching the name
-          for /f "tokens=2 delims=:," %%A in ('findstr /i "Windows-installer-%RELEASE_VERSION%.zip" release_info.json') do set asset_id=%%A
+          for /f "tokens=2 delims=:," %%A in ('findstr /i "Windows-installer-${{ env.RELEASE_VERSION }}.zip" release_info.json') do set asset_id=%%A
           echo asset_id is %asset_id%
           
           REM Check if the asset exists and delete it
           if not "%asset_id%"=="" (
             curl -X DELETE ^
-              -H "Authorization: token %GITHUB_TOKEN%" ^
-              https://api.github.com/repos/%GITHUB_REPOSITORY%/releases/assets/%asset_id%
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ^
+              https://api.github.com/repos/${{ env.GITHUB_REPOSITORY }}/releases/assets/%asset_id%
           ) else (
             echo Asset not found. Continue with upload...
           )
