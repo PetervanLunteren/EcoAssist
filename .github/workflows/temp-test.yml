@@ -1,0 +1,28 @@
+name: Build macOS release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "The release tag name"
+        required: true
+  release:
+    types:
+      - published
+
+jobs:
+  build-macos-release:
+    runs-on: macos-15
+
+    env:
+      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      BUCKET_NAME: github-release-files-storage
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Use the release tag
+        run: |
+          echo "Release tag: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}"
+        
