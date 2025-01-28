@@ -14,6 +14,10 @@ jobs:
   upload_release:
     runs-on: ubuntu-latest
 
+    env:
+      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      BUCKET_NAME: github-release-files-storage
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -29,11 +33,10 @@ jobs:
           echo "Hello world!" >> temp.txt
 
       - name: Upload Asset to GitHub Release
-        uses: actions/upload-release-asset@v1
+        uses: svenstaro/upload-release-action@v2
         with:
-          upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: "temp.txt"
-          asset_name: "temp.txt"
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: temp.txt
+          asset_name: temp_txt
+          tag: ${{ env.RELEASE_TAG }}
+          overwrite: true
