@@ -1,5 +1,4 @@
-name: Build macOS release
-
+name: temp test
 on:
   workflow_dispatch:
     inputs:
@@ -11,7 +10,7 @@ on:
       - published
 
 jobs:
-  build-macos-release:
+  temp-test:
     runs-on: macos-15
 
     env:
