@@ -152,7 +152,8 @@ os.environ["PYTHONPATH"] = os.environ.get("PYTHONPATH", "") + PYTHONPATH_separat
 
 # import modules from forked repositories
 from visualise_detection.bounding_box import bounding_box as bb
-from cameratraps.megadetector.detection.video_utils import frame_results_to_video_results, FrameToVideoOptions
+from cameratraps.megadetector.detection.video_utils import frame_results_to_video_results, FrameToVideoOptions, VIDEO_EXTENSIONS
+from cameratraps.megadetector.utils.path_utils import IMG_EXTENSIONS
 
 # log pythonpath
 print(sys.path)
@@ -2882,10 +2883,10 @@ def start_deploy(simple_mode = False):
         # non recursive
         for f in os.listdir(chosen_folder):
             if check_img_presence:
-                if f.lower().endswith(('.jpg', '.jpeg', '.png')):
+                if f.lower().endswith(IMG_EXTENSIONS):
                     img_present = True
             if check_vid_presence:
-                if f.lower().endswith(('.mp4', '.avi', '.mpeg', '.mpg')):
+                if f.lower().endswith(VIDEO_EXTENSIONS):
                     vid_present = True
             if (img_present and vid_present) or \
                 (img_present and not check_vid_presence) or \
@@ -2896,9 +2897,9 @@ def start_deploy(simple_mode = False):
         # recursive
         for main_dir, _, files in os.walk(chosen_folder):
             for file in files:
-                if check_img_presence and file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                if check_img_presence and file.lower().endswith(IMG_EXTENSIONS):
                     img_present = True
-                if check_vid_presence and file.lower().endswith(('.mp4', '.avi', '.mpeg', '.mpg')):
+                if check_vid_presence and file.lower().endswith(VIDEO_EXTENSIONS):
                     vid_present = True
             if (img_present and vid_present) or \
                 (img_present and not check_vid_presence) or \
@@ -2910,22 +2911,20 @@ def start_deploy(simple_mode = False):
     if not img_present and not vid_present:
         if simple_mode:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
-                            message=[f"There are no images nor videos found.\n\nEcoAssist accepts images in  '.jpg', '.jpeg', '.gif', '.png', "
-                                     f"'.tif', '.tiff', and '.bmp'.\n\nIt accepts videos in '.mp4', '.avi', '.mpeg', '.mpg', '.mov', and '.mkv'.",
-                                     f"No se han encontrado imágenes ni vídeos.\n\nEcoAssist acepta imágenes en formato '.jpg', '.jpeg', '.gif',"
-                                     f" '.png', '.tif', '.tiff' y '.bmp'.\n\nAcepta vídeos en formato '.mp4', '.avi', '.mpeg', '.mpg', '.mov' y "
-                                     f"'.mkv'."][lang_idx])
+                            message=[f"There are no images nor videos found.\n\nEcoAssist accepts images in the format {IMG_EXTENSIONS}."
+                                     f"\n\nIt accepts videos in the format {VIDEO_EXTENSIONS}.",
+                                     f"No se han encontrado imágenes ni vídeos.\n\nEcoAssist acepta imágenes en formato {IMG_EXTENSIONS}."
+                                     f"\n\nAcepta vídeos en formato {VIDEO_EXTENSIONS}."][lang_idx])
         else:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
                             message=[f"There are no images nor videos found, or you selected not to search for them. If there is indeed data to be "
                                     f"processed, make sure the '{lbl_process_img_txt[lang_idx]}' and/or '{lbl_process_vid_txt[lang_idx]}' options "
-                                    f"are selected. You must select at least one of these.\n\nEcoAssist accepts images in  '.jpg', '.jpeg', '.gif', '.png', "
-                                    f"'.tif', '.tiff', and '.bmp'.\n\nIt accepts videos in '.mp4', '.avi', '.mpeg', '.mpg', '.mov', and '.mkv'.",
+                                    f"are selected. You must select at least one of these.\n\nEcoAssist accepts images in the format {IMG_EXTENSIONS}."
+                                    f"\n\nIt accepts videos in the format {VIDEO_EXTENSIONS}.",
                                     f"No se han encontrado imágenes ni vídeos, o ha seleccionado no buscarlos. Si efectivamente hay datos para procesar,"
                                     f" asegúrese de que las opciones '{lbl_process_img_txt[lang_idx]}' y/o '{lbl_process_vid_txt[lang_idx]}' están seleccionadas."
-                                    f" Debe seleccionar al menos una de ellas.\n\nEcoAssist acepta imágenes en formato '.jpg', '.jpeg', '.gif',"
-                                    f" '.png', '.tif', '.tiff' y '.bmp'.\n\nAcepta vídeos en formato '.mp4', '.avi', '.mpeg', '.mpg', '.mov' y "
-                                    f"'.mkv'."][lang_idx])
+                                    f" Debe seleccionar al menos una de ellas.\n\nEcoAssist acepta imágenes en formato {IMG_EXTENSIONS}."
+                                    f"\n\nAcepta vídeos en formato {VIDEO_EXTENSIONS}."][lang_idx])
         btn_start_deploy.configure(state=NORMAL)
         sim_run_btn.configure(state=NORMAL)
         return
