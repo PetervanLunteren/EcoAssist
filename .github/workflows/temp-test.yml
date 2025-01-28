@@ -22,21 +22,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Get release upload URL
-        id: get_release_url
+      - name: Remove existing asset if present
         run: |
-          RELEASE_TAG=${{ github.event.release.tag_name || inputs.tag_name }}
-          UPLOAD_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG" | \
-          jq -r .upload_url | sed -e 's/{?name,label}//')
-          echo "UPLOAD_URL=$UPLOAD_URL" >> $GITHUB_ENV
+          RELEASE_TAG=${{ github.event.release.tag_name || inputs.tag_name }} # DEBUG
           echo "Hello world!" >> temp.txt
+          
+          # List all assets in the release
+          release_info=$(curl -H "Authorization: token $GITHUB_TOKEN" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG)
+          
+          # Extract asset ID by matching the name
+          asset_id=$(echo $release_info | jq -r '.assets[] | select(.name == "MacOS-installer-${{ env.RELEASE_VERSION }}.zip") | .id')
+          echo "asset_id is $asset_id"
+          
+          # Check if the asset exists and delete it
+          if [ ! -z "$asset_id" ]; then
+            curl -X DELETE \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/assets/$asset_id"
+          else
+            echo "Asset not found. Continue with upload..."
+          fi
 
       - name: Upload Asset to GitHub Release
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/upload-release-asset@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: temp.txt
-          asset_name: temp_txt
-          tag: ${{ env.RELEASE_TAG }}
-          overwrite: true
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: "temp.txt"
+          asset_name: "temp_txt"
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
