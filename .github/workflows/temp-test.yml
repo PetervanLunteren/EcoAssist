@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "What is tag name of the latest release? E.g., v5.29"
+        description: "What is tag name of the latest release? https://github.com/PetervanLunteren/EcoAssist/releases E.g., v5.29"
         required: true
   release:
     types:
