@@ -28,7 +28,8 @@ jobs:
           
           # List all assets in the release
           release_info=$(curl -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }})
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ env.RELEASE_VERSION }}
+            )
           
           # Extract asset ID by matching the name
           asset_id=$(echo $release_info | jq -r '.assets[] | select(.name == "MacOS-installer-${{ env.RELEASE_VERSION }}.zip") | .id')
