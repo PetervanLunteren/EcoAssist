@@ -63,7 +63,7 @@ jobs:
         with:
           upload_url: ${{ env.UPLOAD_URL }}
           asset_path: "temp.txt"
-          asset_name: "temp_txt"
+          asset_name: "MacOS-installer-${{ env.RELEASE_VERSION }}.zip"
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
