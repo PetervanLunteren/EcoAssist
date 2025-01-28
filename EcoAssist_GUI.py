@@ -5,6 +5,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 28 Jan 2024
 
+# TODO: Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
@@ -553,7 +554,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                     conf_label = round(bbox[1], 2) if round(bbox[1], 2) != 1.0 else 0.99
                     vis_label = f"{bbox[0]} {conf_label}"
                 color = colors[int(inverted_label_map[bbox[0]])]
-                bb.add(im_to_vis, *bbox[3:7], vis_label, color)
+                bb.add(im_to_vis, *bbox[3:7], vis_label, color, size = dpd_options_vis_size[lang_idx].index(var_vis_size.get())) # convert string to index, e.g. "small" -> 0
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(im, im_to_vis)
@@ -832,6 +833,7 @@ def start_postprocess():
         "var_crp_files": var_crp_files.get(),
         "var_exp": var_exp.get(),
         "var_exp_format_idx": dpd_options_exp_format[lang_idx].index(var_exp_format.get()),
+        "var_vis_size_idx": dpd_options_vis_size[lang_idx].index(var_vis_size.get()),
         "var_plt": var_plt.get(),
         "var_thresh": var_thresh.get()
     })
@@ -2252,12 +2254,6 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     # show user it's loading
     progress_window.update_values(process = f"{data_type}_cls", status = "load")
     root.update()
-
-    # # locate script
-    # if os.name == 'nt': # DEBUG
-    #     classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classification_utils", "start_class_inference.bat")
-    # else:
-    #     classify_detections_script = os.path.join(EcoAssist_files, "EcoAssist", "classification_utils", "start_class_inference.command")
         
     # load model specific variables
     model_vars = load_model_vars() 
@@ -2286,39 +2282,10 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
         cls_animal_smooth = var_smooth_cls_animal.get()
         
     # init paths
-    python_executable = get_python_interprator(cls_model_env) # DEBUG os.path.join(env_dir_fpath, f"env-{cls_model_env}", "bin", "python")
+    python_executable = get_python_interprator(cls_model_env)
     inference_script = os.path.join(EcoAssist_files, "EcoAssist", "classification_utils", "model_types", cls_model_type, "classify_detections.py")
 
-    # # create command
-    # command_args = [] # DEBUG
-    # command_args.append(classify_detections_script)
-    # command_args.append(str(cls_disable_GPU))
-    # command_args.append(cls_model_env)
-    # command_args.append(cls_model_type)
-    # command_args.append(EcoAssist_files)
-    # command_args.append(cls_model_fpath)
-    # command_args.append(str(cls_detec_thresh))
-    # command_args.append(str(cls_class_thresh))
-    # command_args.append(str(cls_animal_smooth))
-    # command_args.append(json_fpath)
-
-    # try:
-    #     command_args.append(temp_frame_folder)
-    # except NameError:
-    #     command_args.append("None")
-    #     pass
-
-    # # adjust command for unix OS
-    # if os.name != 'nt':
-    #     command_args = "'" + "' '".join(command_args) + "'"
-
-    # # log command
-    # print(command_args)
-    
-    
-
-    
-    # NEW CODE DEBUG
+    # create command
     command_args = []
     command_args.append(python_executable)
     command_args.append(inference_script)
@@ -2352,7 +2319,6 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
 
     # log command
     print(command_args)
-    # NEW CODE DEBUG
 
     # prepare process and cancel method per OS
     if os.name == 'nt':
@@ -2506,7 +2472,7 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     process_video_py = os.path.join(EcoAssist_files, "cameratraps", "megadetector", "detection", "process_video.py")
     video_recognition_file = "--output_json_file=" + os.path.join(chosen_folder, "video_recognition_file.json")
     GPU_param = "Unknown"
-    python_executable = get_python_interprator("base") # DEBUG os.path.join(env_dir_fpath, "env-base", "bin", "python")
+    python_executable = get_python_interprator("base")
 
     # select model based on user input via dropdown menu, or take MDv5a for simple mode 
     custom_model_bool = False
@@ -3398,24 +3364,6 @@ def start_deploy(simple_mode = False):
         btn_start_deploy.configure(state=NORMAL)
         sim_run_btn.configure(state=NORMAL)
         root.update()
-
-        # # remove non-original jsons and rename to timelapse version - DEBUG this was my logic before merging jsons. Can I remove it?
-        # if timelapse_mode:
-        #     original_json = os.path.join(chosen_folder, "image_recognition_file_original.json")
-        #     normal_json = os.path.join(chosen_folder, "image_recognition_file.json")
-        #     timelapse_json = os.path.join(chosen_folder, "timelapse_recognition_file.json")
-
-        #     # if the timelapse json already exists, remove it
-        #     # otherwise the os.rename will fail later on
-        #     if os.path.exists(timelapse_json):
-        #         os.remove(timelapse_json)
-
-        #     # rename and remove
-        #     if os.path.exists(original_json):
-        #         os.rename(original_json, timelapse_json)
-        #         os.remove(normal_json)
-        #     else:
-        #         os.rename(normal_json, timelapse_json)
 
         # show results
         if timelapse_mode:
@@ -4328,38 +4276,6 @@ def browse_file(var, var_short, var_path, dsp, filetype, cut_off_length, options
         var_path.set(file)
     else:
         var.set(options[0])
-
-# # switch beteen versions of yolov5 git to accommodate either old or new models # DEBUG
-# def switch_yolov5_git_to(model_type):
-#     # log
-#     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-#     # checkout repo
-#     repository = git.Repo(os.path.join(EcoAssist_files, "yolov5"))
-#     if model_type == "old models": # MD
-#         if platform.processor() == "arm" and os.name != "nt": # M1 and M2
-#             repository.git.checkout("868c0e9bbb45b031e7bfd73c6d3983bcce07b9c1", force = True) 
-#         else:
-#             repository.git.checkout("c23a441c9df7ca9b1f275e8c8719c949269160d1", force = True)
-#     elif model_type == "new models": # models trained trough EA v3.4
-#         repository.git.checkout("3e55763d45f9c5f8217e4dad5ba1e6c1f42e3bf8", force = True)
-
-# def switch_yolov5_version(model_type):
-#     # log
-#     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    
-#     # set the path to the desired version
-#     base_path = os.path.join(EcoAssist_files, "yolov5_versions")
-#     if model_type == "old models":
-#         version_path = os.path.join(base_path, "yolov5_old")
-#     elif model_type == "new models":
-#         version_path = os.path.join(base_path, "yolov5_new")
-#     else:
-#         raise ValueError("Invalid model_type")
-
-#     # Update the code path or environment variable
-#     os.environ['YOLOV5_PATH'] = version_path
-#     print(f"Switched to YOLOv5 version: {version_path}")
 
 # switches the yolov5 version by modifying the python import path
 def switch_yolov5_version(model_type):
@@ -6978,6 +6894,7 @@ def set_language():
     lbl_crp_files.configure(text=lbl_crp_files_txt[lang_idx])
     lbl_exp.configure(text=lbl_exp_txt[lang_idx])
     exp_frame.configure(text=" ↳ " + exp_frame_txt[lang_idx] + " ")
+    vis_frame.configure(text=" ↳ " + vis_frame_txt[lang_idx] + " ")
     lbl_exp_format.configure(text="     " + lbl_exp_format_txt[lang_idx])
     lbl_plt.configure(text=lbl_plt_txt[lang_idx])
     lbl_thresh.configure(text=lbl_thresh_txt[lang_idx])
@@ -7205,6 +7122,18 @@ def toggle_exp_frame():
         exp_frame.grid_forget()
     resize_canvas_to_content()
 
+# toggle visualization subframe
+def toggle_vis_frame():
+    if var_vis_files.get() and lbl_vis_files.cget("state") == "normal":
+        vis_frame.grid(row=vis_frame_row, column=0, columnspan=2, sticky = 'ew')
+        enable_widgets(vis_frame)
+        vis_frame.configure(fg='black')
+    else:
+        disable_widgets(vis_frame)
+        vis_frame.configure(fg='grey80')
+        vis_frame.grid_forget()
+    resize_canvas_to_content()
+
 # on checkbox change
 def on_chb_smooth_cls_animal_change():
     write_model_vars(new_values={"var_smooth_cls_animal": var_smooth_cls_animal.get()})
@@ -7340,8 +7269,10 @@ def enable_frame(frame):
     if fth_step:
         toggle_sep_frame()
         toggle_exp_frame()
+        toggle_vis_frame()
         sep_frame.configure(relief = 'solid')
         exp_frame.configure(relief = 'solid')
+        vis_frame.configure(relief = 'solid')
 
 # remove checkmarks and complete buttons
 def uncomplete_frame(frame):
@@ -7380,6 +7311,9 @@ def disable_frame(frame):
         disable_widgets(exp_frame)
         exp_frame.configure(fg='grey80')
         exp_frame.configure(relief = 'flat')
+        disable_widgets(vis_frame)
+        vis_frame.configure(fg='grey80')
+        vis_frame.configure(relief = 'flat')
 
     
 # check if checkpoint is present and set checkbox accordingly
@@ -7513,6 +7447,7 @@ def reset_values():
     var_file_placement.set(2)
     var_sep_conf.set(False)
     var_vis_files.set(False)
+    var_vis_size.set(dpd_options_vis_size[lang_idx][global_vars['var_vis_size_idx']])
     var_crp_files.set(False)
     var_exp.set(True)
     var_exp_format.set(dpd_options_exp_format[lang_idx][global_vars['var_exp_format_idx']])
@@ -7536,6 +7471,7 @@ def reset_values():
         "var_file_placement": var_file_placement.get(),
         "var_sep_conf": var_sep_conf.get(),
         "var_vis_files": var_vis_files.get(),
+        "var_vis_size_idx": dpd_options_exp_format[lang_idx].index(var_vis_size.get()),
         "var_crp_files": var_crp_files.get(),
         "var_exp": var_exp.get(),
         "var_exp_format_idx": dpd_options_exp_format[lang_idx].index(var_exp_format.get())
@@ -7562,6 +7498,7 @@ def reset_values():
     toggle_nth_frame()
     toggle_vid_frame()
     toggle_exp_frame()
+    toggle_vis_frame()
     toggle_sep_frame()
     toggle_image_size_for_deploy()
     resize_canvas_to_content()
@@ -8132,12 +8069,35 @@ lbl_vis_files = Label(fth_step, text=lbl_vis_files_txt[lang_idx], width=1, ancho
 lbl_vis_files.grid(row=row_vis_files, sticky='nesw', pady=2)
 var_vis_files = BooleanVar()
 var_vis_files.set(global_vars['var_vis_files'])
-chb_vis_files = Checkbutton(fth_step, variable=var_vis_files, anchor="w")
+chb_vis_files = Checkbutton(fth_step, variable=var_vis_files, anchor="w", command=toggle_vis_frame)
 chb_vis_files.grid(row=row_vis_files, column=1, sticky='nesw', padx=5)
+
+## visualization options
+vis_frame_txt = ["Visualization options", "Opciones de visualización"]
+vis_frame_row = 4
+vis_frame = LabelFrame(fth_step, text=" ↳ " + vis_frame_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
+vis_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
+vis_frame.grid(row=vis_frame_row, column=0, columnspan=2, sticky = 'ew')
+vis_frame.columnconfigure(0, weight=1, minsize=label_width - subframe_correction_factor)
+vis_frame.columnconfigure(1, weight=1, minsize=widget_width - subframe_correction_factor)
+vis_frame.grid_forget()
+
+# visual size
+lbl_vis_size_txt = ["Select line width and font size", "Ancho de línea y tamaño de fuente"]
+row_vis_size = 0
+lbl_vis_size = Label(vis_frame, text="     " + lbl_vis_size_txt[lang_idx], pady=2, width=1, anchor="w")
+lbl_vis_size.grid(row=row_vis_size, sticky='nesw')
+dpd_options_vis_size = [["Extra small", "Small", "Medium", "Large", "Extra large"],
+                        ["Extra pequeño", "Pequeño", "Mediano", "Grande", "Extra grande"]]
+var_vis_size = StringVar(vis_frame)
+var_vis_size.set(dpd_options_vis_size[lang_idx][global_vars['var_vis_size_idx']])
+dpd_vis_size = OptionMenu(vis_frame, var_vis_size, *dpd_options_vis_size[lang_idx])
+dpd_vis_size.configure(width=1)
+dpd_vis_size.grid(row=row_vis_size, column=1, sticky='nesw', padx=5)
 
 ## crop images
 lbl_crp_files_txt = ["Crop detections", "Recortar detecciones"]
-row_crp_files = 4
+row_crp_files = 5
 lbl_crp_files = Label(fth_step, text=lbl_crp_files_txt[lang_idx], width=1, anchor="w")
 lbl_crp_files.grid(row=row_crp_files, sticky='nesw', pady=2)
 var_crp_files = BooleanVar()
@@ -8147,7 +8107,7 @@ chb_crp_files.grid(row=row_crp_files, column=1, sticky='nesw', padx=5)
 
 # plot
 lbl_plt_txt = ["Create maps and graphs", "Crear mapas y gráficos"]
-row_plt = 5
+row_plt = 6
 lbl_plt = Label(fth_step, text=lbl_plt_txt[lang_idx], width=1, anchor="w")
 lbl_plt.grid(row=row_plt, sticky='nesw', pady=2)
 var_plt = BooleanVar()
@@ -8157,7 +8117,7 @@ chb_plt.grid(row=row_plt, column=1, sticky='nesw', padx=5)
 
 # export results
 lbl_exp_txt = ["Export results and retrieve metadata", "Exportar resultados y recuperar metadatos"]
-row_exp = 6
+row_exp = 7
 lbl_exp = Label(fth_step, text=lbl_exp_txt[lang_idx], width=1, anchor="w")
 lbl_exp.grid(row=row_exp, sticky='nesw', pady=2)
 var_exp = BooleanVar()
@@ -8167,7 +8127,7 @@ chb_exp.grid(row=row_exp, column=1, sticky='nesw', padx=5)
 
 ## exportation options
 exp_frame_txt = ["Export options", "Opciones de exportación"]
-exp_frame_row = 7
+exp_frame_row = 8
 exp_frame = LabelFrame(fth_step, text=" ↳ " + exp_frame_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, borderwidth=1, fg="grey80")
 exp_frame.configure(font=(text_font, second_level_frame_font_size, "bold"))
 exp_frame.grid(row=exp_frame_row, column=0, columnspan=2, sticky = 'ew')
@@ -8189,7 +8149,7 @@ dpd_exp_format.grid(row=row_exp_format, column=1, sticky='nesw', padx=5)
 
 # threshold
 lbl_thresh_txt = ["Confidence threshold", "Umbral de confianza"]
-row_lbl_thresh = 8
+row_lbl_thresh = 9
 lbl_thresh = Label(fth_step, text=lbl_thresh_txt[lang_idx], width=1, anchor="w")
 lbl_thresh.grid(row=row_lbl_thresh, sticky='nesw', pady=2)
 var_thresh = DoubleVar()
@@ -8202,12 +8162,12 @@ dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
 btn_start_postprocess_txt = ["Start post-processing", "Iniciar el postprocesamiento"]
-row_start_postprocess = 9
+row_start_postprocess = 10
 btn_start_postprocess = Button(fth_step, text=btn_start_postprocess_txt[lang_idx], command=start_postprocess)
 btn_start_postprocess.grid(row=row_start_postprocess, column=0, columnspan = 2, sticky='ew')
 
 # set minsize for all rows inside labelframes...
-for frame in [fst_step, snd_step, cls_frame, img_frame, vid_frame, fth_step, sep_frame, exp_frame]:
+for frame in [fst_step, snd_step, cls_frame, img_frame, vid_frame, fth_step, sep_frame, exp_frame, vis_frame]:
     set_minsize_rows(frame)
 
 # ... but not for the hidden rows
@@ -8220,6 +8180,7 @@ cls_frame.grid_rowconfigure(row_cls_detec_thresh, minsize=0) # cls animal thresh
 # cls_frame.grid_rowconfigure(row_smooth_cls_animal, minsize=0) # cls animal smooth
 fth_step.grid_rowconfigure(sep_frame_row, minsize=0) # sep options
 fth_step.grid_rowconfigure(exp_frame_row, minsize=0) # exp options
+fth_step.grid_rowconfigure(vis_frame_row, minsize=0) # vis options
 
 # enable scroll on mousewheel
 def deploy_canvas_mousewheel(event):
