@@ -158,6 +158,7 @@ jobs:
           $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 scikit-learn==1.4.2
           $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tqdm==4.66.4 
           $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 jsonpickle==4.0.1
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 opencv-python==4.11.0.86
           $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tensorflow-metal==1.1.0 
           $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tensorflow-macos==2.16.2
           
