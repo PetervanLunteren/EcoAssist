@@ -150,7 +150,23 @@ jobs:
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 jsonpickle
           
           @REM env-tensorflow
-          call "%conda_exe%" env create --file "%root%\EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml" -p "%root%\envs\env-tensorflow"
+          call "%conda_exe%" create -p "%root%\envs\env-tensorflow" python=3.11 -y
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 tensorflow
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 huggingface_hub==0.23.0
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 jax==0.4.28
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 jaxlib==0.4.28
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 keras==3.3.3
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 keras_cv==0.9.0
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 kimm==0.2.5
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 matplotlib==3.9.0
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 numpy==1.26.4
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 pandas==2.2.2
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 pytest==8.3.0
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 pyyaml==6.0.1
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 scikit-learn==1.4.2
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 tqdm==4.66.4
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 jsonpickle==4.0.1
+          call "%conda_exe%" run -p "%root%\envs\env-tensorflow" pip install --timeout=120 opencv-python==4.11.0.86
           
           # @REM install PyInstaller
           # call "%conda_exe%" create -p "${{ env.CONDA_DIR }}\envs\env-fresh" python=3.8 pyinstaller -y
