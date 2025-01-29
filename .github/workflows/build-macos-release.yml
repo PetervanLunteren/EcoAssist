@@ -143,7 +143,23 @@ jobs:
           "${root}/envs/env-base/bin/pyside6-rcc" -o "${root}/Human-in-the-loop/libs/resources.py" "${root}/Human-in-the-loop/resources.qrc"
           
           ### install env-tensorflow
-          $conda_exe env create --file="${root}/EcoAssist/classification_utils/envs/tensorflow-macos-silicon.yml" -p "${root}/envs/env-tensorflow"
+          $conda_exe create -p "${root}/envs/env-tensorflow" python=3.10 -y
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 huggingface_hub==0.23.0 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 jax==0.4.28 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 jaxlib==0.4.28
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 keras==3.3.3 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 keras_cv==0.9.0 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 kimm==0.2.5
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 matplotlib==3.9.0 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 numpy==1.26.4 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 pandas==2.2.2
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 pytest==8.3.0 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 pyyaml==6.0.1 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 scikit-learn==1.4.2
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tqdm==4.66.4 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 jsonpickle==4.0.1
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tensorflow-metal==1.1.0 
+          $conda_exe run -p "${root}/envs/env-tensorflow" pip install --timeout=120 tensorflow-macos==2.16.2
           
           ### install env-pytorch
           $conda_exe create -p "${root}/envs/env-pytorch" python=3.8 -y
@@ -170,7 +186,6 @@ jobs:
           $conda_exe clean --all --yes
 
           ### move and rename executables
-          # cp "${HOME}/dist/main" "${root}/EcoAssist ${RELEASE_VERSION} installer"  # installer executable
           mv "${HOME}/dist/main" "${root}/EcoAssist ${RELEASE_VERSION} debug"      # debug executable
           mv "${HOME}/dist/main.app" "${root}/EcoAssist ${RELEASE_VERSION}.app"    # main app executable
 
