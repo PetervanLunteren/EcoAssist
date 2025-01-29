@@ -31,7 +31,6 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import os
 import cv2
 import yaml
-import platform
 import numpy as np
 import tensorflow as tf
 from keras import saving
@@ -41,13 +40,8 @@ os.environ["KERAS_BACKEND"] = "jax"
 animal_model = saving.load_model(cls_model_fpath, compile=False)
 img_size = 384
 
-# check GPU availability
-if platform.system() == "Windows":
-    # tensorflow does supported the GPU on Windows Native
-    GPU_availability = False
-else:
-    # On macOS Apple Silicon GPU is available
-    GPU_availability = True if len(tf.config.list_logical_devices('GPU')) > 0 else False
+# check GPU availability (tensorflow does support the GPU on Windows Native)
+GPU_availability = True if len(tf.config.list_logical_devices('GPU')) > 0 else False
 
 # read label map
 def read_yaml(file_path):
