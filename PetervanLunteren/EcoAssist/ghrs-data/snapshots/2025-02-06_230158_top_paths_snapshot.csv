@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/PetervanLunteren/EcoAssist,260,123
+/PetervanLunteren/EcoAssist/actions,95,3
+/PetervanLunteren/EcoAssist/actions/workflows/temp-test.yml,78,1
+/PetervanLunteren/EcoAssist/issues,59,19
+/PetervanLunteren/EcoAssist/releases/tag/v5.29,54,16
+/PetervanLunteren/EcoAssist/tree/main,50,17
+/PetervanLunteren/EcoAssist/tree/main/.github/workflows,48,3
+/PetervanLunteren/EcoAssist/blob/main/markdown/manual-install/windows.md,39,29
+/PetervanLunteren/EcoAssist/blob/main/.github/workflows/temp-test.yml,39,1
+/PetervanLunteren/EcoAssist/blob/main/EcoAssist_GUI.py,34,18
