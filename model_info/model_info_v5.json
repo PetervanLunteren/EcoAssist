@@ -935,7 +935,7 @@
             "var_cls_class_thresh": "0.50",
             "var_cls_class_thresh_default": "0.50",
             "var_smooth_cls_animal": false,
-            "min_version": "5.16"
+            "min_version": "4.3"
         }
     },
     "det": {

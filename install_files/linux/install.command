@@ -72,7 +72,7 @@ mkdir -p "${LOCATION_ECOASSIST_FILES}/yolov5_versions/yolov5_new"
 echo "Hello world!" >> "${LOCATION_ECOASSIST_FILES}/first-startup.txt"
 
 ## clone repositories
-git clone --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "${LOCATION_ECOASSIST_FILES}/EcoAssist"
+git clone --depth 1 https://github.com/ds-hub-sochi/EcoAssist.git "${LOCATION_ECOASSIST_FILES}/EcoAssist"
 rm -rf "${LOCATION_ECOASSIST_FILES}/EcoAssist/.git"
 FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/Linux_open_EcoAssist_shortcut.desktop" # create shortcut file
 echo "[Desktop Entry]" > $FILE

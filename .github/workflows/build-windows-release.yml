@@ -33,7 +33,7 @@ jobs:
 
           echo off
           @setlocal EnableDelayedExpansion
-          
+
           @REM init environment vars
           set root=%USERPROFILE%\EcoAssist
           set conda_exe=${{ env.CONDA_DIR }}\Scripts\conda.exe
@@ -46,7 +46,7 @@ jobs:
           call "%conda_exe%" config --set ssl_verify False
           call "%conda_exe%" config --set fetch_threads 2
           call "%conda_exe%" config --show
-          
+
           @REM refresh dir
           if exist "%root%" (
               rmdir /s /q "%root%"
@@ -57,7 +57,7 @@ jobs:
           set PIP_NO_IPV6=1
           set CONDA_SSL_VERIFY=0
           set CONDA_USE_IPV4=1
-          
+
           @REM create folder structure
           mkdir "%root%"
           mkdir "%root%\envs"
@@ -68,16 +68,16 @@ jobs:
           mkdir "%root%\yolov5_versions\yolov5_old"
           mkdir "%root%\yolov5_versions\yolov5_new"
           echo Hello world! > "%root%\first-startup.txt"
-          
+
           @REM EcoAssist
-          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
+          git clone --ipv4 --depth 1 https://github.com/ds-hub-sochi/EcoAssist.git "%root%\EcoAssist"
           rmdir /s /q "%root%\EcoAssist\.git"
           move "%root%\EcoAssist\main.py" "%root%\main.py"
           set RAW_VERSION=${{ env.RELEASE_VERSION }}
           set CLEAN_VERSION=%RAW_VERSION:v=%
           echo %CLEAN_VERSION% > "%root%\EcoAssist\version.txt"
           echo EcoAssist cloned
-          
+
           @REM MegaDetector
           git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "%root%\cameratraps"
           pushd "%root%\cameratraps"
@@ -85,7 +85,7 @@ jobs:
           popd
           rmdir /s /q "%root%\cameratraps\.git"
           echo MegaDetector cloned
-          
+
           @REM YOLOv5 old
           git clone --ipv4 https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_old\yolov5"
           pushd "%root%\yolov5_versions\yolov5_old\yolov5"
@@ -93,7 +93,7 @@ jobs:
           popd
           rmdir /s /q "%root%\yolov5_versions\yolov5_old\yolov5\.git"
           echo YOLOv5 old cloned
-          
+
           @REM YOLOv5 new
           git clone --ipv4 https://github.com/ultralytics/yolov5.git "%root%\yolov5_versions\yolov5_new\yolov5"
           pushd "%root%\yolov5_versions\yolov5_new\yolov5"
@@ -101,17 +101,17 @@ jobs:
           popd
           rmdir /s /q "%root%\yolov5_versions\yolov5_new\yolov5\.git"
           echo YOLOv5 new cloned
-          
+
           @REM Human in the loop
           git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "%root%\Human-in-the-loop"
           rmdir /s /q "%root%\Human-in-the-loop\.git"
           echo Human-in-the-loop cloned
-          
+
           @REM Visualise detections
           git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
           rmdir /s /q "%root%\visualise_detection\.git"
           echo visualise_detection cloned
-          
+
           @REM MegaDetector model 5A
           curl --ipv4 -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "%root%/models\det\MegaDetector 5a\md_v5a.0.0.pt"
 
@@ -119,7 +119,7 @@ jobs:
           call "%conda_exe%" install -n base -c conda-forge mamba -y
           @REM DEBUG
           set conda_exe=${{ env.CONDA_DIR }}\condabin\mamba.bat
-          
+
           @REM env-base
           call "%conda_exe%" env create --file "%root%\cameratraps\envs\environment-detector.yml" -p "%root%\envs\env-base"
           call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 pyqt5==5.15.2 lxml
@@ -130,7 +130,7 @@ jobs:
           call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 pytorchwildlife==1.0.2.15
           call "%conda_exe%" run -p "%root%\envs\env-base" pip uninstall torch torchvision -y 
           call "%conda_exe%" run -p "%root%\envs\env-base" pip install --timeout=120 torch==2.3.1+cu118 torchvision==0.18.1+cu118 --index-url https://download.pytorch.org/whl/cu118 
-          
+
           @REM env-pytorch
           call "%conda_exe%" create -p "%root%\envs\env-pytorch" python=3.8 -y
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" "%conda_exe%" pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=11.8 -c pytorch -c nvidia -y
@@ -144,21 +144,21 @@ jobs:
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 hachoir
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 versions
           call "%conda_exe%" run -p "%root%\envs\env-pytorch" pip install --timeout=120 jsonpickle
-          
+
           @REM env-tensorflow
           call "%conda_exe%" env create --file "%root%\EcoAssist\classification_utils\envs\tensorflow-linux-windows.yml" -p "%root%\envs\env-tensorflow"
-          
+
           # @REM install PyInstaller
           # call "%conda_exe%" create -p "${{ env.CONDA_DIR }}\envs\env-fresh" python=3.8 pyinstaller -y
-          
+
           # @REM normal executable
           # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --noconsole --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
           # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION%.exe"
-          
+
           # @REM debug executable
           # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --console --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
           # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION% debug.exe"
-          
+
           @REM conda clean
           call "%conda_exe%" clean --all --yes --force-pkgs-dirs
           call "%conda_exe%" clean --all --yes
@@ -176,7 +176,7 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
-  
+
       - name: Set up Google Cloud
         uses: google-github-actions/setup-gcloud@v1
         with:
@@ -246,7 +246,7 @@ jobs:
         with:
           script-file: "install_files/windows/nsis-install-compiler.nsi"
           additional-plugin-paths: ${{ github.workspace }}/NSIS_Plugins/Plugins
-  
+
       - name: Get Upload URL for Release
         id: get_release
         uses: actions/github-script@v6
@@ -264,14 +264,14 @@ jobs:
       - name: Upload Asset to GitHub Release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ env.UPLOAD_URL }}  # Use the updated environment variable
+          upload_url: ${{ env.UPLOAD_URL }} # Use the updated environment variable
           # asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-windows.exe"
           asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
           # asset_name: "EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
           asset_name: "Windows-installer-${{ env.RELEASE_VERSION }}.exe"
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload installer EXE to Google Cloud
         shell: cmd

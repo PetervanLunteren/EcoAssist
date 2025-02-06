@@ -4913,8 +4913,8 @@ def fetch_latest_model_info():
     # and check if there are any new models the user should know about
     else:
         start_time = time.time()
-        release_info_url = "https://api.github.com/repos/PetervanLunteren/EcoAssist/releases"
-        model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/EcoAssist/main/model_info/model_info_v{corresponding_model_info_version}.json"
+        release_info_url = "https://api.github.com/repos/ds-hub-sochi/EcoAssist/releases"
+        model_info_url = f"https://raw.githubusercontent.com/ds-hub-sochi/EcoAssist/main/model_info/model_info_v{corresponding_model_info_version}.json"
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
