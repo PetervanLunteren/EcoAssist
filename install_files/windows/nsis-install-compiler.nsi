@@ -103,7 +103,7 @@ Section "Install"
 
     # Download the 7z archive
     DetailPrint "Downloading files..."
-    StrCpy $archiveUrl "https://storage.googleapis.com/github-release-files-storage/${VERSION}/windows-${VERSION}.7z"
+    StrCpy $archiveUrl "https://storage.googleapis.com/github-release-files-storage/${VERSION}/windows-${VERSION}.7z" 
     StrCpy $archiveName "$INSTDIR\windows-${VERSION}.7z"
     NSISdl::download $archiveUrl $archiveName
     # inetc::get $archiveUrl $archiveName
