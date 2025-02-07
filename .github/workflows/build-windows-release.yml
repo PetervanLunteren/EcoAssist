@@ -202,23 +202,23 @@ jobs:
       #     set LATEST_FILE_NAME=windows-latest.7z
       #     gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%LATEST_FOLDER_NAME%/%LATEST_FILE_NAME%
 
-      # - name: Get the release body
-      #   shell: pwsh
-      #   run: Invoke-RestMethod -Uri https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }} | ForEach-Object { $_.body } | Out-File -FilePath release_body.txt -Encoding utf8
+      - name: Get the release body
+        shell: pwsh
+        run: Invoke-RestMethod -Uri https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }} | ForEach-Object { $_.body } | Out-File -FilePath release_body.txt -Encoding utf8
 
-      # - name: Append link to release body
-      #   shell: pwsh
-      #   run: |
-      #     Add-Content -Path "release_body.txt" -Value '- Install for **Windows**: [windows-${{ env.RELEASE_VERSION }}.7z](https://storage.googleapis.com/${{ env.BUCKET_NAME }}/${{ env.RELEASE_VERSION }}/windows-${{ env.RELEASE_VERSION }}.7z)'
+      - name: Append link to release body
+        shell: pwsh
+        run: |
+          Add-Content -Path "release_body.txt" -Value '- Install for **Windows**: [windows-${{ env.RELEASE_VERSION }}.7z](https://storage.googleapis.com/${{ env.BUCKET_NAME }}/${{ env.RELEASE_VERSION }}/windows-${{ env.RELEASE_VERSION }}.7z)'
 
-      # - name: Update the release body
-      #   shell: cmd
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     @echo off
-      #     set RELEASE_NAME=${{ github.ref_name }}
-      #     gh release edit %RELEASE_NAME% --notes-file release_body.txt
+      - name: Update the release body
+        shell: cmd
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          @echo off
+          set RELEASE_NAME=${{ github.ref_name }}
+          gh release edit %RELEASE_NAME% --notes-file release_body.txt
 
       # - name: Install Nsis7z Plugin
       #   run: |
