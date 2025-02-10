@@ -1,5 +1,5 @@
 
-If Chrome is blocking your .exe file due to "virus detected," it means Windows Defender (or another antivirus) is preventing the download. If you trust the file source and want to proceed, here’s how you can bypass the block:
+If something is blocking the EcoAssist installer exe file due to "virus detected," it means Windows Defender (or another antivirus) is preventing the download. Here’s how you can bypass the block:
 
 **Option 1: Check Windows Defender’s Quarantine**
 1. Open Windows Security (press Win + S and search for "Windows Security").
