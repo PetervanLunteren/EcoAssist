@@ -11,8 +11,8 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM set paths
-set "ECOASSIST_GUI=%homedrive%%homepath%\EcoAssist_files\EcoAssist\EcoAssist_GUI.py"
-set "PYTHON_EXE=%homedrive%%homepath%\EcoAssist_files\envs\env-base\python.exe"
+set ECOASSIST_GUI="%homedrive%%homepath%\EcoAssist_files\EcoAssist\EcoAssist_GUI.py"
+set PYTHON_EXE="%homedrive%%homepath%\EcoAssist_files\envs\env-base\python.exe"
 
 @REM run script in either timelapse or normal mode
 if "%1" == "timelapse" (
