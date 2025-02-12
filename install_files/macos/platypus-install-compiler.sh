@@ -5,7 +5,7 @@
 # Github actions will add the version number as a first line to the script like 'VERSION="v5.109"'
 # Peter van Lunteren, 12 jan 2025
 
-URL="https://storage.googleapis.com/github-release-files-storage/${VERSION}/macos-${VERSION}.tar.xz"
+URL="https://storage.googleapis.com/github-release-files-storage/latest/macos-latest.tar.xz"
 APP_NAME="EcoAssist"
 APPLICATIONS_DIR="/Applications"
 SHORTCUT="${HOME}/Desktop/${APP_NAME}.app"
