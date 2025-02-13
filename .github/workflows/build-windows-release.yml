@@ -88,6 +88,9 @@ jobs:
         shell: cmd
         run: |
           set BUCKET_NAME=${{ env.BUCKET_NAME }}
+          echo "%BUCKET_NAME%"
+          for /f "tokens=* delims=" %%A in ('echo ${{ env.BUCKET_NAME }}') do set BUCKET_NAME=%%A
+          echo "%BUCKET_NAME%"
           set PINNED_FILE_NAME=temp.txt
           set LATEST_FILE_NAME=temp.txt
           echo gsutil cp "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/latest/%LATEST_FILE_NAME%
