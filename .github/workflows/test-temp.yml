@@ -11,7 +11,7 @@ on:
       - published
 
 jobs:
-  build-macos-release:
+  test-temp:
     runs-on: macos-15
 
     env:
