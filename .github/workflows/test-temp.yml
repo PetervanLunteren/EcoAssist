@@ -22,7 +22,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - id: release_info
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: PetervanLunteren
+          repo: EcoAssist
+
       - name: Check vars
         run: |
+          RELEASE_VERSION=${{ steps.release_info.outputs.release }}
           echo RELEASE_VERSION: $RELEASE_VERSION
 
