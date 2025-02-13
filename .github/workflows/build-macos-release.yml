@@ -346,12 +346,13 @@ jobs:
           
           # init vars
           BUCKET_NAME="${{ env.BUCKET_NAME }}"
-          # PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
+          PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
           LATEST_FOLDER_NAME="latest"
-          # PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
+          PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
           LATEST_FILE_NAME="macos-latest.tar.xz"
 
           # # upload release pinned version
+          # # feb 2025 - disabled to save sapce on github and reduce monthly costs
           # gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
           
           # upload latest release version
