@@ -4,15 +4,20 @@ It is possible to run EcoAssist in debug mode, where it'll print its output in a
 <summary><b>Windows</b></summary>
 <br>
  
-Open a fresh window of the command prompt (search start for "command prompt") and copy-paste the following line and press enter.
-```
-( "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" debug ) || ( "%homedrive%\EcoAssist_files\EcoAssist\open.bat" debug )
-```
-Now try to recreate the error and check the console output for its message.
+Navigate to `C:\Users\<username>\EcoAssist_files` and double click the `open-debug-mode.lnk` file. This opens EcoAssist in debug mode, where it logs to a terminal window. Now try to recreate the error and check the console output for its message.
+
+<img width="944" alt="Screenshot 2025-02-13 at 09 03 15" src="https://github.com/user-attachments/assets/9e8a6977-8651-4808-ad32-ffd6dbe0d1bb" />
+
+
 </details>
 <details>
 <summary><b>macOS</b></summary>
 <br>
+
+Navigate to `/Applications/EcoAssist_files` and double click the `EcoAssist <version-number> debug` file. This opens EcoAssist in debug mode, where it logs to a terminal window. Now try to recreate the error and check the console output for its message.
+
+<img width="953" alt="Screenshot 2025-02-13 at 09 07 55" src="https://github.com/user-attachments/assets/ace4f48b-a095-4678-b4b4-a5d09a19f287" />
+
  
 1. Open your `/Applications/EcoAssist.command` (or wherever you placed it) with a text editor like TextEdit or Visual Studio Code;
 2. Outcomment these lines like so:
