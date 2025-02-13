@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       info:
-        description: "Manual trigger workflow:       Selecting 'main' uploads to the official Google bucket available to users      (2) Selecting any other branch uploads to the beta-versions bucket"
+        description: "Selecting 'main' will upload to the official Google bucket. Any other branch will upload to the beta-versions bucket."
         required: false
-        default: "(dummy input field - no need to fill in)"
+        default: "[dummy input field - no need to fill in]"
   release:
     types:
       - published
