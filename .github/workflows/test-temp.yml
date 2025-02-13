@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       info:
-        description: "This is how to manually trigger the build. It will automatically fetch the latest release tag and use that. If you chose brach 'main', it will upload to the official google bucket. If you chose any other branch than 'main', it will upload to the beta-versions bucket."
+        description: "Manual trigger workflow\n - Selecting 'main' uploads to the official Google bucket\n - Selecting any other branch uploads to the beta-versions bucket\nThis is how to manually trigger the build. It will automatically fetch the latest release tag and use that. If you chose brach 'main', it will upload to the official google bucket. If you chose any other branch than 'main', it will upload to the beta-versions bucket."
         required: false
         default: "N/A"
   release:
