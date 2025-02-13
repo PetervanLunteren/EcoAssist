@@ -1,6 +1,7 @@
 
-<img width="331" alt="Screenshot 2025-02-13 at 08 10 05" src="https://github.com/user-attachments/assets/7f909601-9027-4599-b96b-24d25738ac74" />
+<img width="500" alt="Screenshot 2025-02-13 at 08 10 05" src="https://github.com/user-attachments/assets/7f909601-9027-4599-b96b-24d25738ac74" />
 
+<br>
 
 If something is blocking the EcoAssist installer exe file due to "virus detected," it means Windows Defender (or another antivirus) is preventing the download. Here’s how you can bypass the block.
 
@@ -13,6 +14,10 @@ If something is blocking the EcoAssist installer exe file due to "virus detected
 4. Look for the blocked .exe file and choose Allow on device.
 
 <img width="500" alt="Screenshot 2025-02-10 at 10 44 24" src="https://github.com/user-attachments/assets/1ef59af4-cfc1-44be-ad98-c1066f606dc3" />
+
+<br>
+
+<img width="500" alt="Screenshot 2025-02-13 at 08 11 58" src="https://github.com/user-attachments/assets/68c61c73-6cc1-4e99-97ae-a37082aec83d" />
 
 <br>
 
