@@ -3,9 +3,10 @@ name: Build Windows release
 on:
   workflow_dispatch:
     inputs:
-      tag_name:
-        description: "What is tag name of the latest release? E.g., v5.29"
-        required: true
+      info:
+        description: "Here you can manually trigger the build. ➡️ It will automatically fetch the latest release tag. ➡️ Selecting branch 'main' will upload to the official Google bucket. ➡️ Any other branch will upload to the beta-versions bucket."
+        required: false
+        default: "[dummy input field - no need to fill in]"
   release:
     types:
       - published
@@ -15,21 +16,41 @@ jobs:
     runs-on: windows-2022
 
     env:
-      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
-      BUCKET_NAME: github-release-files-storage
+      # remove if proven succesful after a release triggered job
+      # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      # BUCKET_NAME: github-release-files-storage
       CONDA_DIR: C:\Miniconda
+      BRANCH_NAME: "${{ github.ref_name }}"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # - name: Debug dependencies
-      #   shell: cmd
-      #   run: |
-      #     set root=%USERPROFILE%\EcoAssist
-      #     echo root=%root%
-      #     mkdir "%root%"
-      #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
+      - name: Get latest release tag
+        id: release_info
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+
+      - name: Set latest release tag to global
+        shell: cmd
+        run: |
+          set RELEASE_VERSION=${{ steps.release_info.outputs.release }}
+          echo RELEASE_VERSION: %RELEASE_VERSION%
+          echo RELEASE_VERSION=%RELEASE_VERSION%>> %GITHUB_ENV%
+
+      - name: Set bucket name based on chosen branch
+        shell: cmd
+        run: |
+          echo BRANCH_NAME is %BRANCH_NAME%
+          if "%BRANCH_NAME%"=="main" (
+              set "BUCKET_NAME=github-release-files-storage"
+          ) else (
+              set "BUCKET_NAME=github-release-files-storage-beta-versions"
+          )
+          echo BUCKET_NAME=%BUCKET_NAME%>> %GITHUB_ENV%
+          echo BUCKET_NAME is "%BUCKET_NAME%"
 
       - name: Install dependencies
         shell: cmd
@@ -202,15 +223,16 @@ jobs:
         with:
           project_id: github-file-storage
 
-      - name: Upload pinned 7z version to Google Cloud
-        shell: cmd
-        run: |
-          set BUCKET_NAME=${{ env.BUCKET_NAME }}
-          set PINNED_FOLDER_NAME=${{ env.RELEASE_VERSION }}
-          set LATEST_FOLDER_NAME=latest
-          set PINNED_FILE_NAME=windows-${{ env.RELEASE_VERSION }}.7z
-          set LATEST_FILE_NAME=windows-latest.7z
-          gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%PINNED_FOLDER_NAME%/%PINNED_FILE_NAME%
+      # # feb 2025 - disabled to save sapce on github and reduce monthly costs
+      # - name: Upload pinned 7z version to Google Cloud
+      #   shell: cmd
+      #   run: |
+      #     set BUCKET_NAME=${{ env.BUCKET_NAME }}
+      #     set PINNED_FOLDER_NAME=${{ env.RELEASE_VERSION }}
+      #     set LATEST_FOLDER_NAME=latest
+      #     set PINNED_FILE_NAME=windows-${{ env.RELEASE_VERSION }}.7z
+      #     set LATEST_FILE_NAME=windows-latest.7z
+      #     gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%PINNED_FOLDER_NAME%/%PINNED_FILE_NAME%
 
       - name: Upload latest 7z version to Google Cloud
         shell: cmd

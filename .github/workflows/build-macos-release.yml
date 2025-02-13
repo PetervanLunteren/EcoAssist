@@ -3,9 +3,10 @@ name: Build macOS release
 on:
   workflow_dispatch:
     inputs:
-      tag_name:
-        description: "What is tag name of the latest release? E.g., v5.29"
-        required: true
+      info:
+        description: "Here you can manually trigger the build. ➡️ It will automatically fetch the latest release tag. ➡️ Selecting branch 'main' will upload to the official Google bucket. ➡️ Any other branch will upload to the beta-versions bucket."
+        required: false
+        default: "[dummy input field - no need to fill in]"
   release:
     types:
       - published
@@ -15,18 +16,38 @@ jobs:
     runs-on: macos-15
 
     env:
-      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
-      BUCKET_NAME: github-release-files-storage
+      # can remove this if proven succesfull
+      # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      # BUCKET_NAME: github-release-files-storage
+      BRANCH_NAME: "${{ github.ref_name }}"
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # - name: Debug dependencies
-      #   run: |
-      #     root="$HOME/EcoAssist"
-      #     mkdir -p "${root}"
-      #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
+      - name: Get latest release tag
+        id: release_info
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+
+      - name: Set latest release tag to global
+        run: |
+          RELEASE_VERSION=${{ steps.release_info.outputs.release }}
+          echo RELEASE_VERSION: $RELEASE_VERSION
+          echo "RELEASE_VERSION=${{ steps.release_info.outputs.release }}" >> $GITHUB_ENV
+
+      - name: Set BUCKET_NAME based on chosen branch
+        run: |
+          echo "BRANCH_NAME is $BRANCH_NAME"
+          if [ "$BRANCH_NAME" = "main" ]; then
+            BUCKET_NAME="github-release-files-storage"
+          else
+            BUCKET_NAME="github-release-files-storage-beta-versions"
+          fi
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV 
+          echo "BUCKET_NAME is $BUCKET_NAME"
 
       - name: Install Miniconda
         run: |
@@ -194,20 +215,6 @@ jobs:
         run: |
           cd "$HOME"
           tar -caf "macos-${{ env.RELEASE_VERSION }}.tar.xz" EcoAssist_files
-
-      # - name: Upload files to Google Cloud
-      #   run: |
-      #     cd "$HOME"
-          
-      #     # init vars
-      #     BUCKET_NAME="${{ env.BUCKET_NAME }}"
-      #     PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
-      #     LATEST_FOLDER_NAME="latest"
-      #     PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
-      #     LATEST_FILE_NAME="macos-latest.tar.xz"
-
-      #     # upload release pinned version
-      #     gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
   
       # - name: Get the release body
       #   id: get_release
@@ -330,8 +337,10 @@ jobs:
           PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
           LATEST_FILE_NAME="macos-latest.tar.xz"
 
-          # upload release pinned version
-          gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
+          # # upload release pinned version
+          # # feb 2025 - disabled to save sapce on github and reduce monthly costs
+          # gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
+          
           # upload latest release version
           gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$LATEST_FOLDER_NAME/$LATEST_FILE_NAME
 
