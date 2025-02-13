@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       info:
-        description: "Selecting branch 'main' will upload to the official Google bucket. Any other branch will upload to the beta-versions bucket."
+        description: "➡️ Selecting branch 'main' will upload to the official Google bucket. ➡️ Any other branch will upload to the beta-versions bucket."
         required: false
         default: "[dummy input field - no need to fill in]"
   release:
@@ -40,11 +40,13 @@ jobs:
 
       - name: Set BUCKET_NAME based on chosen branch
         run: |
+          echo "BRANCH_NAME is $BRANCH_NAME"
           if [ "$BRANCH_NAME" = "main" ]; then
-            echo "BUCKET_NAME=github-release-files-storage" >> $GITHUB_ENV
+            BUCKET_NAME="github-release-files-storage"
           else
-            echo "BUCKET_NAME=github-release-files-storage-beta-versions" >> $GITHUB_ENV
+            BUCKET_NAME="github-release-files-storage-beta-versions"
           fi
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV 
           echo "BUCKET_NAME is $BUCKET_NAME"
 
       - name: Install Miniconda
