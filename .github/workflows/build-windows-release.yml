@@ -16,6 +16,7 @@ jobs:
     runs-on: windows-2022
 
     env:
+      # remove if proven succesful after a release triggered job
       # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
       # BUCKET_NAME: github-release-files-storage
       CONDA_DIR: C:\Miniconda
@@ -50,14 +51,6 @@ jobs:
           )
           echo BUCKET_NAME=%BUCKET_NAME%>> %GITHUB_ENV%
           echo BUCKET_NAME is "%BUCKET_NAME%"
-
-      # - name: Debug dependencies
-      #   shell: cmd
-      #   run: |
-      #     set root=%USERPROFILE%\EcoAssist
-      #     echo root=%root%
-      #     mkdir "%root%"
-      #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "%root%\visualise_detection"
 
       - name: Install dependencies
         shell: cmd
@@ -230,6 +223,7 @@ jobs:
         with:
           project_id: github-file-storage
 
+      # # feb 2025 - disabled to save sapce on github and reduce monthly costs
       # - name: Upload pinned 7z version to Google Cloud
       #   shell: cmd
       #   run: |
