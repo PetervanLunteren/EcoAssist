@@ -3,9 +3,10 @@ name: Build macOS release
 on:
   workflow_dispatch:
     inputs:
-      tag_name:
-        description: "What is tag name of the latest release? E.g., v5.29"
-        required: true
+      info:
+        description: "Selecting branch 'main' will upload to the official Google bucket. Any other branch will upload to the beta-versions bucket."
+        required: false
+        default: "[dummy input field - no need to fill in]"
   release:
     types:
       - published
@@ -15,8 +16,9 @@ jobs:
     runs-on: macos-15
 
     env:
-      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
-      BUCKET_NAME: github-release-files-storage
+      # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      # BUCKET_NAME: github-release-files-storage
+      BRANCH_NAME: "${{ github.ref_name }}"
     
     steps:
       - name: Checkout repository
@@ -27,6 +29,29 @@ jobs:
       #     root="$HOME/EcoAssist"
       #     mkdir -p "${root}"
       #     git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${root}/visualise_detection"
+
+      # get latest release tag for both release and workflow_dispatch triggered jobs
+      - name: Get latest release tag
+        id: release_info
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+
+      - name: Set latest release tag to global
+        run: |
+          RELEASE_VERSION=${{ steps.release_info.outputs.release }}
+          echo RELEASE_VERSION: $RELEASE_VERSION
+          echo "RELEASE_VERSION=${{ steps.release_info.outputs.release }}" >> $GITHUB_ENV
+
+      - name: Set BUCKET_NAME based on chosen branch
+        run: |
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "BUCKET_NAME=github-release-files-storage" >> $GITHUB_ENV
+          else
+            echo "BUCKET_NAME=github-release-files-storage-beta-versions" >> $GITHUB_ENV
+          fi
+          echo "BUCKET_NAME is $BUCKET_NAME"
 
       - name: Install Miniconda
         run: |
@@ -325,13 +350,14 @@ jobs:
           
           # init vars
           BUCKET_NAME="${{ env.BUCKET_NAME }}"
-          PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
+          # PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
           LATEST_FOLDER_NAME="latest"
-          PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
+          # PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
           LATEST_FILE_NAME="macos-latest.tar.xz"
 
-          # upload release pinned version
-          gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
+          # # upload release pinned version
+          # gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
+          
           # upload latest release version
           gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$LATEST_FOLDER_NAME/$LATEST_FILE_NAME
 
