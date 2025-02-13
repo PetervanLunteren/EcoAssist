@@ -1,0 +1,28 @@
+name: test temp
+
+on:
+  workflow_dispatch:
+    # inputs:
+    #   tag_name:
+    #     description: "What is tag name of the latest release? E.g., v5.29"
+    #     required: true
+  release:
+    types:
+      - published
+
+jobs:
+  build-macos-release:
+    runs-on: macos-15
+
+    env:
+      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      BUCKET_NAME: github-release-files-storage
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check vars
+        run: |
+          echo RELEASE_VERSION: $RELEASE_VERSION
+
