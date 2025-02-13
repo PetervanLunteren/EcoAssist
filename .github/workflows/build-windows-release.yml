@@ -49,7 +49,7 @@ jobs:
               set "BUCKET_NAME=github-release-files-storage-beta-versions"
           )
           set BUCKET_NAME=%BUCKET_NAME%
-          echo BUCKET_NAME=%BUCKET_NAME% >> %GITHUB_ENV%
+          echo BUCKET_NAME=%BUCKET_NAME%>> %GITHUB_ENV%
           echo BUCKET_NAME is "%BUCKET_NAME%"
 
       # - name: Set bucket name based on chosen branch
