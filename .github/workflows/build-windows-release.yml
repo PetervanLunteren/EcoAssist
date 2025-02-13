@@ -61,10 +61,10 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
   
-      - name: Set up Google Cloud
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: github-file-storage
+      # - name: Set up Google Cloud
+      #   uses: google-github-actions/setup-gcloud@v1
+      #   with:
+      #     project_id: github-file-storage
 
       - name: create dummy file
         run: |
@@ -76,7 +76,8 @@ jobs:
           set BUCKET_NAME=${{ env.BUCKET_NAME }}
           set PINNED_FILE_NAME=temp.txt
           set LATEST_FILE_NAME=temp.txt
-          gsutil cp "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/latest/%LATEST_FILE_NAME%
+          echo gsutil cp "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/latest/%LATEST_FILE_NAME%
+          # gsutil cp "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/latest/%LATEST_FILE_NAME%
 
 
 
