@@ -15,8 +15,9 @@ jobs:
     runs-on: macos-15
 
     env:
-      RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
-      BUCKET_NAME: github-release-files-storage
+      # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
+      # BUCKET_NAME: github-release-files-storage
+      BRANCH_NAME: "${{ github.ref_name }}"
     
     steps:
       - name: Checkout repository
@@ -28,12 +29,32 @@ jobs:
           owner: PetervanLunteren
           repo: EcoAssist
 
-      - name: Check vars
+      - name: set vars
         run: |
           RELEASE_VERSION=${{ steps.release_info.outputs.release }}
+          echo RELEASE_VERSION: $RELEASE_VERSION
+          echo "RELEASE_VERSION=${{ steps.release_info.outputs.release }}" >> $GITHUB_ENV
+
+      - name: Check vars
+        run: |
           echo RELEASE_VERSION: $RELEASE_VERSION
 
       - name: Print the ref
         run: |
           echo "Triggered from branch or tag: ${{ github.ref }}"
+
+      - name: Extract branch name
+        run: |
+          echo "Branch: ${GITHUB_REF#refs/heads/}"
+
+      - name: Set environment variable based on branch
+        run: |
+          if [ "$BRANCH_NAME" = "main" ]; then
+            echo "BUCKET_NAME=github-release-files-storage" >> $GITHUB_ENV
+          else
+            echo "BUCKET_NAME=github-release-files-storage-beta-versions" >> $GITHUB_ENV
+          fi
+      
+      - name: Print the global environment variable
+        run: echo "BUCKET_NAME is $BUCKET_NAME"
 
