@@ -33,3 +33,7 @@ jobs:
           RELEASE_VERSION=${{ steps.release_info.outputs.release }}
           echo RELEASE_VERSION: $RELEASE_VERSION
 
+      - name: Print the ref
+        run: |
+          echo "Triggered from branch or tag: ${{ github.ref }}"
+
