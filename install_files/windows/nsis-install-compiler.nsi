@@ -1,9 +1,9 @@
-# Script to create an NSIS exe to install EcoAssist on Windows
+# Script to create an NSIS exe to install AddaxAI on Windows
 # Peter van Lunteren, last edit on 6 Jan 2025
 # Var VERSION and URL will be defined by github actions by adding a line above like '!define VERSION "v6.34"'
 
 # Name and output location for the installer
-Outfile "EcoAssist-${VERSION}-installer.exe"
+Outfile "AddaxAI-${VERSION}-installer.exe"
 
 # Define variables
 Var archiveUrl
@@ -18,16 +18,16 @@ Var InstallStatus
 RequestExecutionLevel user
 
 # UI Pages
-Name "EcoAssist ${VERSION}"
+Name "AddaxAI ${VERSION}"
 !define MUI_PAGE_HEADER_TEXT "Step 1 of 3"
-!define MUI_PAGE_HEADER_SUBTEXT "Uninstalling previous EcoAssist version..."
+!define MUI_PAGE_HEADER_SUBTEXT "Uninstalling previous AddaxAI version..."
 !define MUI_FINISHPAGE_TITLE "Installation Complete!"
-!define MUI_FINISHPAGE_TEXT "EcoAssist has been successfully installed. A shortcut has been created on your desktop. The program will open when double-clicked. $\r$\n$\r$\n'$DESKTOP\EcoAssist'"
-!define MUI_FINISHPAGE_LINK "Read more on the EcoAssist website"
-!define MUI_FINISHPAGE_LINK_LOCATION "https://addaxdatascience.com/ecoassist/"
+!define MUI_FINISHPAGE_TEXT "AddaxAI has been successfully installed. A shortcut has been created on your desktop. The program will open when double-clicked. $\r$\n$\r$\n'$DESKTOP\AddaxAI'"
+!define MUI_FINISHPAGE_LINK "Read more on the AddaxAI website"
+!define MUI_FINISHPAGE_LINK_LOCATION "https://addaxdatascience.com/addaxai/"
 !define MUI_ICON "logo.ico"
-!define MUI_WELCOMEPAGE_TITLE "EcoAssist ${VERSION} installer"
-!define MUI_WELCOMEPAGE_TEXT "This install consists of three steps:$\r$\n$\r$\n   1 - Uninstall current EcoAssist version if present$\r$\n   2 - Download EcoAssist version ${VERSION}$\r$\n   3 - Extract and clean up files"
+!define MUI_WELCOMEPAGE_TITLE "AddaxAI ${VERSION} installer"
+!define MUI_WELCOMEPAGE_TEXT "This install consists of three steps:$\r$\n$\r$\n   1 - Uninstall current AddaxAI version if present$\r$\n   2 - Download AddaxAI version ${VERSION}$\r$\n   3 - Extract and clean up files"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
@@ -41,7 +41,7 @@ Section "Install"
     System::Call 'kernel32::SetThreadExecutionState(i 0x80000000|0x00000001)'
     
     # Set fixed installation directory without prompting the user
-    StrCpy $INSTDIR "$PROFILE\EcoAssist_files"
+    StrCpy $INSTDIR "$PROFILE\AddaxAI_files"
 
     # Hide progress bar
     Push "true"
@@ -57,7 +57,7 @@ Section "Install"
     RMDir /r $INSTDIR\envs\env-pytorch\Lib
     RMDir /r $INSTDIR\envs\env-pytorch\Library
     RMDir /r $INSTDIR\envs\env-pytorch
-    RMDir /r $INSTDIR\EcoAssist
+    RMDir /r $INSTDIR\AddaxAI
     RMDir /r $INSTDIR\models
     RMDir /r $INSTDIR\envs\env-tensorflow\Lib
     RMDir /r $INSTDIR\envs\env-tensorflow\Library
@@ -70,6 +70,7 @@ Section "Install"
     RMDir /r $INSTDIR\envs\env-base\Lib
     RMDir /r $INSTDIR\envs\env-base\Library
     RMDir /r $INSTDIR\envs\env-base
+    RMDir /r "$PROFILE\EcoAssist_files"
 
     ; Proceed to Success if no errors
     IfErrors 0 RemoveSuccess 
@@ -94,12 +95,15 @@ Section "Install"
     # add dir 
     CreateDirectory "$INSTDIR"
 
+    # Create junction to old EcoAssist_files directory
+    nsExec::Exec 'cmd /C mklink /J "$PROFILE\EcoAssist_files" "$PROFILE\AddaxAI_files"'
+
     # Hide progress bar
     Push "false"
     Call ShowProgressBar
 
     # adjust header
-    !insertmacro MUI_HEADER_TEXT "Step 2 of 3" "Downloading EcoAssist version ${VERSION}..."
+    !insertmacro MUI_HEADER_TEXT "Step 2 of 3" "Downloading AddaxAI version ${VERSION}..."
 
     # Download the 7z archive
     DetailPrint "Downloading files..."
@@ -146,31 +150,31 @@ Section "Install"
     DetailPrint "Installation completed successfully."
 
     ; Create a shortcut on the desktop
-    CreateShortcut "$INSTDIR\open-debug-mode.lnk" "$INSTDIR\EcoAssist\open.bat" "" "$INSTDIR\EcoAssist\install_files\windows\logo.ico" 0 SW_SHOWNORMAL
+    CreateShortcut "$INSTDIR\open-debug-mode.lnk" "$INSTDIR\AddaxAI\open.bat" "" "$INSTDIR\AddaxAI\install_files\windows\logo.ico" 0 SW_SHOWNORMAL
 
     ; create a shortcut for the desktop that executes the open.bat file without any terminal window
-    ; Create Windows_open_EcoAssist_shortcut.vbs
-    FileOpen $0 "$INSTDIR\EcoAssist\Windows_open_EcoAssist_shortcut.vbs" w
+    ; Create Windows_open_AddaxAI_shortcut.vbs
+    FileOpen $0 "$INSTDIR\AddaxAI\Windows_open_AddaxAI_shortcut.vbs" w
     FileWrite $0 "Set WinScriptHost = CreateObject($\"WScript.Shell$\")$\r$\n"
-    FileWrite $0 "WinScriptHost.Run Chr(34) & $\"$INSTDIR\EcoAssist\open.bat$\" & Chr(34), 0$\r$\n"
+    FileWrite $0 "WinScriptHost.Run Chr(34) & $\"$INSTDIR\AddaxAI\open.bat$\" & Chr(34), 0$\r$\n"
     FileWrite $0 "Set WinScriptHost = Nothing$\r$\n"
     FileClose $0
 
     ; Create CreateShortcut.vbs
-    FileOpen $0 "$INSTDIR\EcoAssist\CreateShortcut.vbs" w
+    FileOpen $0 "$INSTDIR\AddaxAI\CreateShortcut.vbs" w
     FileWrite $0 "Set oWS = WScript.CreateObject($\"WScript.Shell$\")$\r$\n"
-    FileWrite $0 "sLinkFile = $\"$DESKTOP\EcoAssist.lnk$\"$\r$\n"
+    FileWrite $0 "sLinkFile = $\"$DESKTOP\AddaxAI.lnk$\"$\r$\n"
     FileWrite $0 "Set oLink = oWS.CreateShortcut(sLinkFile)$\r$\n"
-    FileWrite $0 "oLink.TargetPath = $\"$INSTDIR\EcoAssist\Windows_open_EcoAssist_shortcut.vbs$\"$\r$\n"
-    FileWrite $0 "oLink.IconLocation = $\"$INSTDIR\EcoAssist\install_files\windows\logo.ico$\"$\r$\n"
+    FileWrite $0 "oLink.TargetPath = $\"$INSTDIR\AddaxAI\Windows_open_AddaxAI_shortcut.vbs$\"$\r$\n"
+    FileWrite $0 "oLink.IconLocation = $\"$INSTDIR\AddaxAI\install_files\windows\logo.ico$\"$\r$\n"
     FileWrite $0 "oLink.Save$\r$\n"
     FileClose $0
 
     ; Execute CreateShortcut.vbs
-    nsExec::Exec 'cscript //nologo "$INSTDIR\EcoAssist\CreateShortcut.vbs"'
+    nsExec::Exec 'cscript //nologo "$INSTDIR\AddaxAI\CreateShortcut.vbs"'
 
-    # open EcoAssist in installer mode to load all dependencies and compile script so that the users doesnt have to wait long the next time
-    nsExec::Exec '"$INSTDIR\\envs\\env-base\\python.exe" "$INSTDIR\\EcoAssist\\EcoAssist_GUI.py" "installer"'
+    # open AddaxAI in installer mode to load all dependencies and compile script so that the users doesnt have to wait long the next time
+    nsExec::Exec '"$INSTDIR\\envs\\env-base\\python.exe" "$INSTDIR\\AddaxAI\\AddaxAI_GUI.py" "installer"'
 
     ; Notify user
     DetailPrint "Shortcut created on the desktop."

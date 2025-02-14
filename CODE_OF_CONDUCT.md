@@ -1,4 +1,4 @@
-# Code of Conduct - EcoAssist
+# Code of Conduct - AddaxAI
 
 ## Our Pledge
 

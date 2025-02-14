@@ -63,7 +63,7 @@ jobs:
           echo "Using tag name ${{ env.RELEASE_VERSION }}"
         
           ### refresh root
-          root="$HOME/EcoAssist_files"
+          root="$HOME/AddaxAI_files"
           if [ -d "${root}" ]; then
               rm -rf "${root}"
               echo "$root folder removed"
@@ -88,13 +88,13 @@ jobs:
           echo "Hello world!" >> "${root}/first-startup.txt"
           
           ## clone repositories
-          git clone --ipv4 --depth 1 --branch $BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git "${root}/EcoAssist"
-          rm -rf "${root}/EcoAssist/.git"
-          mv "${root}/EcoAssist/main.py" "${root}/main.py"
+          git clone --ipv4 --depth 1 --branch $BRANCH_NAME https://github.com/PetervanLunteren/EcoAssist.git "${root}/AddaxAI"
+          rm -rf "${root}/AddaxAI/.git"
+          mv "${root}/AddaxAI/main.py" "${root}/main.py"
           RAW_VERSION=${{ env.RELEASE_VERSION }}
           CLEAN_VERSION="${RAW_VERSION#v}"
-          echo "$CLEAN_VERSION" > "${root}/EcoAssist/version.txt"
-          echo "EcoAssist cloned"
+          echo "$CLEAN_VERSION" > "${root}/AddaxAI/version.txt"
+          echo "AddaxAI cloned"
           
           git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "${root}/MegaDetector"
           git -C "${root}/MegaDetector" checkout a64a8f8c467ae6c87b5ca09f54b1abe502168b50
@@ -201,20 +201,20 @@ jobs:
 
           ### run pyinstaller from fresh environment
           $conda_exe create -p "$HOME/miniforge/envs/env-fresh" python=3.8 pyinstaller -y
-          $conda_exe run -p "$HOME/miniforge/envs/env-fresh" pyinstaller --onefile --windowed --icon="${root}/EcoAssist/imgs/logo_small_bg.icns" --distpath="${HOME}/dist" --workpath="${HOME}/build" "${root}/main.py"
+          $conda_exe run -p "$HOME/miniforge/envs/env-fresh" pyinstaller --onefile --windowed --icon="${root}/AddaxAI/imgs/logo_small_bg.icns" --distpath="${HOME}/dist" --workpath="${HOME}/build" "${root}/main.py"
          
           ### clean
           $conda_exe clean --all --yes --force-pkgs-dirs
           $conda_exe clean --all --yes
 
           ### move and rename executables
-          mv "${HOME}/dist/main" "${root}/EcoAssist ${RELEASE_VERSION} debug"      # debug executable
-          mv "${HOME}/dist/main.app" "${root}/EcoAssist ${RELEASE_VERSION}.app"    # main app executable
+          mv "${HOME}/dist/main" "${root}/AddaxAI debug"      # debug executable
+          mv "${HOME}/dist/main.app" "${root}/AddaxAI.app"    # main app executable
 
       - name: Zip folder contents
         run: |
           cd "$HOME"
-          tar -caf "macos-${{ env.RELEASE_VERSION }}.tar.xz" EcoAssist_files
+          tar -caf "macos-${{ env.RELEASE_VERSION }}.tar.xz" AddaxAI_files
   
       # - name: Get the release body
       #   id: get_release
@@ -265,12 +265,12 @@ jobs:
 
       - name: Create Installer
         run: |
-          sudo '/usr/local/share/platypus/platypus_clt' --app-icon '${{ github.workspace }}/install_files/macos/logo.icns'  --name 'EcoAssist-${{ env.RELEASE_VERSION }}-installer'  --interface-type 'Progress Bar'  --interpreter '/bin/bash'   --app-version '${{ env.RELEASE_VERSION }}'  '${{ github.workspace }}/install_files/macos/platypus-install-compiler.sh'
+          sudo '/usr/local/share/platypus/platypus_clt' --app-icon '${{ github.workspace }}/install_files/macos/logo.icns'  --name 'AddaxAI-${{ env.RELEASE_VERSION }}-installer'  --interface-type 'Progress Bar'  --interpreter '/bin/bash'   --app-version '${{ env.RELEASE_VERSION }}'  '${{ github.workspace }}/install_files/macos/platypus-install-compiler.sh'
 
       - name: Compress the macOS installer
         run: |
           cd "${{ github.workspace }}/install_files/macos"
-          zip -r "EcoAssist-${{ env.RELEASE_VERSION }}-installer.zip" "EcoAssist-${{ env.RELEASE_VERSION }}-installer.app"
+          zip -r "AddaxAI-${{ env.RELEASE_VERSION }}-installer.zip" "AddaxAI-${{ env.RELEASE_VERSION }}-installer.app"
 
       - name: Get Upload URL for Release
         id: get_upload_url
@@ -313,7 +313,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: "${{ github.workspace }}/install_files/macos/EcoAssist-${{ env.RELEASE_VERSION }}-installer.zip"
+          asset_path: "${{ github.workspace }}/install_files/macos/AddaxAI-${{ env.RELEASE_VERSION }}-installer.zip"
           asset_name: "MacOS-installer-${{ env.RELEASE_VERSION }}.zip"
           asset_content_type: application/octet-stream
         env:
@@ -350,5 +350,5 @@ jobs:
       - name:  Upload installer to Google Cloud
         run: |
           cd "${{ github.workspace }}/install_files/macos/"
-          INSTALLER="EcoAssist-${{ env.RELEASE_VERSION }}-installer.zip"
-          gsutil cp -r $INSTALLER gs://${{ env.BUCKET_NAME }}/latest/EcoAssist-latest-installer.zip
+          INSTALLER="AddaxAI-${{ env.RELEASE_VERSION }}-installer.zip"
+          gsutil cp -r $INSTALLER gs://${{ env.BUCKET_NAME }}/latest/AddaxAI-latest-installer.zip

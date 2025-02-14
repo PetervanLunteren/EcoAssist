@@ -60,7 +60,7 @@ jobs:
           @setlocal EnableDelayedExpansion
           
           @REM init environment vars
-          set root=%USERPROFILE%\EcoAssist
+          set root=%USERPROFILE%\AddaxAI
           set conda_exe=${{ env.CONDA_DIR }}\Scripts\conda.exe
           echo Using conda %conda_exe%
 
@@ -94,14 +94,14 @@ jobs:
           mkdir "%root%\yolov5_versions\yolov5_new"
           echo Hello world! > "%root%\first-startup.txt"
           
-          @REM EcoAssist
-          git clone --ipv4 --depth 1 --branch %BRANCH_NAME% https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
-          rmdir /s /q "%root%\EcoAssist\.git"
-          move "%root%\EcoAssist\main.py" "%root%\main.py"
+          @REM AddaxAI
+          git clone --ipv4 --depth 1 --branch %BRANCH_NAME% https://github.com/PetervanLunteren/EcoAssist.git "%root%\AddaxAI"
+          rmdir /s /q "%root%\AddaxAI\.git"
+          move "%root%\AddaxAI\main.py" "%root%\main.py"
           set RAW_VERSION=${{ env.RELEASE_VERSION }}
           set CLEAN_VERSION=%RAW_VERSION:v=%
-          echo %CLEAN_VERSION% > "%root%\EcoAssist\version.txt"
-          echo EcoAssist cloned
+          echo %CLEAN_VERSION% > "%root%\AddaxAI\version.txt"
+          echo AddaxAI cloned
           
           @REM MegaDetector
           git clone --ipv4 https://github.com/agentmorris/MegaDetector.git "%root%\cameratraps"
@@ -193,12 +193,12 @@ jobs:
           # call "%conda_exe%" create -p "${{ env.CONDA_DIR }}\envs\env-fresh" python=3.8 pyinstaller -y
           
           # @REM normal executable
-          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --noconsole --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
-          # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION%.exe"
+          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --noconsole --icon="%root%\AddaxAI\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
+          # move "%USERPROFILE%\dist\main.exe" "%root%/AddaxAI %RELEASE_VERSION%.exe"
           
           # @REM debug executable
-          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --console --icon="%root%\EcoAssist\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
-          # move "%USERPROFILE%\dist\main.exe" "%root%/EcoAssist %RELEASE_VERSION% debug.exe"
+          # call "%conda_exe%" run -p "${{ env.CONDA_DIR }}\envs\env-fresh" pyinstaller --onefile --console --icon="%root%\AddaxAI\imgs\logo_small_bg.ico" --distpath="%USERPROFILE%\dist" --workpath="%USERPROFILE%\build" "%root%\main.py"
+          # move "%USERPROFILE%\dist\main.exe" "%root%/AddaxAI %RELEASE_VERSION% debug.exe"
           
           @REM conda clean
           call "%conda_exe%" clean --all --yes --force-pkgs-dirs
@@ -211,7 +211,7 @@ jobs:
       - name: Create archive
         shell: cmd
         run: |
-          "C:\Program Files\7-Zip\7z.exe" a -t7z -mx9 "windows-${{ env.RELEASE_VERSION }}.7z" "%USERPROFILE%\EcoAssist\*"
+          "C:\Program Files\7-Zip\7z.exe" a -t7z -mx9 "windows-${{ env.RELEASE_VERSION }}.7z" "%USERPROFILE%\AddaxAI\*"
 
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v1
@@ -272,36 +272,36 @@ jobs:
 
       - name: Install Nsis7z Plugin
         run: |
-          # Set the maximum number of retries
-          MAX_RETRIES=3
-          RETRY_COUNT=0
-      
-          # Retry logic for downloading and extracting
+          @echo off
+          SETLOCAL ENABLEDELAYEDEXPANSION
+          SET MAX_RETRIES=3
+          SET RETRY_COUNT=0
+
           :retry
-          echo "Attempting download and extraction. Try #$((RETRY_COUNT + 1))..."
-      
-          # Download the file
+          echo Attempting download and extraction. Try !RETRY_COUNT!...
+
+          :: Download the file
           curl --ipv4 --retry 5 -L -o "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/9/93/Nsis7z.zip"
           dir "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
-      
-          # Try to extract the file
+
+          :: Try to extract the file
           7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
-          
-          # Check if extraction was successful
+
+          :: Check if extraction was successful
           IF %ERRORLEVEL% NEQ 0 (
-            echo "Extraction failed, retrying download..."
-            # Remove the corrupted or invalid zip file
-            del "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
-            SET /A RETRY_COUNT+=1
-            IF %RETRY_COUNT% LSS %MAX_RETRIES% (
-              goto retry
-            ) ELSE (
-              echo "Failed to download and extract after $MAX_RETRIES attempts. Exiting."
-              exit 1
-            )
+              echo Extraction failed, retrying download...
+              del "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+              SET /A RETRY_COUNT+=1
+              IF !RETRY_COUNT! LSS %MAX_RETRIES% (
+                  goto retry
+              ) ELSE (
+                  echo Failed to download and extract after %MAX_RETRIES% attempts. Exiting.
+                  EXIT /B 1
+              )
           ) ELSE (
-            echo "Extraction succeeded."
+              echo Extraction succeeded.
           )
+          ENDLOCAL
         shell: cmd
 
       - name: Install Inetc Plugin
@@ -368,7 +368,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
+          asset_path: "install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe"
           asset_name: "Windows-installer-${{ env.RELEASE_VERSION }}.exe"
           asset_content_type: application/octet-stream
         env:
@@ -377,5 +377,5 @@ jobs:
       - name: Upload installer EXE to Google Cloud
         shell: cmd
         run: |
-          set INSTALLER=${{ github.workspace }}/install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe
+          set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
           gsutil cp -r "%INSTALLER%" gs://${{ env.BUCKET_NAME }}/latest/windows-installer-latest.exe

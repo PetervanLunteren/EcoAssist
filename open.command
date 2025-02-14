@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-### OSX and Linux commands to open the EcoAssist application https://github.com/PetervanLunteren/EcoAssist
-### This is a script to open EcoAssist for Linux users. It used to be also for mac users, but that is
+### OSX and Linux commands to open the AddaxAI application https://github.com/PetervanLunteren/AddaxAI
+### This is a script to open AddaxAI for Linux users. It used to be also for mac users, but that is
 ### now wrapped in a Github actions with Platypus install and PyInstaller executable. The MacOS code is
 ### still in here, so lots of redundant code...
 ### Peter van Lunteren, 18 Jan 2025 (latest edit)
@@ -23,20 +23,20 @@ fi
 
 # set location var
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-  LOCATION_ECOASSIST_FILES="/Applications/.EcoAssist_files"
+  LOCATION_ADDAXAI_FILES="/Applications/.AddaxAI_files"
 elif [ "$PLATFORM" = "Linux" ]; then
-  LOCATION_ECOASSIST_FILES="$HOME/.EcoAssist_files"
+  LOCATION_ADDAXAI_FILES="$HOME/.AddaxAI_files"
 fi
 
 # set variables
-CONDA_DIR="${LOCATION_ECOASSIST_FILES}/miniforge"
-ECOASSISTCONDAENV="${CONDA_DIR}/envs/ecoassistcondaenv-base"
-PIP="${ECOASSISTCONDAENV}/bin/pip"
+CONDA_DIR="${LOCATION_ADDAXAI_FILES}/miniforge"
+ADDAXAICONDAENV="${CONDA_DIR}/envs/addaxaicondaenv-base"
+PIP="${ADDAXAICONDAENV}/bin/pip"
 HOMEBREW_DIR="/opt/homebrew"
 
 # log output to logfiles
-exec 1> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stdout.txt
-exec 2> $LOCATION_ECOASSIST_FILES/EcoAssist/logfiles/stderr.txt
+exec 1> $LOCATION_ADDAXAI_FILES/AddaxAI/logfiles/stdout.txt
+exec 2> $LOCATION_ADDAXAI_FILES/AddaxAI/logfiles/stderr.txt
 
 # timestamp and log the start
 START_DATE=`date`
@@ -48,9 +48,9 @@ UNAME_A=`uname -a`
 if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
   MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
 fi
-FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ECOASSIST_FILES`
-FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ECOASSIST_FILES/*`
-FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ECOASSIST_FILES/*/*`
+FILE_SIZES_DEPTH_0=`du -sh $LOCATION_ADDAXAI_FILES`
+FILE_SIZES_DEPTH_1=`du -sh $LOCATION_ADDAXAI_FILES/*`
+FILE_SIZES_DEPTH_2=`du -sh $LOCATION_ADDAXAI_FILES/*/*`
 echo "uname -a:"
 echo ""
 echo "$UNAME_A"
@@ -75,21 +75,21 @@ echo "$FILE_SIZES_DEPTH_2"
 echo ""
 
 # change directory
-cd $LOCATION_ECOASSIST_FILES || { echo "Could not change directory to EcoAssist_files. Command could not be run. Did you change the name or folder structure since installing EcoAssist?"; exit 1; }
+cd $LOCATION_ADDAXAI_FILES || { echo "Could not change directory to AddaxAI_files. Command could not be run. Did you change the name or folder structure since installing AddaxAI?"; exit 1; }
 
 # activate conda env
-source "${LOCATION_ECOASSIST_FILES}/miniforge/etc/profile.d/conda.sh"
-source "${LOCATION_ECOASSIST_FILES}/miniforge/bin/activate"
+source "${LOCATION_ADDAXAI_FILES}/miniforge/etc/profile.d/conda.sh"
+source "${LOCATION_ADDAXAI_FILES}/miniforge/bin/activate"
 export PATH="${CONDA_DIR}/bin":$PATH
-conda activate $ECOASSISTCONDAENV
+conda activate $ADDAXAICONDAENV
 
 # path to python exe
-PATH_TO_PYTHON="${ECOASSISTCONDAENV}/bin/"
+PATH_TO_PYTHON="${ADDAXAICONDAENV}/bin/"
 echo "Path to python: $PATH_TO_PYTHON"
 echo ""
 
 # add to PYTHONPATH
-export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5:$PWD/EcoAssist"
+export PYTHONPATH="$PYTHONPATH:$PATH_TO_PYTHON:$PWD/cameratraps:$PWD/ai4eutils:$PWD/yolov5:$PWD/AddaxAI"
 echo "PYHTONPATH=$PYTHONPATH"
 echo ""
 
@@ -109,7 +109,7 @@ echo "python location: $PYLOCATION"
 echo ""
 
 # run script
-"${PATH_TO_PYTHON}/python" EcoAssist/EcoAssist_GUI.py
+"${PATH_TO_PYTHON}/python" AddaxAI/AddaxAI_GUI.py
 
 # timestamp and log the end
 END_DATE=`date`
