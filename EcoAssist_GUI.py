@@ -5,7 +5,8 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 28 Jan 2024
 
-# TODO: Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
+# TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
+# TODO: PYINSTALLER - Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
 # TODO: RESIZING - I think I figured out why we get that weird window resizing in EcoAssist, e.g., when switching to Advanced mode. Windows, as part of its Dispay settings, lets you set a Scale option. As I have two high-res displays, my scale setting (recommended by Windows) is 150%. While the initial GUI window shown in Python seems to  follow that scale setting, switching to advanced mode does not, i.e., the window is large (to fit the scaled graphics) but the contents are unscaled.
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
