@@ -123,13 +123,17 @@ with open(os.path.join(EcoAssist_files, 'EcoAssist', 'version.txt'), 'r') as fil
     current_EA_version = file.read().strip()
 corresponding_model_info_version = "5"
 
-# colors and images
-EA_blue_color = '#3B8ED0'
-EA_green_color = '#96CF7A'
-PIL_gradient = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "gradient.png"))
-PIL_logo = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
-PIL_advanc_top_banner = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "advanc_top_banner.png"))
-PIL_simple_top_banner = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "simple_top_banner.png"))
+# colors
+# most of the colors are set in the ./themes/addaxai.json file
+green_primary = '#0B6065'
+green_secondary = '#073d40'
+yellow_primary = '#fdfae7'
+yellow_secondary = '#F0EEDC'
+yellow_tertiary = '#E4E1D0'
+
+# images
+PIL_sidebar = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "side-bar.png"))
+PIL_logo_incl_text = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "square_logo_incl_text.png"))
 PIL_checkmark = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "checkmark.png"))
 PIL_dir_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "image-gallery.png"))
 PIL_mdl_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "tech.png"))
@@ -1568,7 +1572,7 @@ def produce_plots(results_dir):
         if cancel_var: return
 
     # add ecoassist logo
-    logo_for_graphs = PIL_logo.resize((60, 60))
+    logo_for_graphs = PIL_logo_incl_text.resize((int(LOGO_WIDTH/1.2), int(LOGO_HEIGHT/1.2)))
     for root, dirs, files in os.walk(plots_dir):
         for file in files:
             if file.endswith(".png"):
@@ -1661,7 +1665,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # explenation frame
     hitl_explenation_frame = LabelFrame(hitl_progress_window, text=[" Explanation ", " Explicación "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_explenation_frame.configure(font=(text_font, 15, "bold"))
     hitl_explenation_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
     hitl_explenation_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1684,7 +1688,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # shortcuts frame
     hitl_shortcuts_frame = LabelFrame(hitl_progress_window, text=[" Shortcuts ", " Atajos "][lang_idx],
-                                        pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                        pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_shortcuts_frame.configure(font=(text_font, 15, "bold"))
     hitl_shortcuts_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
     hitl_shortcuts_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1700,7 +1704,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # numbers frame
     hitl_stats_frame = LabelFrame(hitl_progress_window, text=[" Progress ", " Progreso "][lang_idx],
-                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_stats_frame.configure(font=(text_font, 15, "bold"))
     hitl_stats_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
     hitl_stats_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1897,7 +1901,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             # button frame
             hitl_final_actions_frame = LabelFrame(hitl_final_window, text=[" Do you want to export these verified images as training data? ",
                                                                            " ¿Quieres exportar estas imágenes verificadas como datos de entrenamiento? "][lang_idx],
-                                                                           pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                                                           pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
             hitl_final_actions_frame.configure(font=(text_font, 15, "bold"))
             hitl_final_actions_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
             hitl_final_actions_frame.columnconfigure(0, weight=1, minsize=115)
@@ -3478,7 +3482,7 @@ def produce_graph(file_list_txt = None, dir = None):
         classes = list(count_dict.keys())
         counts = list(count_dict.values())
         fig = plt.figure(figsize = (10, 5))
-        plt.bar(classes, counts, width = 0.4)
+        plt.bar(classes, counts, width = 0.4, color=green_primary)
         plt.ylabel(["No. of instances verified", "No de instancias verificadas"][lang_idx])
         plt.close()
 
@@ -3874,7 +3878,7 @@ def open_hitl_settings_window():
 
     # img selection frame
     hitl_img_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Image selection criteria ", " Criterios de selección de imágenes "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_img_selection_frame.configure(font=(text_font, 15, "bold"))
     hitl_img_selection_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
     hitl_img_selection_frame.columnconfigure(0, weight=1, minsize=50)
@@ -3927,7 +3931,7 @@ def open_hitl_settings_window():
 
     # ann selection frame
     hitl_ann_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Annotation selection criteria ", " Criterios de selección de anotaciones "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_ann_selection_frame.configure(font=(text_font, 15, "bold"))
     hitl_ann_selection_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
     hitl_ann_selection_frame.columnconfigure(0, weight=1, minsize=50)
@@ -3998,7 +4002,7 @@ def open_hitl_settings_window():
         min_conf = DoubleVar(value = 0.2)
         max_conf = DoubleVar(value = 1.0)
         fig = plt.figure(figsize = (2, 0.3))
-        plt.hist(confs[k], bins = 10, range = (0,1))
+        plt.hist(confs[k], bins = 10, range = (0,1), color=green_primary, rwidth=0.8)
         plt.xticks([])
         plt.yticks([])
         dist_graph = FigureCanvasTkAgg(fig, frame)
@@ -4092,7 +4096,7 @@ def open_hitl_settings_window():
 
     # button frame
     hitl_test_frame = LabelFrame(hitl_settings_main_frame, text=[" Actions ", " Acciones "][lang_idx],
-                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_test_frame.configure(font=(text_font, 15, "bold"))
     hitl_test_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
     hitl_test_frame.columnconfigure(0, weight=1, minsize=115)
@@ -5465,7 +5469,7 @@ class ModelDownloadProgressWindow:
         self.pbr.set(percentage)
         self.per.configure(text = f" {round(percentage * 100)}% ")
         if percentage > 0.5:
-            self.per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+            self.per.configure(fg_color=(green_primary, "#1F6BA5"))
         else:
             self.per.configure(fg_color=("#949BA2", "#4B4D50"))
         self.dm_root.update()
@@ -5811,7 +5815,7 @@ def show_result_info(file_path):
     rs_root = customtkinter.CTkToplevel(root)
     rs_root.title("Results - quick view")
     rs_root.geometry("+10+10")
-    result_bg_image = customtkinter.CTkImage(PIL_gradient, size=(RESULTS_WINDOW_WIDTH, RESULTS_WINDOW_HEIGHT))
+    result_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(RESULTS_WINDOW_WIDTH, RESULTS_WINDOW_HEIGHT))
     result_bg_image_label = customtkinter.CTkLabel(rs_root, image=result_bg_image)
     result_bg_image_label.grid(row=0, column=0)
     result_main_frame = customtkinter.CTkFrame(rs_root, corner_radius=0, fg_color = 'transparent')
@@ -6459,7 +6463,7 @@ class ProgressWindow:
                 self.img_det_pbr.set(percentage)
                 self.img_det_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_det_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_det_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_det_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_det_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6509,7 +6513,7 @@ class ProgressWindow:
                 self.img_cls_pbr.set(percentage)
                 self.img_cls_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_cls_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_cls_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_cls_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_cls_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6576,7 +6580,7 @@ class ProgressWindow:
                 self.vid_det_pbr.set(percentage)
                 self.vid_det_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_det_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_det_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_det_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 if frame_video_choice == "frame":
@@ -6633,7 +6637,7 @@ class ProgressWindow:
                 self.vid_cls_pbr.set(percentage)
                 self.vid_cls_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_cls_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_cls_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_cls_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_cls_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6691,7 +6695,7 @@ class ProgressWindow:
                 self.img_pst_pbr.set(percentage)
                 self.img_pst_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_pst_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_pst_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_pst_ela_val.configure(text = time_ela)
@@ -6724,7 +6728,7 @@ class ProgressWindow:
                 self.vid_pst_pbr.set(percentage)
                 self.vid_pst_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_pst_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_pst_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_pst_ela_val.configure(text = time_ela)
@@ -6757,7 +6761,7 @@ class ProgressWindow:
                 self.plt_pbr.set(percentage)
                 self.plt_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.plt_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.plt_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.plt_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.plt_ela_val.configure(text = time_ela)
@@ -7082,10 +7086,10 @@ def abs_paths_warning():
     global shown_abs_paths_warning
     if var_abs_paths.get() and shown_abs_paths_warning:
         mb.showinfo(warning_txt[lang_idx], ["It is not recommended to use absolute paths in the output file. Third party software (such "
-                    "as Timelapse, Agouti etc.) will not be able to read the json file if the paths are absolute. Only enable"
+                    "as Timelapse) will not be able to read the json file if the paths are absolute. Only enable"
                     " this option if you know what you are doing.",
-                    "No se recomienda utilizar rutas absolutas en el archivo de salida. Software de terceros (como Timelapse, "
-                    "Agouti etc.) no podrán leer el archivo json si las rutas son absolutas. Sólo active esta opción si sabe lo"
+                    "No se recomienda utilizar rutas absolutas en el archivo de salida. Software de terceros (como Timelapse"
+                    ") no podrán leer el archivo json si las rutas son absolutas. Sólo active esta opción si sabe lo"
                     " que está haciendo."][lang_idx])
         shown_abs_paths_warning = False
 
@@ -7207,7 +7211,7 @@ def complete_frame(frame):
     # adjust frames
     frame.configure(relief = 'groove')
     if any_step:
-        frame.configure(fg='#579F2D')
+        frame.configure(fg=green_primary)
     if snd_step:
         cls_frame.configure(relief = 'groove')
         img_frame.configure(relief = 'groove')
@@ -7230,7 +7234,7 @@ def complete_frame(frame):
         # the rest
         if not any_step:
             # sub frames of fth_step only
-            frame.configure(fg='#579F2D')
+            frame.configure(fg=green_primary)
 
         # add check mark
         lbl_check_mark = Label(frame, image=check_mark_two_rows)
@@ -7258,7 +7262,7 @@ def enable_frame(frame):
     # all frames
     frame.configure(relief = 'solid')
     if any_step:
-        frame.configure(fg=EA_blue_color)
+        frame.configure(fg=green_primary)
     if snd_step:
         toggle_cls_frame()
         cls_frame.configure(relief = 'solid')
@@ -7360,7 +7364,7 @@ def resize_canvas_to_content():
     canvas_height = min(canvas_required_height, canvas_max_height, 800)
     deploy_canvas.configure(width = canvas_required_width, height = canvas_height)
     bg_height = canvas_height + height_logo + ADV_EXTRA_GRADIENT_HEIGHT
-    new_advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, bg_height))
+    new_advanc_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(ADV_WINDOW_WIDTH, bg_height))
     advanc_bg_image_label.configure(image=new_advanc_bg_image)
 
 # functions to delete the grey text in the entry boxes for the...
@@ -7419,8 +7423,8 @@ def sponsor_project():
 class GreyTopButton(customtkinter.CTkButton):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(fg_color = ("#DBDBDB", "#333333"),
-                       hover_color = ("#CFCFCF", "#2B2B2B"),
+        self.configure(fg_color = (yellow_secondary, "#333333"),
+                       hover_color = (yellow_tertiary, "#2B2B2B"),
                        text_color = ("black", "white"),
                        height = 10,
                        width = 140,
@@ -7524,11 +7528,12 @@ if os.name == "nt": # windows
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 699
-    ADV_EXTRA_GRADIENT_HEIGHT = 78
+    ADV_EXTRA_GRADIENT_HEIGHT = 98
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
@@ -7551,11 +7556,12 @@ elif sys.platform == "linux" or sys.platform == "linux2": # linux
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 683
-    ADV_EXTRA_GRADIENT_HEIGHT = 70
+    ADV_EXTRA_GRADIENT_HEIGHT = 90
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
@@ -7578,12 +7584,13 @@ else: # macOS
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 696
-    ADV_EXTRA_GRADIENT_HEIGHT = 110
-    ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
+    ADV_EXTRA_GRADIENT_HEIGHT = 130
+    ADV_TOP_BANNER_WIDTH_FACTOR = 23.2
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
@@ -7593,33 +7600,39 @@ else: # macOS
 
 # TKINTER MAIN WINDOW 
 root = customtkinter.CTk()
-EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
+EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "square_logo_excl_text.png"))
 root.iconphoto(True, EcoAssist_icon_image)
-s = ttk.Style(root)
-s.configure("TNotebook", tabposition='n')
 root.withdraw()
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
 url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 italic_label_font = customtkinter.CTkFont(family='CTkFont', size=14, slant='italic')
+
+# set the global appearance for the app
+customtkinter.set_appearance_mode("light")
+customtkinter.set_default_color_theme(os.path.join(EcoAssist_files, "EcoAssist", "themes", "addaxai.json"))
 
 # ADVANCED MODE WINDOW 
 advanc_mode_win = customtkinter.CTkToplevel(root)
 advanc_mode_win.title(f"EcoAssist v{current_EA_version} - Advanced mode")
 advanc_mode_win.geometry("+20+20")
 advanc_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
-advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, 10))
+advanc_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(ADV_WINDOW_WIDTH, 10))
 advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode_win, image=advanc_bg_image)
 advanc_bg_image_label.grid(row=0, column=0)
-advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent')
+advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent', bg_color = yellow_primary)
 advanc_main_frame.grid(row=0, column=0, sticky="ns")
 tabControl = ttk.Notebook(advanc_main_frame)
 advanc_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
-logoImage = customtkinter.CTkImage(PIL_logo, size=(LOGO_SIZE, LOGO_SIZE))
+logoImage = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(advanc_main_frame, text="", image = logoImage).grid(column=0, row=0, columnspan=2, sticky='', pady=(PADY, 0), padx=0)
-adv_top_banner = customtkinter.CTkImage(PIL_advanc_top_banner, size=(LOGO_SIZE * ADV_TOP_BANNER_WIDTH_FACTOR, LOGO_SIZE))
+adv_top_banner = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(advanc_main_frame, text="", image = adv_top_banner).grid(column=0, row=0, columnspan=2, sticky='ew', pady=(PADY, 0), padx=0)
+adv_spacer_top = customtkinter.CTkFrame(advanc_main_frame, height=PADY, fg_color=yellow_primary)
+adv_spacer_top.grid(column=0, row=1, columnspan=2, sticky='ew')
+adv_spacer_bottom = customtkinter.CTkFrame(advanc_main_frame, height=PADY, fg_color=yellow_primary)
+adv_spacer_bottom.grid(column=0, row=5, columnspan=2, sticky='ew')
 
 # prepare check mark for later use
 check_mark_one_row = PIL_checkmark.resize((20, 20), Image.Resampling.LANCZOS)
@@ -7642,9 +7655,9 @@ adv_btn_reset_values.grid(row=0, column=0, padx=PADX, pady=(0, 0), columnspan = 
 
 # about
 adv_abo_lbl_txt = ["By Addax Data Science. More conservation technology? Visit", "Creado por Addax Data Science. ¿Más tecnología de conservación? Visite"]
-adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
+adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE), fg="black", bg = yellow_primary)
 adv_abo_lbl.grid(row=6, column=0, columnspan = 2, sticky="")
-adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
+adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1), fg=green_primary, bg =yellow_primary)
 adv_abo_lbl_link.grid(row=7, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 adv_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
@@ -7674,13 +7687,13 @@ about_tab_text = ['About', 'Acerca de']
 tabControl.add(about_tab, text=about_tab_text[lang_idx])
 
 # grid
-tabControl.grid(column=0, row=1, sticky="ns", pady = 0)
+tabControl.grid(column=0, row=2, sticky="ns", pady = 0)
 
 #### deploy tab
 ### first step
 fst_step_txt = ['Step 1: Select folder', 'Paso 1: Seleccione carpeta']
 row_fst_step = 1
-fst_step = LabelFrame(deploy_scrollable_frame, text=" " + fst_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+fst_step = LabelFrame(deploy_scrollable_frame, text=" " + fst_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 fst_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fst_step.grid(column=0, row=row_fst_step, columnspan=1, sticky='ew')
 fst_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -7701,7 +7714,7 @@ btn_choose_folder.grid(row=row_choose_folder, column=1, sticky='nesw', padx=5)
 ### second step
 snd_step_txt = ['Step 2: Analysis', 'Paso 2: Análisis']
 row_snd_step = 2
-snd_step = LabelFrame(deploy_scrollable_frame, text=" " + snd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+snd_step = LabelFrame(deploy_scrollable_frame, text=" " + snd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 snd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 snd_step.grid(column=0, row=row_snd_step, sticky='nesw')
 snd_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -7725,7 +7738,7 @@ var_det_model_path.set(global_vars["var_det_model_path"])
 dpd_model = OptionMenu(snd_step, var_det_model, *dpd_options_model[lang_idx], command=model_options)
 dpd_model.configure(width=1)
 dpd_model.grid(row=row_model, column=1, sticky='nesw', padx=5)
-dsp_model = Label(master=snd_step, textvariable=var_det_model_short, fg=EA_blue_color)
+dsp_model = Label(master=snd_step, textvariable=var_det_model_short, fg=green_primary)
 if var_det_model_short.get() != "":
     dsp_model.grid(column=0, row=row_model, sticky='e')
 
@@ -7778,7 +7791,7 @@ if var_cls_model.get() not in none_txt:
 else:
     dsp_choose_classes = Label(cls_frame, text= "")
 dsp_choose_classes.grid(row=row_choose_classes, column=0, sticky='e', padx=0)
-dsp_choose_classes.configure(fg=EA_blue_color)
+dsp_choose_classes.configure(fg=green_primary)
 
 # threshold to classify detections
 lbl_cls_detec_thresh_txt = ["Detection confidence threshold", "Umbral de confianza de detección"]
@@ -7793,7 +7806,7 @@ scl_cls_detec_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orien
 scl_cls_detec_thresh.grid(row=row_cls_detec_thresh, column=1, sticky='ew', padx=10)
 dsp_cls_detec_thresh = Label(cls_frame, textvariable=var_cls_detec_thresh)
 dsp_cls_detec_thresh.grid(row=row_cls_detec_thresh, column=0, sticky='e', padx=0)
-dsp_cls_detec_thresh.configure(fg=EA_blue_color)
+dsp_cls_detec_thresh.configure(fg=green_primary)
 
 # threshold accept identifications
 lbl_cls_class_thresh_txt = ["Classification confidence threshold", "Umbral de confianza de la clasificación"]
@@ -7808,7 +7821,7 @@ scl_cls_class_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orien
 scl_cls_class_thresh.grid(row=row_cls_class_thresh, column=1, sticky='ew', padx=10)
 dsp_cls_class_thresh = Label(cls_frame, textvariable=var_cls_class_thresh)
 dsp_cls_class_thresh.grid(row=row_cls_class_thresh, column=0, sticky='e', padx=0)
-dsp_cls_class_thresh.configure(fg=EA_blue_color)
+dsp_cls_class_thresh.configure(fg=green_primary)
 
 # Smoothen results
 lbl_smooth_cls_animal_txt = ["Smooth confidence scores per sequence", "Suavizar puntuaciones por secuencia"]
@@ -7827,7 +7840,7 @@ lbl_exclude_subs = Label(snd_step, text=lbl_exclude_subs_txt[lang_idx], width=1,
 lbl_exclude_subs.grid(row=row_exclude_subs, sticky='nesw', pady=2)
 var_exclude_subs = BooleanVar()
 var_exclude_subs.set(global_vars['var_exclude_subs'])
-chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w")
+chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w", selectcolor=green_primary)
 chb_exclude_subs.grid(row=row_exclude_subs, column=1, sticky='nesw', padx=5)
 
 # use custom image size
@@ -7986,7 +7999,7 @@ btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='
 ### human-in-the-loop step
 trd_step_txt = ["Step 3: Annotation (optional)", "Paso 3: Anotación (opcional)"]
 trd_step_row = 1
-trd_step = LabelFrame(deploy_scrollable_frame, text=" " + trd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+trd_step = LabelFrame(deploy_scrollable_frame, text=" " + trd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 trd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 trd_step.grid(column=1, row=trd_step_row, sticky='nesw')
 trd_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -8003,7 +8016,7 @@ btn_hitl_main.grid(row=row_hitl_main, column=1, sticky='nesw', padx=5)
 ### fourth step
 fth_step_txt = ["Step 4: Post-processing (optional)", "Paso 4: Post-Procesado (opcional)"]
 fth_step_row = 2
-fth_step = LabelFrame(deploy_scrollable_frame, text=" " + fth_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+fth_step = LabelFrame(deploy_scrollable_frame, text=" " + fth_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 fth_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fth_step.grid(column=1, row=fth_step_row, sticky='nesw')
 fth_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -8017,7 +8030,7 @@ lbl_output_dir.grid(row=row_output_dir, sticky='nesw', pady=2)
 var_output_dir = StringVar()
 var_output_dir.set("")
 var_output_dir_short = StringVar()
-dsp_output_dir = Label(master=fth_step, textvariable=var_output_dir_short, fg=EA_blue_color)
+dsp_output_dir = Label(master=fth_step, textvariable=var_output_dir_short, fg=green_primary)
 btn_output_dir = Button(master=fth_step, text=browse_txt[lang_idx], width=1, command=lambda: browse_dir(var_output_dir, var_output_dir_short, dsp_output_dir, 25, row_output_dir, 0, 'e'))
 btn_output_dir.grid(row=row_output_dir, column=1, sticky='nesw', padx=5)
 
@@ -8158,7 +8171,7 @@ var_thresh.set(global_vars['var_thresh'])
 scl_thresh = Scale(fth_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_thresh, showvalue=0, width=10, length=1)
 scl_thresh.grid(row=row_lbl_thresh, column=1, sticky='ew', padx=10)
 dsp_thresh = Label(fth_step, textvariable=var_thresh)
-dsp_thresh.configure(fg=EA_blue_color)
+dsp_thresh.configure(fg=green_primary)
 dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
@@ -8622,6 +8635,10 @@ mdl_image = customtkinter.CTkImage(PIL_mdl_image, size=(ICON_SIZE, ICON_SIZE))
 spp_image = customtkinter.CTkImage(PIL_spp_image, size=(ICON_SIZE, ICON_SIZE))
 run_image = customtkinter.CTkImage(PIL_run_image, size=(ICON_SIZE, ICON_SIZE))
 
+# set the global appearance for the app
+customtkinter.set_appearance_mode("light")
+customtkinter.set_default_color_theme(os.path.join(EcoAssist_files, "EcoAssist", "themes", "addaxai.json"))
+
 # set up window
 simple_mode_win = customtkinter.CTkToplevel(root)
 simple_mode_win.title(f"EcoAssist v{current_EA_version} - Simple mode")
@@ -8629,7 +8646,7 @@ simple_mode_win.geometry("+20+20")
 simple_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
 simple_mode_win.columnconfigure(0, weight=1, minsize=500)
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
-simple_bg_image = customtkinter.CTkImage(PIL_gradient, size=(SIM_WINDOW_WIDTH, SIM_WINDOW_HEIGHT))
+simple_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(SIM_WINDOW_WIDTH, SIM_WINDOW_HEIGHT))
 simple_bg_image_label = customtkinter.CTkLabel(simple_mode_win, image=simple_bg_image)
 simple_bg_image_label.grid(row=0, column=0)
 simple_main_frame = customtkinter.CTkFrame(simple_mode_win, corner_radius=0, fg_color = 'transparent')
@@ -8637,7 +8654,7 @@ simple_main_frame.grid(row=0, column=0, sticky="ns")
 simple_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
-sim_top_banner = customtkinter.CTkImage(PIL_simple_top_banner, size=(LOGO_SIZE * SIM_TOP_BANNER_WIDTH_FACTOR, LOGO_SIZE))
+sim_top_banner = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(simple_main_frame, text="", image = sim_top_banner).grid(column=0, row=0, columnspan=2, sticky='ew', pady=(PADY, 0), padx=0)
 
 # top buttons
@@ -8653,7 +8670,7 @@ sim_btn_reset_values.grid(row=0, column=0, padx=PADX, pady=(0, 0), columnspan = 
 
 # choose folder
 sim_dir_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_dir_frm_1.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+sim_dir_frm_1.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_dir_img_widget = customtkinter.CTkLabel(sim_dir_frm_1, text="", image = dir_image, compound = 'left')
 sim_dir_img_widget.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_dir_frm = MySubFrame(master=sim_dir_frm_1)
@@ -8673,7 +8690,7 @@ sim_dir_pth.pack()
 
 # choose model
 sim_mdl_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_mdl_frm_1.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_mdl_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_mdl_img_widget = customtkinter.CTkLabel(sim_mdl_frm_1, text="", image = mdl_image, compound = 'left')
 sim_mdl_img_widget.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_mdl_frm = MySubFrame(master=sim_mdl_frm_1)
@@ -8691,7 +8708,7 @@ sim_mdl_dpd.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="nswe",
 
 # select animals
 sim_spp_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_spp_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_spp_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_spp_img_widget = customtkinter.CTkLabel(sim_spp_frm_1, text="", image = spp_image, compound = 'left')
 sim_spp_img_widget.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_spp_frm = MySubFrame(master=sim_spp_frm_1, width=1000)
@@ -8708,20 +8725,20 @@ sim_spp_scr.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="ew", c
 
 # deploy button
 sim_run_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_run_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_run_frm_1.grid(row=5, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_run_img_widget = customtkinter.CTkLabel(sim_run_frm_1, text="", image = run_image, compound = 'left')
 sim_run_img_widget.grid(row=3, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_run_frm = MySubFrame(master=sim_run_frm_1, width=1000)
 sim_run_frm.grid(row=3, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
 sim_run_btn_txt = ["Start processing", "Empezar a procesar"]
-sim_run_btn = customtkinter.CTkButton(sim_run_frm, text=sim_run_btn_txt[lang_idx], command=lambda: start_deploy(simple_mode = True), fg_color = ('#579F2D', 'green'), hover_color = 'darkgreen')
+sim_run_btn = customtkinter.CTkButton(sim_run_frm, text=sim_run_btn_txt[lang_idx], command=lambda: start_deploy(simple_mode = True))
 sim_run_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe", columnspan = 2)
 
 # about
-sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
-sim_abo_lbl.grid(row=5, column=0, columnspan = 2, sticky="")
-sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
-sim_abo_lbl_link.grid(row=6, column=0, columnspan = 2, sticky="", pady=(0, PADY))
+sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE), fg="black", bg = yellow_primary)
+sim_abo_lbl.grid(row=6, column=0, columnspan = 2, sticky="")
+sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1), fg=green_primary, bg =yellow_primary)
+sim_abo_lbl_link.grid(row=7, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 sim_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
 # resize deploy tab to content
