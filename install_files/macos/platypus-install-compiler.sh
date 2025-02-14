@@ -2,10 +2,9 @@
 
 # MacOS Application installer script for EcoAssist
 # To be used with Platipus packaging tool (https://github.com/sveinbjornt/Platypus)
-# Github actions will add the version number as a first line to the script like 'VERSION="v5.109"'
-# Peter van Lunteren, 12 jan 2025
+# Github actions will add VERSION and URL variables as a first line to the script like 'VERSION="v5.109"'
+# Peter van Lunteren, 14 Feb 2025
 
-URL="https://storage.googleapis.com/github-release-files-storage/latest/macos-latest.tar.xz"
 APP_NAME="EcoAssist"
 APPLICATIONS_DIR="/Applications"
 SHORTCUT="${HOME}/Desktop/${APP_NAME}.app"
