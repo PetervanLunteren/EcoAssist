@@ -8588,12 +8588,12 @@ def write_about_tab():
 
     # addaxai citation
     about_text.insert(END, ["AddaxAI citation\n", "Citar AddaxAI\n"][lang_idx])
-    about_text.insert(END, ["If you used AddaxAI in your research, please use the following citations. AddaxAI used to be called 'EcoAssist'.\n",
+    about_text.insert(END, ["If you used AddaxAI in your research, please use the following citations. The AddaxAI software was previously called 'EcoAssist'.\n",
                             "Si ha utilizado AddaxAI en su investigación, utilice la siguiente citas. AddaxAI se llamaba antes 'EcoAssist'.\n"][lang_idx])
     about_text.insert(END, "- van Lunteren, P. (2023). EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models. Journal of Open Source Software, 8(88), 5581. ")
     about_text.insert(INSERT, "https://doi.org/10.21105/joss.05581", hyperlink.add(partial(webbrowser.open, "https://doi.org/10.21105/joss.05581")))
     about_text.insert(END, ".\n")
-    about_text.insert(END, ["- Plus the citation of the models used.\n", "- Más la cita de los modelos utilizados.\n"][lang_idx]    )
+    about_text.insert(END, ["- Plus the citation of the models used.\n\n", "- Más la cita de los modelos utilizados.\n\n"][lang_idx]    )
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
