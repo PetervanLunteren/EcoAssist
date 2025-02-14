@@ -97,6 +97,7 @@ Section "Install"
 
     # Create junction to old EcoAssist_files directory
     nsExec::Exec 'cmd /C mklink /J "$PROFILE\EcoAssist_files" "$PROFILE\AddaxAI_files"'
+    nsExec::Exec 'cmd /C mklink /J "$PROFILE\EcoAssist_files\EcoAssist" "$PROFILE\AddaxAI_files\AddaxAI"'
 
     # Hide progress bar
     Push "false"
