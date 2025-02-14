@@ -311,10 +311,11 @@ jobs:
           7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Inetc_plugin.zip"
         shell: cmd
 
-      - name: Append VERSION to NSIS script
+      - name: Append VERSION and URL to NSIS script
         shell: cmd
         run: |
           echo !define VERSION "${{ env.RELEASE_VERSION }}" > newFile.nsi
+          echo !define URL "https://storage.googleapis.com/${{ env.BUCKET_NAME }}/latest/windows-latest.7z" >> newFile.nsi
           type "%GITHUB_WORKSPACE%\install_files\windows\nsis-install-compiler.nsi" >> newFile.nsi
           move /Y newFile.nsi "%GITHUB_WORKSPACE%\install_files\windows\nsis-install-compiler.nsi"
 
