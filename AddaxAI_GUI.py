@@ -7031,7 +7031,7 @@ def remove_widgets_based_on_location(master, rows, cols):
 class HyperlinkManager:
     def __init__(self, text):
         self.text = text
-        self.text.tag_config("hyper", foreground="blue", underline=1)
+        self.text.tag_config("hyper", foreground=green_primary, underline=1)
         self.text.tag_bind("hyper", "<Enter>", self._enter)
         self.text.tag_bind("hyper", "<Leave>", self._leave)
         self.text.tag_bind("hyper", "<Button-1>", self._click)
@@ -8219,7 +8219,7 @@ help_text = Text(help_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.s
 help_text.configure(spacing1=2, spacing2=3, spacing3=2)
 help_text.tag_config('intro', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic', foreground='black', lmargin1=10, lmargin2=10, underline = False) 
 help_text.tag_config('tab', font=f'{text_font} {int(16 * text_size_adjustment_factor)} bold', foreground='black', lmargin1=10, lmargin2=10, underline = True) 
-help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=15, lmargin2=15) 
+help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground=green_primary, lmargin1=15, lmargin2=15) 
 help_text.tag_config('feature', font=f'{text_font} {int(14 * text_size_adjustment_factor)} normal', foreground='black', lmargin1=20, lmargin2=20, underline = True) 
 help_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=25, lmargin2=25)
 hyperlink1 = HyperlinkManager(help_text)
@@ -8563,7 +8563,7 @@ write_help_tab()
 about_scroll = Scrollbar(about_tab)
 about_text = Text(about_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.set)
 about_text.configure(spacing1=2, spacing2=3, spacing3=2)
-about_text.tag_config('title', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
+about_text.tag_config('title', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground=green_primary, lmargin1=10, lmargin2=10) 
 about_text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=20, lmargin2=20)
 about_text.tag_config('citation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=30, lmargin2=50)
 hyperlink = HyperlinkManager(about_text)
@@ -8598,17 +8598,6 @@ def write_about_tab():
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
-
-    # image credits
-    about_text.insert(END, ["Image credits\n", "Créditos de la imagen\n"][lang_idx])
-    about_text.insert(END, ["The beautiful camera trap images of the fox and ocelot displayed at the top were taken from the ",
-                            "Las bellas imágenes del zorro y el ocelote captadas por cámaras trampa que aparecen en la parte superior proceden del conjunto de "][lang_idx])
-    about_text.insert(INSERT, ["WCS Camera Traps dataset", "datos WCS Camera Traps"][lang_idx], hyperlink.add(partial(webbrowser.open, "https://lila.science/datasets/wcscameratraps")))
-    about_text.insert(END, [" provided by the ", " proporcionado por la "][lang_idx])
-    about_text.insert(INSERT, "Wildlife Conservation Society", hyperlink.add(partial(webbrowser.open, "https://www.wcs.org/")))
-    about_text.insert(END, ".\n\n")
-    about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-    about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
     # development credits
     about_text.insert(END, ["Development\n", "Desarrollo\n"][lang_idx])
