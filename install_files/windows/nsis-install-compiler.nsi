@@ -1,6 +1,6 @@
 # Script to create an NSIS exe to install EcoAssist on Windows
 # Peter van Lunteren, last edit on 6 Jan 2025
-# Var VERSION will be defined by github actions by adding a line above like '!define VERSION "v6.34"'
+# Var VERSION and URL will be defined by github actions by adding a line above like '!define VERSION "v6.34"'
 
 # Name and output location for the installer
 Outfile "EcoAssist-${VERSION}-installer.exe"
@@ -103,7 +103,7 @@ Section "Install"
 
     # Download the 7z archive
     DetailPrint "Downloading files..."
-    StrCpy $archiveUrl "https://storage.googleapis.com/github-release-files-storage/latest/windows-latest.7z"
+    StrCpy $archiveUrl "${URL}"
     StrCpy $archiveName "$INSTDIR\windows-${VERSION}.7z"
     NSISdl::download $archiveUrl $archiveName
     # inetc::get $archiveUrl $archiveName
