@@ -3,14 +3,14 @@
     "fg_color": ["gray92", "gray14"]
   },
   "CTkToplevel": {
-    "fg_color": ["#fdfae7", "gray14"]
+    "fg_color": ["#fdfae7", "gray14"] 
   },
   "CTkFrame": {
     "corner_radius": 6,
     "border_width": 0,
-    "fg_color": ["gray86", "gray17"],
-    "top_fg_color": ["gray81", "gray20"],
-    "border_color": ["gray65", "gray28"]
+    "fg_color": ["#F0EEDC", "gray17"],
+    "top_fg_color": ["#E4E1D0", "gray20"],
+    "border_color": ["black", "gray28"]
   },
   "CTkButton": {
     "corner_radius": 6,
