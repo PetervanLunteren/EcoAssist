@@ -151,7 +151,7 @@ Section "Install"
     DetailPrint "Installation completed successfully."
 
     ; Create a shortcut on the desktop
-    CreateShortcut "$INSTDIR\open-debug-mode.lnk" "$INSTDIR\AddaxAI\open.bat" "" "$INSTDIR\AddaxAI\install_files\windows\logo.ico" 0 SW_SHOWNORMAL
+    CreateShortcut "$INSTDIR\open-debug-mode.lnk" "$INSTDIR\AddaxAI\open.bat" "" "$INSTDIR\AddaxAI\imgs\logo_small_bg.ico" 0 SW_SHOWNORMAL
 
     ; create a shortcut for the desktop that executes the open.bat file without any terminal window
     ; Create Windows_open_AddaxAI_shortcut.vbs
@@ -167,7 +167,7 @@ Section "Install"
     FileWrite $0 "sLinkFile = $\"$DESKTOP\AddaxAI.lnk$\"$\r$\n"
     FileWrite $0 "Set oLink = oWS.CreateShortcut(sLinkFile)$\r$\n"
     FileWrite $0 "oLink.TargetPath = $\"$INSTDIR\AddaxAI\Windows_open_AddaxAI_shortcut.vbs$\"$\r$\n"
-    FileWrite $0 "oLink.IconLocation = $\"$INSTDIR\AddaxAI\install_files\windows\logo.ico$\"$\r$\n"
+    FileWrite $0 "oLink.IconLocation = $\"$INSTDIR\AddaxAI\imgs\logo_small_bg.ico$\"$\r$\n"
     FileWrite $0 "oLink.Save$\r$\n"
     FileClose $0
 
