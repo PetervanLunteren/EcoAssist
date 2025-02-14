@@ -262,11 +262,46 @@ jobs:
       #     set RELEASE_NAME=${{ github.ref_name }}
       #     gh release edit %RELEASE_NAME% --notes-file release_body.txt
 
+      # original code to unzip NSIS without retry mechanism
+      # - name: Install Nsis7z Plugin
+      #   run: |
+      #     curl --ipv4 --retry 5 -L -o "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/9/93/Nsis7z.zip"
+      #     dir "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+      #     7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+      #   shell: cmd
+
       - name: Install Nsis7z Plugin
         run: |
+          # Set the maximum number of retries
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+      
+          # Retry logic for downloading and extracting
+          :retry
+          echo "Attempting download and extraction. Try #$((RETRY_COUNT + 1))..."
+      
+          # Download the file
           curl --ipv4 --retry 5 -L -o "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip" "https://nsis.sourceforge.io/mediawiki/images/9/93/Nsis7z.zip"
           dir "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+      
+          # Try to extract the file
           7z x -bb3 -o"%GITHUB_WORKSPACE%\NSIS_Plugins" "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+          
+          # Check if extraction was successful
+          IF %ERRORLEVEL% NEQ 0 (
+            echo "Extraction failed, retrying download..."
+            # Remove the corrupted or invalid zip file
+            del "%GITHUB_WORKSPACE%\Nsis7z_plugin.zip"
+            SET /A RETRY_COUNT+=1
+            IF %RETRY_COUNT% LSS %MAX_RETRIES% (
+              goto retry
+            ) ELSE (
+              echo "Failed to download and extract after $MAX_RETRIES attempts. Exiting."
+              exit 1
+            )
+          ) ELSE (
+            echo "Extraction succeeded."
+          )
         shell: cmd
 
       - name: Install Inetc Plugin
