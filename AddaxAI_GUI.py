@@ -7841,7 +7841,7 @@ lbl_exclude_subs = Label(snd_step, text=lbl_exclude_subs_txt[lang_idx], width=1,
 lbl_exclude_subs.grid(row=row_exclude_subs, sticky='nesw', pady=2)
 var_exclude_subs = BooleanVar()
 var_exclude_subs.set(global_vars['var_exclude_subs'])
-chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w", selectcolor=green_primary)
+chb_exclude_subs = Checkbutton(snd_step, variable=var_exclude_subs, anchor="w")
 chb_exclude_subs.grid(row=row_exclude_subs, column=1, sticky='nesw', padx=5)
 
 # use custom image size
