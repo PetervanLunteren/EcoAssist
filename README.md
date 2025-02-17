@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/AddaxAI-logo/logo_incl_text_bottom.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/AddaxAI-logo/logo_incl_text_bottom.png" width=40% height="auto" />
 </p>
 
 <div align="center">
@@ -26,11 +26,7 @@ Official website: https://addaxdatascience.com/addaxai/
 
 </div>
 
-
 AddaxAI is an application designed to streamline the work of ecologists dealing with camera trap images. It’s an AI platform that allows you to analyse images with machine learning models for automatic detection, offering ecologists a way to save time and focus on conservation efforts.
-
-
-
 
 <p align="center">
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_animal.jpg" width=45% height="auto" />
@@ -40,11 +36,13 @@ AddaxAI is an application designed to streamline the work of ecologists dealing 
 </p>
 
 
-## Name change February 2025
+## Project name change February 2025
 
-To avoid any legal concerns, we have renamed our GitHub repository from EcoAssist to AddaxAI. The project itself remains the same—an open-source initiative dedicated to conservation through AI-powered species identification. If you previously bookmarked or referenced our repository, please update your links accordingly.
+To avoid any legal concerns, we have renamed our project from EcoAssist to AddaxAI. The project itself remains the same—only the name has changed. 
 
-
+<p align="center">
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/AddaxAI-logo/name-change.png" width=60% height="auto" />
+</p>
 
 ## Cite
 Please use the following citations if you used AddaxAI in your research.
