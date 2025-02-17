@@ -133,7 +133,7 @@
   "DropdownMenu": {
     "fg_color": ["#0B6065", "gray20"],
     "hover_color": ["#073d40", "gray28"],
-    "text_color": ["gray10", "gray90"]
+    "text_color": ["gray98", "gray90"]
   },
   "CTkFont": {
     "macOS": {
