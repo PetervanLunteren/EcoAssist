@@ -257,6 +257,10 @@ def smooth_json_imgs(json_input_fpath):
     exif_datetime_tag = 'DateTimeOriginal'
     for exif_result in exif_results:
 
+        # skip this if there is no exif data present
+        if exif_result['exif_tags'] == {}:
+            continue
+      
         # collect info
         im = {}
         im['location'] = os.path.dirname(exif_result['file_name'])
