@@ -1,14 +1,14 @@
 
 <p align="center">
-  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/logo_large.png" width=60% height="auto" />
+  <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/AddaxAI-logo/logo_incl_text_bottom.png" width=60% height="auto" />
 </p>
 
 <div align="center">
 
 [![status](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e/status.svg)](https://joss.theoj.org/papers/dabe3753aae2692d9908166a7ce80e6e)
 [![Project Status: Active The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-![GitHub](https://img.shields.io/github/license/PetervanLunteren/EcoAssist)
-![GitHub last commit](https://img.shields.io/github/last-commit/PetervanLunteren/EcoAssist)
+![GitHub](https://img.shields.io/github/license/PetervanLunteren/AddaxAI)
+![GitHub last commit](https://img.shields.io/github/last-commit/PetervanLunteren/AddaxAI)
 
 </div>
 
@@ -20,14 +20,14 @@
 
 <h3>
   
-Official website: https://addaxdatascience.com/ecoassist/
+Official website: https://addaxdatascience.com/addaxai/
 
 </h3>
 
 </div>
 
 
-EcoAssist is an application designed to streamline the work of ecologists dealing with camera trap images. It’s an AI platform that allows you to analyse images with machine learning models for automatic detection, offering ecologists a way to save time and focus on conservation efforts.
+AddaxAI is an application designed to streamline the work of ecologists dealing with camera trap images. It’s an AI platform that allows you to analyse images with machine learning models for automatic detection, offering ecologists a way to save time and focus on conservation efforts.
 
 
 
@@ -39,12 +39,21 @@ EcoAssist is an application designed to streamline the work of ecologists dealin
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/imgs/teaser_tinamou.JPG" width=45% height="auto" /> 
 </p>
 
+
+## Name change February 2025
+
+To avoid any legal concerns, we have renamed our GitHub repository from EcoAssist to AddaxAI. The project itself remains the same—an open-source initiative dedicated to conservation through AI-powered species identification. If you previously bookmarked or referenced our repository, please update your links accordingly.
+
+
+
 ## Cite
-Please use the following citations if you used EcoAssist in your research.
+Please use the following citations if you used AddaxAI in your research.
 
 <details>
-<summary>EcoAssist</summary>
+<summary>AddaxAI</summary>
 <br>
+
+The AddaxAI software used to be called EcoAssist. The citation still uses the old name. Please cite as "AddaxAI, previously known as EcoAssist (van Lunteren, 2023)"
 
 [Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
 ```BibTeX
