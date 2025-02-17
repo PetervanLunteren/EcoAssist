@@ -36,7 +36,7 @@ AddaxAI is an application designed to streamline the work of ecologists dealing 
 </p>
 
 
-## Project name change February 2025
+## Project name change - February 2025
 
 To avoid any legal concerns, we have renamed our project from EcoAssist to AddaxAI. The project itself remains the same—only the name has changed. 
 
