@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# MacOS Application installer script for EcoAssist
+# MacOS Application installer script for AddaxAI
 # To be used with Platipus packaging tool (https://github.com/sveinbjornt/Platypus)
-# Github actions will add the version number as a first line to the script like 'VERSION="v5.109"'
-# Peter van Lunteren, 12 jan 2025
+# Github actions will add VERSION and URL variables as a first line to the script like 'VERSION="v5.109"'
+# Peter van Lunteren, 14 Feb 2025
 
-URL="https://storage.googleapis.com/github-release-files-storage/latest/macos-latest.tar.xz"
-APP_NAME="EcoAssist"
+APP_NAME="AddaxAI"
 APPLICATIONS_DIR="/Applications"
 SHORTCUT="${HOME}/Desktop/${APP_NAME}.app"
 TAR_FILE="/tmp/${APP_NAME}.tar.xz"
-INSTALL_DIR="/Applications/EcoAssist_files"
+INSTALL_DIR="/Applications/AddaxAI_files"
 OLD_INSTALL_DIR="/Applications/.EcoAssist_files"
+OLDER_INSTALL_DIR="/Applications/EcoAssist_files"
 PBAR_POS=0
 
 progress() {
@@ -30,14 +30,14 @@ trap 'kill $PMSETPID' EXIT
 
 # Read previous version
 PREVIOUS_VERSION="previous installation"
-PREVIOUS_VERSION_FILE="${INSTALL_DIR}/EcoAssist/version.txt"
+PREVIOUS_VERSION_FILE="${INSTALL_DIR}/AddaxAI/version.txt"
 if [[ -f "$PREVIOUS_VERSION_FILE" ]]; then
     PREVIOUS_VERSION="v$(cat "$PREVIOUS_VERSION_FILE")"
 fi
 
 progress 3
 
-# Step 0: Remove previous installation
+# Step 0A: Remove previous installation
 echo "Step 1 of 5 - Uninstalling ${PREVIOUS_VERSION}..."
 if [[ -d "$INSTALL_DIR" ]]; then
     if ! rm -rf "$INSTALL_DIR"; then
@@ -46,11 +46,20 @@ if [[ -d "$INSTALL_DIR" ]]; then
     fi
 fi
 
-# Step 0B: remove files on the old locations if present
+# Step 0B: remove files on the old location if present
 if [[ -d "$OLD_INSTALL_DIR" ]]; then
     echo "Step 1 of 5 - Still uninstalling..."
     if ! rm -rf "$OLD_INSTALL_DIR"; then
-        echo "ALERT:Error|Failed to remove ${PREVIOUS_VERSION} ${INSTALL_DIR}"
+        echo "ALERT:Error|Failed to remove ${OLD_INSTALL_DIR}"
+        exit 1
+    fi
+fi
+
+# Step 0C: remove files on the older location if present
+if [[ -d "$OLDER_INSTALL_DIR" ]]; then
+    echo "Step 1 of 5 - Still uninstalling..."
+    if ! rm -rf "$OLDER_INSTALL_DIR"; then
+        echo "ALERT:Error|Failed to remove ${OLDER_INSTALL_DIR}"
         exit 1
     fi
 fi
@@ -105,7 +114,7 @@ progress 21
 
 # Dummy open the app to trigger the first run experience
 echo "Step 5 of 5 - Compiling scripts..."
-if ! "${INSTALL_DIR}/envs/env-base/bin/python" "${INSTALL_DIR}/EcoAssist/EcoAssist_GUI.py" installer; then
+if ! "${INSTALL_DIR}/envs/env-base/bin/python" "${INSTALL_DIR}/AddaxAI/AddaxAI_GUI.py" installer; then
     echo "Error: Failed to trigger the first run experience"
     exit 1
 fi
@@ -118,12 +127,12 @@ if [[ -L "$SHORTCUT" ]]; then
 fi
 
 progress 2
-if ln -s "${INSTALL_DIR}/${APP_NAME} ${VERSION}.app" "$SHORTCUT"; then
+if ln -s "${INSTALL_DIR}/${APP_NAME}.app" "$SHORTCUT"; then
     echo ""
     echo "Installation successfull!"
-    echo "ALERT:Installation successful!|You can now open EcoAssist via the Desktop shortcut: '${SHORTCUT}'"
+    echo "ALERT:Installation successful!|You can now open AddaxAI via the Desktop shortcut: '${SHORTCUT}'"
     echo ""
-    echo "You can now open EcoAssist via the Desktop shortcut:"
+    echo "You can now open AddaxAI via the Desktop shortcut:"
     echo ""
     echo "'${SHORTCUT}'"
     echo ""

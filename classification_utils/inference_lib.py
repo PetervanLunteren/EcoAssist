@@ -185,7 +185,7 @@ def convert_detections_to_classification(json_path,
         if json_path.endswith("video_recognition_file.frames.json"):
             smooth_json_video(json_path)
 
-    # rewrite json to be used by EcoAssist
+    # rewrite json to be used by AddaxAI
     with open(json_to_rewrite) as image_recognition_file_content:
         data = json.load(image_recognition_file_content)
 
@@ -221,7 +221,7 @@ def convert_detections_to_classification(json_path,
                             detection["conf"] = highest_classification[1]
                             detection['category'] = str(detec_idx)
 
-    # write json to be used by EcoAssist
+    # write json to be used by AddaxAI
     inverted_det_label_map['unidentified animal'] = inverted_det_label_map.pop('animal') # change all left over animals to unidentified
     data['detection_categories'] = {v: k for k, v in inverted_det_label_map.items()}
     with open(json_path, "w") as json_file:
@@ -257,6 +257,10 @@ def smooth_json_imgs(json_input_fpath):
     exif_datetime_tag = 'DateTimeOriginal'
     for exif_result in exif_results:
 
+        # skip this if there is no exif data present
+        if exif_result['exif_tags'] == {}:
+            continue
+      
         # collect info
         im = {}
         im['location'] = os.path.dirname(exif_result['file_name'])

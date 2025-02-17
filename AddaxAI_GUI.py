@@ -1,18 +1,19 @@
 # coding=utf-8
 
 # GUI to simplify camera trap image analysis with species recognition models
-# https://addaxdatascience.com/ecoassist/
+# https://addaxdatascience.com/addaxai/
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 28 Jan 2024
 
-# TODO: Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
+# TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
+# TODO: PYINSTALLER - Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
-# TODO: RESIZING - I think I figured out why we get that weird window resizing in EcoAssist, e.g., when switching to Advanced mode. Windows, as part of its Dispay settings, lets you set a Scale option. As I have two high-res displays, my scale setting (recommended by Windows) is 150%. While the initial GUI window shown in Python seems to  follow that scale setting, switching to advanced mode does not, i.e., the window is large (to fit the scaled graphics) but the contents are unscaled.
+# TODO: RESIZING - I think I figured out why we get that weird window resizing in AddaxAI, e.g., when switching to Advanced mode. Windows, as part of its Dispay settings, lets you set a Scale option. As I have two high-res displays, my scale setting (recommended by Windows) is 150%. While the initial GUI window shown in Python seems to  follow that scale setting, switching to advanced mode does not, i.e., the window is large (to fit the scaled graphics) but the contents are unscaled.
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
-# TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for EcoAssist too, and process videos and jsons together. See merge_jsons() function.
+# TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for AddaxAI too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
-# TODO: JSON - remove the original json if not running EcoAssist in Timelapse mode. No need to keep that anymore. 
-# TODO: JSON - remove the part where MD stores its typical threshold values etc in the EcoAssist altered json. It doesn't make sense anymore if the detection caterogies are changed. 
+# TODO: JSON - remove the original json if not running AddaxAI in Timelapse mode. No need to keep that anymore. 
+# TODO: JSON - remove the part where MD stores its typical threshold values etc in the AddaxAI altered json. It doesn't make sense anymore if the detection caterogies are changed. 
 # TODO: VIDEO - create video tutorials of all the steps (simple mode, advanced mode, annotation, postprocessing, etc.)
 # TODO: EMPTIES - add a checkbox for folder separation where you can skip the empties from being copied
 # TODO: LOG SEQUENCE INFO - add sequence information to JSON, CSV, and XSLX 
@@ -23,7 +24,7 @@
 # TODO: VIS VIDEO - add option to visualise frame with highest confidence
 # TODO: N_CORES - add UI "--ncores” option - see email Dan "mambaforge vs. miniforge"
 # TODO: REPORTS - add postprocessing reports - see email Dan "mambaforge vs. miniforge"
-# TODO: MINOR - By the way, in the EcoAssist UI, I think the frame extraction status popup uses the same wording as the detection popup. They both say something about "frame X of Y". I think for the frame extraction, it should be "video X of Y".
+# TODO: MINOR - By the way, in the AddaxAI UI, I think the frame extraction status popup uses the same wording as the detection popup. They both say something about "frame X of Y". I think for the frame extraction, it should be "video X of Y".
 # TODO: JSON - keep track of the original confidence scores whenever it changes (from detection to classification, after human verification, etc.)
 # TODO: SMALL FIXES - see list from Saul ('RE: tentative agenda / discussion points') - 12 July 01:11. 
 # TODO: ANNOTATION - improve annotation experience
@@ -105,45 +106,49 @@ if len(sys.argv) > 1:
         exit()
 
 # set global variables
-EcoAssist_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+AddaxAI_files = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-CLS_DIR = os.path.join(EcoAssist_files, "models", "cls")
-DET_DIR = os.path.join(EcoAssist_files, "models", "det")
+CLS_DIR = os.path.join(AddaxAI_files, "models", "cls")
+DET_DIR = os.path.join(AddaxAI_files, "models", "det")
 
 # set environment variables
 if os.name == 'nt': # windows
-    env_dir_fpath = os.path.join(EcoAssist_files, "envs")
+    env_dir_fpath = os.path.join(AddaxAI_files, "envs")
 elif platform.system() == 'Darwin': # macos
-    env_dir_fpath = os.path.join(EcoAssist_files, "envs")
+    env_dir_fpath = os.path.join(AddaxAI_files, "envs")
 else: # linux
-    env_dir_fpath = os.path.join(EcoAssist_files, "envs") # TODO
+    env_dir_fpath = os.path.join(AddaxAI_files, "envs") # TODO
 
 # set versions
-with open(os.path.join(EcoAssist_files, 'EcoAssist', 'version.txt'), 'r') as file:
+with open(os.path.join(AddaxAI_files, 'AddaxAI', 'version.txt'), 'r') as file:
     current_EA_version = file.read().strip()
 corresponding_model_info_version = "5"
 
-# colors and images
-EA_blue_color = '#3B8ED0'
-EA_green_color = '#96CF7A'
-PIL_gradient = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "gradient.png"))
-PIL_logo = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
-PIL_advanc_top_banner = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "advanc_top_banner.png"))
-PIL_simple_top_banner = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "simple_top_banner.png"))
-PIL_checkmark = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "checkmark.png"))
-PIL_dir_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "image-gallery.png"))
-PIL_mdl_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "tech.png"))
-PIL_spp_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "paw.png"))
-PIL_run_image = PIL.Image.open(os.path.join(EcoAssist_files, "EcoAssist", "imgs", "shuttle.png"))
-launch_count_file = os.path.join(EcoAssist_files, 'launch_count.json')
+# colors
+# most of the colors are set in the ./themes/addaxai.json file
+green_primary = '#0B6065'
+green_secondary = '#073d40'
+yellow_primary = '#fdfae7'
+yellow_secondary = '#F0EEDC'
+yellow_tertiary = '#E4E1D0'
+
+# images
+PIL_sidebar = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "side-bar.png"))
+PIL_logo_incl_text = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "square_logo_incl_text.png"))
+PIL_checkmark = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "checkmark.png"))
+PIL_dir_image = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "image-gallery.png"))
+PIL_mdl_image = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "tech.png"))
+PIL_spp_image = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "paw.png"))
+PIL_run_image = PIL.Image.open(os.path.join(AddaxAI_files, "AddaxAI", "imgs", "shuttle.png"))
+launch_count_file = os.path.join(AddaxAI_files, 'launch_count.json')
 
 # insert dependencies to system variables
 cuda_toolkit_path = os.environ.get("CUDA_HOME") or os.environ.get("CUDA_PATH")
 paths_to_add = [
-    os.path.join(EcoAssist_files),
-    os.path.join(EcoAssist_files, "cameratraps"),
-    os.path.join(EcoAssist_files, "cameratraps", "megadetector"),
-    os.path.join(EcoAssist_files, "EcoAssist")
+    os.path.join(AddaxAI_files),
+    os.path.join(AddaxAI_files, "cameratraps"),
+    os.path.join(AddaxAI_files, "cameratraps", "megadetector"),
+    os.path.join(AddaxAI_files, "AddaxAI")
 ]
 if cuda_toolkit_path:
     paths_to_add.append(os.path.join(cuda_toolkit_path, "bin"))
@@ -172,7 +177,7 @@ if platform.system() == "Windows":
 
 # load previous settings
 def load_global_vars():
-    var_file = os.path.join(EcoAssist_files, "EcoAssist", "global_vars.json")
+    var_file = os.path.join(AddaxAI_files, "AddaxAI", "global_vars.json")
     with open(var_file, 'r') as file:
         variables = json.load(file)
     return variables
@@ -707,8 +712,8 @@ def csv_to_coco(detections_df, files_df, output_path):
             "url": "NA"
             }],
         "info": {
-            "description": f"Object detection results exported from EcoAssist (v{str(current_EA_version)}).",
-            "url": "https://addaxdatascience.com/ecoassist/",
+            "description": f"Object detection results exported from AddaxAI (v{str(current_EA_version)}).",
+            "url": "https://addaxdatascience.com/addaxai/",
             "date_created": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     }
@@ -939,7 +944,7 @@ def start_postprocess():
         
         # show error
         mb.showerror(title=error_txt[lang_idx],
-                     message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
+                     message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (AddaxAI v" + current_EA_version + "): '" + str(error) + "'.",
                      detail=traceback.format_exc())
         
         # close window
@@ -1567,8 +1572,8 @@ def produce_plots(results_dir):
         if any_dates_present: create_activity_patterns(det_df, results_dir, pbar);plt.close('all')
         if cancel_var: return
 
-    # add ecoassist logo
-    logo_for_graphs = PIL_logo.resize((60, 60))
+    # add addaxai logo
+    logo_for_graphs = PIL_logo_incl_text.resize((int(LOGO_WIDTH/1.2), int(LOGO_HEIGHT/1.2)))
     for root, dirs, files in os.walk(plots_dir):
         for file in files:
             if file.endswith(".png"):
@@ -1661,7 +1666,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # explenation frame
     hitl_explenation_frame = LabelFrame(hitl_progress_window, text=[" Explanation ", " Explicación "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_explenation_frame.configure(font=(text_font, 15, "bold"))
     hitl_explenation_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
     hitl_explenation_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1673,18 +1678,18 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     text_hitl_explenation_frame.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=10, lmargin2=10)
     text_hitl_explenation_frame.insert(END, ["This is where you do the actual verification. You'll have to make sure that all objects in all images are correctly "
                                             "labeled. That also includes classes that you did not select but are on the image by chance. If an image is verified, "
-                                            "you'll have to let EcoAssist know by pressing the space bar. If all images are verified and up-to-date, you can close "
-                                            "the window. EcoAssist will prompt you for the final step. You can also close the window and continue at a later moment.", 
+                                            "you'll have to let AddaxAI know by pressing the space bar. If all images are verified and up-to-date, you can close "
+                                            "the window. AddaxAI will prompt you for the final step. You can also close the window and continue at a later moment.", 
                                             "Deberá asegurarse de que todos los objetos en todas las imágenes estén "
                                             "etiquetados correctamente. Eso también incluye clases que no seleccionaste pero que están en la imagen por casualidad. "
-                                            "Si se verifica una imagen, deberá informar a EcoAssist presionando la barra espaciadora. Si todas las imágenes están "
-                                            "verificadas y actualizadas, puede cerrar la ventana. EcoAssist le indicará el paso final. También puedes cerrar la "
+                                            "Si se verifica una imagen, deberá informar a AddaxAI presionando la barra espaciadora. Si todas las imágenes están "
+                                            "verificadas y actualizadas, puede cerrar la ventana. AddaxAI le indicará el paso final. También puedes cerrar la "
                                             "ventana y continuar en otro momento."][lang_idx])
     text_hitl_explenation_frame.tag_add('explanation', '1.0', '1.end')
 
     # shortcuts frame
     hitl_shortcuts_frame = LabelFrame(hitl_progress_window, text=[" Shortcuts ", " Atajos "][lang_idx],
-                                        pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                        pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_shortcuts_frame.configure(font=(text_font, 15, "bold"))
     hitl_shortcuts_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
     hitl_shortcuts_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1700,7 +1705,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 
     # numbers frame
     hitl_stats_frame = LabelFrame(hitl_progress_window, text=[" Progress ", " Progreso "][lang_idx],
-                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color)
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary)
     hitl_stats_frame.configure(font=(text_font, 15, "bold"))
     hitl_stats_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
     hitl_stats_frame.columnconfigure(0, weight=3, minsize=115)
@@ -1731,7 +1736,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
     hitl_progress_window.update()
 
     # init paths
-    labelImg_dir = os.path.join(EcoAssist_files, "Human-in-the-loop")
+    labelImg_dir = os.path.join(AddaxAI_files, "Human-in-the-loop")
     labelImg_script = os.path.join(labelImg_dir, "labelImg.py")
     python_executable = get_python_interprator("base")
 
@@ -1897,7 +1902,7 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
             # button frame
             hitl_final_actions_frame = LabelFrame(hitl_final_window, text=[" Do you want to export these verified images as training data? ",
                                                                            " ¿Quieres exportar estas imágenes verificadas como datos de entrenamiento? "][lang_idx],
-                                                                           pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                                                           pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
             hitl_final_actions_frame.configure(font=(text_font, 15, "bold"))
             hitl_final_actions_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
             hitl_final_actions_frame.columnconfigure(0, weight=1, minsize=115)
@@ -1910,8 +1915,8 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
                                                                 update_frame_states()])
             btn_hitl_final_export_y.grid(row=0, column=0, rowspan=1, sticky='nesw', padx=5)
 
-            btn_hitl_final_export_n = Button(master=hitl_final_actions_frame, text=["No - go back to the main EcoAssist window",
-                                                                                    "No - regrese a la ventana principal de EcoAssist"][lang_idx], 
+            btn_hitl_final_export_n = Button(master=hitl_final_actions_frame, text=["No - go back to the main AddaxAI window",
+                                                                                    "No - regrese a la ventana principal de AddaxAI"][lang_idx], 
                                     width=1, command = lambda: [delete_temp_folder(file_list_txt),
                                                                 hitl_final_window.destroy(),
                                                                 change_hitl_var_in_json(recognition_file, "done"),
@@ -1921,9 +1926,9 @@ def open_annotation_windows(recognition_file, class_list_txt, file_list_txt, lab
 # os dependent python executables
 def get_python_interprator(env_name):
     if platform.system() == 'Windows':
-        return os.path.join(EcoAssist_files, "envs", f"env-{env_name}", "python.exe")
+        return os.path.join(AddaxAI_files, "envs", f"env-{env_name}", "python.exe")
     else:
-        return os.path.join(EcoAssist_files, "envs", f"env-{env_name}", "bin", "python")
+        return os.path.join(AddaxAI_files, "envs", f"env-{env_name}", "bin", "python")
 
 # get the images and xmls from annotation session and store them with unique filename
 def uniquify_and_move_img_and_xml_from_filelist(file_list_txt, recognition_file, hitl_final_window):
@@ -2088,7 +2093,7 @@ def start_or_continue_hitl():
                 
                 # show error
                 mb.showerror(title=error_txt[lang_idx],
-                            message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
+                            message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (AddaxAI v" + current_EA_version + "): '" + str(error) + "'.",
                             detail=traceback.format_exc())
     
     # start new session
@@ -2243,7 +2248,7 @@ def write_model_vars(model_type="cls", new_values = None):
 
     # write
     model_dir = var_cls_model.get() if model_type == "cls" else var_det_model.get()
-    var_file = os.path.join(EcoAssist_files, "models", model_type, model_dir, "variables.json")
+    var_file = os.path.join(AddaxAI_files, "models", model_type, model_dir, "variables.json")
     with open(var_file, 'w') as file:
         json.dump(variables, file, indent=4)
 
@@ -2260,7 +2265,7 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
     model_vars = load_model_vars() 
     cls_model_fname = model_vars["model_fname"]
     cls_model_type = model_vars["type"]
-    cls_model_fpath = os.path.join(EcoAssist_files, "models", "cls", var_cls_model.get(), cls_model_fname)
+    cls_model_fpath = os.path.join(AddaxAI_files, "models", "cls", var_cls_model.get(), cls_model_fname)
 
     # if present take os-specific env else take general env
     if os.name == 'nt': # windows
@@ -2284,13 +2289,13 @@ def classify_detections(json_fpath, data_type, simple_mode = False):
         
     # init paths
     python_executable = get_python_interprator(cls_model_env)
-    inference_script = os.path.join(EcoAssist_files, "EcoAssist", "classification_utils", "model_types", cls_model_type, "classify_detections.py")
+    inference_script = os.path.join(AddaxAI_files, "AddaxAI", "classification_utils", "model_types", cls_model_type, "classify_detections.py")
 
     # create command
     command_args = []
     command_args.append(python_executable)
     command_args.append(inference_script)
-    command_args.append(EcoAssist_files)
+    command_args.append(AddaxAI_files)
     command_args.append(cls_model_fpath)
     command_args.append(str(cls_detec_thresh))
     command_args.append(str(cls_class_thresh))
@@ -2468,9 +2473,9 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
 
     # prepare variables
     chosen_folder = str(Path(path_to_image_folder))
-    run_detector_batch_py = os.path.join(EcoAssist_files, "cameratraps", "megadetector", "detection", "run_detector_batch.py")
+    run_detector_batch_py = os.path.join(AddaxAI_files, "cameratraps", "megadetector", "detection", "run_detector_batch.py")
     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
-    process_video_py = os.path.join(EcoAssist_files, "cameratraps", "megadetector", "detection", "process_video.py")
+    process_video_py = os.path.join(AddaxAI_files, "cameratraps", "megadetector", "detection", "process_video.py")
     video_recognition_file = "--output_json_file=" + os.path.join(chosen_folder, "video_recognition_file.json")
     GPU_param = "Unknown"
     python_executable = get_python_interprator("base")
@@ -2693,23 +2698,23 @@ def deploy_model(path_to_image_folder, selected_options, data_type, simple_mode 
     progress_window.update_values(process = f"{data_type}_det", status = "done")
     root.update()
     
-    # create ecoassist metadata
-    ecoassist_metadata = {"ecoassist_metadata" : {"version" : current_EA_version,
+    # create addaxai metadata
+    addaxai_metadata = {"addaxai_metadata" : {"version" : current_EA_version,
                                                   "custom_model" : custom_model_bool,
                                                   "custom_model_info" : {}}}
     if custom_model_bool:
-        ecoassist_metadata["ecoassist_metadata"]["custom_model_info"] = {"model_name" : os.path.basename(os.path.normpath(det_model_fpath)),
+        addaxai_metadata["addaxai_metadata"]["custom_model_info"] = {"model_name" : os.path.basename(os.path.normpath(det_model_fpath)),
                                                                          "label_map" : label_map}
     
     # write metadata to json and make abosulte if specified
     image_recognition_file = os.path.join(chosen_folder, "image_recognition_file.json")
     video_recognition_file = os.path.join(chosen_folder, "video_recognition_file.json")
     if data_type == "img" and os.path.isfile(image_recognition_file):
-        append_to_json(image_recognition_file, ecoassist_metadata)
+        append_to_json(image_recognition_file, addaxai_metadata)
         if var_abs_paths.get():
             make_json_absolute(image_recognition_file)
     if data_type == "vid" and os.path.isfile(video_recognition_file):
-        append_to_json(video_recognition_file, ecoassist_metadata)
+        append_to_json(video_recognition_file, addaxai_metadata)
         if var_abs_paths.get():
             make_json_absolute(video_recognition_file)
     
@@ -2770,7 +2775,7 @@ def merge_jsons(image_json, video_json, output_file_path):
     print(f'merged json file saved to {output_file_path}')
 
 
-# pop up window showing the user that an EcoAssist update is required for a particular model
+# pop up window showing the user that an AddaxAI update is required for a particular model
 def show_update_info(model_vars, model_name):
 
     # create window
@@ -2781,14 +2786,14 @@ def show_update_info(model_vars, model_name):
     su_root.columnconfigure(1, weight=1, minsize=300)
     lbl1 = customtkinter.CTkLabel(su_root, text=f"Update required for model {model_name}", font = main_label_font)
     lbl1.grid(row=0, column=0, padx=PADX, pady=(PADY, PADY/2), columnspan = 2, sticky="nsew")
-    lbl2 = customtkinter.CTkLabel(su_root, text=f"Minimum EcoAssist version required is v{model_vars['min_version']}, while your current version is v{current_EA_version}.")
+    lbl2 = customtkinter.CTkLabel(su_root, text=f"Minimum AddaxAI version required is v{model_vars['min_version']}, while your current version is v{current_EA_version}.")
     lbl2.grid(row=1, column=0, padx=PADX, pady=(0, PADY), columnspan = 2, sticky="nsew")
 
     # define functions
     def close():
         su_root.destroy()
     def read_more():
-        webbrowser.open("https://addaxdatascience.com/ecoassist/")
+        webbrowser.open("https://addaxdatascience.com/addaxai/")
         su_root.destroy()
 
     # buttons frame
@@ -2805,7 +2810,7 @@ def show_update_info(model_vars, model_name):
 def model_needs_downloading(model_vars, model_type):
     model_name = var_cls_model.get() if model_type == "cls" else var_det_model.get()
     if model_name not in none_txt:
-        model_fpath = os.path.join(EcoAssist_files, "models", model_type, model_name, load_model_vars(model_type)["model_fname"])
+        model_fpath = os.path.join(AddaxAI_files, "models", model_type, model_name, load_model_vars(model_type)["model_fname"])
         if os.path.isfile(model_fpath):
             # the model file is already present
             return [False, ""]
@@ -2878,19 +2883,19 @@ def start_deploy(simple_mode = False):
     if not img_present and not vid_present:
         if simple_mode:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
-                            message=[f"There are no images nor videos found.\n\nEcoAssist accepts images in the format {IMG_EXTENSIONS}."
+                            message=[f"There are no images nor videos found.\n\nAddaxAI accepts images in the format {IMG_EXTENSIONS}."
                                      f"\n\nIt accepts videos in the format {VIDEO_EXTENSIONS}.",
-                                     f"No se han encontrado imágenes ni vídeos.\n\nEcoAssist acepta imágenes en formato {IMG_EXTENSIONS}."
+                                     f"No se han encontrado imágenes ni vídeos.\n\nAddaxAI acepta imágenes en formato {IMG_EXTENSIONS}."
                                      f"\n\nAcepta vídeos en formato {VIDEO_EXTENSIONS}."][lang_idx])
         else:
             mb.showerror(["No data found", "No se han encontrado datos"][lang_idx],
                             message=[f"There are no images nor videos found, or you selected not to search for them. If there is indeed data to be "
                                     f"processed, make sure the '{lbl_process_img_txt[lang_idx]}' and/or '{lbl_process_vid_txt[lang_idx]}' options "
-                                    f"are selected. You must select at least one of these.\n\nEcoAssist accepts images in the format {IMG_EXTENSIONS}."
+                                    f"are selected. You must select at least one of these.\n\nAddaxAI accepts images in the format {IMG_EXTENSIONS}."
                                     f"\n\nIt accepts videos in the format {VIDEO_EXTENSIONS}.",
                                     f"No se han encontrado imágenes ni vídeos, o ha seleccionado no buscarlos. Si efectivamente hay datos para procesar,"
                                     f" asegúrese de que las opciones '{lbl_process_img_txt[lang_idx]}' y/o '{lbl_process_vid_txt[lang_idx]}' están seleccionadas."
-                                    f" Debe seleccionar al menos una de ellas.\n\nEcoAssist acepta imágenes en formato {IMG_EXTENSIONS}."
+                                    f" Debe seleccionar al menos una de ellas.\n\nAddaxAI acepta imágenes en formato {IMG_EXTENSIONS}."
                                     f"\n\nAcepta vídeos en formato {VIDEO_EXTENSIONS}."][lang_idx])
         btn_start_deploy.configure(state=NORMAL)
         sim_run_btn.configure(state=NORMAL)
@@ -3318,10 +3323,10 @@ def start_deploy(simple_mode = False):
             if os.path.isfile(video_recognition_file):
                 os.remove(video_recognition_file)
         
-        # prepare for EcoAssist use
+        # prepare for AddaxAI use
         else:
             
-            # # If at a later stage I want a merged json for EcoAssist too - this is the code
+            # # If at a later stage I want a merged json for AddaxAI too - this is the code
             # merge_jsons(image_recognition_file if os.path.isfile(image_recognition_file) else None,
             #             video_recognition_file if os.path.isfile(video_recognition_file) else None,
             #             os.path.join(chosen_folder, "merged_recognition_file.json"))
@@ -3390,7 +3395,7 @@ def start_deploy(simple_mode = False):
         else:
             # show error
             mb.showerror(title=error_txt[lang_idx],
-                        message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
+                        message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (AddaxAI v" + current_EA_version + "): '" + str(error) + "'.",
                         detail=subprocess_output + "\n" + traceback.format_exc())
             
             # close window
@@ -3478,7 +3483,7 @@ def produce_graph(file_list_txt = None, dir = None):
         classes = list(count_dict.keys())
         counts = list(count_dict.values())
         fig = plt.figure(figsize = (10, 5))
-        plt.bar(classes, counts, width = 0.4)
+        plt.bar(classes, counts, width = 0.4, color=green_primary)
         plt.ylabel(["No. of instances verified", "No de instancias verificadas"][lang_idx])
         plt.close()
 
@@ -3792,7 +3797,7 @@ def select_detections(selection_dict, prepare_files):
             
             # show error
             mb.showerror(title=error_txt[lang_idx],
-                        message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'.",
+                        message=["An error has occurred", "Ha ocurrido un error"][lang_idx] + " (AddaxAI v" + current_EA_version + "): '" + str(error) + "'.",
                         detail=traceback.format_exc())
 
     # change json paths back, if converted earlier
@@ -3820,7 +3825,7 @@ def open_hitl_settings_window():
     # log
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
 
-    # TODO: this window pops up behind the main EcoAssist window on windows OS. place in front, or hide EcoAssist frame.
+    # TODO: this window pops up behind the main AddaxAI window on windows OS. place in front, or hide AddaxAI frame.
 
     # fetch confs for histograms
     confs = fetch_confs_per_class(os.path.join(var_choose_folder.get(), 'image_recognition_file.json'))
@@ -3874,7 +3879,7 @@ def open_hitl_settings_window():
 
     # img selection frame
     hitl_img_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Image selection criteria ", " Criterios de selección de imágenes "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_img_selection_frame.configure(font=(text_font, 15, "bold"))
     hitl_img_selection_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
     hitl_img_selection_frame.columnconfigure(0, weight=1, minsize=50)
@@ -3904,7 +3909,7 @@ def open_hitl_settings_window():
                                                     "avoid wasting time on low-confidence detections of less than 0.2. Feel free to adjust these settings to suit your data. To "
                                                     "determine the number of images that will require verification based on the selected criteria, press the “Update counts” button "
                                                     "below. If required, you can specify a selection method that will randomly choose a subset based on a percentage or an absolute "
-                                                    "number. Verification will adjust the results in the JSON file. This means that you can continue to use EcoAssist with verified "
+                                                    "number. Verification will adjust the results in the JSON file. This means that you can continue to use AddaxAI with verified "
                                                     "results and post-process as usual.", "Aquí puede especificar qué imágenes desea revisar. Si una detección se alinea con los "
                                                     "criterios elegidos, la imagen será elegida para el proceso de verificación. Tiene la opción de seleccionar un subconjunto de "
                                                     "sus imágenes según clases específicas, rangos de confianza y métodos de selección. Por ejemplo, la configuración"
@@ -3914,7 +3919,7 @@ def open_hitl_settings_window():
                                                     " libre de ajustar estas configuraciones para adaptarlas a sus datos. Para determinar la cantidad de imágenes "
                                                     "que requerirán verificación según los criterios seleccionados, presione el botón 'Actualizar recuentos' a continuación. Si es "
                                                     "necesario, puede especificar un método de selección que elegirá aleatoriamente un subconjunto en función de un porcentaje o un "
-                                                    "número absoluto. La verificación ajustará los resultados en el archivo JSON. Esto significa que puede continuar usando EcoAssist"
+                                                    "número absoluto. La verificación ajustará los resultados en el archivo JSON. Esto significa que puede continuar usando AddaxAI"
                                                     " con resultados verificados y realizar el posprocesamiento como de costumbre."][lang_idx])
     text_hitl_img_selection_explanation.tag_add('explanation', '1.0', '1.end')
 
@@ -3927,7 +3932,7 @@ def open_hitl_settings_window():
 
     # ann selection frame
     hitl_ann_selection_frame = LabelFrame(hitl_settings_main_frame, text=[" Annotation selection criteria ", " Criterios de selección de anotaciones "][lang_idx],
-                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                            pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_ann_selection_frame.configure(font=(text_font, 15, "bold"))
     hitl_ann_selection_frame.grid(column=0, row=2, columnspan=2, sticky='ew')
     hitl_ann_selection_frame.columnconfigure(0, weight=1, minsize=50)
@@ -3998,7 +4003,7 @@ def open_hitl_settings_window():
         min_conf = DoubleVar(value = 0.2)
         max_conf = DoubleVar(value = 1.0)
         fig = plt.figure(figsize = (2, 0.3))
-        plt.hist(confs[k], bins = 10, range = (0,1))
+        plt.hist(confs[k], bins = 10, range = (0,1), color=green_primary, rwidth=0.8)
         plt.xticks([])
         plt.yticks([])
         dist_graph = FigureCanvasTkAgg(fig, frame)
@@ -4092,7 +4097,7 @@ def open_hitl_settings_window():
 
     # button frame
     hitl_test_frame = LabelFrame(hitl_settings_main_frame, text=[" Actions ", " Acciones "][lang_idx],
-                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, labelanchor = 'n')
+                                    pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_test_frame.configure(font=(text_font, 15, "bold"))
     hitl_test_frame.grid(column=0, row=3, columnspan=2, sticky='ew')
     hitl_test_frame.columnconfigure(0, weight=1, minsize=115)
@@ -4225,7 +4230,7 @@ def return_xml_path(img_path):
     temp_xml_path = os.path.join(head_path, "temp-folder", tail_path[0] + ".xml")
     return os.path.normpath(temp_xml_path)
 
-# temporary file which labelImg writes to notify EcoAssist that it should convert xml to coco
+# temporary file which labelImg writes to notify AddaxAI that it should convert xml to coco
 class LabelImgExchangeDir:
     def __init__(self, dir):
         self.dir = dir
@@ -4284,7 +4289,7 @@ def switch_yolov5_version(model_type):
     print(f"EXECUTED: {sys._getframe().f_code.co_name}({model_type})\n")
     
     # set the path to the desired version
-    base_path = os.path.join(EcoAssist_files, "yolov5_versions")
+    base_path = os.path.join(AddaxAI_files, "yolov5_versions")
     if model_type == "old models":
         version_path = os.path.join(base_path, "yolov5_old", "yolov5")
     elif model_type == "new models":
@@ -4325,9 +4330,9 @@ def extract_label_map_from_model(model_file):
         # show error
         mb.showerror(title=error_txt[lang_idx],
                      message=["An error has occurred when trying to extract classes", "Se ha producido un error al intentar extraer las clases"][lang_idx] +
-                                " (EcoAssist v" + current_EA_version + "): '" + str(error) + "'" +
-                                [".\n\nWill try to proceed and produce the output json file, but post-processing features of EcoAssist will not work.",
-                                 ".\n\nIntentará continuar y producir el archivo json de salida, pero las características de post-procesamiento de EcoAssist no funcionarán."][lang_idx],
+                                " (AddaxAI v" + current_EA_version + "): '" + str(error) + "'" +
+                                [".\n\nWill try to proceed and produce the output json file, but post-processing features of AddaxAI will not work.",
+                                 ".\n\nIntentará continuar y producir el archivo json de salida, pero las características de post-procesamiento de AddaxAI no funcionarán."][lang_idx],
                      detail=traceback.format_exc())
     
     # delete and free up memory
@@ -4410,7 +4415,7 @@ def change_hitl_var_in_json(path_to_json, status):
         data = json.load(json_file)
     
     # adjust
-    data['info']["ecoassist_metadata"]["hitl_status"] = status
+    data['info']["addaxai_metadata"]["hitl_status"] = status
 
     # write
     with open(path_to_json, "w") as json_file:
@@ -4421,11 +4426,11 @@ def get_hitl_var_in_json(path_to_json):
     # open
     with open(path_to_json, "r") as json_file:
         data = json.load(json_file)
-        ecoassist_metadata = data['info']["ecoassist_metadata"]
+        addaxai_metadata = data['info']["addaxai_metadata"]
     
     # get status
-    if "hitl_status" in ecoassist_metadata:
-        status = ecoassist_metadata["hitl_status"]
+    if "hitl_status" in addaxai_metadata:
+        status = addaxai_metadata["hitl_status"]
     else:
         status = "never-started"
 
@@ -4704,7 +4709,7 @@ def load_model_vars(model_type = "cls"):
     if var_cls_model.get() in none_txt and model_type == "cls":
         return {}
     model_dir = var_cls_model.get() if model_type == "cls" else var_det_model.get()
-    var_file = os.path.join(EcoAssist_files, "models", model_type, model_dir, "variables.json")
+    var_file = os.path.join(AddaxAI_files, "models", model_type, model_dir, "variables.json")
     try:
         with open(var_file, 'r') as file:
             variables = json.load(file)
@@ -4724,7 +4729,7 @@ def write_global_vars(new_values = None):
                 print(f"Warning: Variable {key} not found in the loaded model variables.")
 
     # write
-    var_file = os.path.join(EcoAssist_files, "EcoAssist", "global_vars.json")
+    var_file = os.path.join(AddaxAI_files, "AddaxAI", "global_vars.json")
     with open(var_file, 'w') as file:
         json.dump(variables, file, indent=4)
 
@@ -4790,7 +4795,7 @@ def format_size(size):
 # function to create a dir and create a model_vars.json
 # it does not yet download the model, but it will show up in the dropdown
 def set_up_unkown_model(title, model_dict, model_type):
-    model_dir = os.path.join(EcoAssist_files, "models", model_type, title)
+    model_dir = os.path.join(AddaxAI_files, "models", model_type, title)
     Path(model_dir).mkdir(parents=True, exist_ok=True)
     var_file = os.path.join(model_dir, "variables.json")
     with open(var_file, "w") as vars:
@@ -4798,11 +4803,11 @@ def set_up_unkown_model(title, model_dict, model_type):
 
 # check if this is the first startup since install 
 def is_first_startup():
-    return os.path.exists(os.path.join(EcoAssist_files, "first-startup.txt"))
+    return os.path.exists(os.path.join(AddaxAI_files, "first-startup.txt"))
 
 # remove the first startup file
 def remove_first_startup_file():
-    first_startup_file = os.path.join(EcoAssist_files, "first-startup.txt")
+    first_startup_file = os.path.join(AddaxAI_files, "first-startup.txt")
     os.remove(first_startup_file)
 
 # read existing model info and distribute separate jsons to all models
@@ -4826,7 +4831,7 @@ def fetch_latest_model_info():
 
     # if this is the first time starting, take the existing model info file in the repo and use that
     # no need to download th same file again
-    model_info_fpath = os.path.join(EcoAssist_files, "EcoAssist", "model_info", f"model_info_v{corresponding_model_info_version}.json")
+    model_info_fpath = os.path.join(AddaxAI_files, "AddaxAI", "model_info", f"model_info_v{corresponding_model_info_version}.json")
     if is_first_startup():
         distribute_individual_model_jsons(model_info_fpath)
         remove_first_startup_file()
@@ -4836,8 +4841,8 @@ def fetch_latest_model_info():
     # and check if there are any new models the user should know about
     else:
         start_time = time.time()
-        release_info_url = "https://api.github.com/repos/PetervanLunteren/EcoAssist/releases"
-        model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/EcoAssist/main/model_info/model_info_v{corresponding_model_info_version}.json"
+        release_info_url = "https://api.github.com/repos/PetervanLunteren/AddaxAI/releases"
+        model_info_url = f"https://raw.githubusercontent.com/PetervanLunteren/AddaxAI/main/model_info/model_info_v{corresponding_model_info_version}.json"
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
@@ -4873,7 +4878,7 @@ def fetch_latest_model_info():
                 print("Checking release info")
 
                 # check which releases are already shown
-                release_shown_json = os.path.join(EcoAssist_files, "EcoAssist", "releases_shown.json")
+                release_shown_json = os.path.join(AddaxAI_files, "AddaxAI", "releases_shown.json")
                 if os.path.exists(release_shown_json):
                     with open(release_shown_json, 'r') as f:
                         already_shown_releases = json.load(f)
@@ -4937,7 +4942,7 @@ def show_release_info(release):
     def close():
         rl_root.destroy()
     def update():
-        webbrowser.open("https://addaxdatascience.com/ecoassist/#install")
+        webbrowser.open("https://addaxdatascience.com/addaxai/#install")
 
     # catch vars
     name_var = release["name"]
@@ -5275,15 +5280,15 @@ def show_download_error_window(model_title, model_dir, model_vars):
         pro_lbl8.grid(row=pro_lbl5_row + 2, column=0, padx=PADX, pady=(0, 0), sticky="nsw")
         pro_lbl9 = customtkinter.CTkLabel(pro_frm_2, text=f"'{model_dir}'")
         pro_lbl9.grid(row=pro_lbl5_row + 3, column=0, padx=(PADX * 4, PADX), pady=(PADY/8, PADY/8), sticky="nsw")
-        pro_lbl10 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Close EcoAssist and try again.",
-                                                            f" {step_n}. Cierre EcoAssist e inténtelo de nuevo."][lang_idx]);step_n += 1
+        pro_lbl10 = customtkinter.CTkLabel(pro_frm_2, text=[f" {step_n}. Close AddaxAI and try again.",
+                                                            f" {step_n}. Cierre AddaxAI e inténtelo de nuevo."][lang_idx]);step_n += 1
         pro_lbl10.grid(row=pro_lbl5_row + 4, column=0, padx=PADX, pady=(PADY/8, PADY/8), sticky="nsw")
 
-        # close EcoAssist
+        # close AddaxAI
         btns_frm2 = customtkinter.CTkFrame(master=de_root)
         btns_frm2.columnconfigure(0, weight=1, minsize=10)
         btns_frm2.grid(row=6, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
-        close_btn = customtkinter.CTkButton(btns_frm2, text=["Close EcoAssist", "Cerrar EcoAssist"][lang_idx], command=on_toplevel_close)
+        close_btn = customtkinter.CTkButton(btns_frm2, text=["Close AddaxAI", "Cerrar AddaxAI"][lang_idx], command=on_toplevel_close)
         close_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
 
 # open frame to select species for advanc mode
@@ -5465,7 +5470,7 @@ class ModelDownloadProgressWindow:
         self.pbr.set(percentage)
         self.per.configure(text = f" {round(percentage * 100)}% ")
         if percentage > 0.5:
-            self.per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+            self.per.configure(fg_color=(green_primary, "#1F6BA5"))
         else:
             self.per.configure(fg_color=("#949BA2", "#4B4D50"))
         self.dm_root.update()
@@ -5511,16 +5516,16 @@ def show_donation_popup():
     
     # define text variables
     donation_text = [
-        "At Addax Data Science, we are dedicated to making conservation technology accessible to everyone—especially for those who may not have the funds to support it. But... developing and maintaining EcoAssist requires considerable time and resources, all contributed by volunteers. Donations will directly fund platform maintenance, new features, and the development of species identification models.",
-        "En Addax Data Science, nos dedicamos a hacer que la tecnología de conservación sea accesible para todos, especialmente para aquellos que pueden no tener los fondos para apoyarla. Pero... desarrollar y mantener EcoAssist requiere considerable tiempo y recursos, todos aportados por voluntarios. Las donaciones financiarán directamente el mantenimiento de la plataforma, nuevas funciones y el desarrollo de modelos de identificación de especies."
+        "At Addax Data Science, we are dedicated to making conservation technology accessible to everyone—especially for those who may not have the funds to support it. But... developing and maintaining AddaxAI requires considerable time and resources, all contributed by volunteers. Donations will directly fund platform maintenance, new features, and the development of species identification models.",
+        "En Addax Data Science, nos dedicamos a hacer que la tecnología de conservación sea accesible para todos, especialmente para aquellos que pueden no tener los fondos para apoyarla. Pero... desarrollar y mantener AddaxAI requiere considerable tiempo y recursos, todos aportados por voluntarios. Las donaciones financiarán directamente el mantenimiento de la plataforma, nuevas funciones y el desarrollo de modelos de identificación de especies."
     ]
     title_text = [
-        "Does EcoAssist make your work easier?",
-        "¿EcoAssist hace tu trabajo más fácil?"
+        "Does AddaxAI make your work easier?",
+        "¿AddaxAI hace tu trabajo más fácil?"
     ]
     subtitle_text = [
-        "Let's keep EcoAssist free and available for everybody!",
-        "¡Mantengamos EcoAssist libre y disponible para todos!"
+        "Let's keep AddaxAI free and available for everybody!",
+        "¡Mantengamos AddaxAI libre y disponible para todos!"
     ]
     suggested_amounts_text = [
         "Suggested amounts",
@@ -5613,9 +5618,9 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     liscense_present = False if license == "" else True
     needs_EA_update_bool = needs_EA_update(min_version)
     if needs_EA_update_bool:
-        update_var = f"Your current EcoAssist version (v{current_EA_version}) will not be able to run this model. An update is required."
+        update_var = f"Your current AddaxAI version (v{current_EA_version}) will not be able to run this model. An update is required."
     else:
-        update_var = f"Current version of EcoAssist (v{current_EA_version}) is able to use this model. No update required."
+        update_var = f"Current version of AddaxAI (v{current_EA_version}) is able to use this model. No update required."
     
     # define functions
     def close():
@@ -5623,7 +5628,7 @@ def show_model_info(title = None, model_dict = None, new_model = False):
     def read_more():
         webbrowser.open(url_var)
     def update():
-        webbrowser.open("https://addaxdatascience.com/ecoassist/#install")
+        webbrowser.open("https://addaxdatascience.com/addaxai/#install")
     def cite():
         webbrowser.open(citation)
     def see_license():
@@ -5811,7 +5816,7 @@ def show_result_info(file_path):
     rs_root = customtkinter.CTkToplevel(root)
     rs_root.title("Results - quick view")
     rs_root.geometry("+10+10")
-    result_bg_image = customtkinter.CTkImage(PIL_gradient, size=(RESULTS_WINDOW_WIDTH, RESULTS_WINDOW_HEIGHT))
+    result_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(RESULTS_WINDOW_WIDTH, RESULTS_WINDOW_HEIGHT))
     result_bg_image_label = customtkinter.CTkLabel(rs_root, image=result_bg_image)
     result_bg_image_label.grid(row=0, column=0)
     result_main_frame = customtkinter.CTkFrame(rs_root, corner_radius=0, fg_color = 'transparent')
@@ -6459,7 +6464,7 @@ class ProgressWindow:
                 self.img_det_pbr.set(percentage)
                 self.img_det_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_det_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_det_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_det_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_det_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6509,7 +6514,7 @@ class ProgressWindow:
                 self.img_cls_pbr.set(percentage)
                 self.img_cls_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_cls_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_cls_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_cls_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_cls_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6576,7 +6581,7 @@ class ProgressWindow:
                 self.vid_det_pbr.set(percentage)
                 self.vid_det_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_det_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_det_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_det_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 if frame_video_choice == "frame":
@@ -6633,7 +6638,7 @@ class ProgressWindow:
                 self.vid_cls_pbr.set(percentage)
                 self.vid_cls_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_cls_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_cls_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_cls_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_cls_num_val.configure(text = f"{cur_it} of {tot_it}")
@@ -6691,7 +6696,7 @@ class ProgressWindow:
                 self.img_pst_pbr.set(percentage)
                 self.img_pst_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.img_pst_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.img_pst_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.img_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.img_pst_ela_val.configure(text = time_ela)
@@ -6724,7 +6729,7 @@ class ProgressWindow:
                 self.vid_pst_pbr.set(percentage)
                 self.vid_pst_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.vid_pst_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.vid_pst_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.vid_pst_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.vid_pst_ela_val.configure(text = time_ela)
@@ -6757,7 +6762,7 @@ class ProgressWindow:
                 self.plt_pbr.set(percentage)
                 self.plt_per.configure(text = f" {round(percentage * 100)}% ")
                 if percentage > 0.5:
-                    self.plt_per.configure(fg_color=("#3B8ECF", "#1F6BA5"))
+                    self.plt_per.configure(fg_color=(green_primary, "#1F6BA5"))
                 else:
                     self.plt_per.configure(fg_color=("#949BA2", "#4B4D50"))
                 self.plt_ela_val.configure(text = time_ela)
@@ -7026,7 +7031,7 @@ def remove_widgets_based_on_location(master, rows, cols):
 class HyperlinkManager:
     def __init__(self, text):
         self.text = text
-        self.text.tag_config("hyper", foreground="blue", underline=1)
+        self.text.tag_config("hyper", foreground=green_primary, underline=1)
         self.text.tag_bind("hyper", "<Enter>", self._enter)
         self.text.tag_bind("hyper", "<Leave>", self._leave)
         self.text.tag_bind("hyper", "<Button-1>", self._click)
@@ -7082,10 +7087,10 @@ def abs_paths_warning():
     global shown_abs_paths_warning
     if var_abs_paths.get() and shown_abs_paths_warning:
         mb.showinfo(warning_txt[lang_idx], ["It is not recommended to use absolute paths in the output file. Third party software (such "
-                    "as Timelapse, Agouti etc.) will not be able to read the json file if the paths are absolute. Only enable"
+                    "as Timelapse) will not be able to read the json file if the paths are absolute. Only enable"
                     " this option if you know what you are doing.",
-                    "No se recomienda utilizar rutas absolutas en el archivo de salida. Software de terceros (como Timelapse, "
-                    "Agouti etc.) no podrán leer el archivo json si las rutas son absolutas. Sólo active esta opción si sabe lo"
+                    "No se recomienda utilizar rutas absolutas en el archivo de salida. Software de terceros (como Timelapse"
+                    ") no podrán leer el archivo json si las rutas son absolutas. Sólo active esta opción si sabe lo"
                     " que está haciendo."][lang_idx])
         shown_abs_paths_warning = False
 
@@ -7207,7 +7212,7 @@ def complete_frame(frame):
     # adjust frames
     frame.configure(relief = 'groove')
     if any_step:
-        frame.configure(fg='#579F2D')
+        frame.configure(fg=green_primary)
     if snd_step:
         cls_frame.configure(relief = 'groove')
         img_frame.configure(relief = 'groove')
@@ -7230,7 +7235,7 @@ def complete_frame(frame):
         # the rest
         if not any_step:
             # sub frames of fth_step only
-            frame.configure(fg='#579F2D')
+            frame.configure(fg=green_primary)
 
         # add check mark
         lbl_check_mark = Label(frame, image=check_mark_two_rows)
@@ -7258,7 +7263,7 @@ def enable_frame(frame):
     # all frames
     frame.configure(relief = 'solid')
     if any_step:
-        frame.configure(fg=EA_blue_color)
+        frame.configure(fg=green_primary)
     if snd_step:
         toggle_cls_frame()
         cls_frame.configure(relief = 'solid')
@@ -7360,7 +7365,7 @@ def resize_canvas_to_content():
     canvas_height = min(canvas_required_height, canvas_max_height, 800)
     deploy_canvas.configure(width = canvas_required_width, height = canvas_height)
     bg_height = canvas_height + height_logo + ADV_EXTRA_GRADIENT_HEIGHT
-    new_advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, bg_height))
+    new_advanc_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(ADV_WINDOW_WIDTH, bg_height))
     advanc_bg_image_label.configure(image=new_advanc_bg_image)
 
 # functions to delete the grey text in the entry boxes for the...
@@ -7414,13 +7419,13 @@ def switch_mode():
     })
 
 def sponsor_project():
-    webbrowser.open("https://addaxdatascience.com/ecoassist/#donate")
+    webbrowser.open("https://addaxdatascience.com/addaxai/#donate")
 
 class GreyTopButton(customtkinter.CTkButton):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(fg_color = ("#DBDBDB", "#333333"),
-                       hover_color = ("#CFCFCF", "#2B2B2B"),
+        self.configure(fg_color = (yellow_secondary, "#333333"),
+                       hover_color = (yellow_tertiary, "#2B2B2B"),
                        text_color = ("black", "white"),
                        height = 10,
                        width = 140,
@@ -7524,11 +7529,12 @@ if os.name == "nt": # windows
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 699
-    ADV_EXTRA_GRADIENT_HEIGHT = 78
+    ADV_EXTRA_GRADIENT_HEIGHT = 98
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
@@ -7551,11 +7557,12 @@ elif sys.platform == "linux" or sys.platform == "linux2": # linux
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 683
-    ADV_EXTRA_GRADIENT_HEIGHT = 70
+    ADV_EXTRA_GRADIENT_HEIGHT = 90
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
@@ -7578,12 +7585,13 @@ else: # macOS
     PADY = 8
     PADX = 10
     ICON_SIZE = 35
-    LOGO_SIZE = 50
+    LOGO_WIDTH = 135
+    LOGO_HEIGHT = 50
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 696
-    ADV_EXTRA_GRADIENT_HEIGHT = 110
-    ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
+    ADV_EXTRA_GRADIENT_HEIGHT = 130
+    ADV_TOP_BANNER_WIDTH_FACTOR = 23.2
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
     RESULTS_WINDOW_WIDTH = 803
@@ -7593,33 +7601,39 @@ else: # macOS
 
 # TKINTER MAIN WINDOW 
 root = customtkinter.CTk()
-EcoAssist_icon_image = tk.PhotoImage(file=os.path.join(EcoAssist_files, "EcoAssist", "imgs", "logo_small_bg.png"))
-root.iconphoto(True, EcoAssist_icon_image)
-s = ttk.Style(root)
-s.configure("TNotebook", tabposition='n')
+AddaxAI_icon_image = tk.PhotoImage(file=os.path.join(AddaxAI_files, "AddaxAI", "imgs", "square_logo_excl_text.png"))
+root.iconphoto(True, AddaxAI_icon_image)
 root.withdraw()
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
 url_label_font = customtkinter.CTkFont(family='CTkFont', underline = True)
 italic_label_font = customtkinter.CTkFont(family='CTkFont', size=14, slant='italic')
 
+# set the global appearance for the app
+customtkinter.set_appearance_mode("light")
+customtkinter.set_default_color_theme(os.path.join(AddaxAI_files, "AddaxAI", "themes", "addaxai.json"))
+
 # ADVANCED MODE WINDOW 
 advanc_mode_win = customtkinter.CTkToplevel(root)
-advanc_mode_win.title(f"EcoAssist v{current_EA_version} - Advanced mode")
+advanc_mode_win.title(f"AddaxAI v{current_EA_version} - Advanced mode")
 advanc_mode_win.geometry("+20+20")
 advanc_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
-advanc_bg_image = customtkinter.CTkImage(PIL_gradient, size=(ADV_WINDOW_WIDTH, 10))
+advanc_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(ADV_WINDOW_WIDTH, 10))
 advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode_win, image=advanc_bg_image)
 advanc_bg_image_label.grid(row=0, column=0)
-advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent')
+advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent', bg_color = yellow_primary)
 advanc_main_frame.grid(row=0, column=0, sticky="ns")
 tabControl = ttk.Notebook(advanc_main_frame)
 advanc_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
-logoImage = customtkinter.CTkImage(PIL_logo, size=(LOGO_SIZE, LOGO_SIZE))
+logoImage = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(advanc_main_frame, text="", image = logoImage).grid(column=0, row=0, columnspan=2, sticky='', pady=(PADY, 0), padx=0)
-adv_top_banner = customtkinter.CTkImage(PIL_advanc_top_banner, size=(LOGO_SIZE * ADV_TOP_BANNER_WIDTH_FACTOR, LOGO_SIZE))
+adv_top_banner = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(advanc_main_frame, text="", image = adv_top_banner).grid(column=0, row=0, columnspan=2, sticky='ew', pady=(PADY, 0), padx=0)
+adv_spacer_top = customtkinter.CTkFrame(advanc_main_frame, height=PADY, fg_color=yellow_primary)
+adv_spacer_top.grid(column=0, row=1, columnspan=2, sticky='ew')
+adv_spacer_bottom = customtkinter.CTkFrame(advanc_main_frame, height=PADY, fg_color=yellow_primary)
+adv_spacer_bottom.grid(column=0, row=5, columnspan=2, sticky='ew')
 
 # prepare check mark for later use
 check_mark_one_row = PIL_checkmark.resize((20, 20), Image.Resampling.LANCZOS)
@@ -7642,9 +7656,9 @@ adv_btn_reset_values.grid(row=0, column=0, padx=PADX, pady=(0, 0), columnspan = 
 
 # about
 adv_abo_lbl_txt = ["By Addax Data Science. More conservation technology? Visit", "Creado por Addax Data Science. ¿Más tecnología de conservación? Visite"]
-adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
+adv_abo_lbl = tk.Label(advanc_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE), fg="black", bg = yellow_primary)
 adv_abo_lbl.grid(row=6, column=0, columnspan = 2, sticky="")
-adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
+adv_abo_lbl_link = tk.Label(advanc_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1), fg=green_primary, bg =yellow_primary)
 adv_abo_lbl_link.grid(row=7, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 adv_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
@@ -7674,13 +7688,13 @@ about_tab_text = ['About', 'Acerca de']
 tabControl.add(about_tab, text=about_tab_text[lang_idx])
 
 # grid
-tabControl.grid(column=0, row=1, sticky="ns", pady = 0)
+tabControl.grid(column=0, row=2, sticky="ns", pady = 0)
 
 #### deploy tab
 ### first step
 fst_step_txt = ['Step 1: Select folder', 'Paso 1: Seleccione carpeta']
 row_fst_step = 1
-fst_step = LabelFrame(deploy_scrollable_frame, text=" " + fst_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+fst_step = LabelFrame(deploy_scrollable_frame, text=" " + fst_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 fst_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fst_step.grid(column=0, row=row_fst_step, columnspan=1, sticky='ew')
 fst_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -7701,7 +7715,7 @@ btn_choose_folder.grid(row=row_choose_folder, column=1, sticky='nesw', padx=5)
 ### second step
 snd_step_txt = ['Step 2: Analysis', 'Paso 2: Análisis']
 row_snd_step = 2
-snd_step = LabelFrame(deploy_scrollable_frame, text=" " + snd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+snd_step = LabelFrame(deploy_scrollable_frame, text=" " + snd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 snd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 snd_step.grid(column=0, row=row_snd_step, sticky='nesw')
 snd_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -7725,7 +7739,7 @@ var_det_model_path.set(global_vars["var_det_model_path"])
 dpd_model = OptionMenu(snd_step, var_det_model, *dpd_options_model[lang_idx], command=model_options)
 dpd_model.configure(width=1)
 dpd_model.grid(row=row_model, column=1, sticky='nesw', padx=5)
-dsp_model = Label(master=snd_step, textvariable=var_det_model_short, fg=EA_blue_color)
+dsp_model = Label(master=snd_step, textvariable=var_det_model_short, fg=green_primary)
 if var_det_model_short.get() != "":
     dsp_model.grid(column=0, row=row_model, sticky='e')
 
@@ -7778,7 +7792,7 @@ if var_cls_model.get() not in none_txt:
 else:
     dsp_choose_classes = Label(cls_frame, text= "")
 dsp_choose_classes.grid(row=row_choose_classes, column=0, sticky='e', padx=0)
-dsp_choose_classes.configure(fg=EA_blue_color)
+dsp_choose_classes.configure(fg=green_primary)
 
 # threshold to classify detections
 lbl_cls_detec_thresh_txt = ["Detection confidence threshold", "Umbral de confianza de detección"]
@@ -7793,7 +7807,7 @@ scl_cls_detec_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orien
 scl_cls_detec_thresh.grid(row=row_cls_detec_thresh, column=1, sticky='ew', padx=10)
 dsp_cls_detec_thresh = Label(cls_frame, textvariable=var_cls_detec_thresh)
 dsp_cls_detec_thresh.grid(row=row_cls_detec_thresh, column=0, sticky='e', padx=0)
-dsp_cls_detec_thresh.configure(fg=EA_blue_color)
+dsp_cls_detec_thresh.configure(fg=green_primary)
 
 # threshold accept identifications
 lbl_cls_class_thresh_txt = ["Classification confidence threshold", "Umbral de confianza de la clasificación"]
@@ -7808,7 +7822,7 @@ scl_cls_class_thresh = Scale(cls_frame, from_=0.01, to=1, resolution=0.01, orien
 scl_cls_class_thresh.grid(row=row_cls_class_thresh, column=1, sticky='ew', padx=10)
 dsp_cls_class_thresh = Label(cls_frame, textvariable=var_cls_class_thresh)
 dsp_cls_class_thresh.grid(row=row_cls_class_thresh, column=0, sticky='e', padx=0)
-dsp_cls_class_thresh.configure(fg=EA_blue_color)
+dsp_cls_class_thresh.configure(fg=green_primary)
 
 # Smoothen results
 lbl_smooth_cls_animal_txt = ["Smooth confidence scores per sequence", "Suavizar puntuaciones por secuencia"]
@@ -7986,7 +8000,7 @@ btn_start_deploy.grid(row=row_btn_start_deploy, column=0, columnspan=2, sticky='
 ### human-in-the-loop step
 trd_step_txt = ["Step 3: Annotation (optional)", "Paso 3: Anotación (opcional)"]
 trd_step_row = 1
-trd_step = LabelFrame(deploy_scrollable_frame, text=" " + trd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+trd_step = LabelFrame(deploy_scrollable_frame, text=" " + trd_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 trd_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 trd_step.grid(column=1, row=trd_step_row, sticky='nesw')
 trd_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -8003,7 +8017,7 @@ btn_hitl_main.grid(row=row_hitl_main, column=1, sticky='nesw', padx=5)
 ### fourth step
 fth_step_txt = ["Step 4: Post-processing (optional)", "Paso 4: Post-Procesado (opcional)"]
 fth_step_row = 2
-fth_step = LabelFrame(deploy_scrollable_frame, text=" " + fth_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=EA_blue_color, borderwidth=2)
+fth_step = LabelFrame(deploy_scrollable_frame, text=" " + fth_step_txt[lang_idx] + " ", pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, borderwidth=2)
 fth_step.configure(font=(text_font, first_level_frame_font_size, "bold"))
 fth_step.grid(column=1, row=fth_step_row, sticky='nesw')
 fth_step.columnconfigure(0, weight=1, minsize=label_width)
@@ -8017,7 +8031,7 @@ lbl_output_dir.grid(row=row_output_dir, sticky='nesw', pady=2)
 var_output_dir = StringVar()
 var_output_dir.set("")
 var_output_dir_short = StringVar()
-dsp_output_dir = Label(master=fth_step, textvariable=var_output_dir_short, fg=EA_blue_color)
+dsp_output_dir = Label(master=fth_step, textvariable=var_output_dir_short, fg=green_primary)
 btn_output_dir = Button(master=fth_step, text=browse_txt[lang_idx], width=1, command=lambda: browse_dir(var_output_dir, var_output_dir_short, dsp_output_dir, 25, row_output_dir, 0, 'e'))
 btn_output_dir.grid(row=row_output_dir, column=1, sticky='nesw', padx=5)
 
@@ -8158,7 +8172,7 @@ var_thresh.set(global_vars['var_thresh'])
 scl_thresh = Scale(fth_step, from_=0.01, to=1, resolution=0.01, orient=HORIZONTAL, variable=var_thresh, showvalue=0, width=10, length=1)
 scl_thresh.grid(row=row_lbl_thresh, column=1, sticky='ew', padx=10)
 dsp_thresh = Label(fth_step, textvariable=var_thresh)
-dsp_thresh.configure(fg=EA_blue_color)
+dsp_thresh.configure(fg=green_primary)
 dsp_thresh.grid(row=row_lbl_thresh, column=0, sticky='e', padx=0)
 
 # postprocessing button
@@ -8205,7 +8219,7 @@ help_text = Text(help_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.s
 help_text.configure(spacing1=2, spacing2=3, spacing3=2)
 help_text.tag_config('intro', font=f'{text_font} {int(13 * text_size_adjustment_factor)} italic', foreground='black', lmargin1=10, lmargin2=10, underline = False) 
 help_text.tag_config('tab', font=f'{text_font} {int(16 * text_size_adjustment_factor)} bold', foreground='black', lmargin1=10, lmargin2=10, underline = True) 
-help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=15, lmargin2=15) 
+help_text.tag_config('frame', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground=green_primary, lmargin1=15, lmargin2=15) 
 help_text.tag_config('feature', font=f'{text_font} {int(14 * text_size_adjustment_factor)} normal', foreground='black', lmargin1=20, lmargin2=20, underline = True) 
 help_text.tag_config('explanation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=25, lmargin2=25)
 hyperlink1 = HyperlinkManager(help_text)
@@ -8220,7 +8234,7 @@ def write_help_tab():
                            "A continuación encontrarás documentación detallada sobre cada ajuste. Si tienes alguna pregunta, no dudes en ponerte en contacto conmigo en "][lang_idx])
     help_text.insert(INSERT, "peter@addaxdatascience.com", hyperlink1.add(partial(webbrowser.open, "mailto:peter@addaxdatascience.com")))
     help_text.insert(END, [" or raise an issue on the ", " o plantear una incidencia en "][lang_idx])
-    help_text.insert(INSERT, ["GitHub page", "la página de GitHub"][lang_idx], hyperlink1.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist/issues")))
+    help_text.insert(INSERT, ["GitHub page", "la página de GitHub"][lang_idx], hyperlink1.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/AddaxAI/issues")))
     help_text.insert(END, ".\n\n")
     help_text.tag_add('intro', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
@@ -8239,12 +8253,12 @@ def write_help_tab():
 
     # det model
     help_text.insert(END, f"{lbl_model_txt[lang_idx]}\n")
-    help_text.insert(END, ["EcoAssist uses a combination of a detection model and a classification model to identify animals. The detection model will locate the animal, whereas the "
+    help_text.insert(END, ["AddaxAI uses a combination of a detection model and a classification model to identify animals. The detection model will locate the animal, whereas the "
                            "classification model will identify which species the animal belongs to. Here, you can select the detection model that you want to use. If the dropdown "
                            "option 'Custom model' is selected, you will be prompted to select a custom YOLOv5 model file. The preloaded 'MegaDetector' models detect animals, people, "
                            "and vehicles in camera trap imagery. It does not identify the animals; it just finds them. Version A and B differ only in their training data. Each model "
                            "can outperform the other slightly, depending on your data. Try them both and see which one works best for you. If you really don't have a clue, just stick "
-                           "with the default 'MegaDetector 5a'. More info about MegaDetector models ", "EcoAssist utiliza una combinación de un modelo de detección y un modelo de "
+                           "with the default 'MegaDetector 5a'. More info about MegaDetector models ", "AddaxAI utiliza una combinación de un modelo de detección y un modelo de "
                            "clasificación para identificar animales. El modelo de detección localizará al animal, mientras que el modelo de clasificación identificará a qué especie "
                            "pertenece el animal. Aquí puede seleccionar el modelo de detección que desea utilizar. Si selecciona la opción desplegable 'Modelo personalizado', se le "
                            "pedirá que seleccione un archivo de modelo YOLOv5 personalizado. Los modelos 'MegaDetector' precargados detectan animales, personas y vehículos en imágenes"
@@ -8258,11 +8272,11 @@ def write_help_tab():
 
     # cls model
     help_text.insert(END, f"{lbl_cls_model_txt[lang_idx]}\n")
-    help_text.insert(END, ["EcoAssist uses a combination of a detection model and a classification model to identify animals. The detection model will locate the animal, whereas the "
+    help_text.insert(END, ["AddaxAI uses a combination of a detection model and a classification model to identify animals. The detection model will locate the animal, whereas the "
                            "classification model will identify which species the animal belongs to. Here, you can select the classification model that you want to use. Each "
                            "classification model is developed for a specific area. Explore which model suits your data best, but please note that models developed for other biomes "
                            "or projects do not necessarily perform equally well in other ecosystems. Always investigate the model’s accuracy on your data before accepting any results.", 
-                           "EcoAssist utiliza una combinación de un modelo de detección y un modelo de clasificación para identificar animales. El modelo de detección localizará al "
+                           "AddaxAI utiliza una combinación de un modelo de detección y un modelo de clasificación para identificar animales. El modelo de detección localizará al "
                            "animal, mientras que el modelo de clasificación identificará a qué especie pertenece el animal. Aquí puede seleccionar el modelo de clasificación que desea "
                            "utilizar. Cada modelo de clasificación se desarrolla para un área específica. Explore qué modelo se adapta mejor a sus datos, pero tenga en cuenta que los "
                            "modelos desarrollados para otros biomas o proyectos no funcionan necesariamente igual de bien en otros ecosistemas. Investiga siempre la precisión del modelo"
@@ -8292,9 +8306,9 @@ def write_help_tab():
 
     # threshold to classify detections
     help_text.insert(END, f"{lbl_cls_detec_thresh_txt[lang_idx]}\n")
-    help_text.insert(END, ["EcoAssist uses a combination of a detection model and a classification model to identify animals. The detection model will locate "
+    help_text.insert(END, ["AddaxAI uses a combination of a detection model and a classification model to identify animals. The detection model will locate "
                            "the animal, whereas the classification model will identify which species the animal belongs to. This confidence threshold defines "
-                           "which animal detections will be passed on to the classification model for further identification.", "EcoAssist utiliza una "
+                           "which animal detections will be passed on to the classification model for further identification.", "AddaxAI utiliza una "
                            "combinación de un modelo de detección y un modelo de clasificación para identificar a los animales. El modelo de detección "
                            "localizará al animal, mientras que el modelo de clasificación identificará a qué especie pertenece el animal. Este umbral de "
                            "confianza define qué animales detectados se pasarán al modelo de clasificación para su posterior identificación."][lang_idx])
@@ -8304,9 +8318,9 @@ def write_help_tab():
 
     # threshold to classify detections
     help_text.insert(END, f"{lbl_cls_class_thresh_txt[lang_idx]}\n")
-    help_text.insert(END, ["EcoAssist uses a combination of a detection model and a classification model to identify animals. The detection model will locate "
+    help_text.insert(END, ["AddaxAI uses a combination of a detection model and a classification model to identify animals. The detection model will locate "
                            "the animal, whereas the classification model will identify which species the animal belongs to. This confidence threshold defines "
-                           "which animal identifications will be accepted.", "EcoAssist utiliza una combinación de un modelo de detección y un modelo de "
+                           "which animal identifications will be accepted.", "AddaxAI utiliza una combinación de un modelo de detección y un modelo de "
                            "clasificación para identificar a los animales. El modelo de detección localizará al animal, mientras que el modelo de clasificación"
                            " identificará a qué especie pertenece el animal. Este umbral de confianza define qué identificaciones de animales se aceptarán."][lang_idx])
     help_text.insert(END, "\n\n")
@@ -8329,21 +8343,21 @@ def write_help_tab():
 
     # exclude subs
     help_text.insert(END, f"{lbl_exclude_subs_txt[lang_idx]}\n")
-    help_text.insert(END, ["By default, EcoAssist will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only"
-                           " the files directly in the chosen folder.\n\n", "Por defecto, EcoAssist buscará en los subdirectorios. Seleccione esta opción si "
+    help_text.insert(END, ["By default, AddaxAI will recurse into subdirectories. Select this option if you want to ignore the subdirectories and process only"
+                           " the files directly in the chosen folder.\n\n", "Por defecto, AddaxAI buscará en los subdirectorios. Seleccione esta opción si "
                            "desea ignorar los subdirectorios y procesar sólo los archivos directamente en la carpeta elegida.\n\n"][lang_idx])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
 
     # exclude detections
     help_text.insert(END, f"{lbl_use_custom_img_size_for_deploy_txt[lang_idx]} / {lbl_image_size_for_deploy_txt[lang_idx]}\n")
-    help_text.insert(END, ["EcoAssist will resize the images before they get processed. EcoAssist will by default resize the images to 1280 pixels. "
+    help_text.insert(END, ["AddaxAI will resize the images before they get processed. AddaxAI will by default resize the images to 1280 pixels. "
                     "Deploying a model with a lower image size will reduce the processing time, but also the detection accuracy. Best results are obtained if you use the"
-                    " same image size as the model was trained on. If you trained a model in EcoAssist using the default image size, you should set this value to 640 for "
+                    " same image size as the model was trained on. If you trained a model in AddaxAI using the default image size, you should set this value to 640 for "
                     "the YOLOv5 models. Use the default for the MegaDetector models.\n\n",
-                    "EcoAssist redimensionará las imágenes antes de procesarlas. Por defecto, EcoAssist redimensionará las imágenes a 1280 píxeles. Desplegar un modelo "
+                    "AddaxAI redimensionará las imágenes antes de procesarlas. Por defecto, AddaxAI redimensionará las imágenes a 1280 píxeles. Desplegar un modelo "
                     "con un tamaño de imagen inferior reducirá el tiempo de procesamiento, pero también la precisión de la detección. Los mejores resultados se obtienen "
-                    "si se utiliza el mismo tamaño de imagen con el que se entrenó el modelo. Si ha entrenado un modelo en EcoAssist utilizando el tamaño de imagen por "
+                    "si se utiliza el mismo tamaño de imagen con el que se entrenó el modelo. Si ha entrenado un modelo en AddaxAI utilizando el tamaño de imagen por "
                     "defecto, debe establecer este valor en 640 para los modelos YOLOv5. Utilice el valor por defecto para los modelos MegaDetector.\n\n"][lang_idx])
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
     help_text.tag_add('explanation', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=2
@@ -8458,8 +8472,8 @@ def write_help_tab():
     help_text.insert(END, [", which offers such a feature. More information about that ",
                            ", que ofrece tal característica. Más información al respecto "][lang_idx])
     help_text.insert(INSERT, ["here", "aquí"][lang_idx], hyperlink1.add(partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/TimelapseImageRecognitionGuide.pdf")))
-    help_text.insert(END,[" (starting on page 9). The process of importing the output file produced by EcoAssist into Timelapse is described ",
-                          " (a partir de la página 9). El proceso de importación del archivo de salida producido por EcoAssist en Timelapse se describe "][lang_idx])
+    help_text.insert(END,[" (starting on page 9). The process of importing the output file produced by AddaxAI into Timelapse is described ",
+                          " (a partir de la página 9). El proceso de importación del archivo de salida producido por AddaxAI en Timelapse se describe "][lang_idx])
     help_text.insert(INSERT, ["here", "aquí"][lang_idx], hyperlink1.add(partial(webbrowser.open, "https://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.DownloadMegadetector")))
     help_text.insert(END,".\n\n")
     help_text.tag_add('feature', f"{str(line_number)}.0", f"{str(line_number)}.end");line_number+=1
@@ -8549,7 +8563,7 @@ write_help_tab()
 about_scroll = Scrollbar(about_tab)
 about_text = Text(about_tab, width=1, height=1, wrap=WORD, yscrollcommand=scroll.set)
 about_text.configure(spacing1=2, spacing2=3, spacing3=2)
-about_text.tag_config('title', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground='darkblue', lmargin1=10, lmargin2=10) 
+about_text.tag_config('title', font=f'{text_font} {int(15 * text_size_adjustment_factor)} bold', foreground=green_primary, lmargin1=10, lmargin2=10) 
 about_text.tag_config('info', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=20, lmargin2=20)
 about_text.tag_config('citation', font=f'{text_font} {int(13 * text_size_adjustment_factor)} normal', lmargin1=30, lmargin2=50)
 hyperlink = HyperlinkManager(about_text)
@@ -8561,47 +8575,34 @@ def write_about_tab():
 
     # contact
     about_text.insert(END, ["Contact\n", "Contacto\n"][lang_idx])
-    about_text.insert(END, ["Please also help me to keep improving EcoAssist and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can "
+    about_text.insert(END, ["Please also help me to keep improving AddaxAI and let me know about any improvements, bugs, or new features so that I can keep it up-to-date. You can "
                            "contact me at ",
-                           "Por favor, ayúdame también a seguir mejorando EcoAssist e infórmame de cualquier mejora, error o nueva función para que pueda mantenerlo actualizado. "
+                           "Por favor, ayúdame también a seguir mejorando AddaxAI e infórmame de cualquier mejora, error o nueva función para que pueda mantenerlo actualizado. "
                            "Puedes ponerte en contacto conmigo en "][lang_idx])
     about_text.insert(INSERT, "peter@addaxdatascience.com", hyperlink.add(partial(webbrowser.open, "mailto:peter@addaxdatascience.com")))
     about_text.insert(END, [" or raise an issue on the ", " o plantear un problema en "][lang_idx])
-    about_text.insert(INSERT, ["GitHub page", "la página de GitHub"][lang_idx], hyperlink.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/EcoAssist/issues")))
+    about_text.insert(INSERT, ["GitHub page", "la página de GitHub"][lang_idx], hyperlink.add(partial(webbrowser.open, "https://github.com/PetervanLunteren/AddaxAI/issues")))
     about_text.insert(END, ".\n\n")
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
-    # ecoassist citation
-    about_text.insert(END, ["EcoAssist citation\n", "Citar EcoAssist\n"][lang_idx])
-    about_text.insert(END, ["If you used EcoAssist in your research, please use the following citations.\n",
-                            "Si ha utilizado EcoAssist en su investigación, utilice la siguiente citas.\n"][lang_idx])
+    # addaxai citation
+    about_text.insert(END, ["AddaxAI citation\n", "Citar AddaxAI\n"][lang_idx])
+    about_text.insert(END, ["If you used AddaxAI in your research, please use the following citations. The AddaxAI software was previously called 'EcoAssist'.\n",
+                            "Si ha utilizado AddaxAI en su investigación, utilice la siguiente citas. AddaxAI se llamaba antes 'EcoAssist'.\n"][lang_idx])
     about_text.insert(END, "- van Lunteren, P. (2023). EcoAssist: A no-code platform to train and deploy custom YOLOv5 object detection models. Journal of Open Source Software, 8(88), 5581. ")
     about_text.insert(INSERT, "https://doi.org/10.21105/joss.05581", hyperlink.add(partial(webbrowser.open, "https://doi.org/10.21105/joss.05581")))
     about_text.insert(END, ".\n")
-    about_text.insert(END, "- Beery, S., Morris, D., & Yang, S. (2019). Efficient pipeline for camera trap image review. arXiv preprint arXiv:1907.06772. ")
-    about_text.insert(INSERT, "https://doi.org/10.48550/arXiv.1907.06772", hyperlink.add(partial(webbrowser.open, "https://doi.org/10.48550/arXiv.1907.06772")))
-    about_text.insert(END, ".\n\n")
+    about_text.insert(END, ["- Plus the citation of the models used.\n\n", "- Más la cita de los modelos utilizados.\n\n"][lang_idx]    )
     about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
     about_text.tag_add('citation', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
 
-    # image credits
-    about_text.insert(END, ["Image credits\n", "Créditos de la imagen\n"][lang_idx])
-    about_text.insert(END, ["The beautiful camera trap images of the fox and ocelot displayed at the top were taken from the ",
-                            "Las bellas imágenes del zorro y el ocelote captadas por cámaras trampa que aparecen en la parte superior proceden del conjunto de "][lang_idx])
-    about_text.insert(INSERT, ["WCS Camera Traps dataset", "datos WCS Camera Traps"][lang_idx], hyperlink.add(partial(webbrowser.open, "https://lila.science/datasets/wcscameratraps")))
-    about_text.insert(END, [" provided by the ", " proporcionado por la "][lang_idx])
-    about_text.insert(INSERT, "Wildlife Conservation Society", hyperlink.add(partial(webbrowser.open, "https://www.wcs.org/")))
-    about_text.insert(END, ".\n\n")
-    about_text.tag_add('title', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=1
-    about_text.tag_add('info', str(text_line_number) + '.0', str(text_line_number) + '.end');text_line_number+=2
-
     # development credits
     about_text.insert(END, ["Development\n", "Desarrollo\n"][lang_idx])
-    about_text.insert(END, ["EcoAssist is developed by ",
-                            "EcoAssist ha sido desarrollado por "][lang_idx])
+    about_text.insert(END, ["AddaxAI is developed by ",
+                            "AddaxAI ha sido desarrollado por "][lang_idx])
     about_text.insert(INSERT, "Addax Data Science", hyperlink.add(partial(webbrowser.open, "https://addaxdatascience.com/")))
     about_text.insert(END, [" in collaboration with ",
                             " en colaboración con "][lang_idx])
@@ -8622,14 +8623,18 @@ mdl_image = customtkinter.CTkImage(PIL_mdl_image, size=(ICON_SIZE, ICON_SIZE))
 spp_image = customtkinter.CTkImage(PIL_spp_image, size=(ICON_SIZE, ICON_SIZE))
 run_image = customtkinter.CTkImage(PIL_run_image, size=(ICON_SIZE, ICON_SIZE))
 
+# set the global appearance for the app
+customtkinter.set_appearance_mode("light")
+customtkinter.set_default_color_theme(os.path.join(AddaxAI_files, "AddaxAI", "themes", "addaxai.json"))
+
 # set up window
 simple_mode_win = customtkinter.CTkToplevel(root)
-simple_mode_win.title(f"EcoAssist v{current_EA_version} - Simple mode")
+simple_mode_win.title(f"AddaxAI v{current_EA_version} - Simple mode")
 simple_mode_win.geometry("+20+20")
 simple_mode_win.protocol("WM_DELETE_WINDOW", on_toplevel_close)
 simple_mode_win.columnconfigure(0, weight=1, minsize=500)
 main_label_font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold')
-simple_bg_image = customtkinter.CTkImage(PIL_gradient, size=(SIM_WINDOW_WIDTH, SIM_WINDOW_HEIGHT))
+simple_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(SIM_WINDOW_WIDTH, SIM_WINDOW_HEIGHT))
 simple_bg_image_label = customtkinter.CTkLabel(simple_mode_win, image=simple_bg_image)
 simple_bg_image_label.grid(row=0, column=0)
 simple_main_frame = customtkinter.CTkFrame(simple_mode_win, corner_radius=0, fg_color = 'transparent')
@@ -8637,7 +8642,7 @@ simple_main_frame.grid(row=0, column=0, sticky="ns")
 simple_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
-sim_top_banner = customtkinter.CTkImage(PIL_simple_top_banner, size=(LOGO_SIZE * SIM_TOP_BANNER_WIDTH_FACTOR, LOGO_SIZE))
+sim_top_banner = customtkinter.CTkImage(PIL_logo_incl_text, size=(LOGO_WIDTH, LOGO_HEIGHT))
 customtkinter.CTkLabel(simple_main_frame, text="", image = sim_top_banner).grid(column=0, row=0, columnspan=2, sticky='ew', pady=(PADY, 0), padx=0)
 
 # top buttons
@@ -8653,7 +8658,7 @@ sim_btn_reset_values.grid(row=0, column=0, padx=PADX, pady=(0, 0), columnspan = 
 
 # choose folder
 sim_dir_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_dir_frm_1.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
+sim_dir_frm_1.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_dir_img_widget = customtkinter.CTkLabel(sim_dir_frm_1, text="", image = dir_image, compound = 'left')
 sim_dir_img_widget.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_dir_frm = MySubFrame(master=sim_dir_frm_1)
@@ -8673,7 +8678,7 @@ sim_dir_pth.pack()
 
 # choose model
 sim_mdl_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_mdl_frm_1.grid(row=2, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_mdl_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_mdl_img_widget = customtkinter.CTkLabel(sim_mdl_frm_1, text="", image = mdl_image, compound = 'left')
 sim_mdl_img_widget.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_mdl_frm = MySubFrame(master=sim_mdl_frm_1)
@@ -8691,7 +8696,7 @@ sim_mdl_dpd.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="nswe",
 
 # select animals
 sim_spp_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_spp_frm_1.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_spp_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_spp_img_widget = customtkinter.CTkLabel(sim_spp_frm_1, text="", image = spp_image, compound = 'left')
 sim_spp_img_widget.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_spp_frm = MySubFrame(master=sim_spp_frm_1, width=1000)
@@ -8708,20 +8713,20 @@ sim_spp_scr.grid(row=1, column=0, padx=PADX, pady=(PADY/4, PADY), sticky="ew", c
 
 # deploy button
 sim_run_frm_1 = MyMainFrame(master=simple_main_frame)
-sim_run_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
+sim_run_frm_1.grid(row=5, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
 sim_run_img_widget = customtkinter.CTkLabel(sim_run_frm_1, text="", image = run_image, compound = 'left')
 sim_run_img_widget.grid(row=3, column=0, padx=PADX, pady=PADY, sticky="nswe")
 sim_run_frm = MySubFrame(master=sim_run_frm_1, width=1000)
 sim_run_frm.grid(row=3, column=1, padx=(0, PADX), pady=PADY, sticky="nswe")
 sim_run_btn_txt = ["Start processing", "Empezar a procesar"]
-sim_run_btn = customtkinter.CTkButton(sim_run_frm, text=sim_run_btn_txt[lang_idx], command=lambda: start_deploy(simple_mode = True), fg_color = ('#579F2D', 'green'), hover_color = 'darkgreen')
+sim_run_btn = customtkinter.CTkButton(sim_run_frm, text=sim_run_btn_txt[lang_idx], command=lambda: start_deploy(simple_mode = True))
 sim_run_btn.grid(row=0, column=0, padx=PADX, pady=PADY, sticky="nswe", columnspan = 2)
 
 # about
-sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE))
-sim_abo_lbl.grid(row=5, column=0, columnspan = 2, sticky="")
-sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1))
-sim_abo_lbl_link.grid(row=6, column=0, columnspan = 2, sticky="", pady=(0, PADY))
+sim_abo_lbl = tk.Label(simple_main_frame, text=adv_abo_lbl_txt[lang_idx], font = Font(size = ADDAX_TXT_SIZE), fg="black", bg = yellow_primary)
+sim_abo_lbl.grid(row=6, column=0, columnspan = 2, sticky="")
+sim_abo_lbl_link = tk.Label(simple_main_frame, text="addaxdatascience.com", cursor="hand2", font = Font(size = ADDAX_TXT_SIZE, underline=1), fg=green_primary, bg =yellow_primary)
+sim_abo_lbl_link.grid(row=7, column=0, columnspan = 2, sticky="", pady=(0, PADY))
 sim_abo_lbl_link.bind("<Button-1>", lambda e: callback("http://addaxdatascience.com"))
 
 # resize deploy tab to content
@@ -8731,7 +8736,7 @@ resize_canvas_to_content()
 def main():
 
     # check if user calls this script from Timelapse
-    parser = argparse.ArgumentParser(description="EcoAssist GUI")
+    parser = argparse.ArgumentParser(description="AddaxAI GUI")
     parser.add_argument('--timelapse-path', type=str, help="Path to the timelapse folder")
     args = parser.parse_args()
     global timelapse_mode

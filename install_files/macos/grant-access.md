@@ -1,6 +1,6 @@
-## How to grant access to open the EcoAssist installer
+## How to grant access to open the AddaxAI installer
 
-Depending on your macOS security settings, you might not be able to open the EcoAssist installer immediately. Sometimes a simple `Right click` > `Open` will do the trick. If not, you’ll need to mark the file as safe in your system settings. Follow the steps below to proceed.
+Depending on your macOS security settings, you might not be able to open the AddaxAI installer immediately. Sometimes a simple `Right click` > `Open` will do the trick. If not, you’ll need to mark the file as safe in your system settings. Follow the steps below to proceed.
 
 ________
 
@@ -22,7 +22,7 @@ ________
 
 **3. Open Privacy & Security**
 
-In the *System Settings* window, go to *Privacy & Security*. Scroll down to the *Security* section. You should see a message indicating that macOS blocked the EcoAssist installer. Click *Open Anyway* to allow the app to run.
+In the *System Settings* window, go to *Privacy & Security*. Scroll down to the *Security* section. You should see a message indicating that macOS blocked the AddaxAI installer. Click *Open Anyway* to allow the app to run.
 
 <img width="827" alt="Screenshot 2025-01-22 at 21 09 00" src="https://github.com/user-attachments/assets/82cbd8a6-c627-45ac-b6e2-fcbb7c8416d6" />
 

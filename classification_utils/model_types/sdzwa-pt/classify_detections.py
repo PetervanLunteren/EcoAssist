@@ -3,7 +3,7 @@
 # https://github.com/conservationtechlab/animl-py
 
 # It constsist of code that is specific for this kind of model architechture, and 
-# code that is generic for all model architectures that will be run via EcoAssist.
+# code that is generic for all model architectures that will be run via AddaxAI.
 
 # Written by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 29 Aug 2024
@@ -13,7 +13,7 @@
 #############################################
 # catch shell arguments
 import sys
-EcoAssist_files = str(sys.argv[1])
+AddaxAI_files = str(sys.argv[1])
 cls_model_fpath = str(sys.argv[2])
 cls_detec_thresh = float(sys.argv[3])
 cls_class_thresh = float(sys.argv[4])
@@ -160,7 +160,7 @@ def get_crop(img, bbox_norm):
 ############### MODEL GENERIC ###############
 #############################################
 # run main function
-import EcoAssist.classification_utils.inference_lib as ea
+import AddaxAI.classification_utils.inference_lib as ea
 ea.classify_MD_json(json_path = json_path,
                     GPU_availability = GPU_availability,
                     cls_detec_thresh = cls_detec_thresh,
