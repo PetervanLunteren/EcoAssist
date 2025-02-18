@@ -19,7 +19,7 @@ jobs:
       # can remove this if proven succesfull
       # RELEASE_VERSION: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.tag_name }}
       # BUCKET_NAME: github-release-files-storage
-      BRANCH_NAME: "${{ github.ref_name }}"
+      BRANCH_NAME: ${{ github.event_name == 'release' && 'main' || github.ref_name }}
     
     steps:
       - name: Checkout repository
