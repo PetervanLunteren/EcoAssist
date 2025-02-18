@@ -44,16 +44,11 @@ To avoid any legal concerns, we have renamed our project from EcoAssist to Addax
   <img src="https://github.com/PetervanLunteren/EcoAssist-metadata/blob/main/AddaxAI-logo/name-change.png" width=60% height="auto" />
 </p>
 
-## Cite
-Please use the following citations if you used AddaxAI in your research.
-
-<details>
-<summary>AddaxAI</summary>
-<br>
-
-The AddaxAI software used to be called EcoAssist. The citation still uses the old name. Please cite as "AddaxAI, previously known as EcoAssist (van Lunteren, 2023)"
+## Cite AddaxAI in your research
+If you used AddaxAI in your research, please include the following citation, along with the models used to analyze your data. AddaxAI was previously known as EcoAssist, and the citation reflects its former name. Please cite as _'AddaxAI, previously known as EcoAssist (van Lunteren, 2023)'_.
 
 [Link to paper](https://joss.theoj.org/papers/10.21105/joss.05581)
+
 ```BibTeX
 @article{van_Lunteren_EcoAssist_2023,
   author = {van Lunteren, Peter},
@@ -68,22 +63,6 @@ The AddaxAI software used to be called EcoAssist. The citation still uses the ol
   year = {2023}
 }
 ```
-</details>
-
-<details>
-<summary>MegaDetector</summary>
-<br>
-
-[Link to paper](https://arxiv.org/abs/1907.06772)
-```BibTeX
-@article{Beery_Efficient_2019,
-  title     = {Efficient Pipeline for Camera Trap Image Review},
-  author    = {Beery, Sara and Morris, Dan and Yang, Siyu},
-  journal   = {arXiv preprint arXiv:1907.06772},
-  year      = {2019}
-}
-```
-</details>
 
 ## Contribute
 Interested in contributing to this project? There are always things to do. The list of to-do items, bug reports, and feature requests is always evolving. I try to keep a semi-structured list [here](https://github.com/PetervanLunteren/EcoAssist/blob/main/EcoAssist_GUI.py#L8). Is there something you would be interested in? [Get in touch](mailto:peter@addaxdatascience.com) and I will guide you in the right direction. Thanks!
