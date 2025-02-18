@@ -359,3 +359,11 @@ I’ll take a look and help you to get AddaxAI running!
 ```
 (cd /d %homedrive%%homepath% && "%homedrive%%homepath%\AddaxAI_files\AddaxAI\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\AddaxAI_files\AddaxAI\open.bat" timelapse "C:\Users\smart\Desktop\test_images")
 ```
+
+```
+(cd /d %homedrive%%homepath% && "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images")
+```
+
+```
+(cd /d %homedrive%%homepath% && "%homedrive%%homepath%\AddaxAI_files\AddaxAI\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\AddaxAI_files\AddaxAI\open.bat" timelapse "C:\Users\smart\Desktop\test_images") ||  (cd /d %homedrive%%homepath% && "%homedrive%%homepath%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images") || (cd /d %ProgramFiles% && "%ProgramFiles%\EcoAssist_files\EcoAssist\open.bat" timelapse "C:\Users\smart\Desktop\test_images")
+```
