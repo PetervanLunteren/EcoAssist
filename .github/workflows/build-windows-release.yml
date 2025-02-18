@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-2022
 
     env:
-      RELEASE_VERSION: ${{ github.event.release.tag_name }}
+      RELEASE_VERSION: v5.28
       BUCKET_NAME: github-release-files-storage
       CONDA_DIR: C:\Miniconda
 
@@ -70,7 +70,7 @@ jobs:
           echo Hello world! > "%root%\first-startup.txt"
           
           @REM EcoAssist
-          git clone --ipv4 --depth 1 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
+          git clone --ipv4 --depth 1 --branch v5.28 https://github.com/PetervanLunteren/EcoAssist.git "%root%\EcoAssist"
           rmdir /s /q "%root%\EcoAssist\.git"
           move "%root%\EcoAssist\main.py" "%root%\main.py"
           set RAW_VERSION=${{ env.RELEASE_VERSION }}
@@ -192,15 +192,15 @@ jobs:
           set LATEST_FILE_NAME=windows-latest.7z
           gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%PINNED_FOLDER_NAME%/%PINNED_FILE_NAME%
 
-      - name: Upload latest 7z version to Google Cloud
-        shell: cmd
-        run: |
-          set BUCKET_NAME=${{ env.BUCKET_NAME }}
-          set PINNED_FOLDER_NAME=${{ env.RELEASE_VERSION }}
-          set LATEST_FOLDER_NAME=latest
-          set PINNED_FILE_NAME=windows-${{ env.RELEASE_VERSION }}.7z
-          set LATEST_FILE_NAME=windows-latest.7z
-          gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%LATEST_FOLDER_NAME%/%LATEST_FILE_NAME%
+      # - name: Upload latest 7z version to Google Cloud
+      #   shell: cmd
+      #   run: |
+      #     set BUCKET_NAME=${{ env.BUCKET_NAME }}
+      #     set PINNED_FOLDER_NAME=${{ env.RELEASE_VERSION }}
+      #     set LATEST_FOLDER_NAME=latest
+      #     set PINNED_FILE_NAME=windows-${{ env.RELEASE_VERSION }}.7z
+      #     set LATEST_FILE_NAME=windows-latest.7z
+      #     gsutil cp -r "%PINNED_FILE_NAME%" gs://%BUCKET_NAME%/%LATEST_FOLDER_NAME%/%LATEST_FILE_NAME%
 
       # - name: Get the release body
       #   shell: pwsh
@@ -247,34 +247,34 @@ jobs:
           script-file: "install_files/windows/nsis-install-compiler.nsi"
           additional-plugin-paths: ${{ github.workspace }}/NSIS_Plugins/Plugins
   
-      - name: Get Upload URL for Release
-        id: get_release
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const release = await github.rest.repos.getReleaseByTag({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag: '${{ env.RELEASE_VERSION }}',
-            })
-            // Write the upload URL to the environment file instead of using set-output
-            const fs = require('fs');
-            fs.appendFileSync(process.env.GITHUB_ENV, `UPLOAD_URL=${release.data.upload_url}\n`);
+      # - name: Get Upload URL for Release
+      #   id: get_release
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const release = await github.rest.repos.getReleaseByTag({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         tag: '${{ env.RELEASE_VERSION }}',
+      #       })
+      #       // Write the upload URL to the environment file instead of using set-output
+      #       const fs = require('fs');
+      #       fs.appendFileSync(process.env.GITHUB_ENV, `UPLOAD_URL=${release.data.upload_url}\n`);
 
-      - name: Upload Asset to GitHub Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ env.UPLOAD_URL }}  # Use the updated environment variable
-          # asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-windows.exe"
-          asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
-          # asset_name: "EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
-          asset_name: "Windows-installer-${{ env.RELEASE_VERSION }}.exe"
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      # - name: Upload Asset to GitHub Release
+      #   uses: actions/upload-release-asset@v1
+      #   with:
+      #     upload_url: ${{ env.UPLOAD_URL }}  # Use the updated environment variable
+      #     # asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-windows.exe"
+      #     asset_path: "install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
+      #     # asset_name: "EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe"
+      #     asset_name: "Windows-installer-${{ env.RELEASE_VERSION }}.exe"
+      #     asset_content_type: application/octet-stream
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
-      - name: Upload installer EXE to Google Cloud
-        shell: cmd
-        run: |
-          set INSTALLER=${{ github.workspace }}/install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe
-          gsutil cp -r "%INSTALLER%" gs://${{ env.BUCKET_NAME }}/latest/windows-installer-latest.exe
+      # - name: Upload installer EXE to Google Cloud
+      #   shell: cmd
+      #   run: |
+      #     set INSTALLER=${{ github.workspace }}/install_files/windows/EcoAssist-${{ env.RELEASE_VERSION }}-installer.exe
+      #     gsutil cp -r "%INSTALLER%" gs://${{ env.BUCKET_NAME }}/latest/windows-installer-latest.exe
