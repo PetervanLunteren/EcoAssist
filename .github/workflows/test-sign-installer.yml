@@ -30,37 +30,43 @@ jobs:
     #     # sign
     #     openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
-    - name: Sign installer
+    - name: write multiline secret to txt file
       shell: cmd
       run: |
-        REM Download the installer from the given URL
-        curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
+        printf "%s" "${{ secrets.MULTILINE_SECRET_DEBUG }}" > myfile.txt
+        cat myfile.txt
 
-        REM (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
+    # - name: Sign installer
+    #   shell: cmd
+    #   run: |
+    #     REM Download the installer from the given URL
+    #     curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
 
-        REM cat 2.pem
+    #     REM (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
+
+    #     REM cat 2.pem
 
 
         
-        REM  echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
+    #     REM  echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
 
 
 
-        REM  REM Decode the private key and certificate chain from secrets
-        REM  powershell -command "$env:CODE_SIGN_CERT='${{ secrets.CODE_SIGN_CERT }}'; Set-Content -Path code_sign_cert.pem -Value $env:CODE_SIGN_CERT"
-        REM  powershell -command "$env:CODE_SIGN_PRIVATE_KEY='${{ secrets.CODE_SIGN_PRIVATE_KEY }}'; Set-Content -Path code_sign_private_key.pem -Value $env:CODE_SIGN_PRIVATE_KEY"
-        REM  powershell -command "$env:CODE_CA_BUNDLE_CERT='${{ secrets.CODE_CA_BUNDLE_CERT }}'; Set-Content -Path code_ca_bundle_cert.pem -Value $env:CODE_CA_BUNDLE_CERT"
+    #     REM  REM Decode the private key and certificate chain from secrets
+    #     REM  powershell -command "$env:CODE_SIGN_CERT='${{ secrets.CODE_SIGN_CERT }}'; Set-Content -Path code_sign_cert.pem -Value $env:CODE_SIGN_CERT"
+    #     REM  powershell -command "$env:CODE_SIGN_PRIVATE_KEY='${{ secrets.CODE_SIGN_PRIVATE_KEY }}'; Set-Content -Path code_sign_private_key.pem -Value $env:CODE_SIGN_PRIVATE_KEY"
+    #     REM  powershell -command "$env:CODE_CA_BUNDLE_CERT='${{ secrets.CODE_CA_BUNDLE_CERT }}'; Set-Content -Path code_ca_bundle_cert.pem -Value $env:CODE_CA_BUNDLE_CERT"
 
-        REM  REM Verify the certificate chain
-        REM  openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
-        REM  openssl verify -verbose -CAfile ${{ secrets.CODE_CA_BUNDLE_CERT }} ${{ secrets.CODE_SIGN_CERT }}
+    #     REM  REM Verify the certificate chain
+    #     REM  openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+    #     REM  openssl verify -verbose -CAfile ${{ secrets.CODE_CA_BUNDLE_CERT }} ${{ secrets.CODE_SIGN_CERT }}
 
-        REM  REM Sign the installer
-        REM  openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+    #     REM  REM Sign the installer
+    #     REM  openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
 
-        printf "%s" "${{ secrets.CODE_CA_BUNDLE_CERT }}" > myfile.txt
-        cat myfile.txt
+    #     printf "%s" "${{ secrets.CODE_CA_BUNDLE_CERT }}" > myfile.txt
+    #     cat myfile.txt
 
     # - name: Authenticate with Google Cloud
     #   uses: google-github-actions/auth@v1
