@@ -30,13 +30,22 @@ jobs:
     #     # sign
     #     openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
+
     - name: Write multiline secret to txt file
-      shell: cmd
+      shell: pwsh
       run: |
-        @echo off
-        setlocal EnableDelayedExpansion
-        echo ${{ secrets.MULTILINE_SECRET_DEBUG }} > myfile.txt
-        type myfile.txt
+        Set-Content -Path myfile.txt -Value "${{ secrets.MULTILINE_SECRET_DEBUG }}"
+        Get-Content myfile.txt
+
+
+
+    # - name: Write multiline secret to txt file
+    #   shell: cmd
+    #   run: |
+    #     @echo off
+    #     setlocal EnableDelayedExpansion
+    #     echo ${{ secrets.MULTILINE_SECRET_DEBUG }} > myfile.txt
+    #     type myfile.txt
 
 
     # - name: write multiline secret to txt file
