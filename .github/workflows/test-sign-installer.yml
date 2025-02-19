@@ -24,10 +24,10 @@ jobs:
         echo "${{ secrets.CODE_SIGN_PRIVATE_KEY }}" > code_sign_private_key.pem
         echo "${{ secrets.CODE_CA_BUNDLE_CERT }}" > code_ca_bundle_cert.pem
 
-        # cat
-        cat code_sign_cert.pem
-        cat code_sign_private_key.pem
-        cat code_ca_bundle_cert.pem
+        # # cat
+        # cat code_sign_cert.pem
+        # cat code_sign_private_key.pem
+        # cat code_ca_bundle_cert.pem
 
         # verify
         openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
