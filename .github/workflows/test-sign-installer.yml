@@ -18,20 +18,41 @@ jobs:
         Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
         Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
 
+
     - name: Sign installer
       shell: pwsh
       run: |
-        # Download the installer from the given URL
-        Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
-    
-        # Verify the certificate
+
+        $INSTALLER = "windows-installer-latest.exe"
+        $SIGNED_INSTALLER = "windows-installer-latest.signed.exe"
+
+        # check
         openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
     
-        # Sign the installer
-        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+        # sign
+        openssl smime -sign -in $INSTALLER -out $SIGNED_INSTALLER -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
-        # verify the signature
-        openssl smime -verify -in windows-installer-latest.signed.exe -CAfile code_ca_bundle_cert.pem -inform DER -noverify
+        # replace 
+        Move-Item -Force $SIGNED_INSTALLER $INSTALLER
+
+        # verify
+        openssl smime -verify -in $INSTALLER -CAfile code_ca_bundle_cert.pem -inform DER -noverify
+
+
+    # - name: Sign installer
+    #   shell: pwsh
+    #   run: |
+    #     # Download the installer from the given URL
+    #     Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
+    
+    #     # Verify the certificate
+    #     openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+    
+    #     # Sign the installer
+    #     openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+
+    #     # verify the signature
+    #     openssl smime -verify -in windows-installer-latest.signed.exe -CAfile code_ca_bundle_cert.pem -inform DER -noverify
 
 
     - name: Authenticate with Google Cloud
@@ -48,4 +69,4 @@ jobs:
       shell: cmd
       run: |
         set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
-        gsutil cp -r "windows-installer-latest.signed.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.signed.exe
+        gsutil cp -r "windows-installer-latest.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.exe
