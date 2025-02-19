@@ -36,13 +36,6 @@ jobs:
         REM Download the installer from the given URL
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
 
-
-        (
-        echo ${{ secrets.CODE_SIGN_CERT }}
-        ) > 1.pem
-
-        cat 1.pem
-
         (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
 
         cat 2.pem
