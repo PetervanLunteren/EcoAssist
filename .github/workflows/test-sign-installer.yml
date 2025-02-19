@@ -23,6 +23,9 @@ jobs:
       shell: pwsh
       run: |
 
+        # Download the installer from the given URL
+        Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
+
         $INSTALLER = "windows-installer-latest.exe"
         $SIGNED_INSTALLER = "windows-installer-latest.signed.exe"
 
