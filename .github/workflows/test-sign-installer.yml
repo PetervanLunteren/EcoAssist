@@ -20,22 +20,33 @@ jobs:
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
         # Decode the private key and certificate chain from secrets
-        echo "${{ secrets.GLOBALSIGN_PRIVATE_KEY }}" > private_key.pem
-        echo "${{ secrets.GLOBALSIGN_CERTIFICATE }}" > certificate_chain.pem
+        echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
+        echo "${{ secrets.CODE_SIGN_PRIVATE_KEY }}" > code_sign_private_key.pem
+        echo "${{ secrets.CODE_CA_BUNDLE_CERT }}" > code_ca_bundle_cert.pem
 
-
-    
-        # # Sign the installer with the private key and certificate chain
-        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
-
-        # check
-        cat certificate_chain.pem
+        # cat
+        cat code_sign_cert.pem
+        cat code_sign_private_key.pem
+        cat code_ca_bundle_cert.pem
 
         # verify
-        openssl x509 -in certificate_chain.pem -text -noout
+        openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
 
-        # try again
-        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
+
+        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+
     
-        # Optionally, verify the signed file (this step checks the signature)
-        openssl smime -verify -inform DER -in windows-installer-latest.signed.exe -CAfile certificate_chain.pem
+        # # # Sign the installer with the private key and certificate chain
+        # # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
+
+        # # check
+        # cat certificate_chain.pem
+
+        # verify
+        # openssl x509 -in certificate_chain.pem -text -noout
+
+        # # try again
+        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
+    
+        # # Optionally, verify the signed file (this step checks the signature)
+        # openssl smime -verify -inform DER -in windows-installer-latest.signed.exe -CAfile certificate_chain.pem
