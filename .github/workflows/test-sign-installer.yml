@@ -14,21 +14,31 @@ jobs:
     # - name: Set up OpenSSL
     #   run: sudo apt-get install openssl
 
-    # - name: Sign installer
-    #   run: |
-    #     # download the installer from the given URL
-    #     curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
+    - name: Write multiline secrets to pem files
+      shell: pwsh
+      run: |
+        Set-Content -Path code_sign_cert.pem -Value "${{ secrets.CODE_SIGN_CERT }}"
+        Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
+        Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
+
+    - name: Sign installer
+      run: |
+        # download the installer from the given URL
+        curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
-    #     # decode the private key and certificate chain from secrets
-    #     echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
-    #     echo "${{ secrets.CODE_SIGN_PRIVATE_KEY }}" > code_sign_private_key.pem
-    #     echo "${{ secrets.CODE_CA_BUNDLE_CERT }}" > code_ca_bundle_cert.pem
+        # # decode the private key and certificate chain from secrets
+        # # echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
+        # Set-Content -Path code_sign_cert.pem -Value "${{ secrets.CODE_SIGN_CERT }}"
+        # # echo "${{ secrets.CODE_SIGN_PRIVATE_KEY }}" > code_sign_private_key.pem
+        # Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
+        # # echo "${{ secrets.CODE_CA_BUNDLE_CERT }}" > code_ca_bundle_cert.pem
+        # Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
 
-    #     # verify
-    #     openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+        # verify
+        openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
 
-    #     # sign
-    #     openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+        # sign
+        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
 
     - name: Write multiline secret to txt file
