@@ -14,31 +14,17 @@ jobs:
     - name: Set up OpenSSL
       run: sudo apt-get install openssl
 
-    - name: Decode private key from secrets
-      run: echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
-
-    - name: Decode certificate from secrets
-      run: echo "${{ secrets.CERTIFICATE }}" > certificate.cer
-
     - name: Sign installer
       run: |
-        # Replace with your installer file
-
         # Download the installer from the given URL
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
-        # Sign the installer
-        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate.cer -inkey private_key.pem -outform DER
-
-        INSTALLER_FILE="your_installer_file.exe"
-
-        # Use openssl to sign the installer
-        # openssl smime -sign -in $INSTALLER_FILE -out $INSTALLER_FILE.signed -signer certificate.cer -inkey private_key.pem -outform DER
-        # Optionally, you can verify the signed file:
-        openssl smime -verify -inform DER -in $INSTALLER_FILE.signed -CAfile certificate.cer
-
-    # - name: Upload signed installer
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: signed-installer
-    #     path: your_installer_file.signed
+        # Decode the private key and certificate chain from secrets
+        echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
+        echo "${{ secrets.CERTIFICATE_CHAIN }}" > certificate_chain.pem
+    
+        # Sign the installer with the private key and certificate chain
+        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
+    
+        # Optionally, verify the signed file (this step checks the signature)
+        openssl smime -verify -inform DER -in windows-installer-latest.signed.exe -CAfile certificate_chain.pem
