@@ -20,8 +20,8 @@ jobs:
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
         # Decode the private key and certificate chain from secrets
-        echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
-        echo "${{ secrets.CERTIFICATE }}" > certificate_chain.pem
+        echo "${{ secrets.GLOBALSIGN_PRIVATE_KEY }}" > private_key.pem
+        echo "${{ secrets.GLOBALSIGN_CERTIFICATE }}" > certificate_chain.pem
 
 
     
