@@ -28,14 +28,14 @@ jobs:
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
         # Sign the installer
-        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate.pem -inkey private_key.pem -outform DER
+        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate.crt -inkey private_key.pem -outform DER
 
         INSTALLER_FILE="your_installer_file.exe"
 
         # Use openssl to sign the installer
-        # openssl smime -sign -in $INSTALLER_FILE -out $INSTALLER_FILE.signed -signer certificate.pem -inkey private_key.pem -outform DER
+        # openssl smime -sign -in $INSTALLER_FILE -out $INSTALLER_FILE.signed -signer certificate.crt -inkey private_key.pem -outform DER
         # Optionally, you can verify the signed file:
-        openssl smime -verify -inform DER -in $INSTALLER_FILE.signed -CAfile certificate.pem
+        openssl smime -verify -inform DER -in $INSTALLER_FILE.signed -CAfile certificate.crt
 
     # - name: Upload signed installer
     #   uses: actions/upload-artifact@v2
