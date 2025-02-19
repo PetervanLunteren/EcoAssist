@@ -35,7 +35,7 @@ jobs:
       run: |
         @echo off
         setlocal EnableDelayedExpansion
-        echo %MULTILINE_SECRET_DEBUG% > myfile.txt
+        echo ${{ secrets.MULTILINE_SECRET_DEBUG }} > myfile.txt
         type myfile.txt
 
 
