@@ -36,9 +36,9 @@ jobs:
         REM Download the installer from the given URL
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
 
-        (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
+        REM (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
 
-        cat 2.pem
+        REM cat 2.pem
 
 
         
@@ -56,6 +56,8 @@ jobs:
 
         REM  REM Sign the installer
         REM  openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+
+        cat '${{ secrets.CODE_SIGN_CERT }}'
 
     # - name: Authenticate with Google Cloud
     #   uses: google-github-actions/auth@v1
