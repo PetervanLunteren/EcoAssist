@@ -39,9 +39,14 @@ jobs:
 
         (
         echo ${{ secrets.CODE_SIGN_CERT }}
-        ) > code_sign_cert.pem
+        ) > 1.pem
 
-        cat code_sign_cert.pem
+        cat 1.pem
+
+        (for /f "delims=" %%A in ("${{ secrets.CODE_SIGN_CERT }}") do @echo %%A) > 2.pem
+
+        cat 2.pem
+
 
         
         REM  echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
