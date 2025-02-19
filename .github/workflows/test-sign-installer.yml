@@ -22,15 +22,28 @@ jobs:
         Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
 
     - name: Sign installer
+      shell: pwsh
       run: |
-        REM download the installer from the given URL
-        curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
-
-        REM verify
+        # Download the installer from the given URL
+        Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
+    
+        # Verify the certificate
         openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
-
-        REM sign
+    
+        # Sign the installer
         openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+
+
+    # - name: Sign installer
+    #   run: |
+    #     REM download the installer from the given URL
+    #     curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
+
+    #     REM verify
+    #     openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+
+    #     REM sign
+    #     openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
 
     # - name: Write multiline secret to txt file
