@@ -33,7 +33,7 @@ jobs:
         openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
 
 
-        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+        openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
     
         # # # Sign the installer with the private key and certificate chain
