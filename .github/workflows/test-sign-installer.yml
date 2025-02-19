@@ -16,37 +16,53 @@ jobs:
 
     - name: Sign installer
       run: |
-        # Download the installer from the given URL
+        # download the installer from the given URL
         curl -L -o windows-installer-latest.exe https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe
     
-        # Decode the private key and certificate chain from secrets
+        # decode the private key and certificate chain from secrets
         echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
         echo "${{ secrets.CODE_SIGN_PRIVATE_KEY }}" > code_sign_private_key.pem
         echo "${{ secrets.CODE_CA_BUNDLE_CERT }}" > code_ca_bundle_cert.pem
 
-        # # cat
-        # cat code_sign_cert.pem
-        # cat code_sign_private_key.pem
-        # cat code_ca_bundle_cert.pem
-
         # verify
         openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
 
-
+        # sign
         openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
-    
-        # # # Sign the installer with the private key and certificate chain
-        # # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
 
-        # # check
-        # cat certificate_chain.pem
 
-        # verify
-        # openssl x509 -in certificate_chain.pem -text -noout
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
 
-        # # try again
-        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
-    
-        # # Optionally, verify the signed file (this step checks the signature)
-        # openssl smime -verify -inform DER -in windows-installer-latest.signed.exe -CAfile certificate_chain.pem
+    - name: Set up Google Cloud
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: github-file-storage
+
+    # - name: Upload program files to Google Cloud
+    #   run: |
+    #     cd "$HOME"
+        
+    #     # init vars
+    #     BUCKET_NAME="${{ env.BUCKET_NAME }}"
+    #     PINNED_FOLDER_NAME="${{ env.RELEASE_VERSION }}"
+    #     LATEST_FOLDER_NAME="latest"
+    #     PINNED_FILE_NAME="macos-${{ env.RELEASE_VERSION }}.tar.xz"
+    #     LATEST_FILE_NAME="macos-latest.tar.xz"
+
+    #     # # upload release pinned version
+    #     # # feb 2025 - disabled to save sapce on github and reduce monthly costs
+    #     # gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$PINNED_FOLDER_NAME/$PINNED_FILE_NAME
+        
+    #     # upload latest release version
+    #     gsutil cp -r $PINNED_FILE_NAME gs://$BUCKET_NAME/$LATEST_FOLDER_NAME/$LATEST_FILE_NAME
+
+    - name:  Upload installer to Google Cloud
+      run: |
+        INSTALLER="AddaxAI-${{ env.RELEASE_VERSION }}-installer.zip"
+        gsutil cp -r windows-installer-latest.signed.exe gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.signed.exe
+
+
