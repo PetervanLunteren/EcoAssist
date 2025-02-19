@@ -44,9 +44,8 @@ jobs:
       with:
         project_id: github-file-storage
 
-    - name:  Upload installer to Google Cloud
+    - name: Upload installer EXE to Google Cloud
+      shell: cmd
       run: |
-        INSTALLER="AddaxAI-${{ env.RELEASE_VERSION }}-installer.zip"
-        gsutil cp -r windows-installer-latest.signed.exe gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.signed.exe
-
-
+        set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
+        gsutil cp -r "windows-installer-latest.signed.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.signed.exe
