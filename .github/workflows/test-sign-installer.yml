@@ -21,10 +21,18 @@ jobs:
     
         # Decode the private key and certificate chain from secrets
         echo "${{ secrets.PRIVATE_KEY }}" > private_key.pem
-        echo "${{ secrets.CERTIFICATE_CHAIN }}" > certificate_chain.pem
+        echo "${{ secrets.CERTIFICATE }}" > certificate_chain.pem
+
+
     
         # Sign the installer with the private key and certificate chain
         openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -signer certificate_chain.pem -inkey private_key.pem -outform DER
+
+        # check
+        cat certificate_chain.pem
+
+        # verify
+        openssl x509 -in certificate_chain.pem -text -noout
     
         # Optionally, verify the signed file (this step checks the signature)
         openssl smime -verify -inform DER -in windows-installer-latest.signed.exe -CAfile certificate_chain.pem
