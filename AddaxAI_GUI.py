@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/addaxai/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 28 Jan 2024
+# Latest edit by Peter van Lunteren on 19 Feb 2025
 
 # TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
 # TODO: PYINSTALLER - Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
@@ -5439,6 +5439,9 @@ class SpeciesSelectionFrame(customtkinter.CTkScrollableFrame):
     def get_all_items(self):
         return [checkbox.cget("text") for checkbox in self.checkbox_list]
 
+def open_nosleep_page():
+    webbrowser.open("https://nosleep.page")
+
 # show download progress
 class ModelDownloadProgressWindow:
     def __init__(self, model_title, total_size_str):
@@ -5446,15 +5449,17 @@ class ModelDownloadProgressWindow:
         self.dm_root.title("Download progress")
         self.dm_root.geometry("+10+10")
         self.frm = customtkinter.CTkFrame(master=self.dm_root)
-        self.frm.grid(row=2, column=0, padx=PADX, pady=PADY, sticky="nswe")
+        self.frm.grid(row=3, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="nswe")
         self.frm.columnconfigure(0, weight=1, minsize=500)
         self.lbl = customtkinter.CTkLabel(self.dm_root, text=[f"Downloading model '{model_title}' ({total_size_str})",
                                                               f"Descargar modelo '{model_title}' ({total_size_str})"][lang_idx], 
                                           font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
-        self.lbl.grid(row=0, column=0, padx=PADX, pady=(PADY, 0), sticky="nsew")
+        self.lbl.grid(row=0, column=0, padx=PADX, pady=(0, 0), sticky="nsew")
         self.war = customtkinter.CTkLabel(self.dm_root, text=["Please prevent computer from sleeping during the download.",
                                                           "Por favor, evite que el ordenador se duerma durante la descarga."][lang_idx])
-        self.war.grid(row=1, column=0, padx=PADX, pady=0, sticky="nsew")
+        self.war.grid(row=1, column=0, padx=PADX, pady=0, sticky="nswe")
+        self.but = CancelButton(self.dm_root, text=["  Prevent sleep with online tool ", "  Usar prevención de sueño en línea  "][lang_idx], command=open_nosleep_page)
+        self.but.grid(row=2, column=0, padx=PADX, pady=(PADY/2, 0), sticky="")
         self.pbr = customtkinter.CTkProgressBar(self.frm, orientation="horizontal", height=28, corner_radius=5, width=1)
         self.pbr.set(0)
         self.pbr.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nsew")
@@ -5516,20 +5521,16 @@ def show_donation_popup():
     
     # define text variables
     donation_text = [
-        "At Addax Data Science, we are dedicated to making conservation technology accessible to everyone—especially for those who may not have the funds to support it. But... developing and maintaining AddaxAI requires considerable time and resources, all contributed by volunteers. Donations will directly fund platform maintenance, new features, and the development of species identification models.",
-        "En Addax Data Science, nos dedicamos a hacer que la tecnología de conservación sea accesible para todos, especialmente para aquellos que pueden no tener los fondos para apoyarla. Pero... desarrollar y mantener AddaxAI requiere considerable tiempo y recursos, todos aportados por voluntarios. Las donaciones financiarán directamente el mantenimiento de la plataforma, nuevas funciones y el desarrollo de modelos de identificación de especies."
+        "AddaxAI is free and open-source because we believe conservation technology should be available to everyone, regardless of budget. But keeping it that way takes time, effort, and resources—all contributed by volunteers. If you’re using AddaxAI, consider chipping in. Think of it as an honesty box: if every user contributed just $3 per month, we could sustain development, improve features, and keep expanding the model zoo.",
+        "AddaxAI es gratuita y de código abierto porque creemos que la tecnología de conservación debe ser accesible para todos. Mantenerlo requiere tiempo y recursos de voluntarios. Si la usas, considera contribuir: con solo $3 al mes, podríamos seguir mejorando y ampliando el modelo de zoológico."
     ]
     title_text = [
-        "Does AddaxAI make your work easier?",
-        "¿AddaxAI hace tu trabajo más fácil?"
+        "Open-source honesty box",
+        "Caja de la honradez de código abierto"
     ]
     subtitle_text = [
         "Let's keep AddaxAI free and available for everybody!",
         "¡Mantengamos AddaxAI libre y disponible para todos!"
-    ]
-    suggested_amounts_text = [
-        "Suggested amounts",
-        "Cantidades sugeridas"
     ]
     questions_text = [
         "Let us know if you have any questions or want to receive an invoice for tax-deduction purposes.",
@@ -5537,20 +5538,12 @@ def show_donation_popup():
     ]
     email_text = "peter@addaxdatascience.com"
     btn_1_txt = [
-        "\nFor individuals:\n€5 per month\n",
-        "\nPara individuos:\n€5 por mes\n"
+        "$3 per month per user",
+        "3$ al mes por usuario"
     ]
     btn_2_txt = [
-        "\nFor ongoing support:\n€10 per month\n",
-        "\nPara apoyo continuo:\n€10 por mes\n"
-    ]
-    btn_3_txt = [
-        "\nFor organisations:\n€50 per month\n",
-        "\nPara organizaciones:\n€50 por mes\n"
-    ]
-    btn_4_txt = [
-        "\nChoose your\nown amount\n",
-        "\nElige tu\npropia cantidad\n"
+        "Choose your own amount",
+        "Elige tu propia cantidad"
     ]
 
     # create window
@@ -5563,7 +5556,7 @@ def show_donation_popup():
     row_idx = 1
     frm_1 = donation_popup_frame(master=do_root)
     frm_1.grid(row=row_idx, padx=PADX, pady=PADY, sticky="nswe")
-    title_lbl_1 = customtkinter.CTkLabel(frm_1, text=title_text[lang_idx], font=main_label_font)
+    title_lbl_1 = customtkinter.CTkLabel(frm_1, text=title_text[lang_idx], font=customtkinter.CTkFont(family='CTkFont', size=18, weight = 'bold'))
     title_lbl_1.grid(row=0, padx=PADX, pady=(PADY, PADY/2), sticky="nswe")
     descr_txt_1 = customtkinter.CTkTextbox(master=frm_1, corner_radius=10, height=90, wrap="word", fg_color="transparent")
     descr_txt_1.grid(row=1, padx=PADX, pady=(0, 0), sticky="nswe")
@@ -5575,21 +5568,13 @@ def show_donation_popup():
 
     # buttons frame
     btns_frm = customtkinter.CTkFrame(master=do_root)
-    btns_frm.columnconfigure(0, weight=1, minsize=200)
-    btns_frm.columnconfigure(1, weight=1, minsize=200)
-    btns_frm.columnconfigure(2, weight=1, minsize=200)
-    btns_frm.columnconfigure(3, weight=1, minsize=200)
+    btns_frm.columnconfigure(0, weight=1, minsize=400)
+    btns_frm.columnconfigure(1, weight=1, minsize=400)
     btns_frm.grid(row=3, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
-    btn_lbl_1 = customtkinter.CTkLabel(btns_frm, text=suggested_amounts_text[lang_idx], font=italic_label_font)
-    btn_lbl_1.grid(row=0, columnspan=4, padx=PADX, pady=(PADY/2, PADY/2), sticky="nswe")
-    btn_1 = customtkinter.CTkButton(btns_frm, text=btn_1_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/aEU8xxh1y2EXgow8wx"))
-    btn_1.grid(row=1, column=0, padx=PADX, pady=PADY, sticky="nswe")
-    btn_2 = customtkinter.CTkButton(btns_frm, text=btn_2_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/9AQ5ll4eM6Vd5JSaEE"))
-    btn_2.grid(row=1, column=1, padx=(0, PADX), pady=PADY, sticky="nwse")
-    btn_3 = customtkinter.CTkButton(btns_frm, text=btn_3_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/fZedRRbHe0wP5JS005"))
-    btn_3.grid(row=1, column=2, padx=(0, PADX), pady=PADY, sticky="nswe")
-    ntb_4 = customtkinter.CTkButton(btns_frm, text=btn_4_txt[lang_idx], command=lambda: open_link("https://paymentlink.mollie.com/payment/al7x0Z6k2XWvEcdTwB5c7/"))
-    ntb_4.grid(row=1, column=3, padx=(0, PADX), pady=PADY, sticky="nwse")
+    btn_1 = customtkinter.CTkButton(btns_frm, text=btn_1_txt[lang_idx], command=lambda: open_link("https://buy.stripe.com/00g8xx3aI93lb4c9AI"))
+    btn_1.grid(row=1, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="we")
+    btn_2 = customtkinter.CTkButton(btns_frm, text=btn_2_txt[lang_idx], command=lambda: open_link("https://paymentlink.mollie.com/payment/al7x0Z6k2XWvEcdTwB5c7/"))
+    btn_2.grid(row=1, column=1, padx=(0, PADX), pady=PADY, sticky="we")
     btn_lbl_2 = customtkinter.CTkLabel(btns_frm, text=questions_text[lang_idx], font=italic_label_font)
     btn_lbl_2.grid(row=2, columnspan=4, padx=PADX, pady=(PADY/2, 0), sticky="nswe")
     btn_lbl_4 = customtkinter.CTkLabel(btns_frm, text=email_text, cursor="hand2", font=url_label_font)
@@ -6060,8 +6045,8 @@ def enable_selection_widgets(row):
 class CancelButton(customtkinter.CTkButton):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(fg_color = ("#DBDBDB", "#4B4D50"),
-                       hover_color = ("#949BA2", "#2B2B2B"),
+        self.configure(fg_color = ("#ebeaea", "#4B4D50"),
+                       hover_color = ("#939aa2", "#2B2B2B"),
                        text_color = ("black", "white"),
                        height = 10,
                        width = 120)
@@ -8775,7 +8760,7 @@ def main():
 
     # run
     root.mainloop()
-
+    
 # executable as script
 if __name__ == "__main__":
     main()
