@@ -37,8 +37,8 @@ jobs:
         # Optionally, you can verify the signed file:
         openssl smime -verify -inform DER -in $INSTALLER_FILE.signed -CAfile certificate.pem
 
-    - name: Upload signed installer
-      uses: actions/upload-artifact@v2
-      with:
-        name: signed-installer
-        path: your_installer_file.signed
+    # - name: Upload signed installer
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: signed-installer
+    #     path: your_installer_file.signed
