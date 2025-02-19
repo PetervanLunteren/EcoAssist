@@ -44,20 +44,20 @@ jobs:
         cat code_sign_cert.pem
 
         
-        # echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
+        REM  echo "${{ secrets.CODE_SIGN_CERT }}" > code_sign_cert.pem
 
 
 
-        # REM Decode the private key and certificate chain from secrets
-        # powershell -command "$env:CODE_SIGN_CERT='${{ secrets.CODE_SIGN_CERT }}'; Set-Content -Path code_sign_cert.pem -Value $env:CODE_SIGN_CERT"
-        # powershell -command "$env:CODE_SIGN_PRIVATE_KEY='${{ secrets.CODE_SIGN_PRIVATE_KEY }}'; Set-Content -Path code_sign_private_key.pem -Value $env:CODE_SIGN_PRIVATE_KEY"
-        # powershell -command "$env:CODE_CA_BUNDLE_CERT='${{ secrets.CODE_CA_BUNDLE_CERT }}'; Set-Content -Path code_ca_bundle_cert.pem -Value $env:CODE_CA_BUNDLE_CERT"
+        REM  REM Decode the private key and certificate chain from secrets
+        REM  powershell -command "$env:CODE_SIGN_CERT='${{ secrets.CODE_SIGN_CERT }}'; Set-Content -Path code_sign_cert.pem -Value $env:CODE_SIGN_CERT"
+        REM  powershell -command "$env:CODE_SIGN_PRIVATE_KEY='${{ secrets.CODE_SIGN_PRIVATE_KEY }}'; Set-Content -Path code_sign_private_key.pem -Value $env:CODE_SIGN_PRIVATE_KEY"
+        REM  powershell -command "$env:CODE_CA_BUNDLE_CERT='${{ secrets.CODE_CA_BUNDLE_CERT }}'; Set-Content -Path code_ca_bundle_cert.pem -Value $env:CODE_CA_BUNDLE_CERT"
 
-        # REM Verify the certificate chain
-        # openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+        REM  REM Verify the certificate chain
+        REM  openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
 
-        # REM Sign the installer
-        # openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+        REM  REM Sign the installer
+        REM  openssl smime -sign -in windows-installer-latest.exe -out windows-installer-latest.signed.exe -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
     # - name: Authenticate with Google Cloud
     #   uses: google-github-actions/auth@v1
