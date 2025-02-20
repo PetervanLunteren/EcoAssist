@@ -1,0 +1,11 @@
+url_path,views_total,views_unique
+/PetervanLunteren/EcoAssist,226,91
+/PetervanLunteren/AddaxAI,119,40
+/PetervanLunteren/EcoAssist/actions,105,4
+/PetervanLunteren/AddaxAI/actions,98,1
+/PetervanLunteren/AddaxAI/actions/workflows/test-sign-installer.yml,91,1
+/PetervanLunteren/EcoAssist/tree/AddaxAI,49,1
+/PetervanLunteren/AddaxAI/blob/main/.github/workflows/test-sign-installer.yml,38,1
+/PetervanLunteren/EcoAssist/blob/main/markdown/windows-install-instructions/manual-install.md,35,21
+/PetervanLunteren/EcoAssist/actions/workflows/build-windows-release.yml,35,1
+/PetervanLunteren/EcoAssist/issues,34,15
