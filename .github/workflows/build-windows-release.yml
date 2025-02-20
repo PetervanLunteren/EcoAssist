@@ -365,6 +365,42 @@ jobs:
           endlocal
         shell: cmd
 
+      - name: Decode PFX certificate from GitHub Secrets
+        run: |
+          $base64String = "${{ secrets.PFX_BASE64_CERTIFICATE }}"
+          [IO.File]::WriteAllBytes("addax_cert.pfx", [Convert]::FromBase64String($base64String))
+  
+      # # the following is very helpful if you have a new github runner image and want to find signtool.exe
+      # - name: Get signtool.exe location
+      #   uses: eltorio/action-signtoolLocation@v1
+  
+      - name: Sign installer
+        shell: cmd
+        run: |
+          "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" sign /f addax_cert.pfx /p "${{ secrets.CODE_SIGN_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 "${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe"
+  
+      - name: Verify signature
+        shell: cmd
+        run: |
+          "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" verify /pa /v "${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe"
+  
+      - name: Remove the PFX file after signing
+        run: |
+          # Check if the .pfx file exists before removal
+          if (Test-Path "addax_cert.pfx") {
+            echo "PFX file exists. Proceeding with removal."
+            Remove-Item -Path "addax_cert.pfx" -Force
+          } else {
+            echo "PFX file does not exist. Skipping removal."
+          }
+      
+          # Check if the .pfx file still exists after removal
+          if (-not (Test-Path "addax_cert.pfx")) {
+            echo "PFX file successfully removed."
+          } else {
+            echo "Failed to remove PFX file."
+          }
+
       # - name: Write secrets to pem files
       #   shell: pwsh
       #   run: |
