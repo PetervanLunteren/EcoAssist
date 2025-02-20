@@ -32,6 +32,7 @@ jobs:
     #     echo "SignTool Location: ${{ steps.signtool.outputs.signtoolLocation }}"
 
     - name: Sign the EXE file
+      shell: cmd
       run: |
         "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" sign /f addax_cert.pfx /p "${{ secrets.CODE_SIGN_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 "windows-installer-latest.exe"
 
