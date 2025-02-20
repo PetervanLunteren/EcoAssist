@@ -36,10 +36,28 @@ jobs:
       run: |
         "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" sign /f addax_cert.pfx /p "${{ secrets.CODE_SIGN_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 "windows-installer-latest.exe"
 
+    - name: Verify the EXE file
+      shell: cmd
+      run: |
+        "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" verify /pa /v "windows-installer-latest.exe"
+
     - name: Remove the .pfx file after signing
       run: |
-        Remove-Item -Path "addax_cert.pfx" -Force
-        echo "PFX file has been securely removed."
+        # Check if the .pfx file exists before removal
+        if (Test-Path "addax_cert.pfx") {
+          echo "PFX file exists. Proceeding with removal."
+          Remove-Item -Path "addax_cert.pfx" -Force
+          echo "PFX file has been securely removed."
+        } else {
+          echo "PFX file does not exist. Skipping removal."
+        }
+    
+        # Check if the .pfx file still exists after removal
+        if (-not (Test-Path "addax_cert.pfx")) {
+          echo "PFX file successfully removed."
+        } else {
+          echo "Failed to remove PFX file."
+        }
         
 
 
@@ -137,18 +155,17 @@ jobs:
 
 
 
-    # - name: Authenticate with Google Cloud
-    #   uses: google-github-actions/auth@v1
-    #   with:
-    #     credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
 
-    # - name: Set up Google Cloud
-    #   uses: google-github-actions/setup-gcloud@v1
-    #   with:
-    #     project_id: github-file-storage
+    - name: Set up Google Cloud
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: github-file-storage
 
-    # - name: Upload installer EXE to Google Cloud
-    #   shell: cmd
-    #   run: |
-    #     set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
-    #     gsutil cp -r "windows-installer-latest.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.exe
+    - name: Upload installer EXE to Google Cloud
+      shell: cmd
+      run: |
+        gsutil cp -r "windows-installer-latest.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.exe
