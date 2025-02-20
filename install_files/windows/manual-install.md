@@ -38,7 +38,6 @@ Below are instructions for AddaxAI users who are unable to execute the normal in
 <br>
 
 11. You can create a shortcut file so you don't always have to navigate to the `open.bat` file. If you still have your shortcut file left from the normal install, that will work fine. If not, you can create one by right-clicking on `open.bat` > (Optionally: 'Show more options') > Create shortcut. Then drag and drop that shortcut file to your desktop (or wherever you want to place it) and rename it to 'AddaxAI'.
-<div align="center"><img width="90" alt="Screenshot 2024-08-14 at 07 11 06" src="https://github.com/user-attachments/assets/d590cf69-a7fd-4b63-8d66-3278fa9443a4"></div>
 <br>
 <br>
 
