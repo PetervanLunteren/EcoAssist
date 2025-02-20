@@ -23,17 +23,23 @@ jobs:
         $base64String = "${{ secrets.PFX_BASE64_CERTIFICATE }}"
         [IO.File]::WriteAllBytes("addax_cert.pfx", [Convert]::FromBase64String($base64String))
 
-    - name: Get Signtool Location
-      uses: eltorio/action-signtoolLocation@v1
-      id: signtool
-
-    - name: Show SignTool location
-      run: |
-        echo "SignTool Location: ${{ steps.signtool.outputs.signtoolLocation }}"
-
-    # - name: Sign the EXE file
+    # # very helpful if you have a new github runner image to find signtool.exe
+    # - name: Get Signtool Location
+    #   uses: eltorio/action-signtoolLocation@v1
+    #   id: signtool
+    # - name: Show SignTool location
     #   run: |
-    #     "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign /f addax_cert.pfx /p "your_password" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 installer.exe
+    #     echo "SignTool Location: ${{ steps.signtool.outputs.signtoolLocation }}"
+
+    - name: Sign the EXE file
+      run: |
+        "C:/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x64/signtool.exe" sign /f addax_cert.pfx /p "${{ secrets.CODE_SIGN_PASSWORD }}" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 "windows-installer-latest.exe"
+
+    - name: Remove the .pfx file after signing
+      run: |
+        Remove-Item -Path "addax_cert.pfx" -Force
+        echo "PFX file has been securely removed."
+        
 
 
 
