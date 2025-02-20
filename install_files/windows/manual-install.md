@@ -1,9 +1,9 @@
 
-# Steps to manually install EcoAssist
+# Steps to manually install AddaxAI
 
-Below are instructions for EcoAssist users who are unable to execute the normal install due to unstable internet, security issues, or something else. Installing EcoAssist should be plan B, as the normal installation is much quicker, performs additional checks, and automates the whole process. If you haven't tried the [normal install](https://addaxdatascience.com/ecoassist-windows/) yet, please try that first. 
+Below are instructions for AddaxAI users who are unable to execute the normal install due to unstable internet, security issues, or something else. Installing AddaxAI should be plan B, as the normal installation is much quicker, performs additional checks, and automates the whole process. If you haven't tried the [normal install](https://addaxdatascience.com/AddaxAI-windows/) yet, please try that first. 
 
-**Follow the steps below to install EcoAssist from a ZIP file.**
+**Follow the steps below to install AddaxAI from a ZIP file.**
 1. Download the compressed files using [this link](https://storage.googleapis.com/github-release-files-storage/latest/windows-latest.7z). It might take a while, as it is 4.4 GB. If the internet connection is too unstable or slow for this to work, see the 'Download using the command line for a resume option in unstable internet' alternative at the bottom of this page.
 <div align="center"><img width="400" alt="Screenshot 2025-01-26 at 11 28 56" src="https://github.com/user-attachments/assets/e18ab79e-e955-426e-ac99-6cdc3e6a7d80"></div>
 <br>
@@ -31,12 +31,13 @@ Below are instructions for EcoAssist users who are unable to execute the normal 
 <br>
 <br>
 
-10. When the files are extracted, check if EcoAssist works by double-clicking the `C:\Users\<your_username>\EcoAssist_files\EcoAssist\open.bat` file.
+10. When the files are extracted, check if AddaxAI works by double-clicking the `C:\Users\<your_username>\AddaxAI_files\AddaxAI\open.bat` file.
 <div align="center"><img width="600" alt="Screenshot 2024-08-14 at 07 23 35" src="https://github.com/user-attachments/assets/410577b9-a722-4c1c-9217-3bd0d773aa6f"></div>
+
 <br>
 <br>
 
-11. You can create a shortcut file so you don't always have to navigate to the `open.bat` file. If you still have your shortcut file left from the normal install, that will work fine. If not, you can create one by right-clicking on `open.bat` > (Optionally: 'Show more options') > Create shortcut. Then drag and drop that shortcut file to your desktop (or wherever you want to place it) and rename it to 'EcoAssist'.
+11. You can create a shortcut file so you don't always have to navigate to the `open.bat` file. If you still have your shortcut file left from the normal install, that will work fine. If not, you can create one by right-clicking on `open.bat` > (Optionally: 'Show more options') > Create shortcut. Then drag and drop that shortcut file to your desktop (or wherever you want to place it) and rename it to 'AddaxAI'.
 <div align="center"><img width="90" alt="Screenshot 2024-08-14 at 07 11 06" src="https://github.com/user-attachments/assets/d590cf69-a7fd-4b63-8d66-3278fa9443a4"></div>
 <br>
 <br>
