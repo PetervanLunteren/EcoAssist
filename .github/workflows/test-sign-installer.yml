@@ -11,35 +11,95 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Write secrets to pem files
-      shell: pwsh
-      run: |
-        Set-Content -Path code_sign_cert.pem -Value "${{ secrets.CODE_SIGN_CERT }}"
-        Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
-        Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
-
-
-    - name: Sign installer
+    - name: download dummy installer
       shell: pwsh
       run: |
 
         # Download the installer from the given URL
         Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
 
-        $INSTALLER = "windows-installer-latest.exe"
-        $SIGNED_INSTALLER = "windows-installer-latest.signed.exe"
+    - name: Decode PFX certificate from GitHub Secrets
+      run: |
+        $base64String = "${{ secrets.PFX_BASE64_CERTIFICATE }}"
+        [IO.File]::WriteAllBytes("addax_cert.pfx", [Convert]::FromBase64String($base64String))
 
-        # check
-        openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
+    - name: Get Signtool Location
+      uses: eltorio/action-signtoolLocation@v1
+      id: signtool
+
+    - name: Show SignTool location
+      run: |
+        echo "SignTool Location: ${{ steps.signtool.outputs.signtoolLocation }}"
+
+    # - name: Sign the EXE file
+    #   run: |
+    #     "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign /f addax_cert.pfx /p "your_password" /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 installer.exe
+
+
+
+
+
+
+    # - name: Signtool Code Sign
+    #   # You may pin to the exact commit or the version.
+    #   # uses: GabrielAcostaEngler/signtool-code-sign@65c104a80f652b927e6237dc6c5b12a1b0cd18b0
+    #   uses: GabrielAcostaEngler/signtool-code-sign@1.0.6
+    #   with:
+    #     # Base64 encoded pfx certificate
+    #     certificate: 
+    #     # Certificate password
+    #     cert-password: 
+    #     # Certificate sha1/thumbprint
+    #     cert-sha1: 
+    #     # Add a description to the files being signed
+    #     cert-description: # optional
+    #     # path to folder containing files to sign.
+    #     folder: 
+    #     # Recursively search for supported files.
+    #     recursive: # optional, default is false
+    #     # URL of the timestamp server used for the signing
+    #     timestamp-server: # optional, default is http://timestamp.verisign.com/scripts/timstamp.dll
+          
+    # - name: Signtool Code Sign
+    #   uses: GabrielAcostaEngler/signtool-code-sign@1.0.6
+    #   with:
+    #     certificate: '${{ secrets.CERTIFICATE }}'
+    #     cert-password: '${{ secrets.PASSWORD }}'
+    #     cert-sha1: '${{ secrets.CERTHASH }}'
+    #     cert-description: 'foo'
+    #     folder: 'path/to/folder'
+    #     recursive: true
+    #     timestamp-server: 'http://timestamp.digicert.com'
+
+    # - name: Write secrets to pem files
+    #   shell: pwsh
+    #   run: |
+    #     Set-Content -Path code_sign_cert.pem -Value "${{ secrets.CODE_SIGN_CERT }}"
+    #     Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
+    #     Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
+
+
+    # - name: Sign installer
+    #   shell: pwsh
+    #   run: |
+
+    #     # Download the installer from the given URL
+    #     Invoke-WebRequest -Uri "https://storage.googleapis.com/github-release-files-storage/latest/windows-installer-latest.exe" -OutFile "windows-installer-latest.exe"
+
+    #     $INSTALLER = "windows-installer-latest.exe"
+    #     $SIGNED_INSTALLER = "windows-installer-latest.signed.exe"
+
+    #     # check
+    #     openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
     
-        # sign
-        openssl smime -sign -in $INSTALLER -out $SIGNED_INSTALLER -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
+    #     # sign
+    #     openssl smime -sign -in $INSTALLER -out $SIGNED_INSTALLER -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
 
-        # replace 
-        Move-Item -Force $SIGNED_INSTALLER $INSTALLER
+    #     # replace 
+    #     Move-Item -Force $SIGNED_INSTALLER $INSTALLER
 
-        # verify
-        openssl smime -verify -in $INSTALLER -CAfile code_ca_bundle_cert.pem -inform DER -noverify
+    #     # verify
+    #     openssl smime -verify -in $INSTALLER -CAfile code_ca_bundle_cert.pem -inform DER -noverify
 
 
     # - name: Sign installer
@@ -58,18 +118,30 @@ jobs:
     #     openssl smime -verify -in windows-installer-latest.signed.exe -CAfile code_ca_bundle_cert.pem -inform DER -noverify
 
 
-    - name: Authenticate with Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
 
-    - name: Set up Google Cloud
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: github-file-storage
 
-    - name: Upload installer EXE to Google Cloud
-      shell: cmd
-      run: |
-        set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
-        gsutil cp -r "windows-installer-latest.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.exe
+
+
+
+
+
+
+
+
+
+
+    # - name: Authenticate with Google Cloud
+    #   uses: google-github-actions/auth@v1
+    #   with:
+    #     credentials_json: ${{ secrets.GOOGLE_STORAGE_UPLOAD_KEY }}
+
+    # - name: Set up Google Cloud
+    #   uses: google-github-actions/setup-gcloud@v1
+    #   with:
+    #     project_id: github-file-storage
+
+    # - name: Upload installer EXE to Google Cloud
+    #   shell: cmd
+    #   run: |
+    #     set INSTALLER=${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe
+    #     gsutil cp -r "windows-installer-latest.exe" gs://github-release-files-storage-beta-versions/latest/windows-installer-latest.exe
