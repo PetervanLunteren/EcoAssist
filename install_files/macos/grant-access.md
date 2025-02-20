@@ -1,6 +1,6 @@
 ## How to grant access to open the AddaxAI installer
 
-Depending on your macOS security settings, you might not be able to open the AddaxAI installer immediately. Sometimes a simple `Right click` > `Open` will do the trick. If not, you’ll need to mark the file as safe in your system settings. Follow the steps below to proceed.
+Depending on your macOS security settings, you might not be able to open the AddaxAI installer immediately. Sometimes a simple `Right click` > `Open` will do the trick. If not, you’ll need to mark the file as safe in your system settings. Follow the steps below to proceed. The screenshots still show the application's old name (EcoAssist), but the process will be the same.
 
 ________
 
