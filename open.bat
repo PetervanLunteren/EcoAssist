@@ -11,8 +11,8 @@ echo off
 @setlocal EnableDelayedExpansion
 
 @REM set paths
-set ADDAXAI_GUI="%homedrive%%homepath%\AddaxAI_files\AddaxAI\AddaxAI_GUI.py"
-set PYTHON_EXE="%homedrive%%homepath%\AddaxAI_files\envs\env-base\python.exe"
+set ADDAXAI_GUI="%ProgramFiles%\EcoAssist_files\EcoAssist\EcoAssist_GUI.py"
+set PYTHON_EXE="%ProgramFiles%\EcoAssist_files\envs\env-base\python.exe"
 
 @REM run script in either timelapse or normal mode
 if "%1" == "timelapse" (
