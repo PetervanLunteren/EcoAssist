@@ -4,15 +4,16 @@
 @REM the python script. With the Jan 2025 install update that is not neccesary anymore. But this script is still 
 @REM here so that Timelapse can run the same command as before and users don't have to update their Timelapse 
 @REM version when using a new AddaxAI version. 
-@REM Peter van Lunteren, 25 Jan 2025 (latest edit)
+@REM Peter van Lunteren, 21 Feb 2025 (latest edit)
 
 @REM set echo settings
 echo off
 @setlocal EnableDelayedExpansion
 
 @REM set paths
-set ADDAXAI_GUI="%ProgramFiles%\EcoAssist_files\EcoAssist\EcoAssist_GUI.py"
-set PYTHON_EXE="%ProgramFiles%\EcoAssist_files\envs\env-base\python.exe"
+for %%i in ("%~dp0..") do set "ADDAXAI_FILES_DIR=%%~fi"
+set ADDAXAI_GUI="%ADDAXAI_FILES_DIR%\AddaxAI\AddaxAI_GUI.py"
+set PYTHON_EXE="%ADDAXAI_FILES_DIR%\envs\env-base\python.exe"
 
 @REM run script in either timelapse or normal mode
 if "%1" == "timelapse" (
