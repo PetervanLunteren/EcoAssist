@@ -285,7 +285,7 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         # for files
         csv_for_files = os.path.join(dst_dir, "results_files.csv")
         if not os.path.isfile(csv_for_files):
-            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "max_confidence", "human_verified",
+            df = pd.DataFrame(list(), columns=["absolute_path", "relative_path", "data_type", "n_detections", "file_height", "file_width", "max_confidence", "human_verified",
                                                'DateTimeOriginal', 'DateTime', 'DateTimeDigitized', 'Latitude', 'Longitude', 'GPSLink', 'Altitude', 'Make',
                                                'Model', 'Flash', 'ExifOffset', 'ResolutionUnit', 'YCbCrPositioning', 'XResolution', 'YResolution',
                                                'ExifVersion', 'ComponentsConfiguration', 'FlashPixVersion', 'ColorSpace', 'ExifImageWidth',
@@ -539,11 +539,17 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
         
         # collect info to append to csv files
         if exp:
-            # file info
-            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), max_detection_conf, manually_checked, *exif_params]])
+            # file info CSV
+            if len(bbox_info) > 0: # try to fetch existing values
+                file_height = bbox_info[0][7]
+                file_width = bbox_info[0][8]
+            else: # only get dimensions if no detections are present
+                with Image.open(os.path.normpath(os.path.join(src_dir, file))) as pil_img:
+                    file_width, file_height = pil_img.size
+            row = pd.DataFrame([[src_dir, file, data_type, len(bbox_info), file_height, file_width, max_detection_conf, manually_checked, *exif_params]])
             row.to_csv(csv_for_files, encoding='utf-8', mode='a', index=False, header=False)
 
-            # detections info
+            # detections info CSV
             rows = []
             for bbox in bbox_info:
                 row = [src_dir, file, data_type, *bbox[:9], *exif_params]
@@ -738,14 +744,22 @@ def csv_to_coco(detections_df, files_df, output_path):
         
         # create image entry
         image_id = len(coco['images']) + 1
+        
+        # get date captured
+        if type(file_info['DateTimeOriginal']) == float: # means NA value
+            date_captured = "NA"
+        else:
+            date_captured = datetime.datetime.strptime(file_info['DateTimeOriginal'],
+                                                        "%d/%m/%y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")   
+
+        # add image to coco
         image_entry = {
             "id": image_id,
-            "width": int(file_info['ExifImageWidth']),
-            "height": int(file_info['ExifImageHeight']),
+            "width": int(file_info['file_width']),
+            "height": int(file_info['file_height']),
             "file_name": file_info['relative_path'],
             "license": 1,
-            "date_captured": datetime.datetime.strptime(file_info['DateTimeOriginal'],
-                                                        "%d/%m/%y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
+            "date_captured": date_captured
         }
         coco['images'].append(image_entry)
 
