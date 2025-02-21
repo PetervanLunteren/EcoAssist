@@ -401,34 +401,6 @@ jobs:
             echo "Failed to remove PFX file."
           }
 
-      # - name: Write secrets to pem files
-      #   shell: pwsh
-      #   run: |
-      #     Set-Content -Path code_sign_cert.pem -Value "${{ secrets.CODE_SIGN_CERT }}"
-      #     Set-Content -Path code_sign_private_key.pem -Value "${{ secrets.CODE_SIGN_PRIVATE_KEY }}"
-      #     Set-Content -Path code_ca_bundle_cert.pem -Value "${{ secrets.CODE_CA_BUNDLE_CERT }}"
-  
-      # - name: Sign installer
-      #   shell: pwsh
-      #   run: |
-
-      #     $INSTALLER = "${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer.exe"
-      #     $SIGNED_INSTALLER = "${{ github.workspace }}/install_files/windows/AddaxAI-${{ env.RELEASE_VERSION }}-installer-signed.exe"
-
-      #     # check
-      #     openssl verify -verbose -CAfile code_ca_bundle_cert.pem code_sign_cert.pem
-      
-      #     # sign
-      #     openssl smime -sign -in $INSTALLER -out $SIGNED_INSTALLER -inkey code_sign_private_key.pem -signer code_sign_cert.pem -outform DER -nodetach
-
-      #     # replace 
-      #     Move-Item -Force $SIGNED_INSTALLER $INSTALLER
-  
-      #     # verify
-      #     openssl smime -verify -in $INSTALLER -CAfile code_ca_bundle_cert.pem -inform DER -noverify
-
-      #     # remove pem files (todo)
-
       - name: Upload Asset to GitHub Release
         uses: actions/upload-release-asset@v1
         with:
