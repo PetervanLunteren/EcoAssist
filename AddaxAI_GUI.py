@@ -5,6 +5,7 @@
 # Created by Peter van Lunteren
 # Latest edit by Peter van Lunteren on 19 Feb 2025
 
+# TODO: RESUME DOWNLOAD - make some sort of mechanism that either continues the model download when interrupted, or downloads it to /temp/ folder and only moves it to the correct location after succesful download. Otherwise delete from /temp/. That makes sure that users will not be able to continue with half downloaded models. 
 # TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
 # TODO: PYINSTALLER - Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
