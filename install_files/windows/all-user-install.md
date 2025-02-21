@@ -1,6 +1,6 @@
 # AddaxAI install for all users
 
-The normal installation installs AddaxAI for the current user only. This is done to avoid admin rights requirements during the installation, which can be a limitation for many users on locked-down machines like universities and government agencies. However, it is possible to install AddaxAI for multiple users by following the steps below. 
+The standard installation of AddaxAI is for the current user only. This avoids the need for admin rights, which can be restrictive for users on locked-down machines, such as those in universities and government agencies. However, it is possible to install AddaxAI for multiple users by following the steps below.
 
 The software works if the files (i.e., the "AddaxAI_files" folder) are located in either one of these locations:
 * `C:\Users\<username>\AddaxAI_files\`
