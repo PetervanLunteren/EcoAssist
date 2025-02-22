@@ -118,7 +118,7 @@ if os.name == 'nt': # windows
 elif platform.system() == 'Darwin': # macos
     env_dir_fpath = os.path.join(AddaxAI_files, "envs")
 else: # linux
-    env_dir_fpath = os.path.join(AddaxAI_files, "envs") # TODO
+    env_dir_fpath = os.path.join(AddaxAI_files, "envs")
 
 # set versions
 with open(os.path.join(AddaxAI_files, 'AddaxAI', 'version.txt'), 'r') as file:
@@ -560,14 +560,24 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
     
         # visualize images
         if vis and len(bbox_info) > 0:
-            for bbox in bbox_info:
-                if manually_checked:
-                    vis_label = f"{bbox[0]} (verified)"
-                else:
-                    conf_label = round(bbox[1], 2) if round(bbox[1], 2) != 1.0 else 0.99
-                    vis_label = f"{bbox[0]} {conf_label}"
-                color = colors[int(inverted_label_map[bbox[0]])]
-                bb.add(im_to_vis, *bbox[3:7], vis_label, color, size = dpd_options_vis_size[lang_idx].index(var_vis_size.get())) # convert string to index, e.g. "small" -> 0
+            
+            # blur people
+            if var_vis_blur.get():
+                for bbox in bbox_info:
+                    if bbox[0] == "person":
+                        im_to_vis = blur_box(im_to_vis, *bbox[3:7], bbox[8], bbox[7])
+                        
+            # draw bounding boxes
+            if var_vis_bbox.get():
+                for bbox in bbox_info:
+                    if manually_checked:
+                        vis_label = f"{bbox[0]} (verified)"
+                    else:
+                        conf_label = round(bbox[1], 2) if round(bbox[1], 2) != 1.0 else 0.99
+                        vis_label = f"{bbox[0]} {conf_label}"
+                    color = colors[int(inverted_label_map[bbox[0]])]
+                    bb.add(im_to_vis, *bbox[3:7], vis_label, color, size = dpd_options_vis_size[lang_idx].index(var_vis_size.get())) # convert string to index, e.g. "small" -> 0
+            
             im = os.path.join(dst_dir, file)
             Path(os.path.dirname(im)).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(im, im_to_vis)
@@ -855,6 +865,8 @@ def start_postprocess():
         "var_exp": var_exp.get(),
         "var_exp_format_idx": dpd_options_exp_format[lang_idx].index(var_exp_format.get()),
         "var_vis_size_idx": dpd_options_vis_size[lang_idx].index(var_vis_size.get()),
+        "var_vis_bbox": var_vis_bbox.get(),
+        "var_vis_blur": var_vis_blur.get(),
         "var_plt": var_plt.get(),
         "var_thresh": var_thresh.get()
     })
@@ -4161,6 +4173,18 @@ def verification_status(xml):
         verification_status = False
     return verification_status
 
+# helper function to blur person bbox
+def blur_box(image, bbox_left, bbox_top, bbox_right, bbox_bottom, image_width, image_height):
+    x1, y1, x2, y2 = map(int, [bbox_left, bbox_top, bbox_right, bbox_bottom])
+    if x1 >= x2 or y1 >= y2 or x1 < 0 or y1 < 0 or x2 > image_width or y2 > image_height:
+        raise ValueError(f"Invalid bounding box: ({x1}, {y1}, {x2}, {y2})")
+    roi = image[y1:y2, x1:x2]
+    if roi.size == 0:
+        raise ValueError("Extracted ROI is empty. Check the bounding box coordinates.")
+    blurred_roi = cv2.GaussianBlur(roi, (71, 71), 0)
+    image[y1:y2, x1:x2] = blurred_roi
+    return image
+
 # helper function to correctly indent pascal voc annotation files
 def indent(elem, level=0):
     i = "\n" + level * "  "
@@ -6905,6 +6929,9 @@ def set_language():
     lbl_plt.configure(text=lbl_plt_txt[lang_idx])
     lbl_thresh.configure(text=lbl_thresh_txt[lang_idx])
     btn_start_postprocess.configure(text=btn_start_postprocess_txt[lang_idx])
+    lbl_vis_size.configure(text="        ↳ " + lbl_vis_size_txt[lang_idx])
+    lbl_vis_bbox.configure(text="     " + lbl_vis_bbox_txt[lang_idx])
+    lbl_vis_blur.configure(text="     " + lbl_vis_blur_txt[lang_idx])
 
     # update texts of help tab
     help_text.configure(state=NORMAL)
@@ -7442,11 +7469,11 @@ def reset_values():
     var_image_size_for_deploy.set("")
     var_abs_paths.set(False)
     var_disable_GPU.set(False)
-    var_process_img.set(True)
+    var_process_img.set(False)
     var_use_checkpnts.set(False)
     var_checkpoint_freq.set("")
     var_cont_checkpnt.set(False)
-    var_process_vid.set(True)
+    var_process_vid.set(False)
     var_not_all_frames.set(True)
     var_nth_frame.set("1")
     var_separate_files.set(False)
@@ -7454,9 +7481,12 @@ def reset_values():
     var_sep_conf.set(False)
     var_vis_files.set(False)
     var_vis_size.set(dpd_options_vis_size[lang_idx][global_vars['var_vis_size_idx']])
+    var_vis_bbox.set(False)
+    var_vis_blur.set(False)
     var_crp_files.set(False)
     var_exp.set(True)
     var_exp_format.set(dpd_options_exp_format[lang_idx][global_vars['var_exp_format_idx']])
+    
     write_global_vars({
         "var_det_model_idx": dpd_options_model[lang_idx].index(var_det_model.get()),
         "var_det_model_path": var_det_model_path.get(),
@@ -7477,7 +7507,9 @@ def reset_values():
         "var_file_placement": var_file_placement.get(),
         "var_sep_conf": var_sep_conf.get(),
         "var_vis_files": var_vis_files.get(),
-        "var_vis_size_idx": dpd_options_exp_format[lang_idx].index(var_vis_size.get()),
+        "var_vis_size_idx": dpd_options_vis_size[lang_idx].index(var_vis_size.get()),
+        "var_vis_bbox": var_vis_bbox.get(),
+        "var_vis_blur": var_vis_blur.get(),
         "var_crp_files": var_crp_files.get(),
         "var_exp": var_exp.get(),
         "var_exp_format_idx": dpd_options_exp_format[lang_idx].index(var_exp_format.get())
@@ -8078,7 +8110,7 @@ chb_sep_conf = Checkbutton(sep_frame, variable=var_sep_conf, anchor="w")
 chb_sep_conf.grid(row=row_sep_conf, column=1, sticky='nesw', padx=5)
 
 ## visualize images
-lbl_vis_files_txt = ["Draw bounding boxes and confidences", "Dibujar contornos y confianzas"]
+lbl_vis_files_txt = ["Visualise detections and blur people", "Mostrar detecciones y difuminar personas"]
 row_vis_files = 3
 lbl_vis_files = Label(fth_step, text=lbl_vis_files_txt[lang_idx], width=1, anchor="w")
 lbl_vis_files.grid(row=row_vis_files, sticky='nesw', pady=2)
@@ -8097,10 +8129,20 @@ vis_frame.columnconfigure(0, weight=1, minsize=label_width - subframe_correction
 vis_frame.columnconfigure(1, weight=1, minsize=widget_width - subframe_correction_factor)
 vis_frame.grid_forget()
 
-# visual size
+## draw bboxes 
+lbl_vis_bbox_txt = ["Draw bounding boxes and confidences", "Dibujar contornos y confianzas"] 
+row_vis_bbox = 0
+lbl_vis_bbox = Label(vis_frame, text="     " + lbl_vis_bbox_txt[lang_idx], width=1, anchor="w")
+lbl_vis_bbox.grid(row=row_vis_bbox, sticky='nesw', pady=2)
+var_vis_bbox = BooleanVar()
+var_vis_bbox.set(global_vars['var_vis_bbox'])
+chb_vis_bbox = Checkbutton(vis_frame, variable=var_vis_bbox, anchor="w") 
+chb_vis_bbox.grid(row=row_vis_bbox, column=1, sticky='nesw', padx=5)
+
+# line size
 lbl_vis_size_txt = ["Select line width and font size", "Ancho de línea y tamaño de fuente"]
-row_vis_size = 0
-lbl_vis_size = Label(vis_frame, text="     " + lbl_vis_size_txt[lang_idx], pady=2, width=1, anchor="w")
+row_vis_size = 1
+lbl_vis_size = Label(vis_frame, text="        ↳ " + lbl_vis_size_txt[lang_idx], pady=2, width=1, anchor="w")
 lbl_vis_size.grid(row=row_vis_size, sticky='nesw')
 dpd_options_vis_size = [["Extra small", "Small", "Medium", "Large", "Extra large"],
                         ["Extra pequeño", "Pequeño", "Mediano", "Grande", "Extra grande"]]
@@ -8109,6 +8151,16 @@ var_vis_size.set(dpd_options_vis_size[lang_idx][global_vars['var_vis_size_idx']]
 dpd_vis_size = OptionMenu(vis_frame, var_vis_size, *dpd_options_vis_size[lang_idx])
 dpd_vis_size.configure(width=1)
 dpd_vis_size.grid(row=row_vis_size, column=1, sticky='nesw', padx=5)
+
+## blur people
+lbl_vis_blur_txt = ["Blur people", "Desenfocar a la gente"]
+row_vis_blur = 2
+lbl_vis_blur = Label(vis_frame, text="     " + lbl_vis_blur_txt[lang_idx], width=1, anchor="w")
+lbl_vis_blur.grid(row=row_vis_blur, sticky='nesw', pady=2)
+var_vis_blur = BooleanVar()
+var_vis_blur.set(global_vars['var_vis_blur'])
+chb_vis_blur = Checkbutton(vis_frame, variable=var_vis_blur, anchor="w") 
+chb_vis_blur.grid(row=row_vis_blur, column=1, sticky='nesw', padx=5)
 
 ## crop images
 lbl_crp_files_txt = ["Crop detections", "Recortar detecciones"]
