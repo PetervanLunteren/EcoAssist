@@ -138,7 +138,7 @@ if [ -d "$ECO" ]; then
   echo "Dir ${ECO} already exists! Skipping this step." 2>&1 | tee -a "$LOG_FILE"
 else
   echo "Dir ${ECO} does not exist! Clone repo..." 2>&1 | tee -a "$LOG_FILE"
-  git clone --progress --depth 1 https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
+  git clone --progress -b finetuneMD https://github.com/PetervanLunteren/EcoAssist.git 2>&1 | tee -a "$LOG_FILE"
   # move the open.cmd two dirs up and give it an icon
   if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
     FILE="$LOCATION_ECOASSIST_FILES/EcoAssist/open.command"
