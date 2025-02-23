@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/addaxai/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 19 Feb 2025
+# Latest edit by Peter van Lunteren on 23 Feb 2025
 
 # TODO: RESUME DOWNLOAD - make some sort of mechanism that either continues the model download when interrupted, or downloads it to /temp/ folder and only moves it to the correct location after succesful download. Otherwise delete from /temp/. That makes sure that users will not be able to continue with half downloaded models. 
 # TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
@@ -4465,7 +4465,7 @@ def get_hitl_var_in_json(path_to_json):
     # open
     with open(path_to_json, "r") as json_file:
         data = json.load(json_file)
-        addaxai_metadata = data['info']["addaxai_metadata"]
+        addaxai_metadata = data['info'].get("addaxai_metadata") or data['info'].get("ecoassist_metadata") # include old name 'EcoAssist' for backwards compatibility
     
     # get status
     if "hitl_status" in addaxai_metadata:
