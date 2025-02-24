@@ -1,6 +1,6 @@
 # Bypass virus detection
 
-If something is blocking the AddaxAI installer exe file due to "virus detected," it means Windows Defender (or another antivirus) is preventing the download. Here’s how you can bypass the block.
+If something is blocking the AddaxAI installer exe file due to "virus detected," or "blocked as unsafe," it means some security software is preventing the download. Here’s how you can bypass the block.
 
 <img width="500" alt="Screenshot 2025-02-13 at 08 10 05" src="https://github.com/user-attachments/assets/7f909601-9027-4599-b96b-24d25738ac74" />
 
@@ -8,12 +8,12 @@ If something is blocking the AddaxAI installer exe file due to "virus detected,"
 
 ---------------------------------
 
-**Option 1: Use Another Browser**
+**Option 1: Use another browser**
 1. Some users experience trouble with using Microsoft Edge. Try using Chrome, as some browsers have stricter blocking policies.
 
 ---------------------------------
 
-**Option 2: Check Windows Defender’s Quarantine**
+**Option 2: Check Windows defender’s quarantine**
 1. Open Windows Security (press Win + S and search for "Windows Security").
 2. Click Virus & threat protection.
 3. Scroll down and click Protection history.
@@ -29,7 +29,7 @@ If something is blocking the AddaxAI installer exe file due to "virus detected,"
 
 ---------------------------------
 
-**Option 3: Disable Windows Defender Temporarily (if the above doesn't work)**
+**Option 3: Disable Windows defender temporarily (if the above doesn't work)**
 1. Open Windows Security > Virus & threat protection.
 2. Click Manage settings under "Virus & threat protection settings."
 3. Turn off Real-time protection. (Remember to turn it back on after downloading!)
