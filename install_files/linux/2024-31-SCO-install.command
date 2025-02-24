@@ -30,34 +30,34 @@ echo "This installation started at: $START_DATE"
 # log the platform
 echo "This installation is using platform: $PLATFORM"
 
-# log system information
-UNAME_A=`uname -a`
-if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
-  MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
-elif [ "$PLATFORM" = "Linux" ]; then
-  PATH=$PATH:/usr/sbin
-  MACHINE_INFO_1=`lscpu`
-  MACHINE_INFO_2=`dmidecode`
-  MACHINE_INFO_3=""
-  SYSTEM_INFO_DIRECTORY="/sys/devices/virtual/dmi/id/"
-  if [ -d "$SYSTEM_INFO_DIRECTORY" ]; then
-    echo "$SYSTEM_INFO_DIRECTORY does exist."
-    cd $SYSTEM_INFO_DIRECTORY
-    for f in *; do
-      MACHINE_INFO_3+="
-      $f = `cat $f 2>/dev/null || echo "***_Unavailable_***"`"
-    done
-  fi
-  MACHINE_INFO="${MACHINE_INFO_1}
-  ${MACHINE_INFO_2}
-  ${MACHINE_INFO_3}"
-fi
-echo "uname -a:" 
-echo "$UNAME_A" 
-echo "" 
-echo "System information:" 
-echo "$MACHINE_INFO" 
-echo "" 
+# # log system information
+# UNAME_A=`uname -a`
+# if [ "$PLATFORM" = "Apple Silicon Mac" ] || [ "$PLATFORM" = "Intel Mac" ]; then
+#   MACHINE_INFO=`system_profiler SPSoftwareDataType SPHardwareDataType SPMemoryDataType SPStorageDataType`
+# elif [ "$PLATFORM" = "Linux" ]; then
+#   PATH=$PATH:/usr/sbin
+#   MACHINE_INFO_1=`lscpu`
+#   MACHINE_INFO_2=`dmidecode`
+#   MACHINE_INFO_3=""
+#   SYSTEM_INFO_DIRECTORY="/sys/devices/virtual/dmi/id/"
+#   if [ -d "$SYSTEM_INFO_DIRECTORY" ]; then
+#     echo "$SYSTEM_INFO_DIRECTORY does exist."
+#     cd $SYSTEM_INFO_DIRECTORY
+#     for f in *; do
+#       MACHINE_INFO_3+="
+#       $f = `cat $f 2>/dev/null || echo "***_Unavailable_***"`"
+#     done
+#   fi
+#   MACHINE_INFO="${MACHINE_INFO_1}
+#   ${MACHINE_INFO_2}
+#   ${MACHINE_INFO_3}"
+# fi
+# echo "uname -a:" 
+# echo "$UNAME_A" 
+# echo "" 
+# echo "System information:" 
+# echo "$MACHINE_INFO" 
+# echo "" 
 
 ### create folder structure
 mkdir -p "${LOCATION_ADDAXAI_FILES}"
@@ -120,9 +120,9 @@ git -C "${LOCATION_ADDAXAI_FILES}/yolov5_versions/yolov5_new/yolov5" checkout 3e
 rm -rf "${LOCATION_ADDAXAI_FILES}/yolov5_versions/yolov5_new/yolov5/.git"
 echo "yolov5 new version cloned"
 
-// git clone --branch pyside6 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop"
-// rm -rf "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/.git"
-// echo "Human-in-the-loop cloned"
+# git clone --branch pyside6 --depth 1 https://github.com/PetervanLunteren/Human-in-the-loop.git "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop"
+# rm -rf "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/.git"
+# echo "Human-in-the-loop cloned"
 
 git clone --depth 1 https://github.com/PetervanLunteren/visualise_detection.git "${LOCATION_ADDAXAI_FILES}/visualise_detection"
 rm -rf "${LOCATION_ADDAXAI_FILES}/visualise_detection/.git"
@@ -143,8 +143,8 @@ else
   echo "curl successfuly installed."
 fi
 
-// ### download megadetector 
-// curl -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "${LOCATION_ADDAXAI_FILES}/models/det/MegaDetector 5a/md_v5a.0.0.pt"
+# ### download megadetector 
+# curl -L https://github.com/agentmorris/MegaDetector/releases/download/v5.0/md_v5a.0.0.pt -o "${LOCATION_ADDAXAI_FILES}/models/det/MegaDetector 5a/md_v5a.0.0.pt"
 
 # install miniforge
 curl --keepalive -L -o "${LOCATION_ADDAXAI_FILES}/Miniforge3.sh" "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
@@ -176,34 +176,34 @@ $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "tensorb
 $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "thop>=0.1.1"
 $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "protobuf<=3.20.1"
 $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "setuptools>=65.5.1"
-// $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install PySide6
-$conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "lxml==4.6.3"
-// "${LOCATION_ADDAXAI_FILES}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/resources.qrc"
+# $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install PySide6
+# $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-base" pip install "lxml==4.6.3"
+# "${LOCATION_ADDAXAI_FILES}/envs/env-base/bin/pyside6-rcc" -o "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/libs/resources.py" "${LOCATION_ADDAXAI_FILES}/Human-in-the-loop/resources.qrc"
 
 ### clean
 $conda_exe clean --all --yes --force-pkgs-dirs
 $conda_exe clean --all --yes
 
-// # requirements for Human-in-the-loop
-// echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. AddaxAI will still work fine without it but you might have problems with the Human-in-the-loop software."
-// { # first try without sudo
-//   add-apt-repository universe
-//   apt-get update
-//   apt-get install libxcb-cursor-dev
-//   apt-get install libxcb-cursor0
-// } || { # otherwise with sudo
-//   sudo add-apt-repository universe
-//   sudo apt-get update
-//   sudo apt-get install libxcb-cursor-dev
-//   sudo apt-get install libxcb-cursor0
-//   }
+# # requirements for Human-in-the-loop
+# echo "We need to install libxcb-cursor-dev (https://packages.debian.org/sid/libxcb-cursor-dev) and libxcb-cursor0 (https://packages.debian.org/sid/libxcb-cursor0). If you don't have root privileges you might be prompted for a password. Press CONTROL+D to skip authentication and not install these packages. AddaxAI will still work fine without it but you might have problems with the Human-in-the-loop software."
+# { # first try without sudo
+#   add-apt-repository universe
+#   apt-get update
+#   apt-get install libxcb-cursor-dev
+#   apt-get install libxcb-cursor0
+# } || { # otherwise with sudo
+#   sudo add-apt-repository universe
+#   sudo apt-get update
+#   sudo apt-get install libxcb-cursor-dev
+#   sudo apt-get install libxcb-cursor0
+#   }
 
-// ### install env-tensorflow
-// $conda_exe env create --file="${LOCATION_ADDAXAI_FILES}/AddaxAI/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ADDAXAI_FILES}/envs/env-tensorflow" -y
+# ### install env-tensorflow
+# $conda_exe env create --file="${LOCATION_ADDAXAI_FILES}/AddaxAI/classification_utils/envs/tensorflow-linux-windows.yml" -p "${LOCATION_ADDAXAI_FILES}/envs/env-tensorflow" -y
 
-// ### clean
-// $conda_exe clean --all --yes --force-pkgs-dirs
-// $conda_exe clean --all --yes
+# ### clean
+# $conda_exe clean --all --yes --force-pkgs-dirs
+# $conda_exe clean --all --yes
 
 ### install env-pytorch
 $conda_exe create -p "${LOCATION_ADDAXAI_FILES}/envs/env-pytorch" python=3.8 -y
@@ -219,15 +219,15 @@ $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pytorch" pip install dill
 $conda_exe clean --all --yes --force-pkgs-dirs
 $conda_exe clean --all --yes
 
-// ### install env-pywildlife
-// $conda_exe create -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" python=3.8 -y
-// $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install pytorchwildlife
-// $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install "setuptools<70"
-// $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install jsonpickle
+# ### install env-pywildlife
+# $conda_exe create -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" python=3.8 -y
+# $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install pytorchwildlife
+# $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install "setuptools<70"
+# $conda_exe run -p "${LOCATION_ADDAXAI_FILES}/envs/env-pywildlife" pip install jsonpickle
 
-// ### clean
-// $conda_exe clean --all --yes --force-pkgs-dirs
-// $conda_exe clean --all --yes
+# ### clean
+# $conda_exe clean --all --yes --force-pkgs-dirs
+# $conda_exe clean --all --yes
 
 # timestamp the end of installation
 END_DATE=`date`
