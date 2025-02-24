@@ -1,7 +1,5 @@
 # Bypass virus detection
 
-
-
 If something is blocking the AddaxAI installer exe file due to "virus detected," it means Windows Defender (or another antivirus) is preventing the download. Here’s how you can bypass the block.
 
 <img width="500" alt="Screenshot 2025-02-13 at 08 10 05" src="https://github.com/user-attachments/assets/7f909601-9027-4599-b96b-24d25738ac74" />
