@@ -9,7 +9,7 @@ If something is blocking the AddaxAI installer exe file due to "virus detected,"
 ---------------------------------
 
 **Option 1: Use another browser**
-1. Some users experience trouble with using Microsoft Edge. Try using Chrome, as some browsers have stricter blocking policies.
+1. Some users experience trouble with using Microsoft Edge. Try using a different browser such as Chrome, since some browsers have stricter blocking policies.
 
 ---------------------------------
 
