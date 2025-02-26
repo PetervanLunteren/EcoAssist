@@ -56,7 +56,7 @@ Open up a command prompt window (you might have to search for it via 'Start') an
   <br>
 
 ```
-curl --retry 5 --retry-delay 10 --retry-max-time 300 --connect-timeout 20 --continue-at - https://storage.googleapis.com/github-release-files-storage/latest/windows-latest.7z -o %USERPROFILE%\Downloads\windows-latest.7z
+curl --retry 5 --retry-delay 10 --retry-max-time 300 --connect-timeout 20 --continue-at - https://storage.googleapis.com/github-release-files-storage/latest/windows-latest.7z -o "%USERPROFILE%\Downloads\windows-latest.7z"
 ```
 
 </details>
