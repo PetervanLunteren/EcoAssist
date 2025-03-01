@@ -3,14 +3,13 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/addaxai/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 23 Feb 2025
+# Latest edit by Peter van Lunteren on 1 Mar 2025
 
 # TODO: CLEAN - if the processing is done, and a image is deleted before the post processing, it crashes and just stops, i think it should just skip the file and then do the rest. I had to manually delete certain entries from the image_recognition_file.json to make it work
 # TODO: RESUME DOWNLOAD - make some sort of mechanism that either continues the model download when interrupted, or downloads it to /temp/ folder and only moves it to the correct location after succesful download. Otherwise delete from /temp/. That makes sure that users will not be able to continue with half downloaded models. 
 # TODO: BUG - when moving files during postprocessing and exporting xlsx on Windows, it errors with an "file is in use". There must be something going on with opening files... does not happen when copying files or on Mac. 
 # TODO: PYINSTALLER - Get rid of the PyInstaller apps. Then there wont be the weird histation when opning. While you're at it, remove version number in the execution files. Then you can use the same shortcuts. 
 # TODO: WIDGET - make a slider widget for the line width of the bounding box. 
-# TODO: RESIZING - I think I figured out why we get that weird window resizing in AddaxAI, e.g., when switching to Advanced mode. Windows, as part of its Dispay settings, lets you set a Scale option. As I have two high-res displays, my scale setting (recommended by Windows) is 150%. While the initial GUI window shown in Python seems to  follow that scale setting, switching to advanced mode does not, i.e., the window is large (to fit the scaled graphics) but the contents are unscaled.
 # TODO: Microsoft Amazon is not working on MacOS, and Iran is not working on Windows. 
 # TODO: MERGE JSON - for timelapse it is already merged. Would be great to merge the image and video jsons together for AddaxAI too, and process videos and jsons together. See merge_jsons() function.
 # TODO: LAT LON 0 0 - filter out the 0,0 coords for map creation
@@ -168,11 +167,13 @@ from cameratraps.megadetector.utils.path_utils import IMG_EXTENSIONS
 print(sys.path)
 
 # set DPI awareness on Windows
+scale_factor = 1.0
 if platform.system() == "Windows":
     import ctypes
     try:
         # attempt
-        ctypes.windll.shcore.SetProcessDpiAwareness(1) 
+        ctypes.windll.shcore.SetProcessDpiAwareness(2) 
+        scale_factor = ctypes.windll.shcore.GetScaleFactorForDevice(0) / 100
     except AttributeError:
         # fallback for older versions of Windows
         ctypes.windll.user32.SetProcessDPIAware()
@@ -962,9 +963,6 @@ def start_postprocess():
 
         # close progress window
         progress_window.close()
-
-        # check window transparency
-        reset_window_transparency()
     
     except Exception as error:
         # log error
@@ -3407,9 +3405,6 @@ def start_deploy(simple_mode = False):
             open_file_or_folder(os.path.dirname(timelapse_json))
         elif simple_mode:
             show_result_info(os.path.join(chosen_folder, "results.xlsx"))
-        
-        # check window transparency
-        reset_window_transparency()
 
     except Exception as error:
 
@@ -3432,53 +3427,6 @@ def start_deploy(simple_mode = False):
             # enable button
             btn_start_deploy.configure(state=NORMAL)
             sim_run_btn.configure(state=NORMAL)
-
-# due to a weird bug on some windows devices the windows get rescaled and transparent after deployment
-def reset_window_transparency():
-    print(f"EXECUTED: {sys._getframe().f_code.co_name}({locals()})\n")
-    start_time = time.time()
-    scaling_adjusted = False
-    print(f"check_dpi_scaling: {customtkinter.ScalingTracker.check_dpi_scaling()}")
-
-    if (simple_mode_win and simple_mode_win.winfo_exists()) and \
-        (advanc_mode_win and advanc_mode_win.winfo_exists()):
-    
-        # reset transparency
-        transparency_sim = simple_mode_win.attributes('-alpha')
-        transparency_adv = advanc_mode_win.attributes('-alpha')
-        print(f"\t transparency:   {transparency_sim} & {transparency_adv}")
-        if transparency_sim != 1 or transparency_adv != 1:
-            print("\t\t transparency is not 1, adjusting...")
-            simple_mode_win.attributes('-alpha', 1)
-            advanc_mode_win.attributes('-alpha', 1)
-            root.update_idletasks()
-    
-        # reset widget scaling
-        widget_scaling_sim = customtkinter.ScalingTracker.get_widget_scaling(simple_mode_win)
-        widget_scaling_adv = customtkinter.ScalingTracker.get_widget_scaling(advanc_mode_win)
-        print(f"\t widget_scaling: {widget_scaling_sim} & {widget_scaling_adv}")
-        if widget_scaling_sim != 1 or widget_scaling_adv != 1:
-            print("\t\t widget_scaling is not 1, adjusting...")
-            customtkinter.set_widget_scaling(1)
-            scaling_adjusted = True
-    
-        # reset window scaling
-        window_scaling_sim = customtkinter.ScalingTracker.get_window_scaling(simple_mode_win)
-        window_scaling_adv = customtkinter.ScalingTracker.get_window_scaling(advanc_mode_win)
-        print(f"\t window_scaling: {window_scaling_sim} & {window_scaling_adv}")
-        if window_scaling_sim != 1 or window_scaling_adv != 1:
-            print("\t\t window_scaling is not 1, adjusting...")
-            customtkinter.set_window_scaling(1)
-            scaling_adjusted = True
-    
-        # update geometry
-        if scaling_adjusted:
-            simple_mode_win.geometry(f"{SIM_WINDOW_WIDTH}x{SIM_WINDOW_HEIGHT}+10+20")
-            advanc_mode_win.geometry(f"{advanc_bg_image_label.winfo_reqwidth()}x{advanc_bg_image_label.winfo_reqheight()}+10+20")
-            root.update_idletasks()
-    
-        print("\n")
-        print(f"Time taken: {time.time() - start_time:.6f} seconds")
 
 # get data from file list and create graph
 def produce_graph(file_list_txt = None, dir = None):
@@ -3910,11 +3858,11 @@ def open_hitl_settings_window():
                                             pady=2, padx=5, relief='solid', highlightthickness=5, font=100, fg=green_primary, labelanchor = 'n')
     hitl_img_selection_frame.configure(font=(text_font, 15, "bold"))
     hitl_img_selection_frame.grid(column=0, row=1, columnspan=2, sticky='ew')
-    hitl_img_selection_frame.columnconfigure(0, weight=1, minsize=50)
-    hitl_img_selection_frame.columnconfigure(1, weight=1, minsize=200)
-    hitl_img_selection_frame.columnconfigure(2, weight=1, minsize=200)
-    hitl_img_selection_frame.columnconfigure(3, weight=1, minsize=200)
-    hitl_img_selection_frame.columnconfigure(4, weight=1, minsize=200)
+    hitl_img_selection_frame.columnconfigure(0, weight=1, minsize=50 * scale_factor)
+    hitl_img_selection_frame.columnconfigure(1, weight=1, minsize=200 * scale_factor)
+    hitl_img_selection_frame.columnconfigure(2, weight=1, minsize=200 * scale_factor)
+    hitl_img_selection_frame.columnconfigure(3, weight=1, minsize=200 * scale_factor)
+    hitl_img_selection_frame.columnconfigure(4, weight=1, minsize=200 * scale_factor)
 
     # show explanation and resize window
     def show_text_hitl_img_selection_explanation():
@@ -4106,6 +4054,9 @@ def open_hitl_settings_window():
 
         # update window
         hitl_settings_window.update_idletasks()
+
+        # place in front
+        bring_window_to_top_but_not_for_ever(hitl_settings_window)
 
     # set minsize for rows
     row_count = hitl_img_selection_frame.grid_size()[1]
@@ -5385,8 +5336,12 @@ def open_species_selection():
 class MyMainFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.columnconfigure(0, weight=1, minsize=70)
-        self.columnconfigure(1, weight=1, minsize=350)
+        if scale_factor != 1.0:
+            self.columnconfigure(0, weight=1, minsize=70 * round(scale_factor * 1.35, 2))
+            self.columnconfigure(1, weight=1, minsize=350 * round(scale_factor * 1.35, 2))
+        else:
+            self.columnconfigure(0, weight=1, minsize=70)
+            self.columnconfigure(1, weight=1, minsize=350)
 
 class MySubFrame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
@@ -5401,7 +5356,7 @@ class MySubSubFrame(customtkinter.CTkFrame):
 class InfoButton(customtkinter.CTkButton):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(fg_color = ("#DBDBDB", "#333333"),
+        self.configure(fg_color = ("#ebebeb", "#333333"),
                        hover = False,
                        text_color = ("grey", "grey"),
                        height = 1,
@@ -5490,7 +5445,7 @@ class ModelDownloadProgressWindow:
         self.dm_root.geometry("+10+10")
         self.frm = customtkinter.CTkFrame(master=self.dm_root)
         self.frm.grid(row=3, column=0, padx=PADX, pady=(PADY, PADY/2), sticky="nswe")
-        self.frm.columnconfigure(0, weight=1, minsize=500)
+        self.frm.columnconfigure(0, weight=1, minsize=500 * scale_factor)
         self.lbl = customtkinter.CTkLabel(self.dm_root, text=[f"Downloading model '{model_title}' ({total_size_str})",
                                                               f"Descargar modelo '{model_title}' ({total_size_str})"][lang_idx], 
                                           font = customtkinter.CTkFont(family='CTkFont', size=14, weight = 'bold'))
@@ -5774,14 +5729,14 @@ def show_model_info(title = None, model_dict = None, new_model = False):
 class model_info_frame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.columnconfigure(0, weight=1, minsize=120)
-        self.columnconfigure(1, weight=1, minsize=500)
+        self.columnconfigure(0, weight=1, minsize=120 * scale_factor)
+        self.columnconfigure(1, weight=1, minsize=500 * scale_factor)
 
 # class frame for donation window
 class donation_popup_frame(customtkinter.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.columnconfigure(0, weight=1, minsize=500)
+        self.columnconfigure(0, weight=1, minsize=500 * scale_factor)
 
 # make sure the latest updated models also are listed in the dpd menu
 def update_model_dropdowns():
@@ -5866,7 +5821,7 @@ def show_result_info(file_path):
     graph_lbl_2 = customtkinter.CTkLabel(graph_frm_2, text="", image = graph_img)
     graph_lbl_2.grid(row=0, column=0, padx=PADX, pady=(0, PADY/4), columnspan = 2, sticky="nsw")
 
-    # developer frame
+    # table frame
     table_frm_1 = model_info_frame(master=result_main_frame)
     table_frm_1.grid(row=4, column=0, padx=PADX, pady=(0, PADY), sticky="nswe")
     table_lbl_1 = customtkinter.CTkLabel(table_frm_1, text=["Table", "Tabla"][lang_idx], font = main_label_font)
@@ -5905,6 +5860,9 @@ def show_result_info(file_path):
     seegr_btn.grid(row=0, column=2, padx=(0, PADX), pady=PADY, sticky="nwse")
     moreo_btn = customtkinter.CTkButton(btns_frm, text=["More options", "Otras opciones"][lang_idx], command=more_options)
     moreo_btn.grid(row=0, column=3, padx=(0, PADX), pady=PADY, sticky="nwse")
+
+    # place in front
+    bring_window_to_top_but_not_for_ever(rs_root)
 
 # class for simple question with buttons
 class TextButtonWindow:
@@ -6139,7 +6097,7 @@ class ProgressWindow:
             self.img_det_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_det_sub_frm = customtkinter.CTkFrame(master=self.img_det_frm)
             self.img_det_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.img_det_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.img_det_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.img_det_pbr = customtkinter.CTkProgressBar(self.img_det_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_det_pbr.set(0)
             self.img_det_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6190,7 +6148,7 @@ class ProgressWindow:
             self.img_cls_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_cls_sub_frm = customtkinter.CTkFrame(master=self.img_cls_frm)
             self.img_cls_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.img_cls_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.img_cls_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.img_cls_pbr = customtkinter.CTkProgressBar(self.img_cls_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_cls_pbr.set(0)
             self.img_cls_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6241,7 +6199,7 @@ class ProgressWindow:
             self.vid_det_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_det_sub_frm = customtkinter.CTkFrame(master=self.vid_det_frm)
             self.vid_det_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.vid_det_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.vid_det_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.vid_det_pbr = customtkinter.CTkProgressBar(self.vid_det_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_det_pbr.set(0)
             self.vid_det_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6292,7 +6250,7 @@ class ProgressWindow:
             self.vid_cls_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_cls_sub_frm = customtkinter.CTkFrame(master=self.vid_cls_frm)
             self.vid_cls_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.vid_cls_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.vid_cls_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.vid_cls_pbr = customtkinter.CTkProgressBar(self.vid_cls_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_cls_pbr.set(0)
             self.vid_cls_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6343,7 +6301,7 @@ class ProgressWindow:
             self.img_pst_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.img_pst_sub_frm = customtkinter.CTkFrame(master=self.img_pst_frm)
             self.img_pst_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.img_pst_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.img_pst_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.img_pst_pbr = customtkinter.CTkProgressBar(self.img_pst_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.img_pst_pbr.set(0)
             self.img_pst_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6376,7 +6334,7 @@ class ProgressWindow:
             self.vid_pst_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.vid_pst_sub_frm = customtkinter.CTkFrame(master=self.vid_pst_frm)
             self.vid_pst_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.vid_pst_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.vid_pst_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.vid_pst_pbr = customtkinter.CTkProgressBar(self.vid_pst_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.vid_pst_pbr.set(0)
             self.vid_pst_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -6409,7 +6367,7 @@ class ProgressWindow:
             self.plt_ttl.grid(row=0, padx=self.padx_progress_window * 2, pady=(self.pady_progress_window, 0), columnspan = 2, sticky="nsw")
             self.plt_sub_frm = customtkinter.CTkFrame(master=self.plt_frm)
             self.plt_sub_frm.grid(row=1, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nswe", ipady=self.pady_progress_window/2)
-            self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300)
+            self.plt_sub_frm.columnconfigure(0, weight=1, minsize=300 * scale_factor)
             self.plt_pbr = customtkinter.CTkProgressBar(self.plt_sub_frm, orientation="horizontal", height=pbr_height, corner_radius=5, width=1)
             self.plt_pbr.set(0)
             self.plt_pbr.grid(row=0, padx=self.padx_progress_window, pady=self.pady_progress_window, sticky="nsew")
@@ -7392,7 +7350,7 @@ def resize_canvas_to_content():
     canvas_max_height = max_screen_height - height_logo - 300
     canvas_height = min(canvas_required_height, canvas_max_height, 800)
     deploy_canvas.configure(width = canvas_required_width, height = canvas_height)
-    bg_height = canvas_height + height_logo + ADV_EXTRA_GRADIENT_HEIGHT
+    bg_height = (canvas_height + height_logo + ADV_EXTRA_GRADIENT_HEIGHT) * (1 / scale_factor)
     new_advanc_bg_image = customtkinter.CTkImage(PIL_sidebar, size=(ADV_WINDOW_WIDTH, bg_height))
     advanc_bg_image_label.configure(image=new_advanc_bg_image)
 
@@ -7553,11 +7511,11 @@ if os.name == "nt": # windows
     text_size_adjustment_factor = 0.83
     first_level_frame_font_size = 13
     second_level_frame_font_size = 10
-    label_width = 320
-    widget_width = 225
+    label_width = 320 * scale_factor
+    widget_width = 225 * scale_factor
     frame_width = label_width + widget_width + 60
     subframe_correction_factor = 15
-    minsize_rows = 28
+    minsize_rows = 28 * scale_factor
     explanation_text_box_height_factor = 0.8
     PADY = 8
     PADX = 10
@@ -7567,7 +7525,7 @@ if os.name == "nt": # windows
     ADV_WINDOW_WIDTH = 1194
     SIM_WINDOW_WIDTH = 630
     SIM_WINDOW_HEIGHT = 699
-    ADV_EXTRA_GRADIENT_HEIGHT = 98
+    ADV_EXTRA_GRADIENT_HEIGHT = 98 * scale_factor
     ADV_TOP_BANNER_WIDTH_FACTOR = 17.4
     SIM_TOP_BANNER_WIDTH_FACTOR = 6
     RESULTS_TABLE_WIDTH = 600
@@ -7655,7 +7613,10 @@ advanc_bg_image_label = customtkinter.CTkLabel(advanc_mode_win, image=advanc_bg_
 advanc_bg_image_label.grid(row=0, column=0)
 advanc_main_frame = customtkinter.CTkFrame(advanc_mode_win, corner_radius=0, fg_color = 'transparent', bg_color = yellow_primary)
 advanc_main_frame.grid(row=0, column=0, sticky="ns")
-tabControl = ttk.Notebook(advanc_main_frame)
+if scale_factor != 1.0: # set fixed width for when scaling is applied
+    tabControl = ttk.Notebook(advanc_main_frame, width = int(1150 * scale_factor))
+else:
+    tabControl = ttk.Notebook(advanc_main_frame)
 advanc_mode_win.withdraw() # only show when all widgets are loaded
 
 # logo
@@ -8825,6 +8786,14 @@ def main():
     # update frame states if we already have a timelapse path
     if timelapse_mode:
         update_frame_states()
+
+    if scale_factor != 1.0:
+        if not global_vars['var_scale_warning_shown']:
+            mb.showwarning(
+                [f"Scale set to {int(scale_factor * 100)}%", f"Escala fijada en {int(scale_factor * 100)}%"][lang_idx],
+                [f"The user interface of AddaxAI is designed for a scale setting of 100%. However, your screen settings are set to {int(scale_factor * 100)}%. We've worked to maintain a consistent look across different scale settings, but it may still affect the appearance of the application, causing some elements (like checkboxes or windows) to appear disproportionately large or small. Note that these visual differences won't impact the functionality of the application.\n\nThis warning will only appear once.", f"La interfaz de usuario de AddaxAI está diseñada para un ajuste de escala del 100%. Sin embargo, su configuración de pantalla está establecida en {int(scale_factor * 100)}%. Hemos trabajado para mantener una apariencia consistente a través de diferentes configuraciones de escala, pero aún puede afectar la apariencia de la aplicación, causando que algunos elementos (como casillas de verificación o ventanas) aparezcan desproporcionadamente grandes o pequeñas. Tenga en cuenta que estas diferencias visuales no afectarán a la funcionalidad de la aplicación.\n\nEste aviso sólo aparecerá una vez."][lang_idx]
+            )
+        write_global_vars({"var_scale_warning_shown": True})
 
     # run
     root.mainloop()
