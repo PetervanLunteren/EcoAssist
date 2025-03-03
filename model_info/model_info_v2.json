@@ -1,5 +1,5 @@
 {
-    "cls": {
+    "cls": { 
         "Europe - DeepFaune v1.3": {
             "model_fname": "deepfaune-vit_large_patch14_dinov2.lvd142m.v3.pt",
             "description": "The Deepfaune initiative aims at developing 'artificial intelligence' models to automatically classify species in images and videos collected using camera-traps. The initiative is led by a core academic team from the French 'Centre National de la Recherche Scientifique' (CNRS), in collaboration with more than 50 European partners involved in wildlife research, conservation and management. The Deepfaune models can be run through a custom software freely available on the website, or through other software packages or platforms like EcoAssist. New versions of the model are published regularly, increasing classification accuracy or adding new species to the list of species that can be recognized. More information is available at: https://www.deepfaune.cnrs.fr",
