@@ -29,5 +29,6 @@
     "var_plt": true,
     "var_exp_format_idx": 0,
     "var_thresh": 0.3,
-    "var_thresh_default": 0.3
+    "var_thresh_default": 0.3,
+    "var_scale_warning_shown": false
 }
