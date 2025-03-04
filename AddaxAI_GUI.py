@@ -3,7 +3,7 @@
 # GUI to simplify camera trap image analysis with species recognition models
 # https://addaxdatascience.com/addaxai/
 # Created by Peter van Lunteren
-# Latest edit by Peter van Lunteren on 1 Mar 2025
+# Latest edit by Peter van Lunteren on 4 Mar 2025
 
 # TODO: CLEAN - if the processing is done, and a image is deleted before the post processing, it crashes and just stops, i think it should just skip the file and then do the rest. I had to manually delete certain entries from the image_recognition_file.json to make it work
 # TODO: RESUME DOWNLOAD - make some sort of mechanism that either continues the model download when interrupted, or downloads it to /temp/ folder and only moves it to the correct location after succesful download. Otherwise delete from /temp/. That makes sure that users will not be able to continue with half downloaded models. 
@@ -526,19 +526,6 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
 
                         # store in list
                         bbox_info.append([label, conf, manually_checked, left, top, right, bottom, height, width, xo, yo, w_box, h_box])
-
-        # separate files
-        if sep:
-            if n_detections == 0:
-                file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
-            else:
-                if len(unique_labels) > 1:
-                    labels_str = "_".join(unique_labels)
-                    file = move_files(file, labels_str, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
-                elif len(unique_labels) == 0:
-                    file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
-                else:
-                    file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
         
         # collect info to append to csv files
         if exp:
@@ -559,6 +546,19 @@ def postprocess(src_dir, dst_dir, thresh, sep, file_placement, sep_conf, vis, cr
                 rows.append(row)
             rows = pd.DataFrame(rows)
             rows.to_csv(csv_for_detections, encoding='utf-8', mode='a', index=False, header=False)
+    
+        # separate files
+        if sep:
+            if n_detections == 0:
+                file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
+            else:
+                if len(unique_labels) > 1:
+                    labels_str = "_".join(unique_labels)
+                    file = move_files(file, labels_str, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
+                elif len(unique_labels) == 0:
+                    file = move_files(file, "empty", file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
+                else:
+                    file = move_files(file, label, file_placement, max_detection_conf, sep_conf, dst_dir, src_dir, manually_checked)
     
         # visualize images
         if vis and len(bbox_info) > 0:
